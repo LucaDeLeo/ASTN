@@ -28,13 +28,13 @@ This roadmap delivers the ASTN pilot for BAISH (50-100 profiles). We start with 
   3. System has imported opportunities from 80K Hours job board
   4. System has imported opportunities from aisafety.com
   5. Admin can manually add and edit opportunities
-**Plans**: TBD
+**Plans**: 4 plans in 3 waves
 
 Plans:
-- [ ] 01-01: Project setup (Next.js, Convex, Clerk, dev tooling)
-- [ ] 01-02: Opportunity data model and CRUD
-- [ ] 01-03: Opportunity aggregation (80K Hours + aisafety.com scrapers)
-- [ ] 01-04: Opportunity browsing UI (list, detail, search/filter)
+- [ ] 01-01-PLAN.md — Project setup (Next.js, Convex, Clerk, shadcn/ui)
+- [ ] 01-02-PLAN.md — Opportunity data model and admin CRUD
+- [ ] 01-03-PLAN.md — Opportunity aggregation (80K Hours + aisafety.com scrapers)
+- [ ] 01-04-PLAN.md — Opportunity browsing UI (list, detail, search/filter)
 
 ### Phase 2: Authentication
 **Goal**: Users can securely access their accounts
@@ -112,7 +112,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation + Opportunities | 0/4 | Not started | - |
+| 1. Foundation + Opportunities | 0/4 | Planned | - |
 | 2. Authentication | 0/2 | Not started | - |
 | 3. Profiles | 0/4 | Not started | - |
 | 4. Matching | 0/3 | Not started | - |
