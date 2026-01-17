@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-01-17)
 ## Current Position
 
 Phase: 1 of 5 (Foundation + Opportunities)
-Plan: 2 of 4 in current phase
+Plan: 3 of 4 in current phase
 Status: In progress
-Last activity: 2026-01-17 - Completed 01-02-PLAN.md
+Last activity: 2026-01-17 - Completed 01-03-PLAN.md
 
-Progress: [██░░░░░░░░░░░░░░░░░░] 10%
+Progress: [███░░░░░░░░░░░░░░░░░] 15%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 6.5 min
-- Total execution time: 0.2 hours
+- Total plans completed: 3
+- Average duration: 6 min
+- Total execution time: 0.3 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation-opportunities | 2 | 13 min | 6.5 min |
+| 01-foundation-opportunities | 3 | 18 min | 6 min |
 
 **Recent Trend:**
-- Last 5 plans: 6 min, 7 min
+- Last 5 plans: 6 min, 7 min, 5 min
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -50,6 +50,9 @@ Recent decisions affecting current work:
 - [01-01]: Used OKLCH color format for coral accent
 - [01-02]: Separate Convex files for public queries vs admin mutations
 - [01-02]: OpportunityForm uses useState + TanStack Query mutations pattern
+- [01-03]: Use internalAction for adapter functions to enable calling from sync orchestrator
+- [01-03]: Separate Node.js actions from mutations (Convex requires mutations in non-Node runtime)
+- [01-03]: Fuzzy match threshold 0.85 for titles, 0.8 for organizations
 
 ### Pending Todos
 
@@ -57,13 +60,14 @@ None yet.
 
 ### Blockers/Concerns
 
-- [Research]: 80K Hours has no public API - scraping reliability uncertain
 - [Research]: AI safety skills taxonomy needs to be defined before Phase 3
+- [01-03]: 80K Hours Algolia credentials need to be extracted from page source
+- [01-03]: aisafety.com Airtable credentials need to be obtained from their team
 
 ## Session Continuity
 
-Last session: 2026-01-17T22:28:46Z
-Stopped at: Completed 01-02-PLAN.md
+Last session: 2026-01-17T22:35:57Z
+Stopped at: Completed 01-03-PLAN.md
 Resume file: None
 
 ---
