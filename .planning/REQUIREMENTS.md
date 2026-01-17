@@ -1,0 +1,135 @@
+# Requirements: AI Safety Talent Network (ASTN)
+
+**Defined:** 2026-01-17
+**Core Value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
+
+## v1 Requirements
+
+Requirements for pilot launch with BAISH (50-100 profiles).
+
+### Authentication
+
+- [ ] **AUTH-01**: User can sign up and login with Google OAuth
+- [ ] **AUTH-02**: User can sign up and login with GitHub OAuth
+- [ ] **AUTH-03**: User can sign up and login with email/password
+- [ ] **AUTH-04**: User session persists across browser refresh
+
+### Profiles
+
+- [ ] **PROF-01**: User can enter basic info (name, location, education, work history)
+- [ ] **PROF-02**: User can select skills from AI safety-specific taxonomy
+- [ ] **PROF-03**: User can describe career goals, interests, and what they're seeking
+- [ ] **PROF-04**: User can have LLM conversation to enrich profile with deeper context
+- [ ] **PROF-05**: User can set privacy controls (hide profile from specific orgs)
+- [ ] **PROF-06**: User sees profile completeness progress with feature unlocks at thresholds
+
+### Opportunities
+
+- [ ] **OPPS-01**: User can view opportunity listings with full details
+- [ ] **OPPS-02**: User can search and filter opportunities by role type, location, experience level
+- [ ] **OPPS-03**: System automatically aggregates opportunities from 80K Hours job board
+- [ ] **OPPS-04**: System automatically aggregates opportunities from aisafety.com
+- [ ] **OPPS-05**: Admin can manually add and edit opportunities
+- [ ] **OPPS-06**: Opportunities display freshness indicator ("Last verified: X")
+
+### Matching & Recommendations
+
+- [ ] **MATCH-01**: User receives matched opportunities based on their profile
+- [ ] **MATCH-02**: Each match includes explanation ("here's why this fits you")
+- [ ] **MATCH-03**: Each match shows LLM-estimated acceptance probability (labeled experimental)
+- [ ] **MATCH-04**: User receives personalized "what to do next" recommendations to improve fit
+
+### Notifications
+
+- [ ] **NOTIF-01**: User receives email when new high-fit matches appear
+- [ ] **NOTIF-02**: User receives weekly personalized digest email
+- [ ] **NOTIF-03**: User can configure notification preferences (frequency, channels)
+
+### Org Dashboard
+
+- [ ] **ORG-01**: Org admin can view list of their members
+- [ ] **ORG-02**: Org admin can view member profiles (with member consent)
+- [ ] **ORG-03**: Org admin can see aggregate stats for their org (member count, skills distribution, etc.)
+
+## v2 Requirements
+
+Deferred to future release. Tracked but not in current roadmap.
+
+### Application Tracking
+
+- **TRACK-01**: User can log where they've applied and outcomes
+- **TRACK-02**: User can add notes to each application
+- **TRACK-03**: User can view full application history in one place
+
+### Rejection Analysis
+
+- **REJECT-01**: System analyzes profile vs opportunity when user logs rejection
+- **REJECT-02**: System provides hypothesis about gaps and actionable recommendations
+- **REJECT-03**: System identifies patterns across multiple rejections
+
+### Application Pre-fill
+
+- **PREFILL-01**: System generates draft answers for common application questions
+- **PREFILL-02**: Feature unlocks at 85%+ profile completion
+
+### Advanced Features
+
+- **ADV-01**: Collaborator matching (find people working on similar problems)
+- **ADV-02**: "Insist" escalation for very high-fit opportunities (multi-channel nudges)
+- **ADV-03**: Cross-org discovery for org admins
+- **ADV-04**: Career pathing with milestone tracking
+
+## Out of Scope
+
+Explicitly excluded. Documented to prevent scope creep.
+
+| Feature | Reason |
+|---------|--------|
+| Real-time messaging | Scope creep, moderation burden, spam risk |
+| Social feed / content posting | EA Forum already serves this need |
+| Gamification beyond completeness | Inappropriate for mission-driven context |
+| Video interviews / assessments | High friction, not core to matching |
+| Mobile app | Web-first for pilot, mobile later |
+| Salary data / negotiation tools | Sensitive data, not core to v1 value prop |
+
+## Traceability
+
+Which phases cover which requirements. Updated during roadmap creation.
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| AUTH-01 | TBD | Pending |
+| AUTH-02 | TBD | Pending |
+| AUTH-03 | TBD | Pending |
+| AUTH-04 | TBD | Pending |
+| PROF-01 | TBD | Pending |
+| PROF-02 | TBD | Pending |
+| PROF-03 | TBD | Pending |
+| PROF-04 | TBD | Pending |
+| PROF-05 | TBD | Pending |
+| PROF-06 | TBD | Pending |
+| OPPS-01 | TBD | Pending |
+| OPPS-02 | TBD | Pending |
+| OPPS-03 | TBD | Pending |
+| OPPS-04 | TBD | Pending |
+| OPPS-05 | TBD | Pending |
+| OPPS-06 | TBD | Pending |
+| MATCH-01 | TBD | Pending |
+| MATCH-02 | TBD | Pending |
+| MATCH-03 | TBD | Pending |
+| MATCH-04 | TBD | Pending |
+| NOTIF-01 | TBD | Pending |
+| NOTIF-02 | TBD | Pending |
+| NOTIF-03 | TBD | Pending |
+| ORG-01 | TBD | Pending |
+| ORG-02 | TBD | Pending |
+| ORG-03 | TBD | Pending |
+
+**Coverage:**
+- v1 requirements: 26 total
+- Mapped to phases: 0
+- Unmapped: 26 (pending roadmap creation)
+
+---
+*Requirements defined: 2026-01-17*
+*Last updated: 2026-01-17 after initial definition*

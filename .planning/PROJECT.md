@@ -53,6 +53,9 @@ Individuals get enough value from smart matching + recommendations that they kee
 - **Pilot scope**: BAISH first, 50-100 profiles before expanding
 - **Opportunity data**: Dependent on 80k and aisafety.com aggregation working
 - **LLM-based**: Acceptance probability and recommendations are LLM-estimated, not historical data (yet)
+- **Tech stack**: Convex for backend (not Supabase), Next.js for frontend
+- **No vector search**: Programmatic context construction for LLM calls instead of embeddings
+- **Models**: Claude Sonnet 4.5 (quality/reasoning tasks) + Haiku 4.5 (bulk/fast operations)
 
 ## Key Decisions
 
@@ -62,6 +65,9 @@ Individuals get enough value from smart matching + recommendations that they kee
 | LLM-estimated acceptance probability from day one | Differentiator, can refine with real data over time | — Pending |
 | Org CRM in v1 | BAISH needs visibility into their members for pilot to work | — Pending |
 | Automated opportunity aggregation | Manual curation doesn't scale; 80k/aisafety.com teams likely cooperative | — Pending |
+| Convex over Supabase | Real-time sync, simpler developer experience, no separate vector DB needed | — Pending |
+| Programmatic context over vectors | More control over what context the LLM sees, avoids embedding quality issues | — Pending |
+| Claude Sonnet 4.5 + Haiku 4.5 | Latest models, Sonnet for quality reasoning, Haiku for speed/cost | — Pending |
 
 ---
-*Last updated: 2026-01-17 after initialization*
+*Last updated: 2026-01-17 after stack preferences*
