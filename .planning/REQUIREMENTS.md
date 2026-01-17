@@ -98,38 +98,38 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | TBD | Pending |
-| AUTH-02 | TBD | Pending |
-| AUTH-03 | TBD | Pending |
-| AUTH-04 | TBD | Pending |
-| PROF-01 | TBD | Pending |
-| PROF-02 | TBD | Pending |
-| PROF-03 | TBD | Pending |
-| PROF-04 | TBD | Pending |
-| PROF-05 | TBD | Pending |
-| PROF-06 | TBD | Pending |
-| OPPS-01 | TBD | Pending |
-| OPPS-02 | TBD | Pending |
-| OPPS-03 | TBD | Pending |
-| OPPS-04 | TBD | Pending |
-| OPPS-05 | TBD | Pending |
-| OPPS-06 | TBD | Pending |
-| MATCH-01 | TBD | Pending |
-| MATCH-02 | TBD | Pending |
-| MATCH-03 | TBD | Pending |
-| MATCH-04 | TBD | Pending |
-| NOTIF-01 | TBD | Pending |
-| NOTIF-02 | TBD | Pending |
-| NOTIF-03 | TBD | Pending |
-| ORG-01 | TBD | Pending |
-| ORG-02 | TBD | Pending |
-| ORG-03 | TBD | Pending |
+| AUTH-01 | Phase 2 | Pending |
+| AUTH-02 | Phase 2 | Pending |
+| AUTH-03 | Phase 2 | Pending |
+| AUTH-04 | Phase 2 | Pending |
+| PROF-01 | Phase 3 | Pending |
+| PROF-02 | Phase 3 | Pending |
+| PROF-03 | Phase 3 | Pending |
+| PROF-04 | Phase 3 | Pending |
+| PROF-05 | Phase 3 | Pending |
+| PROF-06 | Phase 3 | Pending |
+| OPPS-01 | Phase 1 | Pending |
+| OPPS-02 | Phase 1 | Pending |
+| OPPS-03 | Phase 1 | Pending |
+| OPPS-04 | Phase 1 | Pending |
+| OPPS-05 | Phase 1 | Pending |
+| OPPS-06 | Phase 1 | Pending |
+| MATCH-01 | Phase 4 | Pending |
+| MATCH-02 | Phase 4 | Pending |
+| MATCH-03 | Phase 4 | Pending |
+| MATCH-04 | Phase 4 | Pending |
+| NOTIF-01 | Phase 5 | Pending |
+| NOTIF-02 | Phase 5 | Pending |
+| NOTIF-03 | Phase 5 | Pending |
+| ORG-01 | Phase 5 | Pending |
+| ORG-02 | Phase 5 | Pending |
+| ORG-03 | Phase 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 26 total
-- Mapped to phases: 0
-- Unmapped: 26 (pending roadmap creation)
+- Mapped to phases: 26
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-17*
-*Last updated: 2026-01-17 after initial definition*
+*Last updated: 2026-01-17 after roadmap creation (phase mappings added)*
