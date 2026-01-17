@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { PublicHeader } from "~/components/layout/public-header";
+import { AuthHeader } from "~/components/layout/auth-header";
 import { OpportunityDetail } from "~/components/opportunities/opportunity-detail";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { Button } from "~/components/ui/button";
@@ -19,7 +19,7 @@ function OpportunityPage() {
   if (opportunity === undefined) {
     return (
       <div className="min-h-screen bg-slate-50">
-        <PublicHeader />
+        <AuthHeader />
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
             <div className="animate-pulse space-y-4">
@@ -35,7 +35,7 @@ function OpportunityPage() {
   if (opportunity === null) {
     return (
       <div className="min-h-screen bg-slate-50">
-        <PublicHeader />
+        <AuthHeader />
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto text-center py-12">
             <h1 className="text-2xl font-bold text-slate-900 mb-4 font-mono">
@@ -55,7 +55,7 @@ function OpportunityPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <PublicHeader />
+      <AuthHeader />
       <main className="container mx-auto px-4 py-8">
         <OpportunityDetail opportunity={opportunity} />
       </main>

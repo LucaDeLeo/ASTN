@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "~/components/ui/button";
+import { AuthHeader } from "~/components/layout/auth-header";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -7,8 +8,9 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   return (
-    <main className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-16">
+    <div className="min-h-screen bg-background">
+      <AuthHeader />
+      <main className="container mx-auto px-4 py-16">
         <div className="max-w-2xl mx-auto text-center">
           <h1 className="text-4xl font-bold text-foreground mb-4 font-mono tracking-tight">
             AI Safety Talent Network
@@ -24,7 +26,7 @@ function Home() {
             <Link to="/opportunities">Browse Opportunities</Link>
           </Button>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
