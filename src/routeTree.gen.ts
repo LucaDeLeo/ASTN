@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OpportunitiesIndexRouteImport } from './routes/opportunities/index'
@@ -18,6 +19,11 @@ import { Route as AdminOpportunitiesIndexRouteImport } from './routes/admin/oppo
 import { Route as AdminOpportunitiesNewRouteImport } from './routes/admin/opportunities/new'
 import { Route as AdminOpportunitiesIdEditRouteImport } from './routes/admin/opportunities/$id/edit'
 
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRouteRoute = AdminRouteRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -63,6 +69,7 @@ const AdminOpportunitiesIdEditRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/login': typeof LoginRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/admin/': typeof AdminIndexRoute
   '/opportunities/': typeof OpportunitiesIndexRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/admin': typeof AdminIndexRoute
   '/opportunities': typeof OpportunitiesIndexRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/login': typeof LoginRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/admin/': typeof AdminIndexRoute
   '/opportunities/': typeof OpportunitiesIndexRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/login'
     | '/opportunities/$id'
     | '/admin/'
     | '/opportunities/'
@@ -104,6 +114,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/login'
     | '/opportunities/$id'
     | '/admin'
     | '/opportunities'
@@ -114,6 +125,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/login'
     | '/opportunities/$id'
     | '/admin/'
     | '/opportunities/'
@@ -125,12 +137,20 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  LoginRoute: typeof LoginRoute
   OpportunitiesIdRoute: typeof OpportunitiesIdRoute
   OpportunitiesIndexRoute: typeof OpportunitiesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -211,6 +231,7 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
+  LoginRoute: LoginRoute,
   OpportunitiesIdRoute: OpportunitiesIdRoute,
   OpportunitiesIndexRoute: OpportunitiesIndexRoute,
 }
