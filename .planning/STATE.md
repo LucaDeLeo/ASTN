@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-01-17)
 ## Current Position
 
 Phase: 2 of 5 (Authentication)
-Plan: 1 of 2 in Phase 2 complete
-Status: In progress
-Last activity: 2026-01-17 - Completed 02-01-PLAN.md (auth infrastructure)
+Plan: 2 of 2 in Phase 2 complete
+Status: Phase complete
+Last activity: 2026-01-17 - Completed 02-02-PLAN.md (login UI & auth header)
 
-Progress: [█████░░░░░░░░░░░░░░░] 25%
+Progress: [██████░░░░░░░░░░░░░░] 30%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
+- Total plans completed: 6
 - Average duration: 8 min
-- Total execution time: 0.7 hours
+- Total execution time: 0.8 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation-opportunities | 4 | 30 min | 8 min |
-| 02-authentication | 1 | 12 min | 12 min |
+| 02-authentication | 2 | 20 min | 10 min |
 
 **Recent Trend:**
-- Last 5 plans: 7 min, 5 min, 12 min, 12 min
+- Last 5 plans: 5 min, 12 min, 12 min, 8 min
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -59,6 +59,9 @@ Recent decisions affecting current work:
 - [01-04]: Staggered animation delay of 50ms per card
 - [02-01]: Password validation: 8+ chars, lowercase, uppercase, number
 - [02-01]: OAuth providers: Google + GitHub
+- [02-02]: Combined sign-in/sign-up on single page with tabs
+- [02-02]: OAuth buttons first, then separator, then email form
+- [02-02]: AuthHeader replaces PublicHeader on all public routes
 
 ### Pending Todos
 
@@ -73,7 +76,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-17
-Stopped at: Completed 02-01-PLAN.md (auth infrastructure)
+Stopped at: Completed 02-02-PLAN.md (login UI & auth header) - Phase 2 complete
 Resume file: None
 
 ---
