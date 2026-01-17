@@ -10,7 +10,7 @@ This roadmap delivers the ASTN pilot for BAISH (50-100 profiles). We start with 
 - Integer phases (1, 2, 3, 4, 5): Planned milestone work
 - Decimal phases (e.g., 2.1): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 1: Foundation + Opportunities** - Project scaffolding and opportunity pipeline (cold start prevention)
+- [x] **Phase 1: Foundation + Opportunities** - Project scaffolding and opportunity pipeline (cold start prevention)
 - [ ] **Phase 2: Authentication** - User accounts with OAuth and email/password
 - [ ] **Phase 3: Profiles** - Profile creation with form and LLM enrichment
 - [ ] **Phase 4: Matching** - Smart matching with explanations and recommendations
@@ -31,10 +31,10 @@ This roadmap delivers the ASTN pilot for BAISH (50-100 profiles). We start with 
 **Plans**: 4 plans in 3 waves
 
 Plans:
-- [ ] 01-01-PLAN.md — Project setup (Next.js, Convex, Clerk, shadcn/ui)
-- [ ] 01-02-PLAN.md — Opportunity data model and admin CRUD
-- [ ] 01-03-PLAN.md — Opportunity aggregation (80K Hours + aisafety.com scrapers)
-- [ ] 01-04-PLAN.md — Opportunity browsing UI (list, detail, search/filter)
+- [x] 01-01-PLAN.md — Project setup (TanStack Start, Convex, Convex Auth, shadcn/ui)
+- [x] 01-02-PLAN.md — Opportunity data model and admin CRUD
+- [x] 01-03-PLAN.md — Opportunity aggregation (80K Hours + aisafety.com adapters)
+- [x] 01-04-PLAN.md — Opportunity browsing UI (list, detail, search/filter)
 
 ### Phase 2: Authentication
 **Goal**: Users can securely access their accounts
@@ -112,7 +112,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation + Opportunities | 0/4 | Planned | - |
+| 1. Foundation + Opportunities | 4/4 | Complete | 2026-01-17 |
 | 2. Authentication | 0/2 | Not started | - |
 | 3. Profiles | 0/4 | Not started | - |
 | 4. Matching | 0/3 | Not started | - |

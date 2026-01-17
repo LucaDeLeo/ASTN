@@ -25,12 +25,12 @@ Requirements for pilot launch with BAISH (50-100 profiles).
 
 ### Opportunities
 
-- [ ] **OPPS-01**: User can view opportunity listings with full details
-- [ ] **OPPS-02**: User can search and filter opportunities by role type, location, experience level
-- [ ] **OPPS-03**: System automatically aggregates opportunities from 80K Hours job board
-- [ ] **OPPS-04**: System automatically aggregates opportunities from aisafety.com
-- [ ] **OPPS-05**: Admin can manually add and edit opportunities
-- [ ] **OPPS-06**: Opportunities display freshness indicator ("Last verified: X")
+- [x] **OPPS-01**: User can view opportunity listings with full details
+- [x] **OPPS-02**: User can search and filter opportunities by role type, location, experience level
+- [x] **OPPS-03**: System automatically aggregates opportunities from 80K Hours job board
+- [x] **OPPS-04**: System automatically aggregates opportunities from aisafety.com
+- [x] **OPPS-05**: Admin can manually add and edit opportunities
+- [x] **OPPS-06**: Opportunities display freshness indicator ("Last verified: X")
 
 ### Matching & Recommendations
 
@@ -108,12 +108,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PROF-04 | Phase 3 | Pending |
 | PROF-05 | Phase 3 | Pending |
 | PROF-06 | Phase 3 | Pending |
-| OPPS-01 | Phase 1 | Pending |
-| OPPS-02 | Phase 1 | Pending |
-| OPPS-03 | Phase 1 | Pending |
-| OPPS-04 | Phase 1 | Pending |
-| OPPS-05 | Phase 1 | Pending |
-| OPPS-06 | Phase 1 | Pending |
+| OPPS-01 | Phase 1 | Complete |
+| OPPS-02 | Phase 1 | Complete |
+| OPPS-03 | Phase 1 | Complete |
+| OPPS-04 | Phase 1 | Complete |
+| OPPS-05 | Phase 1 | Complete |
+| OPPS-06 | Phase 1 | Complete |
 | MATCH-01 | Phase 4 | Pending |
 | MATCH-02 | Phase 4 | Pending |
 | MATCH-03 | Phase 4 | Pending |
