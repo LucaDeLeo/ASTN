@@ -1,12 +1,12 @@
 # Phase 1: Foundation + Opportunities - Research
 
 **Researched:** 2026-01-17
-**Domain:** Next.js + Convex setup, job board aggregation, opportunity browsing
+**Domain:** TanStack Start + Convex setup, job board aggregation, opportunity browsing
 **Confidence:** MEDIUM-HIGH
 
 ## Summary
 
-Phase 1 establishes the technical foundation (Next.js 16 + Convex) and builds the opportunity pipeline from two sources: 80,000 Hours job board and aisafety.com. Both sources lack public APIs, requiring different scraping approaches.
+Phase 1 establishes the technical foundation (TanStack Start + Convex) and builds the opportunity pipeline from two sources: 80,000 Hours job board and aisafety.com. Both sources lack public APIs, requiring different scraping approaches.
 
 **80,000 Hours** uses Algolia search under the hood, making direct API queries feasible without rendering JavaScript. The Algolia configuration is exposed in the page source, allowing structured JSON data retrieval. This is the recommended approach over DOM scraping.
 
@@ -14,7 +14,14 @@ Phase 1 establishes the technical foundation (Next.js 16 + Convex) and builds th
 
 For duplicate detection, opportunities from both sources should be matched using normalized title + organization name. A simple Levenshtein-based fuzzy match (via string-similarity or fuse.js) handles minor variations.
 
-**Primary recommendation:** Use Algolia API for 80K Hours (fast, reliable), Playwright for aisafety.com (JavaScript-required), Brandfetch for organization logos, and Convex scheduled actions for daily sync.
+**Primary recommendation:** Use Algolia API for 80K Hours (fast, reliable), Airtable API for aisafety.com (team has provided access), Quikturn for organization logos, and Convex scheduled actions for daily sync.
+
+**Stack decisions (updated after red-teaming):**
+- **Convex Auth** instead of Clerk (native, free, simpler)
+- **Airtable API** instead of Playwright scraping (aisafety.com team provided access)
+- **string-similarity-js** instead of string-similarity (deprecated package)
+- **Quikturn** instead of Brandfetch (500K/mo free vs 250/mo)
+- **bun** instead of pnpm (faster, simpler)
 
 ## Standard Stack
 
@@ -23,24 +30,27 @@ The established libraries/tools for this phase:
 ### Core (from project stack)
 | Library | Version | Purpose | Why Standard |
 |---------|---------|---------|--------------|
-| Next.js | 16.x | Full-stack React framework | App Router, Turbopack, Server Components |
+| TanStack Start | 1.x RC | Full-stack React framework | File-based routing, full type inference, Vite-powered |
+| TanStack Router | 1.x | Type-safe routing | End-to-end type safety for routes, params, search |
+| TanStack Query | 5.x | Data fetching | Caching, background updates, works with Convex |
 | Convex | Latest | Backend-as-a-Service | Real-time, TypeScript-first, serverless functions |
-| Clerk | 6.x | Authentication | Pre-built components, org management |
+| @convex-dev/react-query | Latest | Convex + TanStack Query | Bridges Convex with TanStack Query patterns |
+| Convex Auth | Latest | Authentication | Native to Convex, free, OAuth + password support |
 | TypeScript | 5.5+ | Type safety | Required for Convex end-to-end types |
 | Tailwind CSS | 4.x | Styling | Industry standard, works with shadcn/ui |
-| shadcn/ui | Latest | Component library | Accessible, customizable, no version lock-in |
+| shadcn/ui | Latest | Component library | Lyra style, accessible, customizable |
 
 ### Phase-Specific
 | Library | Version | Purpose | Why Selected |
 |---------|---------|---------|--------------|
 | algoliasearch | 5.x | 80K Hours API queries | Direct Algolia API access for structured job data |
-| playwright | 1.57.x | aisafety.com scraping | JavaScript rendering, anti-detection, cross-browser |
-| string-similarity | 4.x | Duplicate detection | Simple Dice coefficient for title+org matching |
+| string-similarity-js | Latest | Duplicate detection | Maintained fork of deprecated string-similarity |
 
 ### Supporting Services
 | Service | Purpose | Free Tier |
 |---------|---------|-----------|
-| Brandfetch | Organization logos | 500K requests/month |
+| Quikturn | Organization logos | 500K requests/month |
+| Airtable (aisafety.com) | Job data source | API access provided by team |
 | Convex | Database + scheduled functions | Generous for pilot |
 | Vercel | Hosting | Hobby tier sufficient |
 
@@ -48,40 +58,59 @@ The established libraries/tools for this phase:
 | Recommended | Alternative | When to Use Alternative |
 |-------------|-------------|-------------------------|
 | Algolia API (80K) | Playwright scraping | If Algolia API gets restricted; slower and heavier |
-| Brandfetch | Clearbit Logo API | Never - Clearbit discontinued Dec 2025 |
-| string-similarity | fuse.js | If need fuzzy search UI; string-similarity is simpler for backend dedup |
+| Quikturn | Brandfetch | Brandfetch has lower free tier (250/mo) |
+| Convex Auth | Clerk | If need advanced features (passkeys, 2FA, enterprise SSO) |
+| Airtable API | Playwright scraping | Never - API access is more reliable |
+| string-similarity-js | fuse.js | If need fuzzy search UI; string-similarity-js is simpler for backend dedup |
 | Convex crons | Inngest | If need complex retry logic or step functions; Convex crons sufficient for daily sync |
 
 **Installation:**
 ```bash
-# Core dependencies (from project setup)
-pnpm add convex @clerk/nextjs
-pnpm add tailwindcss@next class-variance-authority clsx tailwind-merge lucide-react
+# Use official Convex TanStack Start template (includes Convex + TanStack Query preconfigured)
+bunx create-convex@latest -t tanstack-start .
+
+# Add Tailwind CSS
+bun add @tailwindcss/vite tailwindcss
+
+# Add Convex Auth and supporting dependencies
+bun add @convex-dev/auth @auth/core
+bun add class-variance-authority clsx tailwind-merge lucide-react
 
 # Phase 1 specific
-pnpm add algoliasearch playwright string-similarity
+bun add algoliasearch string-similarity-js
+```
 
-# Dev dependencies
-pnpm add -D @types/string-similarity
+**Vite config (vite.config.ts):**
+```typescript
+import { tanstackStart } from "@tanstack/start/plugin/vite";
+import tailwindcss from "@tailwindcss/vite";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [tanstackStart(), tailwindcss()],
+});
 ```
 
 ## Architecture Patterns
 
 ### Recommended Project Structure
 ```
-src/
-├── app/                        # Next.js App Router
-│   ├── (public)/               # Public routes (no auth required)
-│   │   ├── opportunities/      # Browse opportunities
-│   │   │   ├── page.tsx        # List view with filters
-│   │   │   └── [id]/
-│   │   │       └── page.tsx    # Detail view
-│   │   └── page.tsx            # Landing page
-│   ├── admin/                  # Admin section (auth required)
-│   │   ├── layout.tsx          # Admin layout with nav
-│   │   ├── page.tsx            # Dashboard
-│   │   └── opportunities/      # CRUD for opportunities
-│   └── layout.tsx              # Root layout with providers
+app/
+├── routes/                     # TanStack Start file-based routing
+│   ├── __root.tsx              # Root layout with providers
+│   ├── index.tsx               # Landing page
+│   ├── _public.tsx             # Pathless layout for public routes
+│   ├── opportunities/
+│   │   ├── index.tsx           # List view with filters
+│   │   └── $id.tsx             # Detail view (dynamic route)
+│   └── admin/
+│       ├── route.tsx           # Admin layout with nav
+│       ├── index.tsx           # Dashboard
+│       └── opportunities/
+│           ├── index.tsx       # List admin opportunities
+│           ├── new.tsx         # Create opportunity
+│           └── $id/
+│               └── edit.tsx    # Edit opportunity
 ├── components/
 │   ├── opportunities/          # Opportunity-specific components
 │   │   ├── opportunity-card.tsx
@@ -89,8 +118,14 @@ src/
 │   │   ├── opportunity-filters.tsx
 │   │   └── opportunity-list.tsx
 │   └── ui/                     # shadcn/ui components
-└── lib/
-    └── utils.ts                # Helper functions (cn, etc.)
+├── lib/
+│   ├── convex.ts               # Convex client + TanStack Query setup
+│   └── utils.ts                # Helper functions (cn, etc.)
+├── styles/
+│   └── app.css                 # Global styles with Tailwind
+├── router.tsx                  # Router configuration
+├── client.tsx                  # Client entry point
+└── ssr.tsx                     # SSR entry point
 
 convex/
 ├── _generated/                 # Auto-generated types
@@ -98,7 +133,7 @@ convex/
 ├── opportunities.ts            # Opportunity queries & mutations
 ├── aggregation/                # Job aggregation logic
 │   ├── eightyK.ts              # 80K Hours Algolia adapter
-│   ├── aisafety.ts             # aisafety.com Playwright adapter
+│   ├── aisafety.ts             # aisafety.com Airtable adapter
 │   ├── dedup.ts                # Duplicate detection logic
 │   └── sync.ts                 # Sync orchestration action
 ├── admin.ts                    # Admin mutations
@@ -542,51 +577,74 @@ Problems that look simple but have existing solutions:
 - Display "Last verified" freshness indicator
 **Warning signs:** Users clicking through to 404 pages, old deadlines visible
 
-### Pitfall 6: Clerk + Convex Provider Order
-**What goes wrong:** Auth doesn't work, identity is always null
-**Why it happens:** ConvexProviderWithClerk must be inside ClerkProvider
-**How to avoid:** Follow exact provider nesting order from docs
-**Warning signs:** `ctx.auth.getUserIdentity()` returns null for logged-in users
+### Pitfall 6: Convex Provider Setup in TanStack Start
+**What goes wrong:** Convex queries return undefined or fail silently
+**Why it happens:** ConvexProvider must wrap QueryClientProvider, and both must be in root route
+**How to avoid:** Set up providers in `__root.tsx` with correct nesting order
+**Warning signs:** `useQuery` returns undefined, suspense boundaries don't trigger
 
 ## Code Examples
 
 Verified patterns from official sources:
 
-### Next.js + Convex + Clerk Provider Setup
+### TanStack Start + Convex Provider Setup
 ```typescript
-// src/app/layout.tsx
-import { ClerkProvider } from "@clerk/nextjs";
-import { ConvexClientProvider } from "./ConvexClientProvider";
+// app/lib/convex.ts
+import { ConvexReactClient } from "convex/react";
+import { ConvexQueryClient } from "@convex-dev/react-query";
+import { QueryClient } from "@tanstack/react-query";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+const convexUrl = import.meta.env.VITE_CONVEX_URL;
+export const convex = new ConvexReactClient(convexUrl);
+export const convexQueryClient = new ConvexQueryClient(convex);
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      queryKeyHashFn: convexQueryClient.hashFn(),
+      queryFn: convexQueryClient.queryFn(),
+    },
+  },
+});
+convexQueryClient.connect(queryClient);
+
+// app/routes/__root.tsx
+import { QueryClientProvider } from "@tanstack/react-query";
+import { createRootRouteWithContext, Outlet, HeadContent, Scripts } from "@tanstack/react-router";
+import { ConvexProvider } from "convex/react";
+import { convex, queryClient } from "../lib/convex";
+
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  component: RootComponent,
+});
+
+function RootComponent() {
   return (
     <html lang="en">
+      <head><HeadContent /></head>
       <body>
-        <ClerkProvider>
-          <ConvexClientProvider>{children}</ConvexClientProvider>
-        </ClerkProvider>
+        <ConvexProvider client={convex}>
+          <QueryClientProvider client={queryClient}>
+            <Outlet />
+          </QueryClientProvider>
+        </ConvexProvider>
+        <Scripts />
       </body>
     </html>
   );
 }
 
-// src/app/ConvexClientProvider.tsx
-"use client";
-import { ConvexReactClient } from "convex/react";
-import { ConvexProviderWithClerk } from "convex/react-clerk";
-import { useAuth } from "@clerk/nextjs";
+// convex/auth.ts
+import GitHub from "@auth/core/providers/github";
+import Google from "@auth/core/providers/google";
+import { Password } from "@convex-dev/auth/providers/Password";
+import { convexAuth } from "@convex-dev/auth/server";
 
-const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-
-export function ConvexClientProvider({ children }: { children: React.ReactNode }) {
-  return (
-    <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-      {children}
-    </ConvexProviderWithClerk>
-  );
-}
+export const { auth, signIn, signOut, store } = convexAuth({
+  providers: [GitHub, Google, Password],
+});
 ```
-Source: [Convex Clerk Integration](https://docs.convex.dev/auth/clerk)
+Source: [Convex Auth](https://labs.convex.dev/auth), [TanStack Start](https://tanstack.com/start)
 
 ### Convex Cron Job Definition
 ```typescript
@@ -619,15 +677,15 @@ const results = await ctx.db
 ```
 Source: [Convex Full-Text Search](https://docs.convex.dev/search/text-search)
 
-### Brandfetch Logo URL
+### Quikturn Logo URL
 ```html
 <!-- Simple logo embed -->
 <img
-  src="https://cdn.brandfetch.io/anthropic.com/w/200/h/200?c=YOUR_CLIENT_ID"
+  src="https://logo.quikturn.com/anthropic.com?size=200"
   alt="Anthropic logo"
 />
 ```
-Source: [Brandfetch Logo API](https://brandfetch.com/developers/logo-api)
+Source: [Quikturn Logo API](https://quikturn.com/) - 500K free requests/month
 
 ### Algolia Direct Query
 ```typescript
@@ -643,11 +701,11 @@ const { hits, nbPages } = await index.search("", {
 ```
 Source: [Algolia JavaScript Client](https://www.algolia.com/doc/api-client/getting-started/instantiate-client-index/javascript/)
 
-### Duplicate Detection with string-similarity
+### Duplicate Detection with string-similarity-js
 ```typescript
-import stringSimilarity from "string-similarity";
+import { stringSimilarity } from "string-similarity-js";
 
-const similarity = stringSimilarity.compareTwoStrings(
+const similarity = stringSimilarity(
   "research engineer - ai safety",
   "ai safety research engineer"
 );
@@ -655,21 +713,28 @@ const similarity = stringSimilarity.compareTwoStrings(
 
 const isDuplicate = similarity > 0.85;
 ```
-Source: [string-similarity npm](https://www.npmjs.com/package/string-similarity)
+Source: [string-similarity-js npm](https://www.npmjs.com/package/string-similarity-js) - maintained fork of deprecated string-similarity
 
 ## State of the Art
 
 | Old Approach | Current Approach | When Changed | Impact |
 |--------------|------------------|--------------|--------|
-| Clearbit Logo API | Brandfetch, LogoKit, or CompanyEnrich | Dec 2025 | Clearbit deprecated; migration required |
+| Next.js | TanStack Start | 2025-2026 | Full type inference, Vite-powered, better DX for AI coding |
+| Next.js routing | TanStack Router | 2025-2026 | End-to-end type safety for routes, params, search |
+| shadcn init | shadcn create | Dec 2025 | Visual styles (Lyra, Nova, Maia, Lyra, Mira) |
+| Clearbit Logo API | Quikturn, Brandfetch, or LogoKit | Dec 2025 | Clearbit deprecated; Quikturn has best free tier |
+| Clerk for auth | Convex Auth | 2025 | Native to Convex, no per-user cost, simpler |
 | Puppeteer for scraping | Playwright | 2023-2024 | Better anti-detection, cross-browser support |
 | Custom cron infrastructure | Convex native crons | Convex 1.0 | No external scheduler needed |
 | Vector search for job matching | Programmatic context + LLM | 2024-2025 | Better explainability, no embedding drift |
+| string-similarity | string-similarity-js | 2024 | Original package deprecated |
 
 **Deprecated/outdated:**
-- **Clearbit Logo API**: Discontinued December 2025; use Brandfetch instead
+- **Clearbit Logo API**: Discontinued December 2025; use Quikturn instead
+- **string-similarity**: Package deprecated; use string-similarity-js fork
 - **Puppeteer**: Playwright has better anti-detection and is actively maintained
 - **Manual job posting only**: All modern job platforms aggregate from multiple sources
+- **shadcn init default style**: Use `npx shadcn create` with Lyra/Nova/Maia/Mira styles
 
 ## Open Questions
 
@@ -698,18 +763,21 @@ Things that couldn't be fully resolved:
 ## Sources
 
 ### Primary (HIGH confidence)
+- [TanStack Start](https://tanstack.com/start) - Full-stack React framework with type-safe routing
+- [TanStack Router](https://tanstack.com/router) - Type-safe routing for React
+- [Convex TanStack Start Quickstart](https://docs.convex.dev/quickstart/tanstack-start) - Official integration guide
+- [Convex Auth](https://labs.convex.dev/auth) - Native authentication for Convex
 - [Convex Cron Jobs](https://docs.convex.dev/scheduling/cron-jobs) - Scheduling patterns
 - [Convex Full-Text Search](https://docs.convex.dev/search/text-search) - Search index implementation
 - [Convex Writing Data](https://docs.convex.dev/database/writing-data) - Upsert patterns
-- [Convex Clerk Integration](https://docs.convex.dev/auth/clerk) - Auth setup
 - [Convex Actions](https://docs.convex.dev/functions/actions) - External API calls
 - [Algolia JavaScript Client](https://www.algolia.com/developers/search-api-javascript) - API usage
-- [Brandfetch Logo API](https://brandfetch.com/developers/logo-api) - Logo service (500K free)
+- [Quikturn Logo API](https://quikturn.com/) - Logo service (500K free/month)
+- [Airtable API](https://airtable.com/developers/web/api/introduction) - REST API for aisafety.com data
 
 ### Secondary (MEDIUM confidence)
 - [How to Scrape Algolia Search](https://scrapfly.io/blog/posts/how-to-scrape-algolia-search) - Algolia scraping patterns
-- [Playwright Scraping Guide](https://www.browserless.io/blog/scraping-with-playwright-a-developer-s-guide-to-scalable-undetectable-data-extraction) - Anti-detection best practices
-- [Fuse.js](https://www.fusejs.io/) / [string-similarity](https://www.npmjs.com/package/string-similarity) - Fuzzy matching options
+- [string-similarity-js](https://www.npmjs.com/package/string-similarity-js) - Maintained fuzzy matching fork
 
 ### Tertiary (LOW confidence, needs validation)
 - 80K Hours page source inspection - Algolia credentials discovered via WebFetch
