@@ -8,8 +8,16 @@
  * @module
  */
 
+import type * as admin from "../admin.js";
+import type * as aggregation_aisafety from "../aggregation/aisafety.js";
+import type * as aggregation_dedup from "../aggregation/dedup.js";
+import type * as aggregation_eightyK from "../aggregation/eightyK.js";
+import type * as aggregation_sync from "../aggregation/sync.js";
+import type * as aggregation_syncMutations from "../aggregation/syncMutations.js";
 import type * as auth from "../auth.js";
+import type * as crons from "../crons.js";
 import type * as http from "../http.js";
+import type * as opportunities from "../opportunities.js";
 
 import type {
   ApiFromModules,
@@ -18,8 +26,16 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  admin: typeof admin;
+  "aggregation/aisafety": typeof aggregation_aisafety;
+  "aggregation/dedup": typeof aggregation_dedup;
+  "aggregation/eightyK": typeof aggregation_eightyK;
+  "aggregation/sync": typeof aggregation_sync;
+  "aggregation/syncMutations": typeof aggregation_syncMutations;
   auth: typeof auth;
+  crons: typeof crons;
   http: typeof http;
+  opportunities: typeof opportunities;
 }>;
 
 /**
