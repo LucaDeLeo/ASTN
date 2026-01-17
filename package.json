@@ -14,7 +14,7 @@
     "lint": "tsc && eslint .  --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
-    "@auth/core": "^0.34.3",
+    "@auth/core": "0.39",
     "@convex-dev/auth": "^0.0.90",
     "@convex-dev/react-query": "^0.0.0-alpha.11",
     "@tanstack/react-query": "^5.89.0",
