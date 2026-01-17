@@ -1,5 +1,5 @@
 "use node";
-import { action } from "../_generated/server";
+import { internalAction } from "../_generated/server";
 
 // Airtable API access provided by aisafety.com team
 const AIRTABLE_API_KEY = process.env.AISAFETY_AIRTABLE_API_KEY || "";
@@ -38,7 +38,7 @@ type NormalizedOpportunity = {
   sourceUrl: string;
 };
 
-export const fetchOpportunities = action({
+export const fetchOpportunities = internalAction({
   args: {},
   handler: async (): Promise<NormalizedOpportunity[]> => {
     if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID) {

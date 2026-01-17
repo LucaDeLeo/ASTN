@@ -1,5 +1,5 @@
 "use node";
-import { action } from "../_generated/server";
+import { internalAction } from "../_generated/server";
 import { algoliasearch } from "algoliasearch";
 
 // 80K Hours uses Algolia for their job board search
@@ -43,7 +43,7 @@ type NormalizedOpportunity = {
   postedAt?: number;
 };
 
-export const fetchOpportunities = action({
+export const fetchOpportunities = internalAction({
   args: {},
   handler: async (): Promise<NormalizedOpportunity[]> => {
     if (!ALGOLIA_APP_ID || !ALGOLIA_API_KEY) {

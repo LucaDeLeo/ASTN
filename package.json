@@ -34,6 +34,7 @@
     "lucide-react": "^0.562.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
+    "string-similarity-js": "^2.1.4",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
