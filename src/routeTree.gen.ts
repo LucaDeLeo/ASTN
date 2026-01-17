@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AnotherPageRouteImport } from './routes/anotherPage'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OpportunitiesIndexRouteImport } from './routes/opportunities/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as OpportunitiesIdRouteImport } from './routes/opportunities/$id'
+import { Route as AdminOpportunitiesIndexRouteImport } from './routes/admin/opportunities/index'
+import { Route as AdminOpportunitiesNewRouteImport } from './routes/admin/opportunities/new'
+import { Route as AdminOpportunitiesIdEditRouteImport } from './routes/admin/opportunities/$id/edit'
 
-const AnotherPageRoute = AnotherPageRouteImport.update({
-  id: '/anotherPage',
-  path: '/anotherPage',
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -22,40 +28,114 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OpportunitiesIndexRoute = OpportunitiesIndexRouteImport.update({
+  id: '/opportunities/',
+  path: '/opportunities/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const OpportunitiesIdRoute = OpportunitiesIdRouteImport.update({
+  id: '/opportunities/$id',
+  path: '/opportunities/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminOpportunitiesIndexRoute = AdminOpportunitiesIndexRouteImport.update({
+  id: '/opportunities/',
+  path: '/opportunities/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminOpportunitiesNewRoute = AdminOpportunitiesNewRouteImport.update({
+  id: '/opportunities/new',
+  path: '/opportunities/new',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminOpportunitiesIdEditRoute =
+  AdminOpportunitiesIdEditRouteImport.update({
+    id: '/opportunities/$id/edit',
+    path: '/opportunities/$id/edit',
+    getParentRoute: () => AdminRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/anotherPage': typeof AnotherPageRoute
+  '/admin': typeof AdminRouteRouteWithChildren
+  '/opportunities/$id': typeof OpportunitiesIdRoute
+  '/admin/': typeof AdminIndexRoute
+  '/opportunities/': typeof OpportunitiesIndexRoute
+  '/admin/opportunities/new': typeof AdminOpportunitiesNewRoute
+  '/admin/opportunities/': typeof AdminOpportunitiesIndexRoute
+  '/admin/opportunities/$id/edit': typeof AdminOpportunitiesIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/anotherPage': typeof AnotherPageRoute
+  '/opportunities/$id': typeof OpportunitiesIdRoute
+  '/admin': typeof AdminIndexRoute
+  '/opportunities': typeof OpportunitiesIndexRoute
+  '/admin/opportunities/new': typeof AdminOpportunitiesNewRoute
+  '/admin/opportunities': typeof AdminOpportunitiesIndexRoute
+  '/admin/opportunities/$id/edit': typeof AdminOpportunitiesIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/anotherPage': typeof AnotherPageRoute
+  '/admin': typeof AdminRouteRouteWithChildren
+  '/opportunities/$id': typeof OpportunitiesIdRoute
+  '/admin/': typeof AdminIndexRoute
+  '/opportunities/': typeof OpportunitiesIndexRoute
+  '/admin/opportunities/new': typeof AdminOpportunitiesNewRoute
+  '/admin/opportunities/': typeof AdminOpportunitiesIndexRoute
+  '/admin/opportunities/$id/edit': typeof AdminOpportunitiesIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/anotherPage'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/opportunities/$id'
+    | '/admin/'
+    | '/opportunities/'
+    | '/admin/opportunities/new'
+    | '/admin/opportunities/'
+    | '/admin/opportunities/$id/edit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/anotherPage'
-  id: '__root__' | '/' | '/anotherPage'
+  to:
+    | '/'
+    | '/opportunities/$id'
+    | '/admin'
+    | '/opportunities'
+    | '/admin/opportunities/new'
+    | '/admin/opportunities'
+    | '/admin/opportunities/$id/edit'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/opportunities/$id'
+    | '/admin/'
+    | '/opportunities/'
+    | '/admin/opportunities/new'
+    | '/admin/opportunities/'
+    | '/admin/opportunities/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AnotherPageRoute: typeof AnotherPageRoute
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  OpportunitiesIdRoute: typeof OpportunitiesIdRoute
+  OpportunitiesIndexRoute: typeof OpportunitiesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/anotherPage': {
-      id: '/anotherPage'
-      path: '/anotherPage'
-      fullPath: '/anotherPage'
-      preLoaderRoute: typeof AnotherPageRouteImport
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -65,12 +145,74 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/opportunities/': {
+      id: '/opportunities/'
+      path: '/opportunities'
+      fullPath: '/opportunities/'
+      preLoaderRoute: typeof OpportunitiesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/opportunities/$id': {
+      id: '/opportunities/$id'
+      path: '/opportunities/$id'
+      fullPath: '/opportunities/$id'
+      preLoaderRoute: typeof OpportunitiesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/opportunities/': {
+      id: '/admin/opportunities/'
+      path: '/opportunities'
+      fullPath: '/admin/opportunities/'
+      preLoaderRoute: typeof AdminOpportunitiesIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/opportunities/new': {
+      id: '/admin/opportunities/new'
+      path: '/opportunities/new'
+      fullPath: '/admin/opportunities/new'
+      preLoaderRoute: typeof AdminOpportunitiesNewRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/opportunities/$id/edit': {
+      id: '/admin/opportunities/$id/edit'
+      path: '/opportunities/$id/edit'
+      fullPath: '/admin/opportunities/$id/edit'
+      preLoaderRoute: typeof AdminOpportunitiesIdEditRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
   }
 }
 
+interface AdminRouteRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminOpportunitiesNewRoute: typeof AdminOpportunitiesNewRoute
+  AdminOpportunitiesIndexRoute: typeof AdminOpportunitiesIndexRoute
+  AdminOpportunitiesIdEditRoute: typeof AdminOpportunitiesIdEditRoute
+}
+
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
+  AdminOpportunitiesNewRoute: AdminOpportunitiesNewRoute,
+  AdminOpportunitiesIndexRoute: AdminOpportunitiesIndexRoute,
+  AdminOpportunitiesIdEditRoute: AdminOpportunitiesIdEditRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AnotherPageRoute: AnotherPageRoute,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
+  OpportunitiesIdRoute: OpportunitiesIdRoute,
+  OpportunitiesIndexRoute: OpportunitiesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import { PublicHeader } from "~/components/layout/public-header";
 import { OpportunityFilters } from "~/components/opportunities/opportunity-filters";
 import { OpportunityList } from "~/components/opportunities/opportunity-list";
 
@@ -61,7 +62,8 @@ function OpportunitiesPage() {
   const isLoading = opportunities === undefined;
 
   return (
-    <>
+    <div className="min-h-screen bg-slate-50">
+      <PublicHeader />
       <OpportunityFilters />
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6">
@@ -74,6 +76,6 @@ function OpportunitiesPage() {
         </div>
         <OpportunityList opportunities={opportunities} isLoading={isLoading} />
       </main>
-    </>
+    </div>
   );
 }

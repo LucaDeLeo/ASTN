@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "~/components/ui/button";
 
 export const Route = createFileRoute("/")({
@@ -21,8 +21,7 @@ function Home() {
             size="lg"
             className="transition-transform hover:scale-[1.02] active:scale-[0.98]"
           >
-            {/* TODO: Link to /opportunities once route exists (01-02) */}
-            <span>Browse Opportunities</span>
+            <Link to="/opportunities">Browse Opportunities</Link>
           </Button>
         </div>
       </div>
