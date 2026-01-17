@@ -45,11 +45,11 @@ Plans:
   2. User can sign up and log in with GitHub OAuth
   3. User can sign up and log in with email/password
   4. User session persists across browser refresh and returns
-**Plans**: TBD
+**Plans**: 2 plans in 2 waves
 
 Plans:
-- [ ] 02-01: Clerk integration with Google, GitHub, and email/password
-- [ ] 02-02: Protected routes and session handling
+- [ ] 02-01-PLAN.md — Auth infrastructure (ConvexAuthProvider, OAuth credentials, password validation)
+- [ ] 02-02-PLAN.md — Login page and auth-aware header
 
 ### Phase 3: Profiles
 **Goal**: Users have rich profiles that capture their background, skills, and goals
@@ -113,7 +113,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation + Opportunities | 4/4 | Complete | 2026-01-17 |
-| 2. Authentication | 0/2 | Not started | - |
+| 2. Authentication | 0/2 | Planned | - |
 | 3. Profiles | 0/4 | Not started | - |
 | 4. Matching | 0/3 | Not started | - |
 | 5. Engagement + Org | 0/4 | Not started | - |
