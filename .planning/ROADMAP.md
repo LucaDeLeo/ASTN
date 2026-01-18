@@ -62,13 +62,13 @@ Plans:
   4. User can have LLM conversation to enrich profile with deeper context
   5. User can set privacy controls to hide profile from specific orgs
   6. User sees profile completeness progress with feature unlocks at thresholds
-**Plans**: TBD
+**Plans**: 4 plans in 2 waves
 
 Plans:
-- [ ] 03-01: Profile data model and form-based creation
-- [ ] 03-02: Skills taxonomy and selection UI
-- [ ] 03-03: LLM profile enrichment conversation
-- [ ] 03-04: Privacy controls and completeness tracking
+- [ ] 03-01-PLAN.md — Profile schema and wizard with basic form steps (Wave 1)
+- [ ] 03-02-PLAN.md — Skills taxonomy and selection UI (Wave 2)
+- [ ] 03-03-PLAN.md — LLM profile enrichment conversation (Wave 2)
+- [ ] 03-04-PLAN.md — Privacy controls and completeness tracking (Wave 2)
 
 ### Phase 4: Matching
 **Goal**: Users receive smart matches with explanations and actionable recommendations
@@ -114,7 +114,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 |-------|----------------|--------|-----------|
 | 1. Foundation + Opportunities | 4/4 | Complete | 2026-01-17 |
 | 2. Authentication | 2/2 | Complete | 2026-01-17 |
-| 3. Profiles | 0/4 | Not started | - |
+| 3. Profiles | 0/4 | Planned | - |
 | 4. Matching | 0/3 | Not started | - |
 | 5. Engagement + Org | 0/4 | Not started | - |
 
