@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-17)
 ## Current Position
 
 Phase: 5 of 5 (Engagement + Org)
-Plan: 3 of 6 in Phase 5 complete (05-01, 05-04, 05-05)
+Plan: 4 of 6 in Phase 5 complete (05-01, 05-03, 05-04, 05-05)
 Status: In progress
-Last activity: 2026-01-18 - Completed 05-05-PLAN.md (org directory + join flow)
+Last activity: 2026-01-18 - Completed 05-03-PLAN.md (notification preferences UI)
 
-Progress: [█████████████████░░░] 85%
+Progress: [██████████████████░░] 90%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15
+- Total plans completed: 16
 - Average duration: 7 min
-- Total execution time: 1.73 hours
+- Total execution time: 1.87 hours
 
 **By Phase:**
 
@@ -31,10 +31,10 @@ Progress: [█████████████████░░░] 85%
 | 02-authentication | 2 | 20 min | 10 min |
 | 03-profiles | 4 | 22 min | 6 min |
 | 04-matching | 2 | 8 min | 4 min |
-| 05-engagement-org | 3 | 21 min | 7 min |
+| 05-engagement-org | 4 | 29 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 3 min, 5 min, 4 min, 12 min, 5 min
+- Last 5 plans: 5 min, 4 min, 12 min, 5 min, 8 min
 - Trend: Fast execution
 
 *Updated after each plan completion*
@@ -98,6 +98,10 @@ Recent decisions affecting current work:
 - [05-05]: Directory shows only members with directoryVisibility="visible"
 - [05-05]: Visibility prompt required before joining (not defaulted)
 - [05-05]: Admin badge shown in member cards for admin role
+- [05-03]: Browser timezone auto-detection via Intl.DateTimeFormat
+- [05-03]: Grouped timezone selector by region (Americas, Europe, Asia, Pacific)
+- [05-03]: First-time setup prompt for notification preferences
+- [05-03]: Sonner toast positioned top-right with richColors
 
 ### Pending Todos
 
@@ -111,7 +115,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 05-05-PLAN.md (org directory + join flow)
+Stopped at: Completed 05-03-PLAN.md (notification preferences UI)
 Resume file: None
 
 ---
