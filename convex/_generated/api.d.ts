@@ -16,6 +16,7 @@ import type * as aggregation_sync from "../aggregation/sync.js";
 import type * as aggregation_syncMutations from "../aggregation/syncMutations.js";
 import type * as auth from "../auth.js";
 import type * as crons from "../crons.js";
+import type * as emails_batchActions from "../emails/batchActions.js";
 import type * as emails_send from "../emails/send.js";
 import type * as emails_templates from "../emails/templates.js";
 import type * as enrichment_conversation from "../enrichment/conversation.js";
@@ -30,7 +31,9 @@ import type * as matching_queries from "../matching/queries.js";
 import type * as opportunities from "../opportunities.js";
 import type * as organizations from "../organizations.js";
 import type * as orgs_admin from "../orgs/admin.js";
+import type * as orgs_directory from "../orgs/directory.js";
 import type * as orgs_membership from "../orgs/membership.js";
+import type * as orgs_stats from "../orgs/stats.js";
 import type * as profiles from "../profiles.js";
 import type * as skills from "../skills.js";
 
@@ -49,6 +52,7 @@ declare const fullApi: ApiFromModules<{
   "aggregation/syncMutations": typeof aggregation_syncMutations;
   auth: typeof auth;
   crons: typeof crons;
+  "emails/batchActions": typeof emails_batchActions;
   "emails/send": typeof emails_send;
   "emails/templates": typeof emails_templates;
   "enrichment/conversation": typeof enrichment_conversation;
@@ -63,7 +67,9 @@ declare const fullApi: ApiFromModules<{
   opportunities: typeof opportunities;
   organizations: typeof organizations;
   "orgs/admin": typeof orgs_admin;
+  "orgs/directory": typeof orgs_directory;
   "orgs/membership": typeof orgs_membership;
+  "orgs/stats": typeof orgs_stats;
   profiles: typeof profiles;
   skills: typeof skills;
 }>;
