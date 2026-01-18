@@ -120,6 +120,17 @@ export default defineSchema({
       filterFields: ["category"],
     }),
 
+  // Organizations (for privacy selection and future features)
+  organizations: defineTable({
+    name: v.string(),
+    slug: v.optional(v.string()),
+    logoUrl: v.optional(v.string()),
+  })
+    .index("by_name", ["name"])
+    .searchIndex("search_name", {
+      searchField: "name",
+    }),
+
   // Opportunities
   opportunities: defineTable({
     // Identity
