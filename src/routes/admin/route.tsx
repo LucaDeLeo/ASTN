@@ -1,5 +1,7 @@
-import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
+import { Link, Outlet, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { AuthLoading, Authenticated, Unauthenticated } from "convex/react";
 import { Button } from "~/components/ui/button";
+import { Spinner } from "~/components/ui/spinner";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
@@ -7,31 +9,53 @@ export const Route = createFileRoute("/admin")({
 
 function AdminLayout() {
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b bg-white">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link to="/admin" className="font-semibold text-slate-900">
-              ASTN Admin
-            </Link>
-            <nav className="flex gap-4">
-              <Link
-                to="/admin/opportunities"
-                className="text-sm text-slate-600 hover:text-slate-900"
-                activeProps={{ className: "text-sm text-slate-900 font-medium" }}
-              >
-                Opportunities
-              </Link>
-            </nav>
-          </div>
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/">View Site</Link>
-          </Button>
+    <>
+      <AuthLoading>
+        <div className="flex items-center justify-center min-h-screen">
+          <Spinner />
         </div>
-      </header>
-      <main className="container mx-auto px-4 py-8">
-        <Outlet />
-      </main>
+      </AuthLoading>
+      <Unauthenticated>
+        <UnauthenticatedRedirect />
+      </Unauthenticated>
+      <Authenticated>
+        <div className="min-h-screen bg-slate-50">
+          <header className="border-b bg-white">
+            <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                <Link to="/admin" className="font-semibold text-slate-900">
+                  ASTN Admin
+                </Link>
+                <nav className="flex gap-4">
+                  <Link
+                    to="/admin/opportunities"
+                    className="text-sm text-slate-600 hover:text-slate-900"
+                    activeProps={{ className: "text-sm text-slate-900 font-medium" }}
+                  >
+                    Opportunities
+                  </Link>
+                </nav>
+              </div>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/">View Site</Link>
+              </Button>
+            </div>
+          </header>
+          <main className="container mx-auto px-4 py-8">
+            <Outlet />
+          </main>
+        </div>
+      </Authenticated>
+    </>
+  );
+}
+
+function UnauthenticatedRedirect() {
+  const navigate = useNavigate();
+  navigate({ to: "/login" });
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <Spinner />
     </div>
   );
 }
