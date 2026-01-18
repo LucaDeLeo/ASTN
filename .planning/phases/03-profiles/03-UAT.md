@@ -1,5 +1,5 @@
 ---
-status: complete
+status: resolved
 phase: 03-profiles
 source: 03-01-SUMMARY.md, 03-02-SUMMARY.md, 03-03-SUMMARY.md, 03-04-SUMMARY.md
 started: 2026-01-18T01:35:00Z
@@ -92,17 +92,26 @@ skipped: 1
 ## Gaps
 
 - truth: "Work history entry persists when tabbing between fields"
-  status: failed
+  status: resolved
   reason: "User reported: Doesn't work, when I tab to go to the next field it deletes the entry"
   severity: major
   test: 4
-  artifacts: []
-  missing: []
+  root_cause: "handleBlur() in WorkHistoryStep.tsx uses AND condition requiring both organization AND title to be non-empty. When user tabs after filling first field, entry is filtered out and deleted."
+  artifacts:
+    - path: "src/components/profile/wizard/steps/WorkHistoryStep.tsx"
+      issue: "Line 89-91: AND condition filters out partially-filled entries"
+  resolution: "Changed AND to OR in filter conditions (handleBlur, removeEntry, onCheckedChange)"
+  fix_commit: "128c9ea"
+  debug_session: ".planning/debug/work-history-delete-on-tab.md"
 
 - truth: "LLM enrichment conversation works with Claude API"
-  status: failed
+  status: resolved
   reason: "User reported: Error - Could not resolve authentication method. ANTHROPIC_API_KEY not configured in Convex environment."
   severity: blocker
   test: 9
-  artifacts: []
-  missing: []
+  root_cause: "ANTHROPIC_API_KEY environment variable not configured in Convex. Code is correct - this is user setup, not a bug."
+  artifacts:
+    - path: "convex/enrichment/conversation.ts"
+      issue: "No code issue - needs env var configured"
+  resolution: "API key configured via npx convex env set ANTHROPIC_API_KEY"
+  debug_session: ".planning/debug/anthropic-api-key-config.md"
