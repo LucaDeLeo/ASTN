@@ -1,6 +1,6 @@
 "use node";
 
-import { action } from "../_generated/server";
+import { internalAction } from "../_generated/server";
 import { internal } from "../_generated/api";
 import { v } from "convex/values";
 import Anthropic from "@anthropic-ai/sdk";
@@ -17,7 +17,7 @@ const MODEL_VERSION = "claude-sonnet-4-5-20241022";
 const BATCH_SIZE = 15; // Process up to 15 opportunities per LLM call
 
 // Main compute action - scores all opportunities for a profile
-export const computeMatchesForProfile = action({
+export const computeMatchesForProfile = internalAction({
   args: { profileId: v.id("profiles") },
   handler: async (ctx, { profileId }) => {
     // 1. Get profile with all fields
@@ -83,7 +83,7 @@ export const computeMatchesForProfile = action({
       for (const match of batchResult.matches) {
         const oppId = match.opportunityId as Id<"opportunities">;
         // Verify the opportunity exists in our batch
-        const validOpp = batch.find(o => o._id === oppId);
+        const validOpp = batch.find((o: typeof batch[number]) => o._id === oppId);
         if (validOpp) {
           allMatches.push({
             ...match,
