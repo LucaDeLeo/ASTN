@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** v1.1 Profile Input Speedup - Phase 9 in progress
+**Current focus:** v1.1 Profile Input Speedup - Phase 9 complete
 
 ## Current Position
 
 Phase: 9 of 10 (Review & Apply UI)
-Plan: 2 of 3 complete
-Status: In progress
-Last activity: 2026-01-18 - Completed 09-02-PLAN.md (Review UI Components)
+Plan: 3 of 3 complete
+Status: Phase complete
+Last activity: 2026-01-18 - Completed 09-03-PLAN.md (Integration & Apply)
 
-Progress: [████████████████████████████░░] 94% (30/32 plans complete)
+Progress: [█████████████████████████████░] 97% (31/32 plans complete)
 
 ## Milestone History
 
@@ -23,7 +23,7 @@ Progress: [███████████████████████
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 30 (v1.0: 21 + v1.1 Phase 7: 4 + Phase 8: 3 + Phase 9: 2)
+- Total plans completed: 31 (v1.0: 21 + v1.1 Phase 7: 4 + Phase 8: 3 + Phase 9: 3)
 - Average duration: N/A (not tracked in v1.0)
 - Total execution time: N/A
 
@@ -34,7 +34,7 @@ Progress: [███████████████████████
 | v1.0 totals | 21 | N/A | N/A |
 | 07-file-upload | 4 | ~72min | ~18min |
 | 08-llm-extraction | 3 | ~33min | ~11min |
-| 09-review-apply-ui | 2 | 7min | 3.5min |
+| 09-review-apply-ui | 3 | ~22min | ~7min |
 
 *Tracking begins fresh for v1.1*
 
@@ -60,6 +60,9 @@ Recent decisions affecting current work:
 - [09-01]: Email extracted for display but not applied to profile
 - [09-02]: Status-based card styling matches ExtractionReview.tsx exactly
 - [09-02]: CSS grid trick for smooth expand/collapse animation
+- [09-03]: Default acceptance for all extracted fields (user rejects rather than accepts)
+- [09-03]: Auto-expand textarea on edit mode
+- [09-03]: Enrichment auto-greet after extraction apply for reduced friction
 
 ### Pending Todos
 
@@ -77,10 +80,10 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 09-02-PLAN.md (Review UI Components)
+Stopped at: Completed 09-03-PLAN.md (Integration & Apply) - Phase 9 complete
 Resume file: None
-Next action: Continue with 09-03-PLAN.md (Integration & Apply)
+Next action: Phase 10 (Submission Cleanup) or milestone completion
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-18 - Completed 09-02-PLAN.md (Review UI Components)*
+*Last updated: 2026-01-18 - Completed 09-03-PLAN.md (Integration & Apply)*
