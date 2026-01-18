@@ -12,17 +12,17 @@ Individuals get enough value from smart matching + recommendations that they kee
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ Rich profile creation via form + LLM conversation — v1.0
+- ✓ Smart opportunity matching with explanations ("here's why this fits you") — v1.0
+- ✓ LLM-estimated acceptance probability for each match — v1.0
+- ✓ Personalized recommendations ("do these 3 things to improve your fit") — v1.0
+- ✓ Org dashboard for BAISH to view their members (basic CRM) — v1.0
+- ✓ Automated opportunity aggregation from 80k job board and aisafety.com — v1.0
+- ✓ Email digests for matches — v1.0
 
 ### Active
 
-- [ ] Rich profile creation via form + LLM conversation (background, AI safety engagement, goals, constraints)
-- [ ] Smart opportunity matching with explanations ("here's why this fits you")
-- [ ] LLM-estimated acceptance probability for each match
-- [ ] Personalized recommendations ("do these 3 things to improve your fit")
-- [ ] Org dashboard for BAISH to view their members (basic CRM)
-- [ ] Automated opportunity aggregation from 80k job board and aisafety.com
-- [ ] Email digests for matches
+(None — defining requirements for v1.1 with `/gsd:new-milestone`)
 
 ### Out of Scope
 
@@ -37,11 +37,18 @@ Individuals get enough value from smart matching + recommendations that they kee
 
 ## Context
 
-**Launch plan:** Pilot with BAISH (Buenos Aires AI Safety Hub), targeting 50-100 initial profiles. Workshop-based onboarding where members create profiles and get immediate matches during the session.
+**Current state:** v1.0 MVP shipped 2026-01-18. Ready for BAISH pilot (50-100 profiles).
 
-**Opportunity supply:** Automated aggregation from 80k job board and aisafety.com. Teams there are expected to be cooperative — will coordinate with them for data access.
+**Tech stack:** Convex + TanStack Start + React 19 + shadcn/ui + Claude Sonnet 4.5/Haiku 4.5
 
-**Building approach:** Building in public, starting lean to prove the core bet works.
+**Codebase:** ~73,000 lines TypeScript, 289 files
+
+**Known issues:**
+- `@ts-nocheck` in batchActions.ts (Convex action type inference workaround)
+- OAuth flows require real browser testing
+- Aggregation requires 80K/Airtable API keys configured
+
+**Launch plan:** Workshop-based onboarding where members create profiles and get immediate matches during the session.
 
 **Three-sided network:**
 1. Individuals — get matching + recommendations, keep profiles updated
@@ -53,7 +60,7 @@ Individuals get enough value from smart matching + recommendations that they kee
 - **Pilot scope**: BAISH first, 50-100 profiles before expanding
 - **Opportunity data**: Dependent on 80k and aisafety.com aggregation working
 - **LLM-based**: Acceptance probability and recommendations are LLM-estimated, not historical data (yet)
-- **Tech stack**: Convex for backend (not Supabase), Next.js for frontend
+- **Tech stack**: Convex for backend, TanStack Start for frontend
 - **No vector search**: Programmatic context construction for LLM calls instead of embeddings
 - **Models**: Claude Sonnet 4.5 (quality/reasoning tasks) + Haiku 4.5 (bulk/fast operations)
 
@@ -61,13 +68,15 @@ Individuals get enough value from smart matching + recommendations that they kee
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| v1 focused on matching + recommendations, not application tracking | Need to prove the hook before building retention features | — Pending |
-| LLM-estimated acceptance probability from day one | Differentiator, can refine with real data over time | — Pending |
-| Org CRM in v1 | BAISH needs visibility into their members for pilot to work | — Pending |
-| Automated opportunity aggregation | Manual curation doesn't scale; 80k/aisafety.com teams likely cooperative | — Pending |
-| Convex over Supabase | Real-time sync, simpler developer experience, no separate vector DB needed | — Pending |
-| Programmatic context over vectors | More control over what context the LLM sees, avoids embedding quality issues | — Pending |
-| Claude Sonnet 4.5 + Haiku 4.5 | Latest models, Sonnet for quality reasoning, Haiku for speed/cost | — Pending |
+| v1 focused on matching + recommendations, not application tracking | Need to prove the hook before building retention features | ✓ Good — shipped core value prop |
+| LLM-estimated acceptance probability from day one | Differentiator, can refine with real data over time | ✓ Good — prominent in UI with experimental label |
+| Org CRM in v1 | BAISH needs visibility into their members for pilot to work | ✓ Good — full dashboard with stats and export |
+| Automated opportunity aggregation | Manual curation doesn't scale; 80k/aisafety.com teams likely cooperative | ✓ Good — adapters working, needs API keys |
+| Convex over Supabase | Real-time sync, simpler developer experience, no separate vector DB needed | ✓ Good — real-time updates smooth |
+| Programmatic context over vectors | More control over what context the LLM sees, avoids embedding quality issues | ✓ Good — matching prompts well-structured |
+| Claude Sonnet 4.5 + Haiku 4.5 | Latest models, Sonnet for quality reasoning, Haiku for speed/cost | ✓ Good — Haiku fast for enrichment, quality TBD |
+| Tier labels (great/good/exploring) not percentages | More encouraging, less anxiety-inducing for job seekers | ✓ Good — aligns with encouraging tone |
+| Cold start prevention (opportunities first) | Ensure users see matches immediately on signup | ✓ Good — no empty state for new users |
 
 ---
-*Last updated: 2026-01-17 after stack preferences*
+*Last updated: 2026-01-18 after v1.0 milestone*
