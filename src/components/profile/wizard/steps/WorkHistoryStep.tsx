@@ -74,7 +74,7 @@ export function WorkHistoryStep({
     // Save immediately when removing
     saveFieldImmediate(
       "workHistory",
-      newEntries.filter((e) => e.organization.trim() !== "" && e.title.trim() !== "")
+      newEntries.filter((e) => e.organization.trim() !== "" || e.title.trim() !== "")
     );
   };
 
@@ -85,9 +85,9 @@ export function WorkHistoryStep({
   };
 
   const handleBlur = () => {
-    // Only save entries that have at least organization and title
+    // Only save entries that have at least organization or title
     const validEntries = entries.filter(
-      (e) => e.organization.trim() !== "" && e.title.trim() !== ""
+      (e) => e.organization.trim() !== "" || e.title.trim() !== ""
     );
     saveFieldImmediate("workHistory", validEntries);
   };
@@ -206,7 +206,7 @@ export function WorkHistoryStep({
                         "workHistory",
                         newEntries.filter(
                           (e) =>
-                            e.organization.trim() !== "" && e.title.trim() !== ""
+                            e.organization.trim() !== "" || e.title.trim() !== ""
                         )
                       );
                     }}
