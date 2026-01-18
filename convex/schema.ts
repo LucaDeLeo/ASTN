@@ -129,11 +129,46 @@ export default defineSchema({
     mimeType: v.string(), // e.g., "application/pdf"
     status: v.union(
       v.literal("pending_extraction"),
+      v.literal("extracting"),
       v.literal("extracted"),
       v.literal("failed")
     ),
     uploadedAt: v.number(), // Unix timestamp
     errorMessage: v.optional(v.string()), // For failed status
+    // Extracted data from LLM (stored for user review before applying to profile)
+    extractedData: v.optional(
+      v.object({
+        name: v.optional(v.string()),
+        email: v.optional(v.string()),
+        location: v.optional(v.string()),
+        education: v.optional(
+          v.array(
+            v.object({
+              institution: v.string(),
+              degree: v.optional(v.string()),
+              field: v.optional(v.string()),
+              startYear: v.optional(v.number()),
+              endYear: v.optional(v.number()),
+              current: v.optional(v.boolean()),
+            })
+          )
+        ),
+        workHistory: v.optional(
+          v.array(
+            v.object({
+              organization: v.string(),
+              title: v.string(),
+              startDate: v.optional(v.string()), // YYYY-MM format from LLM
+              endDate: v.optional(v.string()), // YYYY-MM format or "present"
+              current: v.optional(v.boolean()),
+              description: v.optional(v.string()),
+            })
+          )
+        ),
+        skills: v.optional(v.array(v.string())), // Matched ASTN skill names
+        rawSkills: v.optional(v.array(v.string())), // Original skills from document
+      })
+    ),
   })
     .index("by_user", ["userId"])
     .index("by_status", ["status"]),
