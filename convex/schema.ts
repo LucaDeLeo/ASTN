@@ -131,6 +131,59 @@ export default defineSchema({
       searchField: "name",
     }),
 
+  // Match results (per CONTEXT.md: tier labels, not percentages)
+  matches: defineTable({
+    profileId: v.id("profiles"),
+    opportunityId: v.id("opportunities"),
+
+    // Scoring (tier labels not percentages per CONTEXT.md)
+    tier: v.union(
+      v.literal("great"),
+      v.literal("good"),
+      v.literal("exploring")
+    ),
+    score: v.number(), // 0-100 internal score for sorting within tier
+
+    // Explanation (MATCH-02: bullet points with strengths + actionable gap)
+    explanation: v.object({
+      strengths: v.array(v.string()), // 2-4 bullet points on why this fits
+      gap: v.optional(v.string()), // One actionable thing to strengthen application
+    }),
+
+    // Probability (MATCH-03: dual framing with experimental label)
+    probability: v.object({
+      interviewChance: v.string(), // "Strong chance", "Good chance", "Moderate chance"
+      ranking: v.string(), // "Top 10%", "Top 20%", etc.
+      confidence: v.string(), // "HIGH", "MEDIUM", "LOW"
+    }),
+
+    // Recommendations (MATCH-04: 1 specific + 1-2 general per match)
+    recommendations: v.array(
+      v.object({
+        type: v.union(
+          v.literal("specific"),
+          v.literal("skill"),
+          v.literal("experience")
+        ),
+        action: v.string(),
+        priority: v.union(
+          v.literal("high"),
+          v.literal("medium"),
+          v.literal("low")
+        ),
+      })
+    ),
+
+    // Metadata
+    isNew: v.boolean(), // For "new high-fit" prioritization
+    computedAt: v.number(),
+    modelVersion: v.string(), // Track which model version generated this
+  })
+    .index("by_profile", ["profileId"])
+    .index("by_profile_tier", ["profileId", "tier"])
+    .index("by_opportunity", ["opportunityId"])
+    .index("by_profile_new", ["profileId", "isNew"]),
+
   // Opportunities
   opportunities: defineTable({
     // Identity
