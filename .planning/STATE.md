@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** v1.1 Profile Input Speedup - Phase 8 in progress
+**Current focus:** v1.1 Profile Input Speedup - Phase 8 complete, ready for Phase 9
 
 ## Current Position
 
 Phase: 8 of 10 (LLM Extraction Core)
-Plan: 2 of 3 complete
-Status: In progress
-Last activity: 2026-01-18 - Completed 08-02-PLAN.md
+Plan: 3 of 3 complete (Phase complete)
+Status: Phase 8 complete
+Last activity: 2026-01-18 - Completed 08-03-PLAN.md (Trigger Integration)
 
-Progress: [█████████████████████████░░░░░] 84% (27/32 plans complete)
+Progress: [██████████████████████████░░░░] 88% (28/32 plans complete)
 
 ## Milestone History
 
@@ -23,7 +23,7 @@ Progress: [███████████████████████
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 27 (v1.0: 21 + v1.1 Phase 7: 4 + Phase 8: 2)
+- Total plans completed: 28 (v1.0: 21 + v1.1 Phase 7: 4 + Phase 8: 3)
 - Average duration: N/A (not tracked in v1.0)
 - Total execution time: N/A
 
@@ -33,7 +33,7 @@ Progress: [███████████████████████
 |-------|-------|-------|----------|
 | v1.0 totals | 21 | N/A | N/A |
 | 07-file-upload | 4 | ~72min | ~18min |
-| 08-llm-extraction | 2 | 8min | 4min |
+| 08-llm-extraction | 3 | ~33min | ~11min |
 
 *Tracking begins fresh for v1.1*
 
@@ -53,6 +53,8 @@ Recent decisions affecting current work:
 - [08-01]: 0.7 similarity threshold for fuzzy skill matching
 - [08-02]: Claude Haiku model version claude-haiku-4-5-20251001
 - [08-02]: MAX_RETRIES=3 with exponential backoff (1s, 2s, 4s)
+- [08-03]: Simulated stage progression for UX (extraction is single server action)
+- [08-03]: Grid overlay pattern for smooth state-based UI transitions
 
 ### Pending Todos
 
@@ -70,10 +72,10 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 08-02-PLAN.md (Extraction Actions)
+Stopped at: Completed Phase 8 (LLM Extraction Core)
 Resume file: None
-Next action: Execute 08-03-PLAN.md (Trigger Integration)
+Next action: Start Phase 9 (Profile Ingestion) or continue to Phase 10 (Review & Apply)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-18 - Completed 08-02-PLAN.md (Extraction Actions)*
+*Last updated: 2026-01-18 - Completed 08-03-PLAN.md (Trigger Integration) - Phase 8 complete*
