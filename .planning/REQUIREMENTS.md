@@ -41,15 +41,15 @@ Requirements for pilot launch with BAISH (50-100 profiles).
 
 ### Notifications
 
-- [ ] **NOTIF-01**: User receives email when new high-fit matches appear
-- [ ] **NOTIF-02**: User receives weekly personalized digest email
-- [ ] **NOTIF-03**: User can configure notification preferences (frequency, channels)
+- [x] **NOTIF-01**: User receives email when new high-fit matches appear
+- [x] **NOTIF-02**: User receives weekly personalized digest email
+- [x] **NOTIF-03**: User can configure notification preferences (frequency, channels)
 
 ### Org Dashboard
 
-- [ ] **ORG-01**: Org admin can view list of their members
-- [ ] **ORG-02**: Org admin can view member profiles (with member consent)
-- [ ] **ORG-03**: Org admin can see aggregate stats for their org (member count, skills distribution, etc.)
+- [x] **ORG-01**: Org admin can view list of their members
+- [x] **ORG-02**: Org admin can view member profiles (with member consent)
+- [x] **ORG-03**: Org admin can see aggregate stats for their org (member count, skills distribution, etc.)
 
 ## v2 Requirements
 
@@ -118,12 +118,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MATCH-02 | Phase 4 | Pending |
 | MATCH-03 | Phase 4 | Pending |
 | MATCH-04 | Phase 4 | Pending |
-| NOTIF-01 | Phase 5 | Pending |
-| NOTIF-02 | Phase 5 | Pending |
-| NOTIF-03 | Phase 5 | Pending |
-| ORG-01 | Phase 5 | Pending |
-| ORG-02 | Phase 5 | Pending |
-| ORG-03 | Phase 5 | Pending |
+| NOTIF-01 | Phase 5 | Complete |
+| NOTIF-02 | Phase 5 | Complete |
+| NOTIF-03 | Phase 5 | Complete |
+| ORG-01 | Phase 5 | Complete |
+| ORG-02 | Phase 5 | Complete |
+| ORG-03 | Phase 5 | Complete |
 
 **Coverage:**
 - v1 requirements: 26 total
@@ -132,4 +132,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-17*
-*Last updated: 2026-01-17 after roadmap creation (phase mappings added)*
+*Last updated: 2026-01-18 after Phase 5 completion*

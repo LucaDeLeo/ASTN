@@ -14,7 +14,7 @@ This roadmap delivers the ASTN pilot for BAISH (50-100 profiles). We start with 
 - [x] **Phase 2: Authentication** - User accounts with OAuth and email/password
 - [x] **Phase 3: Profiles** - Profile creation with form and LLM enrichment
 - [ ] **Phase 4: Matching** - Smart matching with explanations and recommendations
-- [ ] **Phase 5: Engagement + Org** - Notifications and org dashboard
+- [x] **Phase 5: Engagement + Org** - Notifications and org dashboard
 
 ## Phase Details
 
@@ -82,8 +82,8 @@ Plans:
 **Plans**: 3 plans in 3 waves
 
 Plans:
-- [ ] 04-01-PLAN.md — Match data layer (schema, internal queries/mutations)
-- [ ] 04-02-PLAN.md — Match compute engine (prompts, LLM action, public queries)
+- [x] 04-01-PLAN.md — Match data layer (schema, internal queries/mutations)
+- [x] 04-02-PLAN.md — Match compute engine (prompts, LLM action, public queries)
 - [ ] 04-03-PLAN.md — Matches UI (list page, detail page, components)
 
 ### Phase 5: Engagement + Org
@@ -100,12 +100,12 @@ Plans:
 **Plans**: 6 plans in 2 waves
 
 Plans:
-- [ ] 05-01-PLAN.md — Email infrastructure + schema (Resend component, templates)
-- [ ] 05-02-PLAN.md — Notification scheduling (timezone-aware batch processing)
-- [ ] 05-03-PLAN.md — Notification preferences UI (/settings page)
-- [ ] 05-04-PLAN.md — Org membership data model (roles, invites)
-- [ ] 05-05-PLAN.md — Org directory + join flow (/org/:slug pages)
-- [ ] 05-06-PLAN.md — Org admin dashboard (stats, export)
+- [x] 05-01-PLAN.md — Email infrastructure + schema (Resend component, templates)
+- [x] 05-02-PLAN.md — Notification scheduling (timezone-aware batch processing)
+- [x] 05-03-PLAN.md — Notification preferences UI (/settings page)
+- [x] 05-04-PLAN.md — Org membership data model (roles, invites)
+- [x] 05-05-PLAN.md — Org directory + join flow (/org/:slug pages)
+- [x] 05-06-PLAN.md — Org admin dashboard (stats, export)
 
 ## Progress
 
@@ -117,8 +117,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 1. Foundation + Opportunities | 4/4 | Complete | 2026-01-17 |
 | 2. Authentication | 2/2 | Complete | 2026-01-17 |
 | 3. Profiles | 4/4 | Complete | 2026-01-17 |
-| 4. Matching | 0/3 | Planned | - |
-| 5. Engagement + Org | 0/6 | Planned | - |
+| 4. Matching | 2/3 | In Progress | - |
+| 5. Engagement + Org | 6/6 | Complete | 2026-01-18 |
 
 ---
 *Roadmap created: 2026-01-17*
