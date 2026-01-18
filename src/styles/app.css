@@ -147,3 +147,33 @@
 .animate-shake {
   animation: shake 150ms ease-in-out;
 }
+
+/* Reveal animation for drag hover state - element animates in to "catch" the file */
+@keyframes reveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-reveal {
+  animation: reveal 200ms ease-out forwards;
+}
+
+/* Processing pulse animation for "Analyzing..." state - distinct from upload progress */
+@keyframes pulse-processing {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.animate-pulse-processing {
+  animation: pulse-processing 1.5s ease-in-out infinite;
+}
