@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-01-17)
 Phase: 3 of 5 (Profiles)
 Plan: 4 of 4 in Phase 3 complete
 Status: Phase complete
-Last activity: 2026-01-18 - Completed 03-04-PLAN.md (privacy controls)
+Last activity: 2026-01-18 - Completed 03-03-PLAN.md (enrichment conversation)
 
 Progress: [████████████████░░░░] 80%
 
@@ -70,6 +70,10 @@ Recent decisions affecting current work:
 - [03-02]: Lazy taxonomy seeding via ensureTaxonomySeeded action
 - [03-02]: Soft limit of 10 skills with amber warning, not hard cap
 - [03-02]: Custom skills allowed via Enter on unmatched input
+- [03-03]: Claude Haiku 4.5 for conversation and extraction (fast, cost-effective)
+- [03-03]: Separate Node.js file for actions, regular file for queries/mutations
+- [03-03]: shouldExtract triggered by LLM signaling phrases (summarize, update profile)
+- [03-03]: Extraction uses forced tool_choice for reliable structured output
 - [03-04]: Default visibility defaults to 'connections' (balanced privacy)
 - [03-04]: Section visibility inherits from default unless overridden
 - [03-04]: 18 AI safety organizations seeded on first access
@@ -87,7 +91,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 03-04-PLAN.md (privacy controls)
+Stopped at: Completed 03-03-PLAN.md (enrichment conversation)
 Resume file: None
 
 ---
