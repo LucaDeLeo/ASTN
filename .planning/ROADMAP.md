@@ -88,11 +88,12 @@ Plans:
   2. User can edit any extracted field inline before saving
   3. User sees gap identification showing what percentage was extracted and what enrichment chat will help with
   4. Confirmed extracted data auto-fills corresponding profile form fields
-**Plans**: TBD
+**Plans**: 3 plans in 3 waves
 
 Plans:
-- [ ] 09-01: TBD
-- [ ] 09-02: TBD
+- [ ] 09-01-PLAN.md — Review foundation (types, state hook, apply mutation)
+- [ ] 09-02-PLAN.md — Review UI components (field cards, expandable entries, main container)
+- [ ] 09-03-PLAN.md — Integration + verification checkpoint
 
 ### Phase 10: Wizard Integration
 
@@ -123,7 +124,7 @@ Phases execute in numeric order: 7 → 7.1 (if any) → 8 → 8.1 (if any) → 9
 | 6. Polish + Tech Debt | v1.0 | 2/2 | Complete | 2026-01-18 |
 | 7. File Upload Foundation | v1.1 | 4/4 | Complete | 2026-01-18 |
 | 8. LLM Extraction Core | v1.1 | 3/3 | Complete | 2026-01-18 |
-| 9. Review & Apply UI | v1.1 | 0/TBD | Not started | - |
+| 9. Review & Apply UI | v1.1 | 0/3 | Not started | - |
 | 10. Wizard Integration | v1.1 | 0/TBD | Not started | - |
 
 ---
