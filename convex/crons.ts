@@ -11,4 +11,22 @@ crons.daily(
   internal.aggregation.sync.runFullSync
 );
 
+// Run hourly to process match alerts for each timezone's 8 AM
+// Each hour, users whose local time is 8 AM receive their alerts
+crons.hourly(
+  "send-match-alerts",
+  { minuteUTC: 0 },
+  internal.emails.batchActions.processMatchAlertBatch,
+  {}
+);
+
+// Run weekly on Sunday evening UTC
+// Covers Sunday afternoon/evening in Americas
+crons.weekly(
+  "send-weekly-digest",
+  { dayOfWeek: "sunday", hourUTC: 22, minuteUTC: 0 },
+  internal.emails.batchActions.processWeeklyDigestBatch,
+  {}
+);
+
 export default crons;

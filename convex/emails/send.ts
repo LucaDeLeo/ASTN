@@ -1,8 +1,8 @@
+import { toZonedTime } from "date-fns-tz";
 import { v } from "convex/values";
 import { Resend } from "@convex-dev/resend";
 import { internalMutation, internalQuery } from "../_generated/server";
 import { components } from "../_generated/api";
-import { toZonedTime } from "date-fns-tz";
 
 // Initialize Resend component
 // For production: set RESEND_API_KEY in Convex dashboard
@@ -75,7 +75,10 @@ export const getUsersForMatchAlertBatch = internalQuery({
 
     for (const profile of profiles) {
       // Skip if no notification preferences or alerts disabled
-      if (!profile.notificationPreferences?.matchAlerts?.enabled) {
+      if (
+        !profile.notificationPreferences ||
+        !profile.notificationPreferences.matchAlerts.enabled
+      ) {
         continue;
       }
 
@@ -123,13 +126,16 @@ export const getUsersForWeeklyDigestBatch = internalQuery({
       email: string;
       profileId: typeof profiles[0]["_id"];
       userName: string;
-      completedSections: string[];
+      completedSections: Array<string>;
       hasEnrichmentConversation: boolean;
     }> = [];
 
     for (const profile of profiles) {
       // Skip if no notification preferences or digest disabled
-      if (!profile.notificationPreferences?.weeklyDigest?.enabled) {
+      if (
+        !profile.notificationPreferences ||
+        !profile.notificationPreferences.weeklyDigest.enabled
+      ) {
         continue;
       }
 
@@ -164,7 +170,7 @@ export const markMatchesNotNew = internalMutation({
   },
   handler: async (ctx, { matchIds }) => {
     for (const matchId of matchIds) {
-      await ctx.db.patch(matchId, { isNew: false });
+      await ctx.db.patch("matches", matchId, { isNew: false });
     }
   },
 });
@@ -211,6 +217,6 @@ export const getRecentMatches = internalQuery({
 export const getOpportunity = internalQuery({
   args: { opportunityId: v.id("opportunities") },
   handler: async (ctx, { opportunityId }) => {
-    return await ctx.db.get(opportunityId);
+    return await ctx.db.get("opportunities", opportunityId);
   },
 });
