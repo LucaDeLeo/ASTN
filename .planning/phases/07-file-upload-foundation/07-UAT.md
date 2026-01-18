@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 07-file-upload-foundation
 source: 07-01-SUMMARY.md, 07-02-SUMMARY.md, 07-03-SUMMARY.md, 07-04-SUMMARY.md
 started: 2026-01-18T23:15:00Z
@@ -14,9 +14,8 @@ updated: 2026-01-19T00:15:00Z
 
 ### 1. Drag PDF onto Upload Zone
 expected: Drag a PDF file onto the upload zone. The zone should show a "reveal" animation with a Sparkles icon indicating it's ready to receive the file.
-result: issue
-reported: "the size is all wrong, it becomes a thin rectangle but it should mostly preserve the shape it has before. Or smoothly morph."
-severity: major
+result: pass (fixed)
+note: Originally failed - zone collapsed during drag. Fixed by keeping idle content rendered but invisible.
 
 ### 2. Drop PDF and See File Preview
 expected: After dropping the PDF, you see a file preview showing the filename, file size, and buttons to remove or replace the file.
@@ -49,19 +48,19 @@ result: pass
 ## Summary
 
 total: 8
-passed: 7
-issues: 1
+passed: 8
+issues: 0
 pending: 0
 skipped: 0
+fixed: 1
 
 ## Gaps
 
 - truth: "Upload zone maintains shape when dragging file over it"
-  status: failed
+  status: fixed
   reason: "User reported: the size is all wrong, it becomes a thin rectangle but it should mostly preserve the shape it has before. Or smoothly morph."
   severity: major
   test: 1
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Idle content conditionally unmounted when isDragActive=true. Reveal overlay is absolute-positioned so doesn't contribute height. Container collapses."
+  fix_applied: "Changed to always render idle content but toggle visibility with opacity-0/invisible classes"
+  commit: "aeb985e"
