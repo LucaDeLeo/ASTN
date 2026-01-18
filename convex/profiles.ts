@@ -221,6 +221,77 @@ export const getCompleteness = query({
   },
 });
 
+// Get notification preferences for current user
+export const getNotificationPreferences = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) {
+      return null;
+    }
+
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
+    if (!profile) {
+      return null;
+    }
+
+    return profile.notificationPreferences ?? null;
+  },
+});
+
+// Update notification preferences for current user
+export const updateNotificationPreferences = mutation({
+  args: {
+    matchAlertsEnabled: v.boolean(),
+    weeklyDigestEnabled: v.boolean(),
+    timezone: v.string(),
+  },
+  handler: async (ctx, { matchAlertsEnabled, weeklyDigestEnabled, timezone }) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    // Basic IANA timezone validation (contains "/")
+    if (!timezone.includes("/")) {
+      throw new Error("Invalid timezone format. Expected IANA timezone (e.g., America/New_York)");
+    }
+
+    // Get or create profile
+    let profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
+    if (!profile) {
+      // Create profile if it doesn't exist
+      const now = Date.now();
+      const profileId = await ctx.db.insert("profiles", {
+        userId,
+        createdAt: now,
+        updatedAt: now,
+      });
+      profile = (await ctx.db.get("profiles", profileId))!;
+    }
+
+    // Update notification preferences
+    await ctx.db.patch("profiles", profile._id, {
+      notificationPreferences: {
+        matchAlerts: { enabled: matchAlertsEnabled },
+        weeklyDigest: { enabled: weeklyDigestEnabled },
+        timezone,
+      },
+      updatedAt: Date.now(),
+    });
+
+    return { success: true };
+  },
+});
+
 // Get completeness for current user's profile
 export const getMyCompleteness = query({
   args: {},
