@@ -9,20 +9,20 @@ See: .planning/PROJECT.md (updated 2026-01-17)
 
 ## Current Position
 
-Phase: 6 of 6 (Polish + Tech Debt) - Pending
-Plan: 0 of 2 in Phase 6
-Status: Phases 1-5 complete, Phase 6 created for gap closure
-Last activity: 2026-01-18 - Created Phase 6 from milestone audit gaps
+Phase: 6 of 6 (Polish + Tech Debt) - In progress
+Plan: 1 of 2 in Phase 6
+Status: Plan 06-01 complete - Navigation + Admin Auth
+Last activity: 2026-01-18 - Completed 06-01-PLAN.md
 
-Progress: [███████████████████░] 95%
-Note: All requirements satisfied. Phase 6 addresses audit gaps before pilot launch.
+Progress: [████████████████████] 97%
+Note: Added /matches nav link and admin auth guard. One plan remaining.
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 19
+- Total plans completed: 20
 - Average duration: 8 min
-- Total execution time: 2.67 hours
+- Total execution time: 2.73 hours
 
 **By Phase:**
 
@@ -33,9 +33,10 @@ Note: All requirements satisfied. Phase 6 addresses audit gaps before pilot laun
 | 03-profiles | 4 | 22 min | 6 min |
 | 04-matching | 3 | 38 min | 13 min |
 | 05-engagement-org | 6 | 47 min | 8 min |
+| 06-polish-tech-debt | 1 | 4 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 5 min, 8 min, 6 min, 4 min, 12 min
+- Last 5 plans: 8 min, 6 min, 4 min, 12 min, 4 min
 - Trend: Fast execution
 
 *Updated after each plan completion*
@@ -111,6 +112,8 @@ Recent decisions affecting current work:
 - [05-06]: Skills distribution limited to top 10 for readability
 - [05-06]: Completeness buckets: high (>70%), medium (40-70%), low (<40%)
 - [05-06]: Export uses browser Blob API, no server-side generation
+- [06-01]: Matches link shown only for authenticated users (inside Authenticated wrapper)
+- [06-01]: Admin route uses same auth pattern as profile routes for consistency
 
 ### Pending Todos
 
@@ -124,7 +127,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 05-06-PLAN.md (org admin dashboard) - Phase 5 complete
+Stopped at: Completed 06-01-PLAN.md (Navigation + Admin Auth)
 Resume file: None
 
 ---
