@@ -13,13 +13,11 @@ export default defineConfig({
     tsConfigPaths({
       projects: ['./tsconfig.json'],
     }),
-    tanstackStart({
-      react: {
-        babel: {
-          plugins: ['babel-plugin-react-compiler'],
-        },
+    tanstackStart(),
+    viteReact({
+      babel: {
+        plugins: ['babel-plugin-react-compiler'],
       },
     }),
-    viteReact(),
   ],
 })
