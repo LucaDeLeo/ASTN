@@ -2,7 +2,7 @@ import { useQuery } from "convex/react";
 import { Download, FileJson, FileSpreadsheet } from "lucide-react";
 import { useState } from "react";
 import { api } from "../../../convex/_generated/api";
-import type { Id, Doc } from "../../../convex/_generated/dataModel";
+import type { Doc, Id } from "../../../convex/_generated/dataModel";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -74,7 +74,7 @@ type ExportMember = {
   completeness: number;
 };
 
-function exportJson(members: ExportMember[], filename: string) {
+function exportJson(members: Array<ExportMember>, filename: string) {
   const data = members.map((m) => transformMemberForExport(m));
 
   const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -83,7 +83,7 @@ function exportJson(members: ExportMember[], filename: string) {
   downloadBlob(blob, filename);
 }
 
-function exportCsv(members: ExportMember[], filename: string) {
+function exportCsv(members: Array<ExportMember>, filename: string) {
   const headers = [
     "Name",
     "Email",

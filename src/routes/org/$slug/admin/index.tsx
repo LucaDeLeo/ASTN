@@ -2,6 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { Building2, Download, Shield, UserPlus, Users } from "lucide-react";
 import { api } from "../../../../../convex/_generated/api";
+import type { Id } from "../../../../../convex/_generated/dataModel";
 import { AuthHeader } from "~/components/layout/auth-header";
 import { OrgStats } from "~/components/org/OrgStats";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -203,7 +204,7 @@ function OrgAdminDashboard() {
 function InviteLinkButton({
   orgId,
 }: {
-  orgId: import("../../../../../convex/_generated/dataModel").Id<"organizations">;
+  orgId: Id<"organizations">;
 }) {
   const inviteLinks = useQuery(api.orgs.admin.getInviteLinks, { orgId });
 

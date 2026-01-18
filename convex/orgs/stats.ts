@@ -1,8 +1,9 @@
-import { query } from "../_generated/server";
-import type { QueryCtx } from "../_generated/server";
 import { v } from "convex/values";
+
 import { auth } from "../auth";
-import type { Id, Doc } from "../_generated/dataModel";
+import { query } from "../_generated/server";
+import type { Doc, Id } from "../_generated/dataModel";
+import type { QueryCtx } from "../_generated/server";
 
 // Helper: Require current user is an admin of the given org
 async function requireOrgAdmin(
@@ -133,8 +134,6 @@ function calculateCompleteness(profile: Doc<"profiles">): number {
     profile.hasEnrichmentConversation === true,
     // privacy
     profile.privacySettings !== undefined &&
-      typeof profile.privacySettings === "object" &&
-      profile.privacySettings !== null &&
       "defaultVisibility" in profile.privacySettings,
   ];
 
