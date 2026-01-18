@@ -1,5 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
+import { useState } from "react";
 import { Building2, Download, Shield, UserPlus, Users } from "lucide-react";
 import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
@@ -207,6 +208,8 @@ function InviteLinkButton({
   orgId: Id<"organizations">;
 }) {
   const inviteLinks = useQuery(api.orgs.admin.getInviteLinks, { orgId });
+  const createInvite = useMutation(api.orgs.admin.createInviteLink);
+  const [isCreating, setIsCreating] = useState(false);
 
   // If there's an active invite link, show it
   const activeLink = inviteLinks?.[0];
@@ -230,10 +233,24 @@ function InviteLinkButton({
     );
   }
 
+  const handleCreate = async () => {
+    setIsCreating(true);
+    try {
+      await createInvite({ orgId });
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   return (
-    <Button variant="outline" className="h-auto py-4" disabled>
+    <Button
+      variant="outline"
+      className="h-auto py-4"
+      onClick={handleCreate}
+      disabled={isCreating}
+    >
       <UserPlus className="size-5 mr-2" />
-      Create Invite Link
+      {isCreating ? "Creating..." : "Create Invite Link"}
     </Button>
   );
 }
