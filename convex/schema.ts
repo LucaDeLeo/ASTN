@@ -127,9 +127,34 @@ export default defineSchema({
     logoUrl: v.optional(v.string()),
   })
     .index("by_name", ["name"])
+    .index("by_slug", ["slug"])
     .searchIndex("search_name", {
       searchField: "name",
     }),
+
+  // Organization memberships
+  orgMemberships: defineTable({
+    userId: v.string(),
+    orgId: v.id("organizations"),
+    role: v.union(v.literal("admin"), v.literal("member")),
+    directoryVisibility: v.union(v.literal("visible"), v.literal("hidden")),
+    joinedAt: v.number(),
+    invitedBy: v.optional(v.id("orgMemberships")),
+  })
+    .index("by_user", ["userId"])
+    .index("by_org", ["orgId"])
+    .index("by_org_role", ["orgId", "role"]),
+
+  // Organization invite links
+  orgInviteLinks: defineTable({
+    orgId: v.id("organizations"),
+    token: v.string(), // Unique invite token (UUID)
+    createdBy: v.id("orgMemberships"),
+    createdAt: v.number(),
+    expiresAt: v.optional(v.number()), // Optional expiration
+  })
+    .index("by_token", ["token"])
+    .index("by_org", ["orgId"]),
 
   // Match results (per CONTEXT.md: tier labels, not percentages)
   matches: defineTable({
