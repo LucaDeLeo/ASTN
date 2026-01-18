@@ -1,6 +1,7 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery, useAction } from "convex/react";
-import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { AuthLoading, Authenticated, Unauthenticated, useAction, useQuery  } from "convex/react";
+import { RefreshCw, Sparkles, User } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "../../../convex/_generated/api";
 import { AuthHeader } from "~/components/layout/auth-header";
 import { Button } from "~/components/ui/button";
@@ -8,8 +9,6 @@ import { Card } from "~/components/ui/card";
 import { Spinner } from "~/components/ui/spinner";
 import { MatchTierSection } from "~/components/matches/MatchTierSection";
 import { GrowthAreas } from "~/components/matches/GrowthAreas";
-import { Sparkles, RefreshCw, User } from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
 
 // Aggregate recommendations from all matches into growth areas
 function aggregateGrowthAreas(matches: {
@@ -32,7 +31,7 @@ function aggregateGrowthAreas(matches: {
     }
   }
 
-  const areas: Array<{ theme: string; items: string[] }> = [];
+  const areas: Array<{ theme: string; items: Array<string> }> = [];
 
   if (byType.skill.size > 0) {
     areas.push({ theme: "Skills to build", items: [...byType.skill].slice(0, 5) });
@@ -121,7 +120,7 @@ function MatchesContent() {
     return aggregateGrowthAreas(matchesData.matches);
   }, [matchesData?.matches]);
 
-  if (matchesData === undefined) {
+  if (matchesData === undefined || matchesData === null) {
     return <LoadingState />;
   }
 

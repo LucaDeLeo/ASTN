@@ -1,17 +1,18 @@
 "use node";
 
-import { internalAction } from "../_generated/server";
-import { internal } from "../_generated/api";
 import { v } from "convex/values";
 import Anthropic from "@anthropic-ai/sdk";
+import { internalAction } from "../_generated/server";
+import { internal } from "../_generated/api";
 import {
   MATCHING_SYSTEM_PROMPT,
-  buildProfileContext,
+  
   buildOpportunitiesContext,
-  matchOpportunitiesTool,
-  MatchingResult,
+  buildProfileContext,
+  matchOpportunitiesTool
 } from "./prompts";
-import { Id } from "../_generated/dataModel";
+import type {MatchingResult} from "./prompts";
+import type { Id } from "../_generated/dataModel";
 
 const MODEL_VERSION = "claude-haiku-4-5-20251001";
 const BATCH_SIZE = 15; // Process up to 15 opportunities per LLM call

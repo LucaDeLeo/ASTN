@@ -1,8 +1,8 @@
-import { query, action } from "./_generated/server";
-import { internal } from "./_generated/api";
 import { v } from "convex/values";
+import { action, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { auth } from "./auth";
-import { Id } from "./_generated/dataModel";
+import type { Id } from "./_generated/dataModel";
 
 // Type for match computation result
 interface MatchComputationResult {
@@ -15,7 +15,7 @@ interface MatchComputationResult {
   };
   growthAreas?: Array<{
     theme: string;
-    items: string[];
+    items: Array<string>;
   }>;
 }
 
@@ -59,7 +59,7 @@ export const getMyMatches = query({
     // Enrich matches with opportunity data
     const enrichedMatches = await Promise.all(
       matches.map(async (match) => {
-        const opportunity = await ctx.db.get(match.opportunityId);
+        const opportunity = await ctx.db.get("opportunities", match.opportunityId);
         return {
           ...match,
           opportunity: opportunity ? {
@@ -78,7 +78,11 @@ export const getMyMatches = query({
     );
 
     // Filter out matches where opportunity was deleted
-    const validMatches = enrichedMatches.filter(m => m.opportunity !== null);
+    // Type guard to ensure opportunity is non-null
+    const validMatches = enrichedMatches.filter(
+      (m): m is typeof m & { opportunity: NonNullable<typeof m.opportunity> } =>
+        m.opportunity !== null
+    );
 
     // Group by tier and sort by score within tier
     const grouped = {
@@ -121,19 +125,19 @@ export const getMatchById = query({
       return null;
     }
 
-    const match = await ctx.db.get(matchId);
+    const match = await ctx.db.get("matches", matchId);
     if (!match) {
       return null;
     }
 
     // Verify ownership
-    const profile = await ctx.db.get(match.profileId);
+    const profile = await ctx.db.get("profiles", match.profileId);
     if (!profile || profile.userId !== userId) {
       return null;
     }
 
     // Get full opportunity data
-    const opportunity = await ctx.db.get(match.opportunityId);
+    const opportunity = await ctx.db.get("opportunities", match.opportunityId);
     if (!opportunity) {
       return null;
     }
