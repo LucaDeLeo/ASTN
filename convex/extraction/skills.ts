@@ -7,7 +7,7 @@ export const SIMILARITY_THRESHOLD = 0.7;
 interface TaxonomySkill {
   name: string;
   category: string;
-  aliases?: string[];
+  aliases?: Array<string>;
 }
 
 /**
@@ -23,9 +23,9 @@ interface TaxonomySkill {
  * @returns Array of matched skill names from taxonomy (deduplicated)
  */
 export function matchSkillsToTaxonomy(
-  rawSkills: string[],
-  taxonomySkills: TaxonomySkill[]
-): string[] {
+  rawSkills: Array<string>,
+  taxonomySkills: Array<TaxonomySkill>
+): Array<string> {
   const matched = new Set<string>();
 
   for (const rawSkill of rawSkills) {

@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+import type Anthropic from "@anthropic-ai/sdk";
 
 // Extraction result type matching extractedData schema
 export interface ExtractionResult {
@@ -21,7 +21,7 @@ export interface ExtractionResult {
     current?: boolean;
     description?: string;
   }>;
-  rawSkills?: string[]; // Skills as mentioned in document
+  rawSkills?: Array<string>; // Skills as mentioned in document
 }
 
 // Tool definition for profile extraction from resumes/CVs
