@@ -122,8 +122,8 @@ Plans:
 **Plans**: 2 plans in 1 wave
 
 Plans:
-- [ ] 06-01-PLAN.md — Navigation and auth wrapper fixes (integration gaps)
-- [ ] 06-02-PLAN.md — Tech debt cleanup (documentation, UI, dead code)
+- [ ] 06-01-PLAN.md — Navigation and auth wrapper fixes (add /matches link, admin auth guard)
+- [ ] 06-02-PLAN.md — Tech debt cleanup (Phase 04 VERIFICATION, invite button, dead code removal)
 
 ## Progress
 
