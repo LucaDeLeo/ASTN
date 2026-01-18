@@ -1,12 +1,12 @@
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useAction, useQuery } from "convex/react";
 import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
 
 // Extraction field type
 export interface ExtractionFields {
-  skills_mentioned: string[];
-  career_interests: string[];
+  skills_mentioned: Array<string>;
+  career_interests: Array<string>;
   career_goals?: string;
   background_summary?: string;
   seeking?: string;
@@ -18,8 +18,8 @@ export type ExtractionStatus = "pending" | "accepted" | "rejected" | "edited";
 export interface ExtractionItem {
   field: keyof ExtractionFields;
   label: string;
-  value: string | string[];
-  editedValue?: string | string[];
+  value: string | Array<string>;
+  editedValue?: string | Array<string>;
   status: ExtractionStatus;
 }
 
@@ -41,7 +41,7 @@ export function useEnrichment(profileId: Id<"profiles"> | null) {
   const [error, setError] = useState<string | null>(null);
   const [shouldShowExtract, setShouldShowExtract] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
-  const [extractions, setExtractions] = useState<ExtractionItem[] | null>(null);
+  const [extractions, setExtractions] = useState<Array<ExtractionItem> | null>(null);
 
   // Send a message
   const sendMessage = useCallback(
@@ -88,7 +88,7 @@ export function useEnrichment(profileId: Id<"profiles"> | null) {
       const result = await extractAction({ messages: conversationMessages });
 
       // Transform extraction result into items with status
-      const items: ExtractionItem[] = [];
+      const items: Array<ExtractionItem> = [];
 
       if (result.skills_mentioned && result.skills_mentioned.length > 0) {
         items.push({
@@ -158,7 +158,7 @@ export function useEnrichment(profileId: Id<"profiles"> | null) {
 
   // Update extraction value (for editing)
   const updateExtractionValue = useCallback(
-    (field: keyof ExtractionFields, editedValue: string | string[]) => {
+    (field: keyof ExtractionFields, editedValue: string | Array<string>) => {
       setExtractions((prev) =>
         prev?.map((item) =>
           item.field === field ? { ...item, editedValue, status: "edited" } : item

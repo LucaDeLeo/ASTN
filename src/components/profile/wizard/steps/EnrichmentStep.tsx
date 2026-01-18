@@ -1,20 +1,20 @@
 import { useState } from "react";
 import { useMutation } from "convex/react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  MessageSquare,
+  RefreshCw,
+  Sparkles,
+} from "lucide-react";
 import { api } from "../../../../../convex/_generated/api";
+import { EnrichmentChat } from "../../enrichment/EnrichmentChat";
+import { ExtractionReview } from "../../enrichment/ExtractionReview";
+import { useEnrichment } from "../../enrichment/hooks/useEnrichment";
 import type { Id } from "../../../../../convex/_generated/dataModel";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import {
-  MessageSquare,
-  Sparkles,
-  CheckCircle2,
-  AlertCircle,
-  RefreshCw,
-} from "lucide-react";
-import { EnrichmentChat } from "../../enrichment/EnrichmentChat";
-import { ExtractionReview } from "../../enrichment/ExtractionReview";
-import { useEnrichment } from "../../enrichment/hooks/useEnrichment";
 
 interface EnrichmentStepProps {
   profile: {

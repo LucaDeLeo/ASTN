@@ -1,6 +1,6 @@
 import * as React from "react"
-import { cn } from "~/lib/utils"
 import { FileSearch } from "lucide-react"
+import { cn } from "~/lib/utils"
 
 interface EmptyProps extends React.ComponentProps<"div"> {
   children?: React.ReactNode

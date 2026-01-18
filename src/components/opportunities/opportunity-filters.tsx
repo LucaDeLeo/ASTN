@@ -1,5 +1,6 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback } from "react";
+import { Search, X } from "lucide-react";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import {
@@ -9,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Search, X } from "lucide-react";
 
 const ROLE_TYPES = [
   { value: "all", label: "All Roles" },
@@ -35,7 +35,7 @@ type OpportunitySearchParams = {
 
 export function OpportunityFilters() {
   const navigate = useNavigate();
-  const search = useSearch({ from: "/opportunities/" }) as OpportunitySearchParams;
+  const search = useSearch({ from: "/opportunities/" });
 
   const roleType = search.role || "all";
   const locationFilter = search.location || "all";

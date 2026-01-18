@@ -1,18 +1,18 @@
 import { Link } from "@tanstack/react-router";
+import {
+  Banknote,
+  Briefcase,
+  Building2,
+  Calendar,
+  Clock,
+  ExternalLink,
+  MapPin,
+} from "lucide-react";
+import { format, formatDistanceToNow } from "date-fns";
+import type { Id } from "../../../convex/_generated/dataModel";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import {
-  MapPin,
-  Building2,
-  Clock,
-  Banknote,
-  ExternalLink,
-  Calendar,
-  Briefcase,
-} from "lucide-react";
-import { formatDistanceToNow, format } from "date-fns";
-import type { Id } from "../../../convex/_generated/dataModel";
 
 type Opportunity = {
   _id: Id<"opportunities">;
@@ -24,12 +24,12 @@ type Opportunity = {
   roleType: string;
   experienceLevel?: string;
   description: string;
-  requirements?: string[];
+  requirements?: Array<string>;
   salaryRange?: string;
   deadline?: number;
   sourceUrl: string;
   source: "80k_hours" | "aisafety_com" | "manual";
-  alternateSources?: { sourceId: string; source: string; sourceUrl: string }[];
+  alternateSources?: Array<{ sourceId: string; source: string; sourceUrl: string }>;
   lastVerified: number;
   createdAt: number;
 };

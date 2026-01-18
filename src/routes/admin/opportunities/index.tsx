@@ -1,12 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSuspenseQuery, useMutation } from "@tanstack/react-query";
+import { Link, createFileRoute } from "@tanstack/react-router";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
+import { Archive, Pencil, Plus, Trash2 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import { Trash2, Pencil, Plus, Archive } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
 
 export const Route = createFileRoute("/admin/opportunities/")({
   loader: async ({ context }) => {

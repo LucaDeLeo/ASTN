@@ -1,6 +1,18 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
-import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { AuthLoading, Authenticated, Unauthenticated, useQuery  } from "convex/react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Calendar,
+  CheckCircle,
+  Compass,
+  ExternalLink,
+  Lightbulb,
+  MapPin,
+  Sparkles,
+  ThumbsUp,
+} from "lucide-react";
+import { useEffect } from "react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { AuthHeader } from "~/components/layout/auth-header";
@@ -9,19 +21,6 @@ import { Card } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Spinner } from "~/components/ui/spinner";
 import { ProbabilityBadge } from "~/components/matches/ProbabilityBadge";
-import {
-  ArrowLeft,
-  MapPin,
-  ExternalLink,
-  Sparkles,
-  ThumbsUp,
-  Compass,
-  CheckCircle,
-  AlertTriangle,
-  Lightbulb,
-  Calendar,
-} from "lucide-react";
-import { useEffect } from "react";
 
 export const Route = createFileRoute("/matches/$id")({
   component: MatchDetailPage,

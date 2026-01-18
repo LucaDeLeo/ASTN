@@ -2,8 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { convexQuery } from "@convex-dev/react-query";
 import { api } from "../../../../../convex/_generated/api";
-import { OpportunityForm } from "~/components/admin/opportunity-form";
 import type { Id } from "../../../../../convex/_generated/dataModel";
+import { OpportunityForm } from "~/components/admin/opportunity-form";
 
 export const Route = createFileRoute("/admin/opportunities/$id/edit")({
   loader: async ({ context, params }) => {

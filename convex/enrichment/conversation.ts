@@ -1,9 +1,9 @@
 "use node";
 
-import { action } from "../_generated/server";
-import { internal } from "../_generated/api";
 import { v } from "convex/values";
 import Anthropic from "@anthropic-ai/sdk";
+import { action } from "../_generated/server";
+import { internal } from "../_generated/api";
 
 // Career coach system prompt
 const CAREER_COACH_PROMPT = `You are a friendly career coach helping someone build their AI safety career profile.
@@ -47,7 +47,7 @@ export const sendMessage = action({
     { profileId, message }
   ): Promise<{ message: string; shouldExtract: boolean }> => {
     // Get existing conversation (from queries.ts)
-    const messages: EnrichmentMessage[] = await ctx.runQuery(
+    const messages: Array<EnrichmentMessage> = await ctx.runQuery(
       internal.enrichment.queries.getMessages,
       { profileId }
     );
@@ -59,7 +59,7 @@ export const sendMessage = action({
     );
 
     // Build context string from profile
-    const contextParts: string[] = [];
+    const contextParts: Array<string> = [];
     if (profile?.name) contextParts.push(`Name: ${profile.name}`);
     if (profile?.location) contextParts.push(`Location: ${profile.location}`);
     if (profile?.headline) contextParts.push(`Headline: ${profile.headline}`);
@@ -88,7 +88,7 @@ export const sendMessage = action({
     // Build messages array for Claude API
     const claudeMessages = [
       ...messages.map((m) => ({
-        role: m.role as "user" | "assistant",
+        role: m.role,
         content: m.content,
       })),
       { role: "user" as const, content: message },

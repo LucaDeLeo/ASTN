@@ -1,7 +1,7 @@
-import { useRef, useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { Loader2, MessageSquare, Send } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { Send, Loader2, MessageSquare } from "lucide-react";
 import { cn } from "~/lib/utils";
 
 interface Message {
@@ -12,7 +12,7 @@ interface Message {
 }
 
 interface EnrichmentChatProps {
-  messages: Message[];
+  messages: Array<Message>;
   input: string;
   onInputChange: (value: string) => void;
   onSendMessage: (message: string) => void;

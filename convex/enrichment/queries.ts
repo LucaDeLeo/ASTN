@@ -1,5 +1,5 @@
-import { internalMutation, internalQuery, query } from "../_generated/server";
 import { v } from "convex/values";
+import { internalMutation, internalQuery, query } from "../_generated/server";
 
 // Get messages for a profile (internal query)
 export const getMessages = internalQuery({
@@ -27,7 +27,7 @@ export const getMessagesPublic = query({
 export const getProfileInternal = internalQuery({
   args: { profileId: v.id("profiles") },
   handler: async (ctx, { profileId }) => {
-    return await ctx.db.get(profileId);
+    return await ctx.db.get("profiles", profileId);
   },
 });
 

@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { useConvexMutation } from "@convex-dev/react-query";
 import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -15,7 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import type { Id } from "../../../convex/_generated/dataModel";
 
 const ROLE_TYPES = [
   { value: "research", label: "Research" },
@@ -42,7 +42,7 @@ type OpportunityData = {
   roleType: string;
   experienceLevel?: string;
   description: string;
-  requirements?: string[];
+  requirements?: Array<string>;
   salaryRange?: string;
   deadline?: number;
   sourceUrl: string;

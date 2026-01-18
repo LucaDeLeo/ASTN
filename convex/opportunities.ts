@@ -1,5 +1,5 @@
-import { query } from "./_generated/server";
 import { v } from "convex/values";
+import { query } from "./_generated/server";
 
 // List active opportunities with optional filters
 export const list = query({
@@ -38,7 +38,7 @@ export const list = query({
 export const get = query({
   args: { id: v.id("opportunities") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
+    return await ctx.db.get("opportunities", args.id);
   },
 });
 

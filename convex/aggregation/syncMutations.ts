@@ -1,5 +1,5 @@
-import { internalMutation } from "../_generated/server";
 import { v } from "convex/values";
+import { internalMutation } from "../_generated/server";
 import { isSimilarOpportunity } from "./dedup";
 
 const opportunityValidator = v.object({
@@ -41,7 +41,7 @@ export const upsertOpportunities = internalMutation({
 
       if (existing) {
         // Update existing opportunity
-        await ctx.db.patch(existing._id, {
+        await ctx.db.patch("opportunities", existing._id, {
           title: opp.title,
           organization: opp.organization,
           location: opp.location,
@@ -81,7 +81,7 @@ export const upsertOpportunities = internalMutation({
           );
 
           if (!alreadyListed) {
-            await ctx.db.patch(duplicate._id, {
+            await ctx.db.patch("opportunities", duplicate._id, {
               alternateSources: [
                 ...alternateSources,
                 {
@@ -153,7 +153,7 @@ export const archiveMissing = internalMutation({
       );
 
       if (!hasActiveAlternate) {
-        await ctx.db.patch(opp._id, {
+        await ctx.db.patch("opportunities", opp._id, {
           status: "archived",
           updatedAt: Date.now(),
         });

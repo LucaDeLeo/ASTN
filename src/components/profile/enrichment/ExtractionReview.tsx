@@ -1,23 +1,23 @@
 import { useState } from "react";
+import {
+  ArrowLeft,
+  Check,
+  CheckCircle2,
+  Loader2,
+  Pencil,
+  X,
+} from "lucide-react";
+import type { ExtractionFields, ExtractionItem, ExtractionStatus } from "./hooks/useEnrichment";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Card } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import {
-  Check,
-  X,
-  Pencil,
-  Loader2,
-  ArrowLeft,
-  CheckCircle2,
-} from "lucide-react";
 import { cn } from "~/lib/utils";
-import type { ExtractionItem, ExtractionFields, ExtractionStatus } from "./hooks/useEnrichment";
 
 interface ExtractionReviewProps {
-  extractions: ExtractionItem[];
+  extractions: Array<ExtractionItem>;
   onUpdateStatus: (field: keyof ExtractionFields, status: ExtractionStatus) => void;
-  onUpdateValue: (field: keyof ExtractionFields, value: string | string[]) => void;
+  onUpdateValue: (field: keyof ExtractionFields, value: string | Array<string>) => void;
   onApply: () => void;
   onBack: () => void;
   isApplying: boolean;
@@ -162,7 +162,7 @@ export function ExtractionReview({
                   >
                     {Array.isArray(item.editedValue ?? item.value) ? (
                       <div className="flex flex-wrap gap-1.5">
-                        {((item.editedValue ?? item.value) as string[]).map(
+                        {((item.editedValue ?? item.value) as Array<string>).map(
                           (v: string, i: number) => (
                             <span
                               key={i}

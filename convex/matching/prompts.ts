@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+import type Anthropic from "@anthropic-ai/sdk";
 
 // Types for profile and opportunity data
 interface ProfileData {
@@ -23,9 +23,9 @@ interface ProfileData {
     current?: boolean;
     description?: string;
   }>;
-  skills: string[];
+  skills: Array<string>;
   careerGoals?: string;
-  aiSafetyInterests: string[];
+  aiSafetyInterests: Array<string>;
   seeking?: string;
   enrichmentSummary?: string;
 }
@@ -39,7 +39,7 @@ interface OpportunityData {
   roleType: string;
   experienceLevel?: string;
   description: string;
-  requirements?: string[];
+  requirements?: Array<string>;
   deadline?: number;
 }
 
@@ -73,12 +73,12 @@ Use the score_opportunities tool to return structured results for ALL opportunit
 
 // Build profile context string for LLM
 export function buildProfileContext(profile: ProfileData): string {
-  const sections: string[] = [];
+  const sections: Array<string> = [];
 
   sections.push("## Candidate Profile\n");
 
   // Basic info
-  const basicInfo: string[] = [];
+  const basicInfo: Array<string> = [];
   if (profile.name) basicInfo.push(`Name: ${profile.name}`);
   if (profile.location) basicInfo.push(`Location: ${profile.location}`);
   if (profile.headline) basicInfo.push(`Headline: ${profile.headline}`);
@@ -91,7 +91,7 @@ export function buildProfileContext(profile: ProfileData): string {
   if (profile.education.length > 0) {
     sections.push("\n### Education");
     for (const edu of profile.education) {
-      const parts: string[] = [];
+      const parts: Array<string> = [];
       if (edu.degree && edu.field) {
         parts.push(`${edu.degree} in ${edu.field}`);
       } else if (edu.degree) {
@@ -159,8 +159,8 @@ export function buildProfileContext(profile: ProfileData): string {
 }
 
 // Build opportunities context string for LLM
-export function buildOpportunitiesContext(opportunities: OpportunityData[]): string {
-  const sections: string[] = [];
+export function buildOpportunitiesContext(opportunities: Array<OpportunityData>): string {
+  const sections: Array<string> = [];
   sections.push("## Opportunities to Match\n");
 
   for (const opp of opportunities) {
@@ -294,7 +294,7 @@ export interface MatchingResult {
     opportunityId: string;
     tier: "great" | "good" | "exploring";
     score: number;
-    strengths: string[];
+    strengths: Array<string>;
     gap?: string;
     interviewChance: string;
     ranking: string;
@@ -307,6 +307,6 @@ export interface MatchingResult {
   }>;
   growthAreas: Array<{
     theme: string;
-    items: string[];
+    items: Array<string>;
   }>;
 }

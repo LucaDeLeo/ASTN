@@ -1,6 +1,6 @@
-import { query, internalMutation, action } from "./_generated/server";
 import { v } from "convex/values";
-import { internal, api } from "./_generated/api";
+import { action, internalMutation, query } from "./_generated/server";
+import { api, internal } from "./_generated/api";
 
 // Common AI safety organizations for privacy selector
 const AI_SAFETY_ORGANIZATIONS = [

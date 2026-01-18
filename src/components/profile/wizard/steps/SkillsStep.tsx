@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
-import type { Doc } from "../../../../../convex/_generated/dataModel";
 import { SkillsInput } from "../../skills/SkillsInput";
+import type { Doc } from "../../../../../convex/_generated/dataModel";
 
 interface SkillsStepProps {
   profile: Doc<"profiles"> | null;
@@ -16,7 +16,7 @@ export function SkillsStep({
   isSaving,
   lastSaved,
 }: SkillsStepProps) {
-  const [selectedSkills, setSelectedSkills] = useState<string[]>(
+  const [selectedSkills, setSelectedSkills] = useState<Array<string>>(
     profile?.skills ?? []
   );
 
@@ -27,7 +27,7 @@ export function SkillsStep({
     }
   }, [profile]);
 
-  const handleSkillsChange = (skills: string[]) => {
+  const handleSkillsChange = (skills: Array<string>) => {
     setSelectedSkills(skills);
     saveFieldImmediate("skills", skills);
   };

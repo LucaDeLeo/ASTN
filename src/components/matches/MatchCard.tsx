@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
+import { Compass, ExternalLink, MapPin, Sparkles, ThumbsUp } from "lucide-react";
 import { Card } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import { MapPin, ExternalLink, Sparkles, ThumbsUp, Compass } from "lucide-react";
 
 interface MatchCardProps {
   match: {
@@ -9,7 +9,7 @@ interface MatchCardProps {
     tier: "great" | "good" | "exploring";
     isNew: boolean;
     explanation: {
-      strengths: string[];
+      strengths: Array<string>;
     };
     opportunity: {
       _id: string;

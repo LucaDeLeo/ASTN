@@ -32,7 +32,7 @@ type NormalizedOpportunity = {
   roleType: string;
   experienceLevel?: string;
   description: string;
-  requirements?: string[];
+  requirements?: Array<string>;
   salaryRange?: string;
   deadline?: number;
   sourceUrl: string;
@@ -40,13 +40,13 @@ type NormalizedOpportunity = {
 
 export const fetchOpportunities = internalAction({
   args: {},
-  handler: async (): Promise<NormalizedOpportunity[]> => {
+  handler: async (): Promise<Array<NormalizedOpportunity>> => {
     if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID) {
       console.error("Missing aisafety.com Airtable credentials");
       return [];
     }
 
-    const results: AirtableRecord[] = [];
+    const results: Array<AirtableRecord> = [];
     let offset: string | undefined;
 
     try {
@@ -74,7 +74,7 @@ export const fetchOpportunities = internalAction({
         }
 
         const data = (await response.json()) as {
-          records: AirtableRecord[];
+          records: Array<AirtableRecord>;
           offset?: string;
         };
         results.push(...data.records);

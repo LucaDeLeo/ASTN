@@ -1,5 +1,5 @@
-import { query, mutation } from "../_generated/server";
 import { v } from "convex/values";
+import { mutation, query } from "../_generated/server";
 import { auth } from "../auth";
 
 // Get current user's membership for a given org
@@ -36,7 +36,7 @@ export const getUserMemberships = query({
     // Fetch org details for each membership
     const membershipsWithOrgs = await Promise.all(
       memberships.map(async (membership) => {
-        const org = await ctx.db.get(membership.orgId);
+        const org = await ctx.db.get("organizations", membership.orgId);
         return {
           ...membership,
           org,
@@ -62,7 +62,7 @@ export const joinOrg = mutation({
     }
 
     // Check org exists
-    const org = await ctx.db.get(orgId);
+    const org = await ctx.db.get("organizations", orgId);
     if (!org) {
       throw new Error("Organization not found");
     }
@@ -100,7 +100,7 @@ export const joinOrg = mutation({
       }
 
       // Get the membership that created this invite for the invitedBy field
-      inviteMembership = await ctx.db.get(invite.createdBy);
+      inviteMembership = await ctx.db.get("orgMemberships", invite.createdBy);
     }
 
     // Check if this is the first member (becomes admin per CONTEXT.md)
@@ -121,7 +121,7 @@ export const joinOrg = mutation({
       invitedBy: inviteMembership?._id,
     });
 
-    return await ctx.db.get(membershipId);
+    return await ctx.db.get("orgMemberships", membershipId);
   },
 });
 
@@ -163,7 +163,7 @@ export const leaveOrg = mutation({
     }
 
     // Delete membership
-    await ctx.db.delete(membership._id);
+    await ctx.db.delete("orgMemberships", membership._id);
 
     return { success: true };
   },
@@ -193,7 +193,7 @@ export const setDirectoryVisibility = mutation({
     }
 
     // Update visibility
-    await ctx.db.patch(membership._id, {
+    await ctx.db.patch("orgMemberships", membership._id, {
       directoryVisibility: visibility,
     });
 

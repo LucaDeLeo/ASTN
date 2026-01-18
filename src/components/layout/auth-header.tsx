@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
+import { AuthLoading, Authenticated, Unauthenticated } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { LogOut, Settings, User } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -10,7 +11,6 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
-import { User, Settings, LogOut } from "lucide-react";
 
 export function AuthHeader() {
   return (

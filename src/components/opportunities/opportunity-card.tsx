@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { Card, CardContent } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
-import { MapPin, Building2, Clock, Banknote } from "lucide-react";
+import { Banknote, Building2, Clock, MapPin } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import type { Id } from "../../../convex/_generated/dataModel";
+import { Badge } from "~/components/ui/badge";
+import { Card, CardContent } from "~/components/ui/card";
 
 type Opportunity = {
   _id: Id<"opportunities">;

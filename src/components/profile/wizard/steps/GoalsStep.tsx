@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Check, X } from "lucide-react";
+import type { Doc } from "../../../../../convex/_generated/dataModel";
 import { Textarea } from "~/components/ui/textarea";
 import { Label } from "~/components/ui/label";
 import { Badge } from "~/components/ui/badge";
-import { Check, X } from "lucide-react";
-import type { Doc } from "../../../../../convex/_generated/dataModel";
 
 interface GoalsStepProps {
   profile: Doc<"profiles"> | null;
@@ -40,7 +40,7 @@ export function GoalsStep({
 }: GoalsStepProps) {
   const [careerGoals, setCareerGoals] = useState(profile?.careerGoals ?? "");
   const [seeking, setSeeking] = useState(profile?.seeking ?? "");
-  const [selectedInterests, setSelectedInterests] = useState<string[]>(
+  const [selectedInterests, setSelectedInterests] = useState<Array<string>>(
     profile?.aiSafetyInterests ?? []
   );
 

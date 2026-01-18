@@ -1,6 +1,6 @@
 "use node";
-import { internalAction } from "../_generated/server";
 import { algoliasearch } from "algoliasearch";
+import { internalAction } from "../_generated/server";
 
 // 80K Hours uses Algolia for their job board search
 // Credentials discovered from page source (public frontend keys)
@@ -19,7 +19,7 @@ type AlgoliaHit = {
   experience_required?: string;
   description_short?: string;
   description?: string;
-  requirements?: string[];
+  requirements?: Array<string>;
   salary_text?: string;
   closing_date?: string;
   posted_date?: string;
@@ -36,7 +36,7 @@ type NormalizedOpportunity = {
   roleType: string;
   experienceLevel?: string;
   description: string;
-  requirements?: string[];
+  requirements?: Array<string>;
   salaryRange?: string;
   deadline?: number;
   sourceUrl: string;
@@ -45,7 +45,7 @@ type NormalizedOpportunity = {
 
 export const fetchOpportunities = internalAction({
   args: {},
-  handler: async (): Promise<NormalizedOpportunity[]> => {
+  handler: async (): Promise<Array<NormalizedOpportunity>> => {
     if (!ALGOLIA_APP_ID || !ALGOLIA_API_KEY) {
       console.error("Missing 80K Hours Algolia credentials");
       return [];
@@ -53,7 +53,7 @@ export const fetchOpportunities = internalAction({
 
     const client = algoliasearch(ALGOLIA_APP_ID, ALGOLIA_API_KEY);
 
-    const results: AlgoliaHit[] = [];
+    const results: Array<AlgoliaHit> = [];
     let page = 0;
     let hasMore = true;
 
@@ -68,7 +68,7 @@ export const fetchOpportunities = internalAction({
           },
         });
 
-        results.push(...(response.hits as AlgoliaHit[]));
+        results.push(...(response.hits as Array<AlgoliaHit>));
         hasMore = page < (response.nbPages ?? 1) - 1;
         page++;
 

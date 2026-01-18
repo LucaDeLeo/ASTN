@@ -1,8 +1,8 @@
 "use node";
 
-import { action } from "../_generated/server";
 import { v } from "convex/values";
 import Anthropic from "@anthropic-ai/sdk";
+import { action } from "../_generated/server";
 
 // Tool definition for profile extraction
 const profileExtractionTool: Anthropic.Tool = {
@@ -41,8 +41,8 @@ const profileExtractionTool: Anthropic.Tool = {
 
 // Extraction result type
 export interface ExtractionResult {
-  skills_mentioned: string[];
-  career_interests: string[];
+  skills_mentioned: Array<string>;
+  career_interests: Array<string>;
   career_goals?: string;
   background_summary?: string;
   seeking?: string;

@@ -1,9 +1,7 @@
 import { useEffect } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
-import { Button } from "~/components/ui/button";
-import { Spinner } from "~/components/ui/spinner";
+import { useMutation, useQuery } from "convex/react";
 import { ChevronLeft, ChevronRight, SkipForward } from "lucide-react";
+import { api } from "../../../../convex/_generated/api";
 import { WizardProgress } from "./WizardProgress";
 import { BasicInfoStep } from "./steps/BasicInfoStep";
 import { EducationStep } from "./steps/EducationStep";
@@ -13,6 +11,8 @@ import { SkillsStep } from "./steps/SkillsStep";
 import { EnrichmentStep } from "./steps/EnrichmentStep";
 import { PrivacyStep } from "./steps/PrivacyStep";
 import { useAutoSave } from "./hooks/useAutoSave";
+import { Spinner } from "~/components/ui/spinner";
+import { Button } from "~/components/ui/button";
 
 type StepId =
   | "basic"
@@ -28,7 +28,7 @@ interface ProfileWizardProps {
   onStepChange: (step: StepId) => void;
 }
 
-const STEPS: StepId[] = [
+const STEPS: Array<StepId> = [
   "basic",
   "education",
   "work",

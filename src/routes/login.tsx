@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
+import { AuthLoading, Authenticated, Unauthenticated } from "convex/react";
 import { useEffect } from "react";
 import { LoginCard } from "~/components/auth/login-card";
 

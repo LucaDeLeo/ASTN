@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
-import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
+import { AuthLoading, Authenticated, Unauthenticated } from "convex/react";
 import { AuthHeader } from "~/components/layout/auth-header";
 import { ProfileWizard } from "~/components/profile/wizard/ProfileWizard";
 import { Spinner } from "~/components/ui/spinner";

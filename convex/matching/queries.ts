@@ -1,11 +1,11 @@
-import { internalQuery } from "../_generated/server";
 import { v } from "convex/values";
+import { internalQuery } from "../_generated/server";
 
 // Get full profile data for context construction
 export const getFullProfile = internalQuery({
   args: { profileId: v.id("profiles") },
   handler: async (ctx, { profileId }) => {
-    const profile = await ctx.db.get(profileId);
+    const profile = await ctx.db.get("profiles", profileId);
     if (!profile) return null;
 
     return {

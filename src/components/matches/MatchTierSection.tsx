@@ -1,5 +1,5 @@
+import { Compass, Sparkles, ThumbsUp } from "lucide-react";
 import { MatchCard } from "./MatchCard";
-import { Sparkles, ThumbsUp, Compass } from "lucide-react";
 
 interface MatchTierSectionProps {
   tier: "great" | "good" | "exploring";
@@ -7,7 +7,7 @@ interface MatchTierSectionProps {
     _id: string;
     tier: "great" | "good" | "exploring";
     isNew: boolean;
-    explanation: { strengths: string[] };
+    explanation: { strengths: Array<string> };
     opportunity: {
       _id: string;
       title: string;

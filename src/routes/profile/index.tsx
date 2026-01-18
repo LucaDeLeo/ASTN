@@ -1,20 +1,19 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
-import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { AuthLoading, Authenticated, Unauthenticated, useQuery  } from "convex/react";
+import {
+  Briefcase,
+  Edit,
+  GraduationCap,
+  MapPin,
+  Target,
+  User,
+} from "lucide-react";
 import { api } from "../../../convex/_generated/api";
 import { AuthHeader } from "~/components/layout/auth-header";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Spinner } from "~/components/ui/spinner";
-import {
-  User,
-  MapPin,
-  GraduationCap,
-  Briefcase,
-  Target,
-  Edit,
-} from "lucide-react";
 
 export const Route = createFileRoute("/profile/")({
   component: ProfilePage,

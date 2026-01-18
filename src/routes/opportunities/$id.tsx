@@ -1,9 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 import { AuthHeader } from "~/components/layout/auth-header";
 import { OpportunityDetail } from "~/components/opportunities/opportunity-detail";
-import type { Id } from "../../../convex/_generated/dataModel";
 import { Button } from "~/components/ui/button";
 
 export const Route = createFileRoute("/opportunities/$id")({

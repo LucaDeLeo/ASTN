@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Check, Plus, Trash2 } from "lucide-react";
+import type { Doc } from "../../../../../convex/_generated/dataModel";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
-import { Check, Plus, Trash2 } from "lucide-react";
-import type { Doc } from "../../../../../convex/_generated/dataModel";
 
 interface EducationEntry {
   institution: string;
@@ -38,7 +38,7 @@ export function EducationStep({
   isSaving,
   lastSaved,
 }: EducationStepProps) {
-  const [entries, setEntries] = useState<EducationEntry[]>(
+  const [entries, setEntries] = useState<Array<EducationEntry>>(
     profile?.education ?? []
   );
 

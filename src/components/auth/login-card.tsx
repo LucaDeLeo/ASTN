@@ -1,9 +1,9 @@
 import { useState } from "react";
+import { OAuthButtons } from "./oauth-buttons";
+import { PasswordForm } from "./password-form";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Separator } from "~/components/ui/separator";
-import { OAuthButtons } from "./oauth-buttons";
-import { PasswordForm } from "./password-form";
 import { cn } from "~/lib/utils";
 
 interface LoginCardProps {

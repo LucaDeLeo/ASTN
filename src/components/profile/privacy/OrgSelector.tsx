@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react";
-import { useQuery, useAction } from "convex/react";
+import { useEffect, useState } from "react";
+import { useAction, useQuery } from "convex/react";
+import { Building2, ChevronDown, ChevronUp, Search, X } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Input } from "~/components/ui/input";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
-import { X, Search, ChevronDown, ChevronUp, Building2 } from "lucide-react";
 
 interface OrgSelectorProps {
-  selectedOrgs: string[];
-  onOrgsChange: (orgs: string[]) => void;
+  selectedOrgs: Array<string>;
+  onOrgsChange: (orgs: Array<string>) => void;
 }
 
 export function OrgSelector({ selectedOrgs, onOrgsChange }: OrgSelectorProps) {

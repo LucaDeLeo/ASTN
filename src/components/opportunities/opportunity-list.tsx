@@ -1,7 +1,7 @@
 import { OpportunityCard } from "./opportunity-card";
+import type { Id } from "../../../convex/_generated/dataModel";
 import { Empty } from "~/components/ui/empty";
 import { Spinner } from "~/components/ui/spinner";
-import type { Id } from "../../../convex/_generated/dataModel";
 
 type Opportunity = {
   _id: Id<"opportunities">;
@@ -20,7 +20,7 @@ export function OpportunityList({
   opportunities,
   isLoading,
 }: {
-  opportunities?: Opportunity[];
+  opportunities?: Array<Opportunity>;
   isLoading: boolean;
 }) {
   if (isLoading) {

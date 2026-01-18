@@ -1,12 +1,12 @@
-import { useState, useMemo, useRef, useEffect } from "react";
-import { useQuery, useAction } from "convex/react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useAction, useQuery } from "convex/react";
+import { AlertTriangle } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { SkillChip } from "./SkillChip";
-import { AlertTriangle } from "lucide-react";
 
 interface SkillsInputProps {
-  selectedSkills: string[];
-  onSkillsChange: (skills: string[]) => void;
+  selectedSkills: Array<string>;
+  onSkillsChange: (skills: Array<string>) => void;
   maxSuggested?: number;
 }
 

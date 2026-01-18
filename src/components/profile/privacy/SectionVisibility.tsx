@@ -1,3 +1,4 @@
+import { Globe, Lock, Users } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -5,7 +6,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Globe, Users, Lock } from "lucide-react";
 
 interface SectionVisibilityProps {
   section: string;

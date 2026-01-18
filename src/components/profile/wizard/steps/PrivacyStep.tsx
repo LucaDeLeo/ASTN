@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { Check, Globe, Lock, PartyPopper, Shield, Users } from "lucide-react";
+import { SectionVisibility } from "../../privacy/SectionVisibility";
+import { OrgSelector } from "../../privacy/OrgSelector";
+import type { Doc } from "../../../../../convex/_generated/dataModel";
 import { Card } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
-import { SectionVisibility } from "../../privacy/SectionVisibility";
-import { OrgSelector } from "../../privacy/OrgSelector";
-import { Check, Globe, Users, Lock, Shield, PartyPopper } from "lucide-react";
-import type { Doc } from "../../../../../convex/_generated/dataModel";
 
 interface PrivacyStepProps {
   profile: Doc<"profiles"> | null;
@@ -28,15 +28,15 @@ interface SectionVisibilitySettings {
 interface PrivacySettings {
   defaultVisibility: VisibilityLevel;
   sectionVisibility?: SectionVisibilitySettings;
-  hiddenFromOrgs?: string[];
+  hiddenFromOrgs?: Array<string>;
 }
 
-const VISIBILITY_OPTIONS: {
+const VISIBILITY_OPTIONS: Array<{
   value: VisibilityLevel;
   label: string;
   description: string;
   icon: typeof Globe;
-}[] = [
+}> = [
   {
     value: "public",
     label: "Public",
@@ -125,7 +125,7 @@ export function PrivacyStep({
   };
 
   // Handle hidden orgs change
-  const handleHiddenOrgsChange = (orgs: string[]) => {
+  const handleHiddenOrgsChange = (orgs: Array<string>) => {
     updateSettings({ hiddenFromOrgs: orgs });
   };
 

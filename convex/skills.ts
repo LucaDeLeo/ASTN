@@ -1,5 +1,5 @@
-import { query, internalMutation, action } from "./_generated/server";
 import { v } from "convex/values";
+import { action, internalMutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 
 // AI Safety Skills Taxonomy

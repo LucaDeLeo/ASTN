@@ -1,5 +1,5 @@
-import { mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { mutation } from "./_generated/server";
 
 // Create a new opportunity (manual entry)
 export const createOpportunity = mutation({
@@ -59,12 +59,12 @@ export const updateOpportunity = mutation({
       Object.entries(updates).filter(([_, v]) => v !== undefined)
     );
 
-    await ctx.db.patch(id, {
+    await ctx.db.patch("opportunities", id, {
       ...cleanUpdates,
       updatedAt: Date.now(),
     });
 
-    return await ctx.db.get(id);
+    return await ctx.db.get("opportunities", id);
   },
 });
 
@@ -72,7 +72,7 @@ export const updateOpportunity = mutation({
 export const deleteOpportunity = mutation({
   args: { id: v.id("opportunities") },
   handler: async (ctx, args) => {
-    await ctx.db.delete(args.id);
+    await ctx.db.delete("opportunities", args.id);
   },
 });
 
@@ -80,7 +80,7 @@ export const deleteOpportunity = mutation({
 export const archiveOpportunity = mutation({
   args: { id: v.id("opportunities") },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.id, {
+    await ctx.db.patch("opportunities", args.id, {
       status: "archived",
       updatedAt: Date.now(),
     });

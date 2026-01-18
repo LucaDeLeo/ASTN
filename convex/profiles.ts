@@ -1,5 +1,5 @@
-import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 import { auth } from "./auth";
 
 // Section completeness rules
@@ -78,7 +78,7 @@ export const getOrCreateProfile = query({
 export const getById = query({
   args: { profileId: v.id("profiles") },
   handler: async (ctx, { profileId }) => {
-    return await ctx.db.get(profileId);
+    return await ctx.db.get("profiles", profileId);
   },
 });
 
@@ -179,12 +179,12 @@ export const updateField = mutation({
     }
 
     // Verify ownership
-    const profile = await ctx.db.get(profileId);
+    const profile = await ctx.db.get("profiles", profileId);
     if (!profile || profile.userId !== userId) {
       throw new Error("Profile not found or not authorized");
     }
 
-    await ctx.db.patch(profileId, {
+    await ctx.db.patch("profiles", profileId, {
       ...updates,
       updatedAt: Date.now(),
     });
@@ -197,7 +197,7 @@ export const updateField = mutation({
 export const getCompleteness = query({
   args: { profileId: v.id("profiles") },
   handler: async (ctx, { profileId }) => {
-    const profile = await ctx.db.get(profileId);
+    const profile = await ctx.db.get("profiles", profileId);
     if (!profile) {
       return null;
     }

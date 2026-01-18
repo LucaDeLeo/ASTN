@@ -1,5 +1,5 @@
-import { internalMutation } from "../_generated/server";
 import { v } from "convex/values";
+import { internalMutation } from "../_generated/server";
 
 // Match result type from LLM
 const matchResultValidator = v.object({
@@ -44,7 +44,7 @@ export const saveMatches = internalMutation({
 
     // Delete old matches for this profile
     for (const match of existingMatches) {
-      await ctx.db.delete(match._id);
+      await ctx.db.delete("matches", match._id);
     }
 
     // Insert new matches
@@ -86,7 +86,7 @@ export const clearMatchesForProfile = internalMutation({
       .collect();
 
     for (const match of matches) {
-      await ctx.db.delete(match._id);
+      await ctx.db.delete("matches", match._id);
     }
 
     return { deletedCount: matches.length };
@@ -105,7 +105,7 @@ export const markMatchesViewed = internalMutation({
       .collect();
 
     for (const match of newMatches) {
-      await ctx.db.patch(match._id, { isNew: false });
+      await ctx.db.patch("matches", match._id, { isNew: false });
     }
 
     return { markedCount: newMatches.length };

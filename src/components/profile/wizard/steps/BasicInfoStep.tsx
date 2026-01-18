@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Check } from "lucide-react";
+import type { Doc } from "../../../../../convex/_generated/dataModel";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Label } from "~/components/ui/label";
-import { Check } from "lucide-react";
-import type { Doc } from "../../../../../convex/_generated/dataModel";
 
 interface BasicInfoStepProps {
   profile: Doc<"profiles"> | null;

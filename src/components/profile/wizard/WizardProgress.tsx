@@ -1,6 +1,6 @@
 import { useQuery } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
 import { Check, Circle, Lock } from "lucide-react";
+import { api } from "../../../../convex/_generated/api";
 import { cn } from "~/lib/utils";
 
 type StepId =
@@ -27,7 +27,7 @@ const STEP_TO_SECTION: Record<StepId, string> = {
   privacy: "privacy",
 };
 
-const STEPS: { id: StepId; label: string }[] = [
+const STEPS: Array<{ id: StepId; label: string }> = [
   { id: "basic", label: "Basic Information" },
   { id: "education", label: "Education" },
   { id: "work", label: "Work History" },
