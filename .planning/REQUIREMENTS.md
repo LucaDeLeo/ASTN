@@ -9,12 +9,12 @@ Requirements for profile input speedup. Each maps to roadmap phases.
 
 ### Upload
 
-- [ ] **UPLD-01**: User can upload PDF via drag-and-drop zone
-- [ ] **UPLD-02**: User can upload PDF via file picker button
-- [ ] **UPLD-03**: User can paste text block with career info
-- [ ] **UPLD-04**: User sees progress indicator during upload
-- [ ] **UPLD-05**: User sees file size limit (10MB) before uploading
-- [ ] **UPLD-06**: User sees clear error message if upload fails
+- [x] **UPLD-01**: User can upload PDF via drag-and-drop zone
+- [x] **UPLD-02**: User can upload PDF via file picker button
+- [x] **UPLD-03**: User can paste text block with career info
+- [x] **UPLD-04**: User sees progress indicator during upload
+- [x] **UPLD-05**: User sees file size limit (10MB) before uploading
+- [x] **UPLD-06**: User sees clear error message if upload fails
 
 ### Extraction
 
@@ -65,12 +65,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| UPLD-01 | Phase 7 | Pending |
-| UPLD-02 | Phase 7 | Pending |
-| UPLD-03 | Phase 7 | Pending |
-| UPLD-04 | Phase 7 | Pending |
-| UPLD-05 | Phase 7 | Pending |
-| UPLD-06 | Phase 7 | Pending |
+| UPLD-01 | Phase 7 | Complete |
+| UPLD-02 | Phase 7 | Complete |
+| UPLD-03 | Phase 7 | Complete |
+| UPLD-04 | Phase 7 | Complete |
+| UPLD-05 | Phase 7 | Complete |
+| UPLD-06 | Phase 7 | Complete |
 | EXTR-01 | Phase 8 | Pending |
 | EXTR-02 | Phase 8 | Pending |
 | EXTR-03 | Phase 8 | Pending |
