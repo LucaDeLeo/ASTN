@@ -74,14 +74,6 @@ export const getOrCreateProfile = query({
   },
 });
 
-// Get profile by ID (for internal use)
-export const getById = query({
-  args: { profileId: v.id("profiles") },
-  handler: async (ctx, { profileId }) => {
-    return await ctx.db.get("profiles", profileId);
-  },
-});
-
 // Create profile for current user (called on first edit)
 export const create = mutation({
   args: {},
