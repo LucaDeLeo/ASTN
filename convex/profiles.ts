@@ -331,3 +331,117 @@ export const getMyCompleteness = query({
     };
   },
 });
+
+// Convert YYYY-MM date string to Unix timestamp (first of month)
+// Returns undefined for "present", empty string, or invalid format
+function convertDateString(dateStr?: string): number | undefined {
+  if (!dateStr || dateStr.toLowerCase() === "present") return undefined;
+  const parts = dateStr.split("-");
+  if (parts.length < 2) return undefined;
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10);
+  if (isNaN(year) || isNaN(month)) return undefined;
+  return new Date(year, month - 1, 1).getTime();
+}
+
+// Apply extracted profile data from resume/CV
+// Creates profile if user doesn't have one yet
+export const applyExtractedProfile = mutation({
+  args: {
+    extractedData: v.object({
+      name: v.optional(v.string()),
+      location: v.optional(v.string()),
+      education: v.optional(
+        v.array(
+          v.object({
+            institution: v.string(),
+            degree: v.optional(v.string()),
+            field: v.optional(v.string()),
+            startYear: v.optional(v.number()),
+            endYear: v.optional(v.number()),
+            current: v.optional(v.boolean()),
+          })
+        )
+      ),
+      workHistory: v.optional(
+        v.array(
+          v.object({
+            organization: v.string(),
+            title: v.string(),
+            startDate: v.optional(v.string()), // YYYY-MM string from extraction
+            endDate: v.optional(v.string()), // YYYY-MM or "present"
+            current: v.optional(v.boolean()),
+            description: v.optional(v.string()),
+          })
+        )
+      ),
+      skills: v.optional(v.array(v.string())),
+    }),
+  },
+  handler: async (ctx, { extractedData }) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    // Get or create profile
+    let profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
+    const now = Date.now();
+
+    if (!profile) {
+      // Create profile if it doesn't exist
+      const profileId = await ctx.db.insert("profiles", {
+        userId,
+        createdAt: now,
+        updatedAt: now,
+      });
+      profile = (await ctx.db.get("profiles", profileId))!;
+    }
+
+    // Build updates object with only provided fields
+    const updates: Record<string, unknown> = {};
+
+    if (extractedData.name !== undefined) {
+      updates.name = extractedData.name;
+    }
+
+    if (extractedData.location !== undefined) {
+      updates.location = extractedData.location;
+    }
+
+    // Education maps directly (uses year numbers, no conversion needed)
+    if (extractedData.education !== undefined) {
+      updates.education = extractedData.education;
+    }
+
+    // Work history needs date conversion from strings to timestamps
+    if (extractedData.workHistory !== undefined) {
+      updates.workHistory = extractedData.workHistory.map((work) => ({
+        organization: work.organization,
+        title: work.title,
+        startDate: convertDateString(work.startDate),
+        endDate: convertDateString(work.endDate),
+        current: work.current,
+        description: work.description,
+      }));
+    }
+
+    if (extractedData.skills !== undefined) {
+      updates.skills = extractedData.skills;
+    }
+
+    // Only update if there's something to update
+    if (Object.keys(updates).length > 0) {
+      await ctx.db.patch("profiles", profile._id, {
+        ...updates,
+        updatedAt: now,
+      });
+    }
+
+    return { success: true, profileId: profile._id };
+  },
+});
