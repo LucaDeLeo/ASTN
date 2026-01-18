@@ -27,6 +27,15 @@ export function AuthHeader() {
             Opportunities
           </Link>
 
+          <Authenticated>
+            <Link
+              to="/matches"
+              className="text-sm text-slate-600 hover:text-slate-900 [&.active]:text-slate-900 [&.active]:font-medium"
+            >
+              Matches
+            </Link>
+          </Authenticated>
+
           {/* Auth state: loading, signed out, signed in */}
           <AuthLoading>
             <div className="size-8 rounded-full bg-slate-100 animate-pulse" />
