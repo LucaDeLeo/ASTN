@@ -13,7 +13,7 @@ This roadmap delivers the ASTN pilot for BAISH (50-100 profiles). We start with 
 - [x] **Phase 1: Foundation + Opportunities** - Project scaffolding and opportunity pipeline (cold start prevention)
 - [x] **Phase 2: Authentication** - User accounts with OAuth and email/password
 - [x] **Phase 3: Profiles** - Profile creation with form and LLM enrichment
-- [ ] **Phase 4: Matching** - Smart matching with explanations and recommendations
+- [x] **Phase 4: Matching** - Smart matching with explanations and recommendations
 - [x] **Phase 5: Engagement + Org** - Notifications and org dashboard
 - [ ] **Phase 6: Polish + Tech Debt** - Navigation fixes and audit cleanup (GAP CLOSURE)
 
@@ -85,7 +85,7 @@ Plans:
 Plans:
 - [x] 04-01-PLAN.md — Match data layer (schema, internal queries/mutations)
 - [x] 04-02-PLAN.md — Match compute engine (prompts, LLM action, public queries)
-- [ ] 04-03-PLAN.md — Matches UI (list page, detail page, components)
+- [x] 04-03-PLAN.md — Matches UI (list page, detail page, components)
 
 ### Phase 5: Engagement + Org
 **Goal**: Users stay engaged through notifications; BAISH has visibility into their members
@@ -135,7 +135,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 1. Foundation + Opportunities | 4/4 | Complete | 2026-01-17 |
 | 2. Authentication | 2/2 | Complete | 2026-01-17 |
 | 3. Profiles | 4/4 | Complete | 2026-01-17 |
-| 4. Matching | 2/3 | In Progress | - |
+| 4. Matching | 3/3 | Complete | 2026-01-18 |
 | 5. Engagement + Org | 6/6 | Complete | 2026-01-18 |
 | 6. Polish + Tech Debt | 0/2 | Pending | - |
 
