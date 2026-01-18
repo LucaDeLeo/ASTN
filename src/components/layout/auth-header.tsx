@@ -69,7 +69,7 @@ function UserMenu() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to="/profile/edit" className="cursor-pointer">
+          <Link to="/settings" className="cursor-pointer">
             <Settings className="mr-2 size-4" />
             Settings
           </Link>
