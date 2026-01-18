@@ -8,6 +8,16 @@ A career command center for AI safety talent. Individuals maintain living profil
 
 Individuals get enough value from smart matching + recommendations that they keep profiles fresh — this is the flywheel that makes everything else work.
 
+## Current Milestone: v1.1 Profile Input Speedup
+
+**Goal:** Reduce friction in profile creation by letting users upload existing documents instead of filling forms from scratch.
+
+**Target features:**
+- Upload PDF (CV or LinkedIn "Save as PDF" export)
+- Paste text block with career info
+- LLM extracts structured data and auto-fills profile form
+- User reviews/edits, then enrichment chat fills remaining gaps
+
 ## Requirements
 
 ### Validated
@@ -22,7 +32,10 @@ Individuals get enough value from smart matching + recommendations that they kee
 
 ### Active
 
-(None — defining requirements for v1.1 with `/gsd:new-milestone`)
+- [ ] PDF/document upload for profile creation (CV, LinkedIn export)
+- [ ] Text paste for profile creation (any format)
+- [ ] LLM extraction from uploaded content → auto-fill form fields
+- [ ] Context-aware enrichment chat (knows what's populated, only asks about gaps)
 
 ### Out of Scope
 
@@ -79,4 +92,4 @@ Individuals get enough value from smart matching + recommendations that they kee
 | Cold start prevention (opportunities first) | Ensure users see matches immediately on signup | ✓ Good — no empty state for new users |
 
 ---
-*Last updated: 2026-01-18 after v1.0 milestone*
+*Last updated: 2026-01-18 after v1.1 milestone started*
