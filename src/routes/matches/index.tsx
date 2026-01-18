@@ -23,7 +23,7 @@ function aggregateGrowthAreas(matches: {
   };
 
   for (const match of allMatches) {
-    for (const rec of match.recommendations || []) {
+    for (const rec of match.recommendations) {
       // Skip "specific" type as those are per-match, not general growth areas
       if (rec.type === "skill" || rec.type === "experience") {
         byType[rec.type].add(rec.action);
@@ -99,8 +99,7 @@ function MatchesContent() {
     if (matchesData?.needsComputation && !isComputing) {
       handleCompute();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [matchesData?.needsComputation]);
+  }, [matchesData?.needsComputation, isComputing]);
 
   const handleCompute = async () => {
     setIsComputing(true);
@@ -116,7 +115,7 @@ function MatchesContent() {
 
   // Aggregate growth areas - must be called unconditionally (React hooks rule)
   const growthAreas = useMemo(() => {
-    if (!matchesData?.matches) return [];
+    if (matchesData?.matches === undefined) return [];
     return aggregateGrowthAreas(matchesData.matches);
   }, [matchesData?.matches]);
 
@@ -194,7 +193,7 @@ function MatchesContent() {
             <p className="text-slate-500 mt-1">
               Opportunities matched to your profile and goals
             </p>
-            {computedAt && (
+            {computedAt !== null && computedAt !== undefined && (
               <p className="text-xs text-slate-400 mt-1">
                 Last updated: {new Date(computedAt).toLocaleDateString()}
               </p>
@@ -205,7 +204,7 @@ function MatchesContent() {
             onClick={handleCompute}
             disabled={isComputing}
           >
-            <RefreshCw className={`size-4 mr-2 ${isComputing ? "animate-spin" : ""}`} />
+            <RefreshCw className="size-4 mr-2" />
             Refresh Matches
           </Button>
         </div>

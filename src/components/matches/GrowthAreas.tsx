@@ -15,7 +15,7 @@ const themeIcons: Record<string, typeof TrendingUp> = {
 };
 
 export function GrowthAreas({ areas }: GrowthAreasProps) {
-  if (!areas || areas.length === 0) return null;
+  if (areas.length === 0) return null;
 
   return (
     <Card className="p-6 bg-slate-50">
@@ -29,7 +29,7 @@ export function GrowthAreas({ areas }: GrowthAreasProps) {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {areas.map((area) => {
-          const Icon = themeIcons[area.theme] || TrendingUp;
+          const Icon = themeIcons[area.theme] ?? TrendingUp;
           return (
             <div key={area.theme} className="bg-white rounded-lg p-4 border">
               <div className="flex items-center gap-2 mb-2">
