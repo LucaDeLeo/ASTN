@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation } from "convex/react";
 import {
   AlertCircle,
@@ -21,12 +21,14 @@ interface EnrichmentStepProps {
     _id: Id<"profiles">;
     hasEnrichmentConversation?: boolean;
   } | null;
+  fromExtraction?: boolean;
 }
 
-export function EnrichmentStep({ profile }: EnrichmentStepProps) {
+export function EnrichmentStep({ profile, fromExtraction }: EnrichmentStepProps) {
   const [mode, setMode] = useState<"chat" | "review">("chat");
   const [isApplying, setIsApplying] = useState(false);
   const [applied, setApplied] = useState(false);
+  const hasAutoGreeted = useRef(false);
 
   const updateField = useMutation(api.profiles.updateField);
 
@@ -45,6 +47,21 @@ export function EnrichmentStep({ profile }: EnrichmentStepProps) {
     updateExtractionValue,
     resetExtractions,
   } = useEnrichment(profile?._id ?? null);
+
+  // Auto-send greeting when arriving from resume extraction
+  useEffect(() => {
+    if (
+      fromExtraction &&
+      profile?._id &&
+      messages.length === 0 &&
+      !isLoading &&
+      !hasAutoGreeted.current
+    ) {
+      hasAutoGreeted.current = true;
+      // Send a greeting to trigger the LLM to acknowledge the imported data
+      void sendMessage("Hi! I just imported my resume. Can you help me complete my profile?");
+    }
+  }, [fromExtraction, profile?._id, messages.length, isLoading, sendMessage]);
 
   const handleExtract = async () => {
     await extractProfile();

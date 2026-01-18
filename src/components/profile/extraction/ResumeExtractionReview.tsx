@@ -94,7 +94,7 @@ export function ResumeExtractionReview({
           Review Extracted Information
         </h3>
         <p className="text-sm text-slate-500">
-          Accept, reject, or edit the information extracted from your document.
+          All fields will be applied by default. Edit or reject any items you want to change.
         </p>
       </div>
 
@@ -169,18 +169,15 @@ export function ResumeExtractionReview({
             <h4 className="font-medium text-slate-700">Skills</h4>
             {skillsItem && (
               <div className="flex items-center gap-2">
-                {skillsItem.status !== "pending" && (
+                {(skillsItem.status === "edited" || skillsItem.status === "rejected") && (
                   <Badge
                     variant={skillsItem.status === "rejected" ? "secondary" : "default"}
                     className={cn(
                       "text-xs",
-                      skillsItem.status === "accepted" &&
-                        "bg-green-100 text-green-800 hover:bg-green-100",
                       skillsItem.status === "edited" &&
                         "bg-amber-100 text-amber-800 hover:bg-amber-100"
                     )}
                   >
-                    {skillsItem.status === "accepted" && "Accepted"}
                     {skillsItem.status === "rejected" && "Rejected"}
                     {skillsItem.status === "edited" && "Edited"}
                   </Badge>

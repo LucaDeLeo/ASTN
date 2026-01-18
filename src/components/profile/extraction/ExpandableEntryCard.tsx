@@ -106,24 +106,24 @@ export function ExpandableEntryCard({
   return (
     <Card
       className={cn(
-        "transition-all duration-200 overflow-hidden",
-        status === "accepted" && "border-green-300 bg-green-50/50",
-        status === "edited" && "border-amber-300 bg-amber-50/50",
-        status === "rejected" && "border-slate-200 bg-slate-50 opacity-60",
-        status === "pending" && "border-slate-200"
+        "transition-all duration-200 overflow-hidden shadow-sm",
+        status === "accepted" && "border-slate-300 bg-white",
+        status === "edited" && "border-amber-400 bg-amber-50",
+        status === "rejected" && "border-slate-300 bg-slate-100 opacity-60",
+        status === "pending" && "border-slate-300 bg-white"
       )}
     >
       {/* Collapsed header */}
       <button
         type="button"
         onClick={handleToggleExpand}
-        className="w-full p-4 flex items-center justify-between gap-4 text-left hover:bg-slate-50/50 transition-colors"
+        className="w-full px-3 py-1.5 flex items-center justify-between gap-3 text-left hover:bg-slate-50/50 transition-colors"
       >
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
             <h4
               className={cn(
-                "font-medium",
+                "font-medium truncate",
                 status === "rejected"
                   ? "line-through text-slate-400"
                   : "text-slate-900"
@@ -131,32 +131,15 @@ export function ExpandableEntryCard({
             >
               {title}
             </h4>
-            {dateRange && (
-              <span
-                className={cn(
-                  "text-sm",
-                  status === "rejected" ? "text-slate-400" : "text-slate-500"
-                )}
-              >
-                {dateRange}
-              </span>
-            )}
-            {status !== "pending" && (
+            {(status === "edited" || status === "rejected") && (
               <Badge
                 variant={status === "rejected" ? "secondary" : "default"}
                 className={cn(
-                  "text-xs",
-                  status === "accepted" &&
-                    "bg-green-100 text-green-800 hover:bg-green-100",
+                  "text-xs shrink-0",
                   status === "edited" &&
                     "bg-amber-100 text-amber-800 hover:bg-amber-100"
                 )}
               >
-                {status === "accepted" && (
-                  <>
-                    <Check className="size-3 mr-1" /> Accepted
-                  </>
-                )}
                 {status === "rejected" && "Rejected"}
                 {status === "edited" && (
                   <>
@@ -166,6 +149,16 @@ export function ExpandableEntryCard({
               </Badge>
             )}
           </div>
+          {dateRange && (
+            <span
+              className={cn(
+                "text-sm",
+                status === "rejected" ? "text-slate-400" : "text-slate-500"
+              )}
+            >
+              {dateRange}
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-1">
@@ -217,7 +210,7 @@ export function ExpandableEntryCard({
         )}
       >
         <div className="overflow-hidden">
-          <div className="px-4 pb-4 space-y-3 border-t border-slate-100 pt-3">
+          <div className="px-3 pb-2 space-y-1.5 border-t border-slate-100 pt-1.5">
             {isEducation ? (
               <EducationFields
                 entry={localEntry as EducationEntry}
@@ -244,9 +237,9 @@ interface EducationFieldsProps {
 function EducationFields({ entry, onChange }: EducationFieldsProps) {
   return (
     <>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="text-xs font-medium text-slate-500 mb-1 block">
+          <label className="text-xs font-medium text-slate-500 mb-0.5 block">
             Institution
           </label>
           <Input
@@ -256,7 +249,7 @@ function EducationFields({ entry, onChange }: EducationFieldsProps) {
           />
         </div>
         <div>
-          <label className="text-xs font-medium text-slate-500 mb-1 block">
+          <label className="text-xs font-medium text-slate-500 mb-0.5 block">
             Degree
           </label>
           <Input
@@ -278,9 +271,9 @@ function EducationFields({ entry, onChange }: EducationFieldsProps) {
           className="h-9 text-sm"
         />
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2">
         <div>
-          <label className="text-xs font-medium text-slate-500 mb-1 block">
+          <label className="text-xs font-medium text-slate-500 mb-0.5 block">
             Start Year
           </label>
           <Input
@@ -294,7 +287,7 @@ function EducationFields({ entry, onChange }: EducationFieldsProps) {
           />
         </div>
         <div>
-          <label className="text-xs font-medium text-slate-500 mb-1 block">
+          <label className="text-xs font-medium text-slate-500 mb-0.5 block">
             End Year
           </label>
           <Input
@@ -332,9 +325,9 @@ interface WorkHistoryFieldsProps {
 function WorkHistoryFields({ entry, onChange }: WorkHistoryFieldsProps) {
   return (
     <>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="text-xs font-medium text-slate-500 mb-1 block">
+          <label className="text-xs font-medium text-slate-500 mb-0.5 block">
             Organization
           </label>
           <Input
@@ -344,7 +337,7 @@ function WorkHistoryFields({ entry, onChange }: WorkHistoryFieldsProps) {
           />
         </div>
         <div>
-          <label className="text-xs font-medium text-slate-500 mb-1 block">
+          <label className="text-xs font-medium text-slate-500 mb-0.5 block">
             Title
           </label>
           <Input
@@ -354,9 +347,9 @@ function WorkHistoryFields({ entry, onChange }: WorkHistoryFieldsProps) {
           />
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2">
         <div>
-          <label className="text-xs font-medium text-slate-500 mb-1 block">
+          <label className="text-xs font-medium text-slate-500 mb-0.5 block">
             Start Date
           </label>
           <Input
@@ -367,7 +360,7 @@ function WorkHistoryFields({ entry, onChange }: WorkHistoryFieldsProps) {
           />
         </div>
         <div>
-          <label className="text-xs font-medium text-slate-500 mb-1 block">
+          <label className="text-xs font-medium text-slate-500 mb-0.5 block">
             End Date
           </label>
           <Input
@@ -396,10 +389,26 @@ function WorkHistoryFields({ entry, onChange }: WorkHistoryFieldsProps) {
         </label>
         <textarea
           value={entry.description ?? ""}
-          onChange={(e) => onChange("description", e.target.value)}
+          onChange={(e) => {
+            onChange("description", e.target.value);
+            // Auto-resize
+            e.target.style.height = "auto";
+            e.target.style.height = e.target.scrollHeight + "px";
+          }}
+          onFocus={(e) => {
+            // Auto-resize on focus
+            e.target.style.height = "auto";
+            e.target.style.height = e.target.scrollHeight + "px";
+          }}
+          ref={(el) => {
+            // Auto-resize on mount
+            if (el) {
+              el.style.height = "auto";
+              el.style.height = el.scrollHeight + "px";
+            }
+          }}
           placeholder="Describe your role and responsibilities..."
-          rows={3}
-          className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-coral-500 focus:border-transparent resize-none"
+          className="w-full px-3 py-2 text-sm text-slate-900 border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-coral-500 focus:border-transparent resize-none min-h-[60px] whitespace-pre-wrap overflow-hidden"
         />
       </div>
     </>

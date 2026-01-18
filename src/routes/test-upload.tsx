@@ -81,9 +81,9 @@ function TestUploadPage() {
     setIsApplying(true);
     try {
       await applyExtractedProfile({ extractedData: data });
-      // Reset state and navigate to enrichment
+      // Reset state and navigate to enrichment with flag to auto-greet
       handleStartOver();
-      void navigate({ to: "/profile/edit", search: { step: "enrichment" } });
+      void navigate({ to: "/profile/edit", search: { step: "enrichment", fromExtraction: "true" } });
     } catch (error) {
       console.error("Failed to apply extraction:", error);
       // Stay on page, user can retry
@@ -288,12 +288,14 @@ function TestUploadPage() {
           }`}
         >
           {extractionState.status === "success" && (
-            <ResumeExtractionReview
-              extractedData={extractionState.extractedData}
-              onApply={handleApplyToProfile}
-              onSkip={handleSkipToManual}
-              isApplying={isApplying}
-            />
+            <div className="rounded-lg border bg-card p-6">
+              <ResumeExtractionReview
+                extractedData={extractionState.extractedData}
+                onApply={handleApplyToProfile}
+                onSkip={handleSkipToManual}
+                isApplying={isApplying}
+              />
+            </div>
           )}
         </div>
       </div>

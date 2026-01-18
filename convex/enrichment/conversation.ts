@@ -19,6 +19,12 @@ Your goal is to understand:
 3. What types of roles or opportunities they're seeking
 4. What motivates them about AI safety work
 
+IMPORTANT - Using profile context:
+- Look at their current profile data below
+- If they already have skills, work history, or education filled in, ACKNOWLEDGE this and DON'T ask about it again
+- Focus your questions on GAPS - things not yet in their profile (career goals, motivations, what they're seeking)
+- If they just imported from a resume, start by acknowledging what you see and ask about their goals/interests
+
 Ask open-ended questions. After 3-8 exchanges, when you feel you have enough context,
 say something like "I think I have a good picture of your background now! Let me
 summarize what I've learned and we can update your profile."
@@ -74,9 +80,25 @@ export const sendMessage = action({
         `AI Safety Interests: ${profile.aiSafetyInterests.join(", ")}`
       );
     }
+    // Include work history summary
+    if (profile?.workHistory && profile.workHistory.length > 0) {
+      const workSummary = profile.workHistory
+        .map((w: { title: string; organization: string }) => `${w.title} at ${w.organization}`)
+        .join("; ");
+      contextParts.push(`Work History: ${workSummary}`);
+    }
+    // Include education summary
+    if (profile?.education && profile.education.length > 0) {
+      const eduSummary = profile.education
+        .map((e: { degree?: string; field?: string; institution: string }) =>
+          e.degree ? `${e.degree}${e.field ? ` in ${e.field}` : ""} at ${e.institution}` : e.institution
+        )
+        .join("; ");
+      contextParts.push(`Education: ${eduSummary}`);
+    }
 
     const profileContext =
-      contextParts.length > 0 ? contextParts.join("\n") : "New profile";
+      contextParts.length > 0 ? contextParts.join("\n") : "New profile (no data yet)";
 
     // Save user message first
     await ctx.runMutation(internal.enrichment.queries.saveMessage, {

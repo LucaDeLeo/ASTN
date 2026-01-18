@@ -43,19 +43,21 @@ export function ExtractionProgress({ stage, fileName }: ExtractionProgressProps)
           <Loader2 className="absolute h-16 w-16 text-primary/40 animate-spin" />
         </div>
       </div>
-      <div className="space-y-1 h-12 flex flex-col justify-center">
-        {stageOrder.map((s) => (
-          <p
-            key={s}
-            className={`font-medium text-foreground transition-all duration-300 ease-out ${
-              s === stage
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-2 absolute pointer-events-none"
-            }`}
-          >
-            {stages[s].label}
-          </p>
-        ))}
+      <div className="space-y-1 h-12 flex flex-col justify-center items-center">
+        <div className="relative h-6 flex items-center justify-center">
+          {stageOrder.map((s) => (
+            <p
+              key={s}
+              className={`font-medium text-foreground transition-all duration-300 ease-out whitespace-nowrap ${
+                s === stage
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-2 absolute inset-0 flex items-center justify-center pointer-events-none"
+              }`}
+            >
+              {stages[s].label}
+            </p>
+          ))}
+        </div>
         {fileName && (
           <p className="text-sm text-muted-foreground">{fileName}</p>
         )}

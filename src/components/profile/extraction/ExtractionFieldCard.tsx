@@ -76,8 +76,8 @@ export function ExtractionFieldCard({
     return (
       <Card
         className={cn(
-          "p-4 transition-all duration-200",
-          "border-slate-200 bg-slate-50/50"
+          "p-3 transition-all duration-200 shadow-sm",
+          "border-slate-300 bg-white"
         )}
       >
         <div className="flex items-start justify-between gap-4">
@@ -100,9 +100,9 @@ export function ExtractionFieldCard({
   }
 
   // Missing value
-  if (!hasValue && status === "pending") {
+  if (!hasValue && (status === "pending" || status === "accepted")) {
     return (
-      <Card className="p-4 transition-all duration-200 border-slate-200 bg-slate-50/50">
+      <Card className="p-3 transition-all duration-200 shadow-sm border-slate-300 bg-white">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <h4 className="font-medium text-slate-900 mb-2">{label}</h4>
@@ -116,33 +116,26 @@ export function ExtractionFieldCard({
   return (
     <Card
       className={cn(
-        "p-4 transition-all duration-200",
-        status === "accepted" && "border-green-300 bg-green-50/50",
-        status === "edited" && "border-amber-300 bg-amber-50/50",
-        status === "rejected" && "border-slate-200 bg-slate-50 opacity-60",
-        status === "pending" && "border-slate-200"
+        "p-3 transition-all duration-200 shadow-sm",
+        status === "accepted" && "border-slate-300 bg-white",
+        status === "edited" && "border-amber-400 bg-amber-50",
+        status === "rejected" && "border-slate-300 bg-slate-100 opacity-60",
+        status === "pending" && "border-slate-300 bg-white"
       )}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
             <h4 className="font-medium text-slate-900">{label}</h4>
-            {status !== "pending" && (
+            {(status === "edited" || status === "rejected") && (
               <Badge
                 variant={status === "rejected" ? "secondary" : "default"}
                 className={cn(
                   "text-xs",
-                  status === "accepted" &&
-                    "bg-green-100 text-green-800 hover:bg-green-100",
                   status === "edited" &&
                     "bg-amber-100 text-amber-800 hover:bg-amber-100"
                 )}
               >
-                {status === "accepted" && (
-                  <>
-                    <Check className="size-3 mr-1" /> Accepted
-                  </>
-                )}
                 {status === "rejected" && "Rejected"}
                 {status === "edited" && (
                   <>

@@ -9,7 +9,7 @@ import type {
  * Generates a human-readable label for an education entry
  */
 function formatEducationLabel(edu: NonNullable<ExtractedData["education"]>[0]): string {
-  const parts: string[] = [];
+  const parts: Array<string> = [];
   if (edu.degree) parts.push(edu.degree);
   if (edu.field) parts.push(`in ${edu.field}`);
   parts.push(`at ${edu.institution}`);
@@ -26,8 +26,8 @@ function formatWorkLabel(work: NonNullable<ExtractedData["workHistory"]>[0]): st
 /**
  * Transforms extracted data into a flat list of reviewable items
  */
-function buildReviewItems(data: ExtractedData): ResumeReviewItem[] {
-  const items: ResumeReviewItem[] = [];
+function buildReviewItems(data: ExtractedData): Array<ResumeReviewItem> {
+  const items: Array<ResumeReviewItem> = [];
 
   // Basic fields
   if (data.name) {
@@ -36,7 +36,7 @@ function buildReviewItems(data: ExtractedData): ResumeReviewItem[] {
       field: "name",
       label: "Name",
       value: data.name,
-      status: "pending",
+      status: "accepted",
     });
   }
 
@@ -46,7 +46,7 @@ function buildReviewItems(data: ExtractedData): ResumeReviewItem[] {
       field: "email",
       label: "Email",
       value: data.email,
-      status: "pending",
+      status: "accepted",
     });
   }
 
@@ -56,7 +56,7 @@ function buildReviewItems(data: ExtractedData): ResumeReviewItem[] {
       field: "location",
       label: "Location",
       value: data.location,
-      status: "pending",
+      status: "accepted",
     });
   }
 
@@ -69,7 +69,7 @@ function buildReviewItems(data: ExtractedData): ResumeReviewItem[] {
         index,
         label: formatEducationLabel(edu),
         value: edu,
-        status: "pending",
+        status: "accepted",
       });
     });
   }
@@ -83,7 +83,7 @@ function buildReviewItems(data: ExtractedData): ResumeReviewItem[] {
         index,
         label: formatWorkLabel(work),
         value: work,
-        status: "pending",
+        status: "accepted",
       });
     });
   }
@@ -95,7 +95,7 @@ function buildReviewItems(data: ExtractedData): ResumeReviewItem[] {
       field: "skills",
       label: `Skills (${data.skills.length})`,
       value: data.skills,
-      status: "pending",
+      status: "accepted",
     });
   }
 
@@ -104,7 +104,7 @@ function buildReviewItems(data: ExtractedData): ResumeReviewItem[] {
 
 export interface UseResumeReviewReturn {
   /** Flat list of reviewable items */
-  items: ResumeReviewItem[];
+  items: Array<ResumeReviewItem>;
   /** Update the status of an item by id */
   updateStatus: (id: string, status: ResumeReviewStatus) => void;
   /** Update the edited value of an item (automatically sets status to "edited") */
@@ -138,7 +138,7 @@ export function useResumeReview(
   );
 
   // Local state for items with status and edits
-  const [items, setItems] = useState<ResumeReviewItem[]>(initialItems);
+  const [items, setItems] = useState<Array<ResumeReviewItem>>(initialItems);
 
   // Re-initialize when extracted data changes
   useMemo(() => {
@@ -172,12 +172,12 @@ export function useResumeReview(
     );
   }, []);
 
-  // Reset all items to pending
+  // Reset all items to accepted (the default state)
   const reset = useCallback(() => {
     setItems((prev) =>
       prev.map((item) => ({
         ...item,
-        status: "pending" as const,
+        status: "accepted" as const,
         editedValue: undefined,
       }))
     );
@@ -231,7 +231,7 @@ export function useResumeReview(
           result.location = value as string;
           break;
         case "skills":
-          result.skills = value as string[];
+          result.skills = value as Array<string>;
           break;
         // email is not included in profile data
       }

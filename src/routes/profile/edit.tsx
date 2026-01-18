@@ -17,6 +17,7 @@ const stepSchema = z.enum([
 
 const searchSchema = z.object({
   step: stepSchema.optional().default("basic"),
+  fromExtraction: z.string().optional(),
 });
 
 export const Route = createFileRoute("/profile/edit")({
@@ -54,10 +55,11 @@ function UnauthenticatedRedirect() {
 }
 
 function AuthenticatedContent() {
-  const { step } = Route.useSearch();
+  const { step, fromExtraction } = Route.useSearch();
   const navigate = useNavigate();
 
   const handleStepChange = (newStep: z.infer<typeof stepSchema>) => {
+    // Clear fromExtraction when navigating away
     navigate({ to: "/profile/edit", search: { step: newStep } });
   };
 
@@ -71,7 +73,11 @@ function AuthenticatedContent() {
         </p>
       </div>
 
-      <ProfileWizard currentStep={step} onStepChange={handleStepChange} />
+      <ProfileWizard
+        currentStep={step}
+        onStepChange={handleStepChange}
+        fromExtraction={fromExtraction === "true"}
+      />
     </main>
   );
 }
