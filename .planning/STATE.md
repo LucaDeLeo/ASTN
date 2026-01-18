@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-17)
 ## Current Position
 
 Phase: 3 of 5 (Profiles)
-Plan: 1 of 4 in Phase 3 complete
+Plan: 2 of 4 in Phase 3 complete
 Status: In progress
-Last activity: 2026-01-18 - Completed 03-01-PLAN.md (profile schema & wizard)
+Last activity: 2026-01-18 - Completed 03-02-PLAN.md (skills taxonomy & selection)
 
-Progress: [█████████░░░░░░░░░░░] 47%
+Progress: [██████████░░░░░░░░░░] 53%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: 8 min
-- Total execution time: 0.9 hours
+- Total plans completed: 8
+- Average duration: 7 min
+- Total execution time: 1.0 hours
 
 **By Phase:**
 
@@ -29,11 +29,11 @@ Progress: [█████████░░░░░░░░░░░] 47%
 |-------|-------|-------|----------|
 | 01-foundation-opportunities | 4 | 30 min | 8 min |
 | 02-authentication | 2 | 20 min | 10 min |
-| 03-profiles | 1 | 8 min | 8 min |
+| 03-profiles | 2 | 12 min | 6 min |
 
 **Recent Trend:**
-- Last 5 plans: 12 min, 12 min, 8 min, 8 min
-- Trend: Consistent
+- Last 5 plans: 12 min, 8 min, 8 min, 4 min
+- Trend: Improving
 
 *Updated after each plan completion*
 
@@ -67,6 +67,9 @@ Recent decisions affecting current work:
 - [03-01]: 7 wizard steps: basic, education, work, goals, skills, enrichment, privacy
 - [03-01]: Section completeness requires name AND location for basicInfo
 - [03-01]: Unlock threshold of 4 sections for smart matching
+- [03-02]: Lazy taxonomy seeding via ensureTaxonomySeeded action
+- [03-02]: Soft limit of 10 skills with amber warning, not hard cap
+- [03-02]: Custom skills allowed via Enter on unmatched input
 
 ### Pending Todos
 
@@ -80,7 +83,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 03-01-PLAN.md (profile schema & wizard)
+Stopped at: Completed 03-02-PLAN.md (skills taxonomy & selection)
 Resume file: None
 
 ---
