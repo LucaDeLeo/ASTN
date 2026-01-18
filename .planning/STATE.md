@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-17)
 ## Current Position
 
 Phase: 5 of 5 (Engagement + Org)
-Plan: 4 of 6 in Phase 5 complete (05-01, 05-03, 05-04, 05-05)
+Plan: 5 of 6 in Phase 5 complete (05-01, 05-02, 05-03, 05-04, 05-05)
 Status: In progress
-Last activity: 2026-01-18 - Completed 05-03-PLAN.md (notification preferences UI)
+Last activity: 2026-01-18 - Completed 05-02-PLAN.md (notification scheduling)
 
-Progress: [██████████████████░░] 90%
+Progress: [███████████████████░] 95%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16
+- Total plans completed: 17
 - Average duration: 7 min
-- Total execution time: 1.87 hours
+- Total execution time: 1.97 hours
 
 **By Phase:**
 
@@ -31,10 +31,10 @@ Progress: [██████████████████░░] 90%
 | 02-authentication | 2 | 20 min | 10 min |
 | 03-profiles | 4 | 22 min | 6 min |
 | 04-matching | 2 | 8 min | 4 min |
-| 05-engagement-org | 4 | 29 min | 7 min |
+| 05-engagement-org | 5 | 35 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 5 min, 4 min, 12 min, 5 min, 8 min
+- Last 5 plans: 4 min, 12 min, 5 min, 8 min, 6 min
 - Trend: Fast execution
 
 *Updated after each plan completion*
@@ -102,6 +102,10 @@ Recent decisions affecting current work:
 - [05-03]: Grouped timezone selector by region (Americas, Europe, Asia, Pacific)
 - [05-03]: First-time setup prompt for notification preferences
 - [05-03]: Sonner toast positioned top-right with richColors
+- [05-02]: Batch alerts hourly to catch each timezone's 8 AM
+- [05-02]: Weekly digest at 22:00 UTC Sunday (covers Americas evening)
+- [05-02]: Only great-tier matches trigger alerts (per CONTEXT.md)
+- [05-02]: Batch size of 10 users to avoid action timeout
 
 ### Pending Todos
 
@@ -115,7 +119,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 05-03-PLAN.md (notification preferences UI)
+Stopped at: Completed 05-02-PLAN.md (notification scheduling)
 Resume file: None
 
 ---
