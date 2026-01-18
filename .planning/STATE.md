@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-17)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** Phase 4 - Matching
+**Current focus:** Phase 5 - Engagement + Org
 
 ## Current Position
 
-Phase: 4 of 5 (Matching)
-Plan: 2 of 4 in Phase 4 complete
+Phase: 5 of 5 (Engagement + Org)
+Plan: 1 of 4 in Phase 5 complete (05-04)
 Status: In progress
-Last activity: 2026-01-18 - Completed 04-02-PLAN.md (match compute engine)
+Last activity: 2026-01-18 - Completed 05-04-PLAN.md (org membership data model)
 
-Progress: [██████████████░░░░░░] 70%
+Progress: [███████████████░░░░░] 75%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
+- Total plans completed: 13
 - Average duration: 7 min
-- Total execution time: 1.38 hours
+- Total execution time: 1.45 hours
 
 **By Phase:**
 
@@ -31,9 +31,10 @@ Progress: [██████████████░░░░░░] 70%
 | 02-authentication | 2 | 20 min | 10 min |
 | 03-profiles | 4 | 22 min | 6 min |
 | 04-matching | 2 | 8 min | 4 min |
+| 05-engagement-org | 1 | 4 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 4 min, 10 min, 3 min, 5 min
+- Last 5 plans: 4 min, 10 min, 3 min, 5 min, 4 min
 - Trend: Fast execution
 
 *Updated after each plan completion*
@@ -86,6 +87,10 @@ Recent decisions affecting current work:
 - [04-02]: Use internalAction for compute to avoid TypeScript circular reference
 - [04-02]: Batch 15 opportunities per LLM call, cap 50 per profile for pilot
 - [04-02]: Explicit type annotations in action handlers for TypeScript inference
+- [05-04]: First user to join org becomes admin (per CONTEXT.md)
+- [05-04]: Last admin cannot leave or demote self without promoting another
+- [05-04]: Invite tokens are UUIDs with optional expiration
+- [05-04]: requireOrgAdmin helper pattern for admin-only operations
 
 ### Pending Todos
 
@@ -99,7 +104,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 04-02-PLAN.md (match compute engine)
+Stopped at: Completed 05-04-PLAN.md (org membership data model)
 Resume file: None
 
 ---
