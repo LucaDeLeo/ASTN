@@ -63,13 +63,13 @@ function UserMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuItem asChild>
-          <Link to="/" className="cursor-pointer">
+          <Link to="/profile" className="cursor-pointer">
             <User className="mr-2 size-4" />
             Profile
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to="/" className="cursor-pointer">
+          <Link to="/profile/edit" className="cursor-pointer">
             <Settings className="mr-2 size-4" />
             Settings
           </Link>

@@ -12,8 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProfileIndexRouteImport } from './routes/profile/index'
 import { Route as OpportunitiesIndexRouteImport } from './routes/opportunities/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as ProfileEditRouteImport } from './routes/profile/edit'
 import { Route as OpportunitiesIdRouteImport } from './routes/opportunities/$id'
 import { Route as AdminOpportunitiesIndexRouteImport } from './routes/admin/opportunities/index'
 import { Route as AdminOpportunitiesNewRouteImport } from './routes/admin/opportunities/new'
@@ -34,6 +36,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileIndexRoute = ProfileIndexRouteImport.update({
+  id: '/profile/',
+  path: '/profile/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OpportunitiesIndexRoute = OpportunitiesIndexRouteImport.update({
   id: '/opportunities/',
   path: '/opportunities/',
@@ -43,6 +50,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminRouteRoute,
+} as any)
+const ProfileEditRoute = ProfileEditRouteImport.update({
+  id: '/profile/edit',
+  path: '/profile/edit',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const OpportunitiesIdRoute = OpportunitiesIdRouteImport.update({
   id: '/opportunities/$id',
@@ -71,8 +83,10 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
+  '/profile/edit': typeof ProfileEditRoute
   '/admin/': typeof AdminIndexRoute
   '/opportunities/': typeof OpportunitiesIndexRoute
+  '/profile/': typeof ProfileIndexRoute
   '/admin/opportunities/new': typeof AdminOpportunitiesNewRoute
   '/admin/opportunities/': typeof AdminOpportunitiesIndexRoute
   '/admin/opportunities/$id/edit': typeof AdminOpportunitiesIdEditRoute
@@ -81,8 +95,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
+  '/profile/edit': typeof ProfileEditRoute
   '/admin': typeof AdminIndexRoute
   '/opportunities': typeof OpportunitiesIndexRoute
+  '/profile': typeof ProfileIndexRoute
   '/admin/opportunities/new': typeof AdminOpportunitiesNewRoute
   '/admin/opportunities': typeof AdminOpportunitiesIndexRoute
   '/admin/opportunities/$id/edit': typeof AdminOpportunitiesIdEditRoute
@@ -93,8 +109,10 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
+  '/profile/edit': typeof ProfileEditRoute
   '/admin/': typeof AdminIndexRoute
   '/opportunities/': typeof OpportunitiesIndexRoute
+  '/profile/': typeof ProfileIndexRoute
   '/admin/opportunities/new': typeof AdminOpportunitiesNewRoute
   '/admin/opportunities/': typeof AdminOpportunitiesIndexRoute
   '/admin/opportunities/$id/edit': typeof AdminOpportunitiesIdEditRoute
@@ -106,8 +124,10 @@ export interface FileRouteTypes {
     | '/admin'
     | '/login'
     | '/opportunities/$id'
+    | '/profile/edit'
     | '/admin/'
     | '/opportunities/'
+    | '/profile/'
     | '/admin/opportunities/new'
     | '/admin/opportunities/'
     | '/admin/opportunities/$id/edit'
@@ -116,8 +136,10 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/opportunities/$id'
+    | '/profile/edit'
     | '/admin'
     | '/opportunities'
+    | '/profile'
     | '/admin/opportunities/new'
     | '/admin/opportunities'
     | '/admin/opportunities/$id/edit'
@@ -127,8 +149,10 @@ export interface FileRouteTypes {
     | '/admin'
     | '/login'
     | '/opportunities/$id'
+    | '/profile/edit'
     | '/admin/'
     | '/opportunities/'
+    | '/profile/'
     | '/admin/opportunities/new'
     | '/admin/opportunities/'
     | '/admin/opportunities/$id/edit'
@@ -139,7 +163,9 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
   OpportunitiesIdRoute: typeof OpportunitiesIdRoute
+  ProfileEditRoute: typeof ProfileEditRoute
   OpportunitiesIndexRoute: typeof OpportunitiesIndexRoute
+  ProfileIndexRoute: typeof ProfileIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -165,6 +191,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile/': {
+      id: '/profile/'
+      path: '/profile'
+      fullPath: '/profile/'
+      preLoaderRoute: typeof ProfileIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/opportunities/': {
       id: '/opportunities/'
       path: '/opportunities'
@@ -178,6 +211,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRouteRoute
+    }
+    '/profile/edit': {
+      id: '/profile/edit'
+      path: '/profile/edit'
+      fullPath: '/profile/edit'
+      preLoaderRoute: typeof ProfileEditRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/opportunities/$id': {
       id: '/opportunities/$id'
@@ -233,7 +273,9 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRouteRoute: AdminRouteRouteWithChildren,
   LoginRoute: LoginRoute,
   OpportunitiesIdRoute: OpportunitiesIdRoute,
+  ProfileEditRoute: ProfileEditRoute,
   OpportunitiesIndexRoute: OpportunitiesIndexRoute,
+  ProfileIndexRoute: ProfileIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
