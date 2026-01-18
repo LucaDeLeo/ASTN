@@ -7,8 +7,42 @@ import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Spinner } from "~/components/ui/spinner";
 import { MatchTierSection } from "~/components/matches/MatchTierSection";
+import { GrowthAreas } from "~/components/matches/GrowthAreas";
 import { Sparkles, RefreshCw, User } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+
+// Aggregate recommendations from all matches into growth areas
+function aggregateGrowthAreas(matches: {
+  great: Array<{ recommendations: Array<{ type: string; action: string }> }>;
+  good: Array<{ recommendations: Array<{ type: string; action: string }> }>;
+  exploring: Array<{ recommendations: Array<{ type: string; action: string }> }>;
+}) {
+  const allMatches = [...matches.great, ...matches.good, ...matches.exploring];
+  const byType: Record<string, Set<string>> = {
+    skill: new Set(),
+    experience: new Set(),
+  };
+
+  for (const match of allMatches) {
+    for (const rec of match.recommendations || []) {
+      // Skip "specific" type as those are per-match, not general growth areas
+      if (rec.type === "skill" || rec.type === "experience") {
+        byType[rec.type].add(rec.action);
+      }
+    }
+  }
+
+  const areas: Array<{ theme: string; items: string[] }> = [];
+
+  if (byType.skill.size > 0) {
+    areas.push({ theme: "Skills to build", items: [...byType.skill].slice(0, 5) });
+  }
+  if (byType.experience.size > 0) {
+    areas.push({ theme: "Experience to gain", items: [...byType.experience].slice(0, 5) });
+  }
+
+  return areas;
+}
 
 export const Route = createFileRoute("/matches/")({
   component: MatchesPage,
@@ -80,6 +114,12 @@ function MatchesContent() {
       setIsComputing(false);
     }
   };
+
+  // Aggregate growth areas - must be called unconditionally (React hooks rule)
+  const growthAreas = useMemo(() => {
+    if (!matchesData?.matches) return [];
+    return aggregateGrowthAreas(matchesData.matches);
+  }, [matchesData?.matches]);
 
   if (matchesData === undefined) {
     return <LoadingState />;
@@ -200,6 +240,13 @@ function MatchesContent() {
             <MatchTierSection tier="great" matches={matches.great} />
             <MatchTierSection tier="good" matches={matches.good} />
             <MatchTierSection tier="exploring" matches={matches.exploring} />
+
+            {/* Growth areas aggregated from recommendations */}
+            {growthAreas.length > 0 && (
+              <div className="mt-8">
+                <GrowthAreas areas={growthAreas} />
+              </div>
+            )}
           </>
         )}
       </div>
