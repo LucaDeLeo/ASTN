@@ -5,25 +5,25 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** v1.1 Profile Input Speedup - Phase 7 (File Upload Foundation)
+**Current focus:** v1.1 Profile Input Speedup - Phase 7 complete, ready for Phase 8
 
 ## Current Position
 
-Phase: 7 of 10 (File Upload Foundation)
-Plan: 3 of 4 complete
-Status: In progress
-Last activity: 2026-01-18 — Completed 07-03-PLAN.md
+Phase: 7 of 10 (File Upload Foundation) - COMPLETE
+Plan: 4 of 4 complete
+Status: Phase complete
+Last activity: 2026-01-18 - Completed 07-04-PLAN.md
 
-Progress: [██████████████████████░░░░░░░] 75% (v1.0 + 07-01 + 07-02 + 07-03)
+Progress: [██████████████████████████████] 100% (Phase 7 complete)
 
 ## Milestone History
 
-- v1.0 MVP — 6 phases, 21 plans — shipped 2026-01-18
+- v1.0 MVP - 6 phases, 21 plans - shipped 2026-01-18
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 21 (v1.0)
+- Total plans completed: 25 (v1.0: 21 + v1.1 Phase 7: 4)
 - Average duration: N/A (not tracked in v1.0)
 - Total execution time: N/A
 
@@ -32,6 +32,7 @@ Progress: [██████████████████████░
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | v1.0 totals | 21 | N/A | N/A |
+| 07-file-upload | 4 | ~72min | ~18min |
 
 *Tracking begins fresh for v1.1*
 
@@ -45,6 +46,8 @@ Recent decisions affecting current work:
 - [v1.1]: Claude Haiku 4.5 for extraction (fast, cheap at ~$0.001/resume)
 - [v1.1]: Extract-then-discard for privacy (no document retention)
 - [v1.1]: Explicit user review required before applying extracted data
+- [07-04]: Soft character limit warning at 10k chars (non-blocking)
+- [07-04]: Collapsible text paste by default, expands on click
 
 ### Pending Todos
 
@@ -52,6 +55,7 @@ Recent decisions affecting current work:
   - Verify domain in Resend dashboard (add DNS records)
   - Create API key and add `RESEND_API_KEY` to Convex environment variables
   - Currently hardcoded to send from `notifications@astn.ai`
+- [ ] Remove test-upload.tsx route after development complete
 
 ### Blockers/Concerns
 
@@ -61,9 +65,10 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 07-03-PLAN.md (Upload Zone UI)
+Stopped at: Completed 07-04-PLAN.md (Text Paste Zone & Verification)
 Resume file: None
+Next action: Start Phase 8 (Extraction Pipeline)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-18 — Completed 07-03-PLAN.md*
+*Last updated: 2026-01-18 - Completed Phase 7 (File Upload Foundation)*
