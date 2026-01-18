@@ -153,39 +153,42 @@ export function DocumentUpload({
           </div>
         )}
 
-        {/* Default idle content */}
-        {!isDragActive && !isDragReject && (
-          <div className="flex flex-col items-center gap-4">
-            {/* Icon */}
-            <div className="rounded-full bg-primary/10 p-4">
-              <Upload className="size-8 text-primary" />
-            </div>
-
-            {/* Main text */}
-            <div className="space-y-1">
-              <h3 className="text-lg font-semibold">Drop your resume here</h3>
-              <p className="text-sm text-muted-foreground">
-                PDF up to 10MB
-              </p>
-            </div>
-
-            {/* Browse button */}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                open();
-              }}
-              disabled={disabled}
-              className="mt-2"
-            >
-              <FileText className="mr-2 size-4" />
-              Browse files
-            </Button>
+        {/* Default idle content - always rendered to maintain height, hidden during drag */}
+        <div
+          className={cn(
+            "flex flex-col items-center gap-4 transition-opacity duration-200",
+            (isDragActive || isDragReject) && "opacity-0 invisible"
+          )}
+        >
+          {/* Icon */}
+          <div className="rounded-full bg-primary/10 p-4">
+            <Upload className="size-8 text-primary" />
           </div>
-        )}
+
+          {/* Main text */}
+          <div className="space-y-1">
+            <h3 className="text-lg font-semibold">Drop your resume here</h3>
+            <p className="text-sm text-muted-foreground">
+              PDF up to 10MB
+            </p>
+          </div>
+
+          {/* Browse button */}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              open();
+            }}
+            disabled={disabled}
+            className="mt-2"
+          >
+            <FileText className="mr-2 size-4" />
+            Browse files
+          </Button>
+        </div>
       </div>
 
       {/* Error message */}
