@@ -12,7 +12,7 @@ This roadmap delivers the ASTN pilot for BAISH (50-100 profiles). We start with 
 
 - [x] **Phase 1: Foundation + Opportunities** - Project scaffolding and opportunity pipeline (cold start prevention)
 - [x] **Phase 2: Authentication** - User accounts with OAuth and email/password
-- [ ] **Phase 3: Profiles** - Profile creation with form and LLM enrichment
+- [x] **Phase 3: Profiles** - Profile creation with form and LLM enrichment
 - [ ] **Phase 4: Matching** - Smart matching with explanations and recommendations
 - [ ] **Phase 5: Engagement + Org** - Notifications and org dashboard
 
@@ -65,10 +65,10 @@ Plans:
 **Plans**: 4 plans in 2 waves
 
 Plans:
-- [ ] 03-01-PLAN.md — Profile schema and wizard with basic form steps (Wave 1)
-- [ ] 03-02-PLAN.md — Skills taxonomy and selection UI (Wave 2)
-- [ ] 03-03-PLAN.md — LLM profile enrichment conversation (Wave 2)
-- [ ] 03-04-PLAN.md — Privacy controls and completeness tracking (Wave 2)
+- [x] 03-01-PLAN.md — Profile schema and wizard with basic form steps (Wave 1)
+- [x] 03-02-PLAN.md — Skills taxonomy and selection UI (Wave 2)
+- [x] 03-03-PLAN.md — LLM profile enrichment conversation (Wave 2)
+- [x] 03-04-PLAN.md — Privacy controls and completeness tracking (Wave 2)
 
 ### Phase 4: Matching
 **Goal**: Users receive smart matches with explanations and actionable recommendations
@@ -114,7 +114,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 |-------|----------------|--------|-----------|
 | 1. Foundation + Opportunities | 4/4 | Complete | 2026-01-17 |
 | 2. Authentication | 2/2 | Complete | 2026-01-17 |
-| 3. Profiles | 0/4 | Planned | - |
+| 3. Profiles | 4/4 | Complete | 2026-01-17 |
 | 4. Matching | 0/3 | Not started | - |
 | 5. Engagement + Org | 0/4 | Not started | - |
 

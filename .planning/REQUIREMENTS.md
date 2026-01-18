@@ -16,12 +16,12 @@ Requirements for pilot launch with BAISH (50-100 profiles).
 
 ### Profiles
 
-- [ ] **PROF-01**: User can enter basic info (name, location, education, work history)
-- [ ] **PROF-02**: User can select skills from AI safety-specific taxonomy
-- [ ] **PROF-03**: User can describe career goals, interests, and what they're seeking
-- [ ] **PROF-04**: User can have LLM conversation to enrich profile with deeper context
-- [ ] **PROF-05**: User can set privacy controls (hide profile from specific orgs)
-- [ ] **PROF-06**: User sees profile completeness progress with feature unlocks at thresholds
+- [x] **PROF-01**: User can enter basic info (name, location, education, work history)
+- [x] **PROF-02**: User can select skills from AI safety-specific taxonomy
+- [x] **PROF-03**: User can describe career goals, interests, and what they're seeking
+- [x] **PROF-04**: User can have LLM conversation to enrich profile with deeper context
+- [x] **PROF-05**: User can set privacy controls (hide profile from specific orgs)
+- [x] **PROF-06**: User sees profile completeness progress with feature unlocks at thresholds
 
 ### Opportunities
 
@@ -102,12 +102,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-02 | Phase 2 | Complete |
 | AUTH-03 | Phase 2 | Complete |
 | AUTH-04 | Phase 2 | Complete |
-| PROF-01 | Phase 3 | Pending |
-| PROF-02 | Phase 3 | Pending |
-| PROF-03 | Phase 3 | Pending |
-| PROF-04 | Phase 3 | Pending |
-| PROF-05 | Phase 3 | Pending |
-| PROF-06 | Phase 3 | Pending |
+| PROF-01 | Phase 3 | Complete |
+| PROF-02 | Phase 3 | Complete |
+| PROF-03 | Phase 3 | Complete |
+| PROF-04 | Phase 3 | Complete |
+| PROF-05 | Phase 3 | Complete |
+| PROF-06 | Phase 3 | Complete |
 | OPPS-01 | Phase 1 | Complete |
 | OPPS-02 | Phase 1 | Complete |
 | OPPS-03 | Phase 1 | Complete |
