@@ -15,6 +15,7 @@ This roadmap delivers the ASTN pilot for BAISH (50-100 profiles). We start with 
 - [x] **Phase 3: Profiles** - Profile creation with form and LLM enrichment
 - [ ] **Phase 4: Matching** - Smart matching with explanations and recommendations
 - [x] **Phase 5: Engagement + Org** - Notifications and org dashboard
+- [ ] **Phase 6: Polish + Tech Debt** - Navigation fixes and audit cleanup (GAP CLOSURE)
 
 ## Phase Details
 
@@ -107,10 +108,27 @@ Plans:
 - [x] 05-05-PLAN.md — Org directory + join flow (/org/:slug pages)
 - [x] 05-06-PLAN.md — Org admin dashboard (stats, export)
 
+### Phase 6: Polish + Tech Debt
+**Goal**: Close audit gaps and clean up tech debt before pilot launch
+**Depends on**: Phase 5 (all features complete)
+**Requirements**: None (gap closure phase)
+**Gap Closure**: Addresses v1-MILESTONE-AUDIT.md findings
+**Success Criteria** (what must be TRUE):
+  1. /matches link visible in AuthHeader navigation
+  2. Admin routes have frontend auth wrapper (defense in depth)
+  3. Phase 04 has VERIFICATION.md documenting completion
+  4. Create Invite Link button works in org admin dashboard
+  5. Unused profiles.getById query removed
+**Plans**: 2 plans in 1 wave
+
+Plans:
+- [ ] 06-01-PLAN.md — Navigation and auth wrapper fixes (integration gaps)
+- [ ] 06-02-PLAN.md — Tech debt cleanup (documentation, UI, dead code)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -119,8 +137,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 3. Profiles | 4/4 | Complete | 2026-01-17 |
 | 4. Matching | 2/3 | In Progress | - |
 | 5. Engagement + Org | 6/6 | Complete | 2026-01-18 |
+| 6. Polish + Tech Debt | 0/2 | Pending | - |
 
 ---
 *Roadmap created: 2026-01-17*
-*Depth: standard (5 phases)*
-*Coverage: 26/26 v1 requirements mapped*
+*Depth: standard (6 phases)*
+*Coverage: 26/26 v1 requirements mapped + gap closure*
