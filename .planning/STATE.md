@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-17)
 ## Current Position
 
 Phase: 4 of 5 (Matching)
-Plan: 1 of 4 in Phase 4 complete
+Plan: 2 of 4 in Phase 4 complete
 Status: In progress
-Last activity: 2026-01-18 - Completed 04-01-PLAN.md (match data layer)
+Last activity: 2026-01-18 - Completed 04-02-PLAN.md (match compute engine)
 
-Progress: [█████████████░░░░░░░] 65%
+Progress: [██████████████░░░░░░] 70%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
+- Total plans completed: 12
 - Average duration: 7 min
-- Total execution time: 1.25 hours
+- Total execution time: 1.38 hours
 
 **By Phase:**
 
@@ -30,11 +30,11 @@ Progress: [█████████████░░░░░░░] 65%
 | 01-foundation-opportunities | 4 | 30 min | 8 min |
 | 02-authentication | 2 | 20 min | 10 min |
 | 03-profiles | 4 | 22 min | 6 min |
-| 04-matching | 1 | 3 min | 3 min |
+| 04-matching | 2 | 8 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 4 min, 4 min, 10 min, 3 min
-- Trend: Fast (data layer only)
+- Last 5 plans: 4 min, 10 min, 3 min, 5 min
+- Trend: Fast execution
 
 *Updated after each plan completion*
 
@@ -83,6 +83,9 @@ Recent decisions affecting current work:
 - [04-01]: isNew boolean tracks first-time matches for prioritization
 - [04-01]: modelVersion field tracks which LLM version generated matches
 - [04-01]: Internal queries/mutations in convex/matching/ for domain separation
+- [04-02]: Use internalAction for compute to avoid TypeScript circular reference
+- [04-02]: Batch 15 opportunities per LLM call, cap 50 per profile for pilot
+- [04-02]: Explicit type annotations in action handlers for TypeScript inference
 
 ### Pending Todos
 
@@ -96,7 +99,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 04-01-PLAN.md (match data layer)
+Stopped at: Completed 04-02-PLAN.md (match compute engine)
 Resume file: None
 
 ---
