@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-01-17)
 
 ## Current Position
 
-Phase: 3 of 5 complete, ready for Phase 4
-Plan: 4 of 4 in Phase 3 complete
-Status: Phase 3 verified, Phase 4 ready
-Last activity: 2026-01-17 - Phase 3 verified (6/6 success criteria)
+Phase: 4 of 5 (Matching)
+Plan: 1 of 4 in Phase 4 complete
+Status: In progress
+Last activity: 2026-01-18 - Completed 04-01-PLAN.md (match data layer)
 
-Progress: [████████████░░░░░░░░] 60%
+Progress: [█████████████░░░░░░░] 65%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
+- Total plans completed: 11
 - Average duration: 7 min
-- Total execution time: 1.2 hours
+- Total execution time: 1.25 hours
 
 **By Phase:**
 
@@ -30,10 +30,11 @@ Progress: [████████████░░░░░░░░] 60%
 | 01-foundation-opportunities | 4 | 30 min | 8 min |
 | 02-authentication | 2 | 20 min | 10 min |
 | 03-profiles | 4 | 22 min | 6 min |
+| 04-matching | 1 | 3 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 8 min, 4 min, 4 min, 10 min
-- Trend: Consistent
+- Last 5 plans: 4 min, 4 min, 10 min, 3 min
+- Trend: Fast (data layer only)
 
 *Updated after each plan completion*
 
@@ -78,6 +79,10 @@ Recent decisions affecting current work:
 - [03-04]: Section visibility inherits from default unless overridden
 - [03-04]: 18 AI safety organizations seeded on first access
 - [03-04]: Complete Profile button with success animation replaces standard navigation
+- [04-01]: Tier labels (great/good/exploring) instead of percentages per CONTEXT.md
+- [04-01]: isNew boolean tracks first-time matches for prioritization
+- [04-01]: modelVersion field tracks which LLM version generated matches
+- [04-01]: Internal queries/mutations in convex/matching/ for domain separation
 
 ### Pending Todos
 
@@ -90,8 +95,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-17
-Stopped at: Phase 3 complete - all 4 profile plans executed and verified
+Last session: 2026-01-18
+Stopped at: Completed 04-01-PLAN.md (match data layer)
 Resume file: None
 
 ---
