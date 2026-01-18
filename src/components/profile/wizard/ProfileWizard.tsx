@@ -139,9 +139,16 @@ export function ProfileWizard({ currentStep, onStepChange }: ProfileWizardProps)
           />
         );
       case "enrichment":
-        return <EnrichmentStep />;
+        return <EnrichmentStep profile={profile} />;
       case "privacy":
-        return <PrivacyStep />;
+        return (
+          <PrivacyStep
+            profile={profile}
+            saveFieldImmediate={saveFieldImmediate}
+            isSaving={isSaving}
+            lastSaved={lastSaved}
+          />
+        );
       default:
         return null;
     }
@@ -155,36 +162,31 @@ export function ProfileWizard({ currentStep, onStepChange }: ProfileWizardProps)
         <div className="bg-white rounded-lg border p-6">
           {renderCurrentStep()}
 
-          <div className="flex items-center justify-between mt-8 pt-6 border-t">
-            <Button
-              variant="outline"
-              onClick={goToPreviousStep}
-              disabled={isFirstStep}
-            >
-              <ChevronLeft className="size-4 mr-1" />
-              Previous
-            </Button>
+          {/* Hide navigation on privacy step - it has its own Complete button */}
+          {!isLastStep && (
+            <div className="flex items-center justify-between mt-8 pt-6 border-t">
+              <Button
+                variant="outline"
+                onClick={goToPreviousStep}
+                disabled={isFirstStep}
+              >
+                <ChevronLeft className="size-4 mr-1" />
+                Previous
+              </Button>
 
-            <div className="flex items-center gap-2">
-              {!isLastStep && (
+              <div className="flex items-center gap-2">
                 <Button variant="ghost" onClick={goToNextStep}>
                   <SkipForward className="size-4 mr-1" />
                   Skip for now
                 </Button>
-              )}
 
-              {isLastStep ? (
-                <Button onClick={() => window.location.href = "/profile"}>
-                  Finish
-                </Button>
-              ) : (
                 <Button onClick={goToNextStep}>
                   Next
                   <ChevronRight className="size-4 ml-1" />
                 </Button>
-              )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

@@ -17,6 +17,7 @@ import type * as aggregation_syncMutations from "../aggregation/syncMutations.js
 import type * as auth from "../auth.js";
 import type * as crons from "../crons.js";
 import type * as enrichment_conversation from "../enrichment/conversation.js";
+import type * as enrichment_extraction from "../enrichment/extraction.js";
 import type * as enrichment_queries from "../enrichment/queries.js";
 import type * as http from "../http.js";
 import type * as opportunities from "../opportunities.js";
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   crons: typeof crons;
   "enrichment/conversation": typeof enrichment_conversation;
+  "enrichment/extraction": typeof enrichment_extraction;
   "enrichment/queries": typeof enrichment_queries;
   http: typeof http;
   opportunities: typeof opportunities;
