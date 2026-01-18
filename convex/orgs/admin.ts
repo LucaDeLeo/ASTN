@@ -213,3 +213,63 @@ export const revokeInviteLink = mutation({
     return { success: true };
   },
 });
+
+// Get all members with their full profiles (for admin dashboard and export)
+// Per CONTEXT.md: Admins see full profiles (joining means consent)
+export const getAllMembersWithProfiles = query({
+  args: { orgId: v.id("organizations") },
+  handler: async (ctx, { orgId }) => {
+    await requireOrgAdmin(ctx, orgId);
+
+    // Get all memberships for this org
+    const memberships = await ctx.db
+      .query("orgMemberships")
+      .withIndex("by_org", (q) => q.eq("orgId", orgId))
+      .collect();
+
+    // Fetch full profile and user email for each membership
+    const membersWithProfiles = await Promise.all(
+      memberships.map(async (membership) => {
+        // Get profile
+        const profile = await ctx.db
+          .query("profiles")
+          .withIndex("by_user", (q) => q.eq("userId", membership.userId))
+          .first();
+
+        // Get user email from auth users table
+        // userId is the string representation of the user's Id
+        const user = await ctx.db.get(membership.userId as Id<"users">);
+        const email = user?.email ?? null;
+
+        // Calculate profile completeness
+        let completeness = 0;
+        if (profile) {
+          const sections = [
+            Boolean(profile.name) && Boolean(profile.location),
+            Array.isArray(profile.education) && profile.education.length > 0,
+            Array.isArray(profile.workHistory) && profile.workHistory.length > 0,
+            Boolean(profile.careerGoals),
+            Array.isArray(profile.skills) && profile.skills.length > 0,
+            profile.hasEnrichmentConversation === true,
+            profile.privacySettings !== undefined &&
+              typeof profile.privacySettings === "object" &&
+              profile.privacySettings !== null &&
+              "defaultVisibility" in profile.privacySettings,
+          ];
+          completeness = Math.round(
+            (sections.filter(Boolean).length / sections.length) * 100
+          );
+        }
+
+        return {
+          membership,
+          profile,
+          email,
+          completeness,
+        };
+      })
+    );
+
+    return membersWithProfiles;
+  },
+});
