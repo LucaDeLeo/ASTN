@@ -130,7 +130,14 @@ export function ProfileWizard({ currentStep, onStepChange }: ProfileWizardProps)
           />
         );
       case "skills":
-        return <SkillsStep />;
+        return (
+          <SkillsStep
+            profile={profile}
+            saveFieldImmediate={saveFieldImmediate}
+            isSaving={isSaving}
+            lastSaved={lastSaved}
+          />
+        );
       case "enrichment":
         return <EnrichmentStep />;
       case "privacy":
