@@ -56,8 +56,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 4 plans in 3 waves
 
 Plans:
-- [ ] 07-01-PLAN.md — Backend infrastructure (schema + upload mutations)
-- [ ] 07-02-PLAN.md — Upload hook and utilities (state machine + progress)
+- [x] 07-01-PLAN.md — Backend infrastructure (schema + upload mutations)
+- [x] 07-02-PLAN.md — Upload hook and utilities (state machine + progress)
 - [ ] 07-03-PLAN.md — Upload zone UI (drag-drop, preview, progress bar)
 - [ ] 07-04-PLAN.md — Text paste zone + verification checkpoint
 
@@ -120,7 +120,7 @@ Phases execute in numeric order: 7 → 7.1 (if any) → 8 → 8.1 (if any) → 9
 | 4. Matching | v1.0 | 3/3 | Complete | 2026-01-18 |
 | 5. Engagement + Org | v1.0 | 6/6 | Complete | 2026-01-18 |
 | 6. Polish + Tech Debt | v1.0 | 2/2 | Complete | 2026-01-18 |
-| 7. File Upload Foundation | v1.1 | 0/4 | Planned | - |
+| 7. File Upload Foundation | v1.1 | 2/4 | In progress | - |
 | 8. LLM Extraction Core | v1.1 | 0/TBD | Not started | - |
 | 9. Review & Apply UI | v1.1 | 0/TBD | Not started | - |
 | 10. Wizard Integration | v1.1 | 0/TBD | Not started | - |
