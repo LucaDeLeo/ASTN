@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-17)
 ## Current Position
 
 Phase: 5 of 5 (Engagement + Org)
-Plan: 2 of 6 in Phase 5 complete (05-01, 05-04)
+Plan: 3 of 6 in Phase 5 complete (05-01, 05-04, 05-05)
 Status: In progress
-Last activity: 2026-01-18 - Completed 05-01-PLAN.md (email infrastructure)
+Last activity: 2026-01-18 - Completed 05-05-PLAN.md (org directory + join flow)
 
-Progress: [████████████████░░░░] 80%
+Progress: [█████████████████░░░] 85%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
+- Total plans completed: 15
 - Average duration: 7 min
-- Total execution time: 1.65 hours
+- Total execution time: 1.73 hours
 
 **By Phase:**
 
@@ -31,10 +31,10 @@ Progress: [████████████████░░░░] 80%
 | 02-authentication | 2 | 20 min | 10 min |
 | 03-profiles | 4 | 22 min | 6 min |
 | 04-matching | 2 | 8 min | 4 min |
-| 05-engagement-org | 2 | 16 min | 8 min |
+| 05-engagement-org | 3 | 21 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 10 min, 3 min, 5 min, 4 min, 12 min
+- Last 5 plans: 3 min, 5 min, 4 min, 12 min, 5 min
 - Trend: Fast execution
 
 *Updated after each plan completion*
@@ -95,6 +95,9 @@ Recent decisions affecting current work:
 - [05-01]: Top 5 matches in alert emails, link to full list
 - [05-01]: notificationPreferences.timezone stores IANA identifier
 - [05-01]: Resend testMode for local development
+- [05-05]: Directory shows only members with directoryVisibility="visible"
+- [05-05]: Visibility prompt required before joining (not defaulted)
+- [05-05]: Admin badge shown in member cards for admin role
 
 ### Pending Todos
 
@@ -108,7 +111,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 05-01-PLAN.md (email infrastructure)
+Stopped at: Completed 05-05-PLAN.md (org directory + join flow)
 Resume file: None
 
 ---
