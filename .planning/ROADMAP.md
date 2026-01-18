@@ -11,7 +11,7 @@ This roadmap delivers the ASTN pilot for BAISH (50-100 profiles). We start with 
 - Decimal phases (e.g., 2.1): Urgent insertions (marked with INSERTED)
 
 - [x] **Phase 1: Foundation + Opportunities** - Project scaffolding and opportunity pipeline (cold start prevention)
-- [ ] **Phase 2: Authentication** - User accounts with OAuth and email/password
+- [x] **Phase 2: Authentication** - User accounts with OAuth and email/password
 - [ ] **Phase 3: Profiles** - Profile creation with form and LLM enrichment
 - [ ] **Phase 4: Matching** - Smart matching with explanations and recommendations
 - [ ] **Phase 5: Engagement + Org** - Notifications and org dashboard
@@ -48,8 +48,8 @@ Plans:
 **Plans**: 2 plans in 2 waves
 
 Plans:
-- [ ] 02-01-PLAN.md — Auth infrastructure (ConvexAuthProvider, OAuth credentials, password validation)
-- [ ] 02-02-PLAN.md — Login page and auth-aware header
+- [x] 02-01-PLAN.md — Auth infrastructure (ConvexAuthProvider, OAuth credentials, password validation)
+- [x] 02-02-PLAN.md — Login page and auth-aware header
 
 ### Phase 3: Profiles
 **Goal**: Users have rich profiles that capture their background, skills, and goals
@@ -113,7 +113,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation + Opportunities | 4/4 | Complete | 2026-01-17 |
-| 2. Authentication | 0/2 | Planned | - |
+| 2. Authentication | 2/2 | Complete | 2026-01-17 |
 | 3. Profiles | 0/4 | Not started | - |
 | 4. Matching | 0/3 | Not started | - |
 | 5. Engagement + Org | 0/4 | Not started | - |

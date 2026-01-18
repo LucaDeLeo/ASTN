@@ -9,10 +9,10 @@ Requirements for pilot launch with BAISH (50-100 profiles).
 
 ### Authentication
 
-- [ ] **AUTH-01**: User can sign up and login with Google OAuth
-- [ ] **AUTH-02**: User can sign up and login with GitHub OAuth
-- [ ] **AUTH-03**: User can sign up and login with email/password
-- [ ] **AUTH-04**: User session persists across browser refresh
+- [x] **AUTH-01**: User can sign up and login with Google OAuth
+- [x] **AUTH-02**: User can sign up and login with GitHub OAuth
+- [x] **AUTH-03**: User can sign up and login with email/password
+- [x] **AUTH-04**: User session persists across browser refresh
 
 ### Profiles
 
@@ -98,10 +98,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase 2 | Pending |
-| AUTH-02 | Phase 2 | Pending |
-| AUTH-03 | Phase 2 | Pending |
-| AUTH-04 | Phase 2 | Pending |
+| AUTH-01 | Phase 2 | Complete |
+| AUTH-02 | Phase 2 | Complete |
+| AUTH-03 | Phase 2 | Complete |
+| AUTH-04 | Phase 2 | Complete |
 | PROF-01 | Phase 3 | Pending |
 | PROF-02 | Phase 3 | Pending |
 | PROF-03 | Phase 3 | Pending |
