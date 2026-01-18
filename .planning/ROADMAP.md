@@ -53,11 +53,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. User sees progress indicator while file uploads
   5. User sees file size limit (10MB) displayed before attempting upload
   6. User sees clear error message with recovery options if upload fails
-**Plans**: TBD
+**Plans**: 4 plans in 3 waves
 
 Plans:
-- [ ] 07-01: TBD
-- [ ] 07-02: TBD
+- [ ] 07-01-PLAN.md — Backend infrastructure (schema + upload mutations)
+- [ ] 07-02-PLAN.md — Upload hook and utilities (state machine + progress)
+- [ ] 07-03-PLAN.md — Upload zone UI (drag-drop, preview, progress bar)
+- [ ] 07-04-PLAN.md — Text paste zone + verification checkpoint
 
 ### Phase 8: LLM Extraction Core
 
@@ -118,7 +120,7 @@ Phases execute in numeric order: 7 → 7.1 (if any) → 8 → 8.1 (if any) → 9
 | 4. Matching | v1.0 | 3/3 | Complete | 2026-01-18 |
 | 5. Engagement + Org | v1.0 | 6/6 | Complete | 2026-01-18 |
 | 6. Polish + Tech Debt | v1.0 | 2/2 | Complete | 2026-01-18 |
-| 7. File Upload Foundation | v1.1 | 0/TBD | Not started | - |
+| 7. File Upload Foundation | v1.1 | 0/4 | Planned | - |
 | 8. LLM Extraction Core | v1.1 | 0/TBD | Not started | - |
 | 9. Review & Apply UI | v1.1 | 0/TBD | Not started | - |
 | 10. Wizard Integration | v1.1 | 0/TBD | Not started | - |
