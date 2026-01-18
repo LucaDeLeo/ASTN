@@ -97,7 +97,7 @@ export const sendMessage = action({
     // Call Claude Haiku
     const anthropic = new Anthropic();
     const response = await anthropic.messages.create({
-      model: "claude-haiku-4-5-20250514",
+      model: "claude-haiku-4-5-20251001",
       max_tokens: 500,
       system: CAREER_COACH_PROMPT.replace("{profileContext}", profileContext),
       messages: claudeMessages,
