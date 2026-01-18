@@ -9,6 +9,7 @@ const SOFT_LIMIT = 10000;
 interface TextPasteZoneProps {
   onTextSubmit: (text: string) => void;
   disabled?: boolean;
+  defaultExpanded?: boolean;
 }
 
 /**
@@ -26,8 +27,9 @@ interface TextPasteZoneProps {
 export function TextPasteZone({
   onTextSubmit,
   disabled = false,
+  defaultExpanded = false,
 }: TextPasteZoneProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [text, setText] = useState("");
 
   const charCount = text.length;

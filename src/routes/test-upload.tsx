@@ -1,10 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DocumentUpload,
+  ExtractionError,
+  ExtractionProgress,
   FilePreview,
   TextPasteZone,
   UploadProgress,
+  useExtraction,
   useFileUpload,
 } from "~/components/profile/upload";
 
@@ -13,134 +16,249 @@ export const Route = createFileRoute("/test-upload")({
 });
 
 /**
- * Temporary test page for verifying upload components.
- * TODO: Remove after Phase 7 verification complete.
+ * Test page for verifying upload and extraction flow.
+ * TODO: Remove after Phase 8 verification complete.
  */
 function TestUploadPage() {
-  const { state, selectFile, clearFile, upload, retry } = useFileUpload();
-  const [pastedText, setPastedText] = useState<string | null>(null);
+  const {
+    state: uploadState,
+    selectFile,
+    clearFile,
+    upload,
+    retry: retryUpload,
+  } = useFileUpload();
+  const {
+    state: extractionState,
+    extractFromDocument,
+    extractFromText,
+    retry: retryExtraction,
+    reset: resetExtraction,
+  } = useExtraction();
+  const [showTextPaste, setShowTextPaste] = useState(false);
 
-  const handleTextSubmit = (text: string) => {
-    setPastedText(text);
-    console.log("Text submitted:", text.substring(0, 100) + "...");
+  // Auto-trigger extraction when upload succeeds
+  useEffect(() => {
+    if (
+      uploadState.status === "success" &&
+      extractionState.status === "idle"
+    ) {
+      void extractFromDocument(uploadState.documentId);
+    }
+  }, [uploadState, extractionState.status, extractFromDocument]);
+
+  const handleTextSubmit = async (text: string) => {
+    setShowTextPaste(false);
+    await extractFromText(text);
+  };
+
+  const handleStartOver = () => {
+    clearFile();
+    resetExtraction();
+    setShowTextPaste(false);
+  };
+
+  const handlePasteTextFallback = () => {
+    resetExtraction();
+    clearFile();
+    setShowTextPaste(true);
+  };
+
+  const handleManualEntry = () => {
+    // In real app, would navigate to profile form
+    alert("Would navigate to manual profile entry");
   };
 
   return (
     <div className="container mx-auto max-w-2xl p-8 space-y-8">
       <h1 className="text-2xl font-bold">Upload Test Page</h1>
       <p className="text-muted-foreground">
-        Test the file upload and text paste components.
+        Test the file upload and extraction flow.
       </p>
 
-      {/* Upload state display */}
-      <div className="rounded-lg bg-muted p-4">
-        <h2 className="font-semibold mb-2">Current State</h2>
-        <pre className="text-sm">{JSON.stringify(state, null, 2)}</pre>
-      </div>
+      {/* Debug state display */}
+      <details className="rounded-lg bg-muted p-4">
+        <summary className="font-semibold cursor-pointer">Debug State</summary>
+        <div className="mt-2 space-y-2 text-sm">
+          <p>
+            <strong>Upload:</strong> {uploadState.status}
+          </p>
+          <p>
+            <strong>Extraction:</strong> {extractionState.status}
+          </p>
+        </div>
+      </details>
 
-      {/* Drag-drop zone */}
-      {(state.status === "idle" || state.status === "error") && (
-        <div className="space-y-4">
-          <DocumentUpload
-            onFileSelect={selectFile}
-            error={state.status === "error" ? state.error : null}
-            onErrorDismiss={clearFile}
-          />
-
-          {/* Text paste fallback */}
-          <div className="flex justify-center">
-            <TextPasteZone onTextSubmit={handleTextSubmit} />
+      {/* Initial upload state */}
+      {uploadState.status === "idle" &&
+        extractionState.status === "idle" &&
+        !showTextPaste && (
+          <div className="space-y-4">
+            <DocumentUpload onFileSelect={selectFile} />
+            <div className="flex justify-center">
+              <TextPasteZone onTextSubmit={handleTextSubmit} />
+            </div>
           </div>
+        )}
+
+      {/* Text paste expanded */}
+      {showTextPaste && extractionState.status === "idle" && (
+        <div className="space-y-4">
+          <TextPasteZone onTextSubmit={handleTextSubmit} defaultExpanded />
+          <button
+            onClick={() => setShowTextPaste(false)}
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
+            Cancel and upload file instead
+          </button>
         </div>
       )}
 
-      {/* File preview after selection */}
-      {state.status === "selected" && (
+      {/* File selected, ready to upload */}
+      {uploadState.status === "selected" && (
         <div className="space-y-4">
-          <FilePreview
-            file={state.file}
-            onRemove={clearFile}
-            onReplace={() => {
-              clearFile();
-            }}
-          />
+          <FilePreview file={uploadState.file} onRemove={clearFile} />
           <button
             onClick={upload}
             className="w-full rounded-lg bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90"
           >
-            Upload File
+            Upload and Extract
           </button>
         </div>
       )}
 
-      {/* Progress during upload */}
-      {state.status === "uploading" && (
+      {/* Uploading */}
+      {uploadState.status === "uploading" && (
         <div className="space-y-4">
-          <FilePreview file={state.file} onRemove={() => {}} disabled />
+          <FilePreview
+            file={uploadState.file}
+            onRemove={() => {}}
+            disabled
+          />
           <UploadProgress
-            progress={state.progress}
+            progress={uploadState.progress}
             status="uploading"
-            fileName={state.file.name}
+            fileName={uploadState.file.name}
           />
         </div>
       )}
 
-      {/* Success state */}
-      {state.status === "success" && (
-        <div className="rounded-lg border border-green-500 bg-green-50 p-4 space-y-2">
-          <h2 className="font-semibold text-green-700">Upload Complete!</h2>
-          <p className="text-sm text-green-600">
-            File: {state.file.name}
-          </p>
-          <p className="text-sm text-green-600">
-            Storage ID: {state.storageId}
-          </p>
-          <p className="text-sm text-green-600">
-            Document ID: {state.documentId}
-          </p>
-          <button
-            onClick={clearFile}
-            className="mt-4 rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
-          >
-            Upload Another
-          </button>
+      {/* Upload error */}
+      {uploadState.status === "error" && extractionState.status === "idle" && (
+        <div className="space-y-4">
+          <DocumentUpload
+            onFileSelect={selectFile}
+            error={uploadState.error}
+            onErrorDismiss={clearFile}
+          />
+          <div className="flex gap-2">
+            <button
+              onClick={retryUpload}
+              className="rounded bg-primary px-4 py-2 text-primary-foreground"
+            >
+              Retry Upload
+            </button>
+            <button
+              onClick={handlePasteTextFallback}
+              className="rounded bg-muted px-4 py-2"
+            >
+              Paste text instead
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Error state with retry */}
-      {state.status === "error" && (
-        <div className="flex gap-2">
-          <button
-            onClick={retry}
-            className="rounded bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90"
-          >
-            Retry Upload
-          </button>
-          <button
-            onClick={clearFile}
-            className="rounded bg-muted px-4 py-2 hover:bg-muted/80"
-          >
-            Choose Different File
-          </button>
-        </div>
+      {/* Extraction in progress */}
+      {extractionState.status === "extracting" && (
+        <ExtractionProgress
+          stage={extractionState.stage}
+          fileName={
+            uploadState.status === "success" ? uploadState.file.name : undefined
+          }
+        />
       )}
 
-      {/* Pasted text display */}
-      {pastedText && (
-        <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
-          <h2 className="font-semibold">Pasted Text Preview</h2>
-          <p className="text-sm text-muted-foreground">
-            {pastedText.length.toLocaleString()} characters
-          </p>
-          <pre className="max-h-40 overflow-auto text-xs whitespace-pre-wrap">
-            {pastedText.substring(0, 500)}
-            {pastedText.length > 500 && "..."}
-          </pre>
+      {/* Extraction error */}
+      {extractionState.status === "error" && (
+        <ExtractionError
+          error={extractionState.error}
+          onRetry={retryExtraction}
+          onPasteText={handlePasteTextFallback}
+          onManualEntry={handleManualEntry}
+          canRetry={extractionState.canRetry}
+        />
+      )}
+
+      {/* Extraction success - show preview */}
+      {extractionState.status === "success" && (
+        <div className="rounded-lg border border-green-500 bg-green-50 dark:bg-green-950/20 p-6 space-y-4">
+          <h2 className="font-semibold text-green-700 dark:text-green-400">
+            Extraction Complete!
+          </h2>
+          <div className="space-y-3 text-sm">
+            {extractionState.extractedData.name && (
+              <p>
+                <strong>Name:</strong> {extractionState.extractedData.name}
+              </p>
+            )}
+            {extractionState.extractedData.email && (
+              <p>
+                <strong>Email:</strong> {extractionState.extractedData.email}
+              </p>
+            )}
+            {extractionState.extractedData.location && (
+              <p>
+                <strong>Location:</strong>{" "}
+                {extractionState.extractedData.location}
+              </p>
+            )}
+            {extractionState.extractedData.education &&
+              extractionState.extractedData.education.length > 0 && (
+                <div>
+                  <strong>Education:</strong>
+                  <ul className="list-disc list-inside ml-2">
+                    {extractionState.extractedData.education.map((edu, i) => (
+                      <li key={i}>
+                        {edu.degree} at {edu.institution}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            {extractionState.extractedData.workHistory &&
+              extractionState.extractedData.workHistory.length > 0 && (
+                <div>
+                  <strong>Work History:</strong>
+                  <ul className="list-disc list-inside ml-2">
+                    {extractionState.extractedData.workHistory.map((job, i) => (
+                      <li key={i}>
+                        {job.title} at {job.organization}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            {extractionState.extractedData.skills &&
+              extractionState.extractedData.skills.length > 0 && (
+                <div>
+                  <strong>Matched Skills:</strong>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {extractionState.extractedData.skills.map((skill) => (
+                      <span
+                        key={skill}
+                        className="rounded bg-primary/10 px-2 py-0.5 text-xs text-primary"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+          </div>
           <button
-            onClick={() => setPastedText(null)}
-            className="text-sm text-primary hover:underline"
+            onClick={handleStartOver}
+            className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
           >
-            Clear
+            Start Over
           </button>
         </div>
       )}
