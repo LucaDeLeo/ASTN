@@ -18,6 +18,9 @@ import type * as auth from "../auth.js";
 import type * as crons from "../crons.js";
 import type * as http from "../http.js";
 import type * as opportunities from "../opportunities.js";
+import type * as organizations from "../organizations.js";
+import type * as profiles from "../profiles.js";
+import type * as skills from "../skills.js";
 
 import type {
   ApiFromModules,
@@ -36,6 +39,9 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   http: typeof http;
   opportunities: typeof opportunities;
+  organizations: typeof organizations;
+  profiles: typeof profiles;
+  skills: typeof skills;
 }>;
 
 /**
