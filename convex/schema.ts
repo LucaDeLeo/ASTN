@@ -120,6 +120,24 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_profile", ["profileId"]),
 
+  // Uploaded documents (resumes, CVs) for data extraction
+  uploadedDocuments: defineTable({
+    userId: v.string(), // Owner of the document
+    storageId: v.id("_storage"), // Reference to Convex storage
+    fileName: v.string(), // Original filename
+    fileSize: v.number(), // Size in bytes
+    mimeType: v.string(), // e.g., "application/pdf"
+    status: v.union(
+      v.literal("pending_extraction"),
+      v.literal("extracted"),
+      v.literal("failed")
+    ),
+    uploadedAt: v.number(), // Unix timestamp
+    errorMessage: v.optional(v.string()), // For failed status
+  })
+    .index("by_user", ["userId"])
+    .index("by_status", ["status"]),
+
   // Skills taxonomy
   skillsTaxonomy: defineTable({
     name: v.string(),
