@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 ## Current Position
 
-Phase: 7 of 10 (File Upload Foundation) - COMPLETE
-Plan: 4 of 4 complete
-Status: Phase complete
-Last activity: 2026-01-18 - Completed 07-04-PLAN.md
+Phase: 8 of 10 (LLM Extraction Core)
+Plan: 1 of 3 complete
+Status: In progress
+Last activity: 2026-01-18 - Completed 08-01-PLAN.md
 
-Progress: [██████████████████████████████] 100% (Phase 7 complete)
+Progress: [████████████████████████░░░░░░] 80% (25/31 plans complete)
 
 ## Milestone History
 
@@ -23,7 +23,7 @@ Progress: [███████████████████████
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 25 (v1.0: 21 + v1.1 Phase 7: 4)
+- Total plans completed: 26 (v1.0: 21 + v1.1 Phase 7: 4 + Phase 8: 1)
 - Average duration: N/A (not tracked in v1.0)
 - Total execution time: N/A
 
@@ -33,6 +33,7 @@ Progress: [███████████████████████
 |-------|-------|-------|----------|
 | v1.0 totals | 21 | N/A | N/A |
 | 07-file-upload | 4 | ~72min | ~18min |
+| 08-llm-extraction | 1 | 3min | 3min |
 
 *Tracking begins fresh for v1.1*
 
@@ -48,6 +49,8 @@ Recent decisions affecting current work:
 - [v1.1]: Explicit user review required before applying extracted data
 - [07-04]: Soft character limit warning at 10k chars (non-blocking)
 - [07-04]: Collapsible text paste by default, expands on click
+- [08-01]: Only name required in extraction schema - resumes vary widely
+- [08-01]: 0.7 similarity threshold for fuzzy skill matching
 
 ### Pending Todos
 
@@ -65,10 +68,10 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 07-04-PLAN.md (Text Paste Zone & Verification)
+Stopped at: Completed 08-01-PLAN.md (Extraction Foundation)
 Resume file: None
-Next action: Start Phase 8 (Extraction Pipeline)
+Next action: Execute 08-02-PLAN.md (Extraction Actions)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-18 - Completed Phase 7 (File Upload Foundation)*
+*Last updated: 2026-01-18 - Completed 08-01-PLAN.md (Extraction Foundation)*
