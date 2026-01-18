@@ -71,11 +71,12 @@ Plans:
   2. System suggests matching ASTN skills based on extracted content
   3. System recovers gracefully from extraction failures (retry option, paste fallback, manual entry)
   4. Extraction completes within reasonable time (~5-10 seconds for typical resume)
-**Plans**: TBD
+**Plans**: 3 plans in 3 waves
 
 Plans:
-- [ ] 08-01: TBD
-- [ ] 08-02: TBD
+- [ ] 08-01-PLAN.md — Extraction foundation (schema + prompts + skill matching)
+- [ ] 08-02-PLAN.md — Extraction actions (PDF + text extraction with retry)
+- [ ] 08-03-PLAN.md — Extraction UI (progress, error handling, test integration)
 
 ### Phase 9: Review & Apply UI
 
@@ -121,7 +122,7 @@ Phases execute in numeric order: 7 → 7.1 (if any) → 8 → 8.1 (if any) → 9
 | 5. Engagement + Org | v1.0 | 6/6 | Complete | 2026-01-18 |
 | 6. Polish + Tech Debt | v1.0 | 2/2 | Complete | 2026-01-18 |
 | 7. File Upload Foundation | v1.1 | 4/4 | Complete | 2026-01-18 |
-| 8. LLM Extraction Core | v1.1 | 0/TBD | Not started | - |
+| 8. LLM Extraction Core | v1.1 | 0/3 | Not started | - |
 | 9. Review & Apply UI | v1.1 | 0/TBD | Not started | - |
 | 10. Wizard Integration | v1.1 | 0/TBD | Not started | - |
 
