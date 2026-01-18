@@ -13,7 +13,7 @@ import {
 } from "./prompts";
 import { Id } from "../_generated/dataModel";
 
-const MODEL_VERSION = "claude-sonnet-4-5-20241022";
+const MODEL_VERSION = "claude-haiku-4-5-20251001";
 const BATCH_SIZE = 15; // Process up to 15 opportunities per LLM call
 
 // Main compute action - scores all opportunities for a profile

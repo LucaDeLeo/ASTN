@@ -35,7 +35,10 @@ export const getMyMatches = query({
       .first();
 
     if (!profile) {
-      return { matches: [], needsProfile: true };
+      return {
+        matches: { great: [], good: [], exploring: [] },
+        needsProfile: true
+      };
     }
 
     // Get matches for this profile
@@ -46,7 +49,7 @@ export const getMyMatches = query({
 
     if (matches.length === 0) {
       return {
-        matches: [],
+        matches: { great: [], good: [], exploring: [] },
         needsProfile: false,
         needsComputation: true,
         profileId: profile._id,
