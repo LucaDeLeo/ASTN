@@ -117,7 +117,7 @@ function OrgHeader({ org }: OrgHeaderProps) {
         </AuthLoading>
 
         <Authenticated>
-          <MembershipStatus orgId={org._id} />
+          <MembershipStatus orgId={org._id} orgSlug={org.slug} />
         </Authenticated>
       </div>
     </Card>
@@ -126,9 +126,10 @@ function OrgHeader({ org }: OrgHeaderProps) {
 
 interface MembershipStatusProps {
   orgId: import("../../../../convex/_generated/dataModel").Id<"organizations">;
+  orgSlug?: string;
 }
 
-function MembershipStatus({ orgId }: MembershipStatusProps) {
+function MembershipStatus({ orgId, orgSlug }: MembershipStatusProps) {
   const membership = useQuery(api.orgs.membership.getMembership, { orgId });
 
   if (membership === undefined) {
@@ -142,9 +143,9 @@ function MembershipStatus({ orgId }: MembershipStatusProps) {
   return (
     <div className="flex items-center gap-2">
       <Badge variant="secondary">Member</Badge>
-      {membership.role === "admin" && (
+      {membership.role === "admin" && orgSlug && (
         <Button variant="outline" size="sm" asChild>
-          <Link to={`/admin`}>
+          <Link to="/org/$slug/admin" params={{ slug: orgSlug }}>
             <Settings className="size-4 mr-1" />
             Admin
           </Link>
