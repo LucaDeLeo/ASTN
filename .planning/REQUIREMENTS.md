@@ -65,29 +65,29 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| UPLD-01 | TBD | Pending |
-| UPLD-02 | TBD | Pending |
-| UPLD-03 | TBD | Pending |
-| UPLD-04 | TBD | Pending |
-| UPLD-05 | TBD | Pending |
-| UPLD-06 | TBD | Pending |
-| EXTR-01 | TBD | Pending |
-| EXTR-02 | TBD | Pending |
-| EXTR-03 | TBD | Pending |
-| EXTR-04 | TBD | Pending |
-| EXTR-05 | TBD | Pending |
-| EXTR-06 | TBD | Pending |
-| EXTR-07 | TBD | Pending |
-| INTG-01 | TBD | Pending |
-| INTG-02 | TBD | Pending |
-| INTG-03 | TBD | Pending |
-| INTG-04 | TBD | Pending |
+| UPLD-01 | Phase 7 | Pending |
+| UPLD-02 | Phase 7 | Pending |
+| UPLD-03 | Phase 7 | Pending |
+| UPLD-04 | Phase 7 | Pending |
+| UPLD-05 | Phase 7 | Pending |
+| UPLD-06 | Phase 7 | Pending |
+| EXTR-01 | Phase 8 | Pending |
+| EXTR-02 | Phase 8 | Pending |
+| EXTR-03 | Phase 8 | Pending |
+| EXTR-04 | Phase 9 | Pending |
+| EXTR-05 | Phase 9 | Pending |
+| EXTR-06 | Phase 9 | Pending |
+| EXTR-07 | Phase 8 | Pending |
+| INTG-01 | Phase 10 | Pending |
+| INTG-02 | Phase 9 | Pending |
+| INTG-03 | Phase 10 | Pending |
+| INTG-04 | Phase 10 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 17 total
-- Mapped to phases: 0
-- Unmapped: 17
+- Mapped to phases: 17
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-18*
-*Last updated: 2026-01-18 after initial definition*
+*Last updated: 2026-01-18 — traceability updated with phase mappings*
