@@ -97,13 +97,15 @@ Plans:
   4. Org admin can view list of their organization's members
   5. Org admin can view member profiles (with member consent)
   6. Org admin can see aggregate stats for their org (member count, skills distribution)
-**Plans**: TBD
+**Plans**: 6 plans in 2 waves
 
 Plans:
-- [ ] 05-01: Email notification system (Resend + React Email)
-- [ ] 05-02: Notification preferences and digest scheduling
-- [ ] 05-03: Org data model and membership
-- [ ] 05-04: Org dashboard (member list, profiles, stats)
+- [ ] 05-01-PLAN.md — Email infrastructure + schema (Resend component, templates)
+- [ ] 05-02-PLAN.md — Notification scheduling (timezone-aware batch processing)
+- [ ] 05-03-PLAN.md — Notification preferences UI (/settings page)
+- [ ] 05-04-PLAN.md — Org membership data model (roles, invites)
+- [ ] 05-05-PLAN.md — Org directory + join flow (/org/:slug pages)
+- [ ] 05-06-PLAN.md — Org admin dashboard (stats, export)
 
 ## Progress
 
@@ -116,7 +118,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 2. Authentication | 2/2 | Complete | 2026-01-17 |
 | 3. Profiles | 4/4 | Complete | 2026-01-17 |
 | 4. Matching | 0/3 | Planned | - |
-| 5. Engagement + Org | 0/4 | Not started | - |
+| 5. Engagement + Org | 0/6 | Planned | - |
 
 ---
 *Roadmap created: 2026-01-17*
