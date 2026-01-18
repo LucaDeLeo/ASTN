@@ -79,12 +79,12 @@ Plans:
   2. Each match includes explanation of why the opportunity fits the user
   3. Each match shows LLM-estimated acceptance probability (labeled experimental)
   4. User receives personalized "what to do next" recommendations to improve fit
-**Plans**: TBD
+**Plans**: 3 plans in 3 waves
 
 Plans:
-- [ ] 04-01: Match engine with programmatic context construction
-- [ ] 04-02: Match explanations and acceptance probability
-- [ ] 04-03: Personalized recommendations ("what to do next")
+- [ ] 04-01-PLAN.md — Match data layer (schema, internal queries/mutations)
+- [ ] 04-02-PLAN.md — Match compute engine (prompts, LLM action, public queries)
+- [ ] 04-03-PLAN.md — Matches UI (list page, detail page, components)
 
 ### Phase 5: Engagement + Org
 **Goal**: Users stay engaged through notifications; BAISH has visibility into their members
@@ -115,7 +115,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 1. Foundation + Opportunities | 4/4 | Complete | 2026-01-17 |
 | 2. Authentication | 2/2 | Complete | 2026-01-17 |
 | 3. Profiles | 4/4 | Complete | 2026-01-17 |
-| 4. Matching | 0/3 | Not started | - |
+| 4. Matching | 0/3 | Planned | - |
 | 5. Engagement + Org | 0/4 | Not started | - |
 
 ---
