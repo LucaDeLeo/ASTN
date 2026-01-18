@@ -1,5 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useMutation } from "convex/react";
 import { useEffect, useState } from "react";
+import { api } from "convex/_generated/api";
+import type { AppliedData } from "~/components/profile/extraction";
+import { ResumeExtractionReview } from "~/components/profile/extraction";
 import {
   DocumentUpload,
   ExtractionError,
@@ -36,6 +40,11 @@ function TestUploadPage() {
   } = useExtraction();
   const [showTextPaste, setShowTextPaste] = useState(false);
 
+  // Apply extracted data to profile
+  const applyExtractedProfile = useMutation(api.profiles.applyExtractedProfile);
+  const navigate = useNavigate();
+  const [isApplying, setIsApplying] = useState(false);
+
   // Auto-trigger extraction when upload succeeds
   useEffect(() => {
     if (
@@ -68,6 +77,26 @@ function TestUploadPage() {
     alert("Would navigate to manual profile entry");
   };
 
+  const handleApplyToProfile = async (data: AppliedData) => {
+    setIsApplying(true);
+    try {
+      await applyExtractedProfile({ extractedData: data });
+      // Reset state and navigate to enrichment
+      handleStartOver();
+      void navigate({ to: "/profile/edit", search: { step: "enrichment" } });
+    } catch (error) {
+      console.error("Failed to apply extraction:", error);
+      // Stay on page, user can retry
+    } finally {
+      setIsApplying(false);
+    }
+  };
+
+  const handleSkipToManual = () => {
+    handleStartOver();
+    void navigate({ to: "/profile/edit" });
+  };
+
   return (
     <div className="container mx-auto max-w-2xl p-8 space-y-8">
       <h1 className="text-2xl font-bold">Upload Test Page</h1>
@@ -83,7 +112,10 @@ function TestUploadPage() {
             <strong>Upload:</strong> {uploadState.status}
           </p>
           <p>
-            <strong>Extraction:</strong> {extractionState.status}
+            <strong>Extraction:</strong>{" "}
+            {extractionState.status === "success"
+              ? "reviewing"
+              : extractionState.status}
           </p>
         </div>
       </details>
@@ -247,7 +279,7 @@ function TestUploadPage() {
           )}
         </div>
 
-        {/* Extraction success - show preview */}
+        {/* Extraction success - show review UI */}
         <div
           className={`transition-all duration-500 ease-out ${
             extractionState.status === "success"
@@ -256,82 +288,12 @@ function TestUploadPage() {
           }`}
         >
           {extractionState.status === "success" && (
-            <div className="rounded-lg border border-green-500 bg-green-50 dark:bg-green-950/20 p-6 space-y-4">
-              <h2 className="font-semibold text-green-700 dark:text-green-400">
-                Extraction Complete!
-              </h2>
-              <div className="space-y-3 text-sm">
-                {extractionState.extractedData.name && (
-                  <p>
-                    <strong>Name:</strong> {extractionState.extractedData.name}
-                  </p>
-                )}
-                {extractionState.extractedData.email && (
-                  <p>
-                    <strong>Email:</strong>{" "}
-                    {extractionState.extractedData.email}
-                  </p>
-                )}
-                {extractionState.extractedData.location && (
-                  <p>
-                    <strong>Location:</strong>{" "}
-                    {extractionState.extractedData.location}
-                  </p>
-                )}
-                {extractionState.extractedData.education &&
-                  extractionState.extractedData.education.length > 0 && (
-                    <div>
-                      <strong>Education:</strong>
-                      <ul className="list-disc list-inside ml-2">
-                        {extractionState.extractedData.education.map(
-                          (edu, i) => (
-                            <li key={i}>
-                              {edu.degree} at {edu.institution}
-                            </li>
-                          )
-                        )}
-                      </ul>
-                    </div>
-                  )}
-                {extractionState.extractedData.workHistory &&
-                  extractionState.extractedData.workHistory.length > 0 && (
-                    <div>
-                      <strong>Work History:</strong>
-                      <ul className="list-disc list-inside ml-2">
-                        {extractionState.extractedData.workHistory.map(
-                          (job, i) => (
-                            <li key={i}>
-                              {job.title} at {job.organization}
-                            </li>
-                          )
-                        )}
-                      </ul>
-                    </div>
-                  )}
-                {extractionState.extractedData.skills &&
-                  extractionState.extractedData.skills.length > 0 && (
-                    <div>
-                      <strong>Matched Skills:</strong>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {extractionState.extractedData.skills.map((skill) => (
-                          <span
-                            key={skill}
-                            className="rounded bg-primary/10 px-2 py-0.5 text-xs text-primary"
-                          >
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-              </div>
-              <button
-                onClick={handleStartOver}
-                className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
-              >
-                Start Over
-              </button>
-            </div>
+            <ResumeExtractionReview
+              extractedData={extractionState.extractedData}
+              onApply={handleApplyToProfile}
+              onSkip={handleSkipToManual}
+              isApplying={isApplying}
+            />
           )}
         </div>
       </div>
