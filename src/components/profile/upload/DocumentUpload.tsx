@@ -1,6 +1,7 @@
-import { useCallback, useState, useEffect } from "react";
-import { useDropzone, type FileRejection } from "react-dropzone";
-import { Upload, FileText, AlertCircle, X, Sparkles } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { AlertCircle, FileText, Sparkles, Upload, X } from "lucide-react";
+import { useDropzone } from "react-dropzone";
+import type { FileRejection } from "react-dropzone";
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 
@@ -57,7 +58,7 @@ export function DocumentUpload({
   }, [displayError]);
 
   const onDrop = useCallback(
-    (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
+    (acceptedFiles: Array<File>, rejectedFiles: Array<FileRejection>) => {
       // Clear any previous error
       setLocalError(null);
 
