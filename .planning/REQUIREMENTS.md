@@ -18,13 +18,13 @@ Requirements for profile input speedup. Each maps to roadmap phases.
 
 ### Extraction
 
-- [ ] **EXTR-01**: System extracts structured data from PDF using Claude Haiku 4.5 Vision
-- [ ] **EXTR-02**: System extracts: name, email, location, education, work history
-- [ ] **EXTR-03**: System suggests matching ASTN skills from extracted content
+- [x] **EXTR-01**: System extracts structured data from PDF using Claude Haiku 4.5 Vision
+- [x] **EXTR-02**: System extracts: name, email, location, education, work history
+- [x] **EXTR-03**: System suggests matching ASTN skills from extracted content
 - [ ] **EXTR-04**: User sees extraction preview with all extracted fields
 - [ ] **EXTR-05**: User can edit any extracted field inline before saving
 - [ ] **EXTR-06**: User sees gap identification ("X% extracted, chat will help with rest")
-- [ ] **EXTR-07**: System handles extraction errors gracefully (retry, paste fallback, manual)
+- [x] **EXTR-07**: System handles extraction errors gracefully (retry, paste fallback, manual)
 
 ### Integration
 
@@ -71,13 +71,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | UPLD-04 | Phase 7 | Complete |
 | UPLD-05 | Phase 7 | Complete |
 | UPLD-06 | Phase 7 | Complete |
-| EXTR-01 | Phase 8 | Pending |
-| EXTR-02 | Phase 8 | Pending |
-| EXTR-03 | Phase 8 | Pending |
+| EXTR-01 | Phase 8 | Complete |
+| EXTR-02 | Phase 8 | Complete |
+| EXTR-03 | Phase 8 | Complete |
 | EXTR-04 | Phase 9 | Pending |
 | EXTR-05 | Phase 9 | Pending |
 | EXTR-06 | Phase 9 | Pending |
-| EXTR-07 | Phase 8 | Pending |
+| EXTR-07 | Phase 8 | Complete |
 | INTG-01 | Phase 10 | Pending |
 | INTG-02 | Phase 9 | Pending |
 | INTG-03 | Phase 10 | Pending |

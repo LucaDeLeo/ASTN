@@ -35,7 +35,7 @@ See `.planning/milestones/v1.0-ROADMAP.md` for full v1.0 roadmap details.
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 7: File Upload Foundation** - Upload infrastructure and UI
-- [ ] **Phase 8: LLM Extraction Core** - PDF/text extraction with Claude Haiku
+- [x] **Phase 8: LLM Extraction Core** - PDF/text extraction with Claude Haiku
 - [ ] **Phase 9: Review & Apply UI** - Preview, inline editing, apply to profile
 - [ ] **Phase 10: Wizard Integration** - Entry points and context-aware enrichment
 
@@ -74,9 +74,9 @@ Plans:
 **Plans**: 3 plans in 3 waves
 
 Plans:
-- [ ] 08-01-PLAN.md — Extraction foundation (schema + prompts + skill matching)
-- [ ] 08-02-PLAN.md — Extraction actions (PDF + text extraction with retry)
-- [ ] 08-03-PLAN.md — Extraction UI (progress, error handling, test integration)
+- [x] 08-01-PLAN.md — Extraction foundation (schema + prompts + skill matching)
+- [x] 08-02-PLAN.md — Extraction actions (PDF + text extraction with retry)
+- [x] 08-03-PLAN.md — Extraction UI (progress, error handling, test integration)
 
 ### Phase 9: Review & Apply UI
 
@@ -122,7 +122,7 @@ Phases execute in numeric order: 7 → 7.1 (if any) → 8 → 8.1 (if any) → 9
 | 5. Engagement + Org | v1.0 | 6/6 | Complete | 2026-01-18 |
 | 6. Polish + Tech Debt | v1.0 | 2/2 | Complete | 2026-01-18 |
 | 7. File Upload Foundation | v1.1 | 4/4 | Complete | 2026-01-18 |
-| 8. LLM Extraction Core | v1.1 | 0/3 | Not started | - |
+| 8. LLM Extraction Core | v1.1 | 3/3 | Complete | 2026-01-18 |
 | 9. Review & Apply UI | v1.1 | 0/TBD | Not started | - |
 | 10. Wizard Integration | v1.1 | 0/TBD | Not started | - |
 
