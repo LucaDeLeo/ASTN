@@ -21,20 +21,41 @@ const stageOrder: Array<ExtractionStage> = ["reading", "extracting", "matching"]
  * visual feedback for completed and pending stages.
  */
 export function ExtractionProgress({ stage, fileName }: ExtractionProgressProps) {
-  const currentStage = stages[stage];
-  const Icon = currentStage.icon;
   const currentIndex = stageOrder.indexOf(stage);
 
   return (
     <div className="rounded-lg border bg-card p-6 text-center space-y-4">
       <div className="flex justify-center">
-        <div className="relative">
-          <Icon className="h-12 w-12 text-primary/30" />
-          <Loader2 className="absolute inset-0 h-12 w-12 text-primary animate-spin" />
+        <div className="relative flex items-center justify-center h-16 w-16">
+          {stageOrder.map((s) => {
+            const StageIcon = stages[s].icon;
+            return (
+              <StageIcon
+                key={s}
+                className={`absolute h-8 w-8 transition-all duration-300 ease-out ${
+                  s === stage
+                    ? "opacity-100 scale-100 text-primary"
+                    : "opacity-0 scale-75"
+                }`}
+              />
+            );
+          })}
+          <Loader2 className="absolute h-16 w-16 text-primary/40 animate-spin" />
         </div>
       </div>
-      <div className="space-y-1">
-        <p className="font-medium text-foreground">{currentStage.label}</p>
+      <div className="space-y-1 h-12 flex flex-col justify-center">
+        {stageOrder.map((s) => (
+          <p
+            key={s}
+            className={`font-medium text-foreground transition-all duration-300 ease-out ${
+              s === stage
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-2 absolute pointer-events-none"
+            }`}
+          >
+            {stages[s].label}
+          </p>
+        ))}
         {fileName && (
           <p className="text-sm text-muted-foreground">{fileName}</p>
         )}
@@ -43,12 +64,12 @@ export function ExtractionProgress({ stage, fileName }: ExtractionProgressProps)
         {stageOrder.map((s, index) => (
           <div
             key={s}
-            className={`h-2 w-2 rounded-full transition-colors ${
+            className={`h-2 w-2 rounded-full transition-all duration-300 ease-out ${
               index === currentIndex
-                ? "bg-primary"
+                ? "bg-primary scale-125"
                 : index < currentIndex
-                  ? "bg-primary/50"
-                  : "bg-muted"
+                  ? "bg-primary/50 scale-100"
+                  : "bg-muted scale-100"
             }`}
           />
         ))}
