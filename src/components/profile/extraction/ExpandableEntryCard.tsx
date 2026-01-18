@@ -24,7 +24,7 @@ interface ExpandableEntryCardProps {
  * Format date range for work history
  */
 function formatWorkDateRange(entry: WorkHistoryEntry): string {
-  const parts: string[] = [];
+  const parts: Array<string> = [];
   if (entry.startDate) {
     parts.push(entry.startDate);
   }
@@ -40,7 +40,7 @@ function formatWorkDateRange(entry: WorkHistoryEntry): string {
  * Format date range for education
  */
 function formatEducationDateRange(entry: EducationEntry): string {
-  const parts: string[] = [];
+  const parts: Array<string> = [];
   if (entry.startYear) {
     parts.push(String(entry.startYear));
   }
@@ -63,7 +63,7 @@ function formatWorkTitle(entry: WorkHistoryEntry): string {
  * Generate summary title for education
  */
 function formatEducationTitle(entry: EducationEntry): string {
-  const parts: string[] = [];
+  const parts: Array<string> = [];
   if (entry.degree) parts.push(entry.degree);
   if (entry.field) parts.push(`in ${entry.field}`);
   parts.push(`at ${entry.institution}`);
