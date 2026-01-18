@@ -79,6 +79,19 @@ export default defineSchema({
     // Completeness tracking
     completedSections: v.optional(v.array(v.string())),
 
+    // Notification preferences (for email alerts and digests)
+    notificationPreferences: v.optional(
+      v.object({
+        matchAlerts: v.object({
+          enabled: v.boolean(),
+        }),
+        weeklyDigest: v.object({
+          enabled: v.boolean(),
+        }),
+        timezone: v.string(), // IANA timezone, e.g., "America/New_York"
+      })
+    ),
+
     // Metadata
     createdAt: v.number(),
     updatedAt: v.number(),
