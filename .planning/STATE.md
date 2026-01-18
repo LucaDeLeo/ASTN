@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** v1.1 Profile Input Speedup - Phase 8 complete, ready for Phase 9
+**Current focus:** v1.1 Profile Input Speedup - Phase 9 in progress
 
 ## Current Position
 
-Phase: 8 of 10 (LLM Extraction Core)
-Plan: 3 of 3 complete (Phase complete)
-Status: Phase 8 complete
-Last activity: 2026-01-18 - Completed 08-03-PLAN.md (Trigger Integration)
+Phase: 9 of 10 (Review & Apply UI)
+Plan: 1 of 3 complete
+Status: In progress
+Last activity: 2026-01-18 - Completed 09-01-PLAN.md (Review Foundation)
 
-Progress: [██████████████████████████░░░░] 88% (28/32 plans complete)
+Progress: [███████████████████████████░░░] 91% (29/32 plans complete)
 
 ## Milestone History
 
@@ -23,7 +23,7 @@ Progress: [███████████████████████
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 28 (v1.0: 21 + v1.1 Phase 7: 4 + Phase 8: 3)
+- Total plans completed: 29 (v1.0: 21 + v1.1 Phase 7: 4 + Phase 8: 3 + Phase 9: 1)
 - Average duration: N/A (not tracked in v1.0)
 - Total execution time: N/A
 
@@ -34,6 +34,7 @@ Progress: [███████████████████████
 | v1.0 totals | 21 | N/A | N/A |
 | 07-file-upload | 4 | ~72min | ~18min |
 | 08-llm-extraction | 3 | ~33min | ~11min |
+| 09-review-apply-ui | 1 | 3min | 3min |
 
 *Tracking begins fresh for v1.1*
 
@@ -55,6 +56,8 @@ Recent decisions affecting current work:
 - [08-02]: MAX_RETRIES=3 with exponential backoff (1s, 2s, 4s)
 - [08-03]: Simulated stage progression for UX (extraction is single server action)
 - [08-03]: Grid overlay pattern for smooth state-based UI transitions
+- [09-01]: Review items use dot notation IDs (education.0, workHistory.1)
+- [09-01]: Email extracted for display but not applied to profile
 
 ### Pending Todos
 
@@ -72,10 +75,10 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed Phase 8 (LLM Extraction Core)
+Stopped at: Completed 09-01-PLAN.md (Review Foundation)
 Resume file: None
-Next action: Start Phase 9 (Profile Ingestion) or continue to Phase 10 (Review & Apply)
+Next action: Continue with 09-02-PLAN.md (Review UI Components)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-18 - Completed 08-03-PLAN.md (Trigger Integration) - Phase 8 complete*
+*Last updated: 2026-01-18 - Completed 09-01-PLAN.md (Review Foundation)*
