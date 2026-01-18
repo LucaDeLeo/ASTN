@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-01-17)
 
 ## Current Position
 
-Phase: 2 of 5 complete, ready for Phase 3
-Plan: 0 of 4 in Phase 3 (not started)
-Status: Phase 2 verified, Phase 3 ready
-Last activity: 2026-01-17 - Phase 2 verified (4/4 success criteria)
+Phase: 3 of 5 (Profiles)
+Plan: 1 of 4 in Phase 3 complete
+Status: In progress
+Last activity: 2026-01-18 - Completed 03-01-PLAN.md (profile schema & wizard)
 
-Progress: [████████░░░░░░░░░░░░] 40%
+Progress: [█████████░░░░░░░░░░░] 47%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
+- Total plans completed: 7
 - Average duration: 8 min
-- Total execution time: 0.8 hours
+- Total execution time: 0.9 hours
 
 **By Phase:**
 
@@ -29,9 +29,10 @@ Progress: [████████░░░░░░░░░░░░] 40%
 |-------|-------|-------|----------|
 | 01-foundation-opportunities | 4 | 30 min | 8 min |
 | 02-authentication | 2 | 20 min | 10 min |
+| 03-profiles | 1 | 8 min | 8 min |
 
 **Recent Trend:**
-- Last 5 plans: 5 min, 12 min, 12 min, 8 min
+- Last 5 plans: 12 min, 12 min, 8 min, 8 min
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -62,6 +63,10 @@ Recent decisions affecting current work:
 - [02-02]: Combined sign-in/sign-up on single page with tabs
 - [02-02]: OAuth buttons first, then separator, then email form
 - [02-02]: AuthHeader replaces PublicHeader on all public routes
+- [03-01]: Auto-save debounce 500ms for text fields, immediate for arrays
+- [03-01]: 7 wizard steps: basic, education, work, goals, skills, enrichment, privacy
+- [03-01]: Section completeness requires name AND location for basicInfo
+- [03-01]: Unlock threshold of 4 sections for smart matching
 
 ### Pending Todos
 
@@ -69,16 +74,15 @@ None yet.
 
 ### Blockers/Concerns
 
-- [Research]: AI safety skills taxonomy needs to be defined before Phase 3
 - [01-03]: 80K Hours Algolia credentials need to be extracted from page source
 - [01-03]: aisafety.com Airtable credentials need to be obtained from their team
 
 ## Session Continuity
 
-Last session: 2026-01-17
-Stopped at: Completed 02-02-PLAN.md (login UI & auth header) - Phase 2 complete
+Last session: 2026-01-18
+Stopped at: Completed 03-01-PLAN.md (profile schema & wizard)
 Resume file: None
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-17*
+*Last updated: 2026-01-18*
