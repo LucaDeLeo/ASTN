@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** v1.1 Profile Input Speedup - Phase 7 complete, ready for Phase 8
+**Current focus:** v1.1 Profile Input Speedup - Phase 8 in progress
 
 ## Current Position
 
 Phase: 8 of 10 (LLM Extraction Core)
-Plan: 1 of 3 complete
+Plan: 2 of 3 complete
 Status: In progress
-Last activity: 2026-01-18 - Completed 08-01-PLAN.md
+Last activity: 2026-01-18 - Completed 08-02-PLAN.md
 
-Progress: [████████████████████████░░░░░░] 80% (25/31 plans complete)
+Progress: [█████████████████████████░░░░░] 84% (27/32 plans complete)
 
 ## Milestone History
 
@@ -23,7 +23,7 @@ Progress: [███████████████████████
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 26 (v1.0: 21 + v1.1 Phase 7: 4 + Phase 8: 1)
+- Total plans completed: 27 (v1.0: 21 + v1.1 Phase 7: 4 + Phase 8: 2)
 - Average duration: N/A (not tracked in v1.0)
 - Total execution time: N/A
 
@@ -33,7 +33,7 @@ Progress: [███████████████████████
 |-------|-------|-------|----------|
 | v1.0 totals | 21 | N/A | N/A |
 | 07-file-upload | 4 | ~72min | ~18min |
-| 08-llm-extraction | 1 | 3min | 3min |
+| 08-llm-extraction | 2 | 8min | 4min |
 
 *Tracking begins fresh for v1.1*
 
@@ -51,6 +51,8 @@ Recent decisions affecting current work:
 - [07-04]: Collapsible text paste by default, expands on click
 - [08-01]: Only name required in extraction schema - resumes vary widely
 - [08-01]: 0.7 similarity threshold for fuzzy skill matching
+- [08-02]: Claude Haiku model version claude-haiku-4-5-20251001
+- [08-02]: MAX_RETRIES=3 with exponential backoff (1s, 2s, 4s)
 
 ### Pending Todos
 
@@ -68,10 +70,10 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 08-01-PLAN.md (Extraction Foundation)
+Stopped at: Completed 08-02-PLAN.md (Extraction Actions)
 Resume file: None
-Next action: Execute 08-02-PLAN.md (Extraction Actions)
+Next action: Execute 08-03-PLAN.md (Trigger Integration)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-18 - Completed 08-01-PLAN.md (Extraction Foundation)*
+*Last updated: 2026-01-18 - Completed 08-02-PLAN.md (Extraction Actions)*
