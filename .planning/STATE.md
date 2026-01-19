@@ -109,6 +109,9 @@ Recent decisions affecting current work:
 - [16-04]: Soft delete via archiving for programs (status: archived)
 - [16-04]: Auto-completion triggers when attendance count criteria met
 - [16-04]: Privacy: member emails not exposed in participant list
+- [16-05]: Profile name always visible to admins (needed for identification)
+- [16-05]: Eye/EyeOff icons indicate section visibility status
+- [16-05]: Engagement map passed to export for O(1) lookup per member
 - [16-06]: 5-column quick actions grid in admin dashboard (expanded from 4)
 - [16-06]: Attendance tracking inline with +/- buttons for quick updates
 - [16-06]: Status dropdown embedded in dropdown menu for compact UI
@@ -136,4 +139,4 @@ Next action: v1.2 milestone complete - audit and archive
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-19 - Completed 16-06-PLAN.md (program admin UI with participant management)*
+*Last updated: 2026-01-19 - Completed 16-05-PLAN.md (member profile page and enhanced export)*
