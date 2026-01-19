@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { Outlet, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AuthLoading, Authenticated, Unauthenticated } from "convex/react";
 import { AuthHeader } from "~/components/layout/auth-header";
 import { Spinner } from "~/components/ui/spinner";

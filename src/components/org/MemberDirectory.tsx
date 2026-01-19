@@ -61,7 +61,7 @@ type Member = {
   profile: {
     name: string;
     headline?: string;
-    skills: string[];
+    skills: Array<string>;
     location?: string;
   };
 };

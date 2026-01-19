@@ -10,9 +10,5 @@
         ]
       }
     ]
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "node .claude/hooks/statusline.js"
   }
 }

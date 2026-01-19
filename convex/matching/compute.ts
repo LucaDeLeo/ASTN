@@ -80,6 +80,12 @@ export const computeMatchesForProfile = internalAction({
 
       const batchResult = toolUse.input as MatchingResult;
 
+      // Validate response structure
+      if (!batchResult.matches || !Array.isArray(batchResult.matches)) {
+        console.error("Invalid tool response - missing or invalid matches array for batch", i);
+        continue;
+      }
+
       // Map opportunityId strings back to actual Ids
       for (const match of batchResult.matches) {
         const oppId = match.opportunityId as Id<"opportunities">;
@@ -94,7 +100,7 @@ export const computeMatchesForProfile = internalAction({
       }
 
       // Keep growth areas from last batch (most comprehensive view)
-      if (batchResult.growthAreas.length > 0) {
+      if (batchResult.growthAreas && Array.isArray(batchResult.growthAreas) && batchResult.growthAreas.length > 0) {
         aggregatedGrowthAreas = batchResult.growthAreas;
       }
     }

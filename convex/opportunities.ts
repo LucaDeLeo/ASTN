@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 import { query } from "./_generated/server";
 
 // List active opportunities with optional filters
@@ -9,7 +10,7 @@ export const list = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const limit = args.limit || 50;
+    const limit = args.limit || 1000;
 
     if (args.roleType) {
       return await ctx.db
@@ -30,6 +31,37 @@ export const list = query({
         .query("opportunities")
         .withIndex("by_status", (q) => q.eq("status", "active"))
         .take(limit);
+    }
+  },
+});
+
+// List active opportunities with pagination
+export const listPaginated = query({
+  args: {
+    roleType: v.optional(v.string()),
+    isRemote: v.optional(v.boolean()),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    if (args.roleType) {
+      return await ctx.db
+        .query("opportunities")
+        .withIndex("by_role_type", (q) =>
+          q.eq("roleType", args.roleType!).eq("status", "active")
+        )
+        .paginate(args.paginationOpts);
+    } else if (args.isRemote !== undefined) {
+      return await ctx.db
+        .query("opportunities")
+        .withIndex("by_location", (q) =>
+          q.eq("isRemote", args.isRemote!).eq("status", "active")
+        )
+        .paginate(args.paginationOpts);
+    } else {
+      return await ctx.db
+        .query("opportunities")
+        .withIndex("by_status", (q) => q.eq("status", "active"))
+        .paginate(args.paginationOpts);
     }
   },
 });
@@ -65,6 +97,28 @@ export const search = query({
       });
 
     return await searchQuery.take(limit);
+  },
+});
+
+// Search opportunities with pagination (uses search index)
+export const searchPaginated = query({
+  args: {
+    searchTerm: v.string(),
+    roleType: v.optional(v.string()),
+    isRemote: v.optional(v.boolean()),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("opportunities")
+      .withSearchIndex("search_title", (q) => {
+        let sq = q.search("title", args.searchTerm);
+        sq = sq.eq("status", "active");
+        if (args.roleType) sq = sq.eq("roleType", args.roleType);
+        if (args.isRemote !== undefined) sq = sq.eq("isRemote", args.isRemote);
+        return sq;
+      })
+      .paginate(args.paginationOpts);
   },
 });
 

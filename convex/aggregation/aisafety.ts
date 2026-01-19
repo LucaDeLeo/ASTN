@@ -2,23 +2,25 @@
 import { internalAction } from "../_generated/server";
 
 // Airtable API access provided by aisafety.com team
-const AIRTABLE_API_KEY = process.env.AISAFETY_AIRTABLE_API_KEY || "";
-const AIRTABLE_BASE_ID = process.env.AISAFETY_AIRTABLE_BASE_ID || "";
-const AIRTABLE_TABLE_NAME = process.env.AISAFETY_AIRTABLE_TABLE_NAME || "Jobs";
+const AIRTABLE_API_KEY = process.env.AIRTABLE_TOKEN || "";
+const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || "";
+const AIRTABLE_TABLE_NAME = process.env.AIRTABLE_TABLE_NAME || "Jobs";
 
 type AirtableRecord = {
   id: string;
   fields: {
-    Title?: string;
-    Organization?: string;
-    Location?: string;
-    Remote?: boolean;
-    Description?: string;
-    Requirements?: string;
-    "Application URL"?: string;
-    "Role Type"?: string;
-    Salary?: string;
-    Deadline?: string;
+    "!Title"?: string;
+    "!Org"?: string;
+    "!Location"?: string;
+    "Work location"?: string;
+    "!Description"?: string;
+    "!Required degree"?: string;
+    "Vacancy Button"?: string;
+    "Role type"?: Array<string>;
+    "!Salary (display)"?: string;
+    "!Date it closes"?: string;
+    "Skill set"?: Array<string>;
+    "!MinimumExperienceLevel"?: Array<string>;
   };
 };
 
@@ -91,7 +93,7 @@ export const fetchOpportunities = internalAction({
       );
 
       return results
-        .filter((record) => record.fields.Title)
+        .filter((record) => record.fields["!Title"])
         .map((record) => normalizeAirtableRecord(record));
     } catch (error) {
       console.error("Error fetching from aisafety.com Airtable:", error);
@@ -102,26 +104,43 @@ export const fetchOpportunities = internalAction({
 
 function normalizeAirtableRecord(record: AirtableRecord): NormalizedOpportunity {
   const fields = record.fields;
+  const location = fields["!Location"] || "Remote";
+  const workLocation = fields["Work location"]?.toLowerCase() || "";
 
   return {
     sourceId: `aisafety-${record.id}`,
     source: "aisafety_com",
-    title: fields.Title || "Untitled",
-    organization: fields.Organization || "Unknown",
-    location: fields.Location || "Remote",
-    isRemote:
-      fields.Remote ?? fields.Location?.toLowerCase().includes("remote") ?? false,
-    roleType: mapRoleType(fields["Role Type"] || fields.Title || ""),
-    description: fields.Description || "",
-    requirements: fields.Requirements
-      ? fields.Requirements.split("\n").filter(Boolean)
-      : undefined,
-    salaryRange: fields.Salary,
-    deadline: fields.Deadline
-      ? new Date(fields.Deadline).getTime()
-      : undefined,
-    sourceUrl: fields["Application URL"] || `https://www.aisafety.com/jobs`,
+    title: fields["!Title"] || "Untitled",
+    organization: fields["!Org"] || "Unknown",
+    location: location,
+    isRemote: workLocation === "remote" || location.toLowerCase().includes("remote"),
+    roleType: mapRoleType(fields["Skill set"]?.join(" ") || fields["!Title"] || ""),
+    experienceLevel: mapExperienceLevel(fields["!MinimumExperienceLevel"]?.[0]),
+    description: fields["!Description"] || "",
+    requirements: fields["!Required degree"] ? [fields["!Required degree"]] : undefined,
+    salaryRange: fields["!Salary (display)"],
+    deadline: parseDeadline(fields["!Date it closes"]),
+    sourceUrl: fields["Vacancy Button"] || `https://www.aisafety.com/jobs`,
   };
+}
+
+function mapExperienceLevel(level?: string): string | undefined {
+  if (!level) return undefined;
+  const lower = level.toLowerCase();
+  if (lower.includes("entry") || lower.includes("0-4")) return "entry";
+  if (lower.includes("mid") || lower.includes("5-9")) return "mid";
+  if (lower.includes("senior") || lower.includes("10+")) return "senior";
+  return undefined;
+}
+
+function parseDeadline(dateStr?: string): number | undefined {
+  if (!dateStr || dateStr === "No Deadline" || dateStr.includes("2050")) return undefined;
+  try {
+    const date = new Date(dateStr);
+    return isNaN(date.getTime()) ? undefined : date.getTime();
+  } catch {
+    return undefined;
+  }
 }
 
 function mapRoleType(input: string): string {

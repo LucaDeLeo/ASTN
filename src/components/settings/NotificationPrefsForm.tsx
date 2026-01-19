@@ -1,7 +1,7 @@
-import { useQuery, useMutation } from "convex/react";
-import { useState, useEffect } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Bell, Mail, Globe } from "lucide-react";
+import { Bell, Globe, Mail } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Switch } from "~/components/ui/switch";

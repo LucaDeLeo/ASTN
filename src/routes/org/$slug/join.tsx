@@ -8,12 +8,12 @@ import {
 } from "convex/react";
 import { Building2, Eye, EyeOff, Link2Off, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { api } from "../../../../convex/_generated/api";
 import { AuthHeader } from "~/components/layout/auth-header";
 import { Card } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/org/$slug/join")({
   component: JoinOrgPage,

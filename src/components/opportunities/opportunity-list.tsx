@@ -2,6 +2,7 @@ import { OpportunityCard } from "./opportunity-card";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { Empty } from "~/components/ui/empty";
 import { Spinner } from "~/components/ui/spinner";
+import { Button } from "~/components/ui/button";
 
 type Opportunity = {
   _id: Id<"opportunities">;
@@ -16,12 +17,18 @@ type Opportunity = {
   lastVerified: number;
 };
 
+type PaginationStatus = "LoadingFirstPage" | "CanLoadMore" | "LoadingMore" | "Exhausted";
+
 export function OpportunityList({
   opportunities,
   isLoading,
+  status,
+  onLoadMore,
 }: {
   opportunities?: Array<Opportunity>;
   isLoading: boolean;
+  status?: PaginationStatus;
+  onLoadMore?: () => void;
 }) {
   if (isLoading) {
     return (
@@ -50,11 +57,29 @@ export function OpportunityList({
         <div
           key={opportunity._id}
           className="animate-in fade-in slide-in-from-bottom-2 duration-300"
-          style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
+          style={{ animationDelay: `${Math.min(index, 19) * 50}ms`, animationFillMode: 'backwards' }}
         >
           <OpportunityCard opportunity={opportunity} index={index} />
         </div>
       ))}
+
+      {status === "CanLoadMore" && onLoadMore && (
+        <div className="pt-4">
+          <Button
+            onClick={onLoadMore}
+            variant="outline"
+            className="w-full"
+          >
+            Load More
+          </Button>
+        </div>
+      )}
+
+      {status === "LoadingMore" && (
+        <div className="flex justify-center py-4">
+          <Spinner className="w-6 h-6" />
+        </div>
+      )}
     </div>
   );
 }

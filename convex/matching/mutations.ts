@@ -58,7 +58,7 @@ export const saveMatches = internalMutation({
         score: match.score,
         explanation: {
           strengths: match.strengths,
-          gap: match.gap,
+          ...(match.gap != null && { gap: match.gap }),
         },
         probability: {
           interviewChance: match.interviewChance,

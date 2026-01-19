@@ -205,6 +205,138 @@ export const searchOrganizations = query({
   },
 });
 
+// Create invite link for an org (bootstrap, run from dashboard)
+export const createInviteLinkInternal = internalMutation({
+  args: {
+    orgSlug: v.string(),
+    expiresInDays: v.optional(v.number()),
+  },
+  handler: async (ctx, { orgSlug, expiresInDays }) => {
+    const org = await ctx.db
+      .query("organizations")
+      .filter((q) => q.eq(q.field("slug"), orgSlug))
+      .first();
+
+    if (!org) {
+      throw new Error(`Organization not found with slug: ${orgSlug}`);
+    }
+
+    // Get an admin membership to use as createdBy
+    const adminMembership = await ctx.db
+      .query("orgMemberships")
+      .withIndex("by_org_role", (q) =>
+        q.eq("orgId", org._id).eq("role", "admin")
+      )
+      .first();
+
+    if (!adminMembership) {
+      throw new Error("No admin found for this organization");
+    }
+
+    const token = crypto.randomUUID();
+    const expiresAt = expiresInDays
+      ? Date.now() + expiresInDays * 24 * 60 * 60 * 1000
+      : undefined;
+
+    await ctx.db.insert("orgInviteLinks", {
+      orgId: org._id,
+      token,
+      createdBy: adminMembership._id,
+      createdAt: Date.now(),
+      expiresAt,
+    });
+
+    return {
+      token,
+      url: `/org/${orgSlug}/join?token=${token}`,
+      expiresAt,
+    };
+  },
+});
+
+// Add missing BAISH org (one-time fix)
+export const addBaishOrg = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const existing = await ctx.db
+      .query("organizations")
+      .filter((q) => q.eq(q.field("slug"), "baish"))
+      .first();
+
+    if (existing) {
+      return { action: "already_exists", orgId: existing._id };
+    }
+
+    const orgId = await ctx.db.insert("organizations", {
+      name: "BAISH (Buenos Aires AI Safety Hub)",
+      slug: "baish",
+      description:
+        "AI safety research and community hub in Latin America focused on alignment and safety research.",
+      city: "Buenos Aires",
+      country: "Argentina",
+      isGlobal: false,
+    });
+
+    return { action: "created", orgId };
+  },
+});
+
+// Bootstrap: Make a user admin of an org (one-time setup, run from dashboard)
+export const bootstrapOrgAdmin = internalMutation({
+  args: {
+    userEmail: v.string(),
+    orgSlug: v.string(),
+  },
+  handler: async (ctx, { userEmail, orgSlug }) => {
+    // Find user by email
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("email"), userEmail))
+      .first();
+
+    if (!user) {
+      throw new Error(`User not found with email: ${userEmail}`);
+    }
+
+    // Find org by slug
+    const org = await ctx.db
+      .query("organizations")
+      .filter((q) => q.eq(q.field("slug"), orgSlug))
+      .first();
+
+    if (!org) {
+      throw new Error(`Organization not found with slug: ${orgSlug}`);
+    }
+
+    // Check if already a member
+    const existing = await ctx.db
+      .query("orgMemberships")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("orgId"), org._id))
+      .first();
+
+    if (existing) {
+      // Update to admin if not already
+      if (existing.role !== "admin") {
+        await ctx.db.patch(existing._id, { role: "admin" });
+        return { action: "promoted", userId: user._id, orgId: org._id };
+      }
+      return { action: "already_admin", userId: user._id, orgId: org._id };
+    }
+
+    // Create admin membership
+    await ctx.db.insert("orgMemberships", {
+      userId: user._id,
+      orgId: org._id,
+      role: "admin",
+      directoryVisibility: "visible",
+      joinedAt: Date.now(),
+    });
+
+    return { action: "created", userId: user._id, orgId: org._id };
+  },
+});
+
 // Ensure organizations are seeded (called on first access to org selector)
 export const ensureOrganizationsSeeded = action({
   args: {},
