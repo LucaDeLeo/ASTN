@@ -9,6 +9,7 @@ import {
   Shield,
   ShieldOff,
   Trash2,
+  User,
   Users,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -345,6 +346,7 @@ function OrgAdminMembers() {
                         member={member}
                         engagement={engagementMap.get(member.membership.userId) || null}
                         orgId={org._id}
+                        slug={slug}
                         currentMembershipId={membership._id}
                       />
                     ))}
@@ -401,10 +403,11 @@ interface MemberRowProps {
   };
   engagement: EngagementData | null;
   orgId: Id<"organizations">;
+  slug: string;
   currentMembershipId: Id<"orgMemberships">;
 }
 
-function MemberRow({ member, engagement, orgId, currentMembershipId }: MemberRowProps) {
+function MemberRow({ member, engagement, orgId, slug, currentMembershipId }: MemberRowProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [overrideDialogOpen, setOverrideDialogOpen] = useState(false);
 
@@ -477,14 +480,20 @@ function MemberRow({ member, engagement, orgId, currentMembershipId }: MemberRow
     <>
       <tr className="hover:bg-slate-50">
         <td className="px-4 py-3">
-          <div className="font-medium text-slate-900">
-            {member.profile?.name || "No name"}
-          </div>
-          {member.profile?.headline && (
-            <div className="text-sm text-slate-500 truncate max-w-[200px]">
-              {member.profile.headline}
+          <Link
+            to="/org/$slug/admin/members/$userId"
+            params={{ slug, userId: member.membership.userId }}
+            className="block hover:bg-slate-50 -m-2 p-2 rounded transition-colors"
+          >
+            <div className="font-medium text-slate-900 hover:text-primary">
+              {member.profile?.name || "No name"}
             </div>
-          )}
+            {member.profile?.headline && (
+              <div className="text-sm text-slate-500 truncate max-w-[200px]">
+                {member.profile.headline}
+              </div>
+            )}
+          </Link>
         </td>
         <td className="px-4 py-3 text-slate-600">
           {member.email || "—"}
@@ -556,15 +565,25 @@ function MemberRow({ member, engagement, orgId, currentMembershipId }: MemberRow
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link
+                  to="/org/$slug/admin/members/$userId"
+                  params={{ slug, userId: member.membership.userId }}
+                >
+                  <User className="size-4 mr-2" />
+                  View Profile
+                </Link>
+              </DropdownMenuItem>
               {engagement && (
                 <>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => setOverrideDialogOpen(true)}>
                     <Settings className="size-4 mr-2" />
                     Override Engagement
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
                 </>
               )}
+              <DropdownMenuSeparator />
               {!isAdmin && (
                 <DropdownMenuItem onClick={handlePromote}>
                   <Shield className="size-4 mr-2" />
