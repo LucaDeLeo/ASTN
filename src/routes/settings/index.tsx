@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { LocationPrivacyToggle } from "~/components/settings/LocationPrivacyToggle";
 import { NotificationPrefsForm } from "~/components/settings/NotificationPrefsForm";
 
 export const Route = createFileRoute("/settings/")({
@@ -7,8 +8,8 @@ export const Route = createFileRoute("/settings/")({
 
 function SettingsPage() {
   return (
-    <main className="container mx-auto px-4 py-8">
-      <div className="mb-6">
+    <main className="container mx-auto px-4 py-8 space-y-8">
+      <div>
         <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
         <p className="text-slate-500 mt-1">
           Manage your notification preferences and account settings
@@ -16,6 +17,7 @@ function SettingsPage() {
       </div>
 
       <NotificationPrefsForm />
+      <LocationPrivacyToggle />
     </main>
   );
 }
