@@ -4,14 +4,21 @@ import {
   Building2,
   MoreHorizontal,
   Search,
+  Settings,
   Shield,
   ShieldOff,
   Trash2,
   Users,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { api } from "../../../../../convex/_generated/api";
 import type { Doc, Id } from "../../../../../convex/_generated/dataModel";
+import type { EngagementLevel } from "~/components/engagement/EngagementBadge";
+import {
+  EngagementBadge,
+  PendingEngagementBadge,
+} from "~/components/engagement/EngagementBadge";
+import { OverrideDialog } from "~/components/engagement/OverrideDialog";
 import { AuthHeader } from "~/components/layout/auth-header";
 import { ExportButton } from "~/components/org/ExportButton";
 import { Badge } from "~/components/ui/badge";
@@ -31,6 +38,17 @@ export const Route = createFileRoute("/org/$slug/admin/members")({
   component: OrgAdminMembers,
 });
 
+// Type for engagement data from query
+type EngagementData = {
+  _id: Id<"memberEngagement">;
+  userId: string;
+  level: EngagementLevel;
+  computedLevel: EngagementLevel;
+  adminExplanation: string;
+  hasOverride: boolean;
+  overrideNotes?: string;
+};
+
 function OrgAdminMembers() {
   const { slug } = Route.useParams();
   const [searchQuery, setSearchQuery] = useState("");
@@ -44,6 +62,23 @@ function OrgAdminMembers() {
     api.orgs.admin.getAllMembersWithProfiles,
     org && membership?.role === "admin" ? { orgId: org._id } : "skip"
   );
+
+  // Fetch engagement data for all members
+  const engagementData = useQuery(
+    api.engagement.queries.getOrgEngagementForAdmin,
+    org && membership?.role === "admin" ? { orgId: org._id } : "skip"
+  );
+
+  // Create a Map for fast userId -> engagement lookup
+  const engagementMap = useMemo(() => {
+    const map = new Map<string, EngagementData>();
+    if (engagementData) {
+      for (const e of engagementData) {
+        map.set(e.userId, e as EngagementData);
+      }
+    }
+    return map;
+  }, [engagementData]);
 
   // Loading state
   if (org === undefined || membership === undefined) {
@@ -122,7 +157,7 @@ function OrgAdminMembers() {
     <div className="min-h-screen bg-slate-50">
       <AuthHeader />
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-2 text-slate-500 text-sm mb-2">
@@ -201,6 +236,9 @@ function OrgAdminMembers() {
                         Role
                       </th>
                       <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
+                        Engagement
+                      </th>
+                      <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
                         Directory
                       </th>
                       <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
@@ -219,6 +257,7 @@ function OrgAdminMembers() {
                       <MemberRow
                         key={member.membership._id}
                         member={member}
+                        engagement={engagementMap.get(member.membership.userId) || null}
                         orgId={org._id}
                         currentMembershipId={membership._id}
                       />
@@ -241,12 +280,15 @@ interface MemberRowProps {
     email: string | null;
     completeness: number;
   };
+  engagement: EngagementData | null;
   orgId: Id<"organizations">;
   currentMembershipId: Id<"orgMemberships">;
 }
 
-function MemberRow({ member, orgId, currentMembershipId }: MemberRowProps) {
+function MemberRow({ member, engagement, orgId, currentMembershipId }: MemberRowProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [overrideDialogOpen, setOverrideDialogOpen] = useState(false);
+
   const removeMember = useMutation(api.orgs.admin.removeMember);
   const promoteToAdmin = useMutation(api.orgs.admin.promoteToAdmin);
   const demoteToMember = useMutation(api.orgs.admin.demoteToMember);
@@ -313,114 +355,153 @@ function MemberRow({ member, orgId, currentMembershipId }: MemberRowProps) {
   };
 
   return (
-    <tr className="hover:bg-slate-50">
-      <td className="px-4 py-3">
-        <div className="font-medium text-slate-900">
-          {member.profile?.name || "No name"}
-        </div>
-        {member.profile?.headline && (
-          <div className="text-sm text-slate-500 truncate max-w-[200px]">
-            {member.profile.headline}
+    <>
+      <tr className="hover:bg-slate-50">
+        <td className="px-4 py-3">
+          <div className="font-medium text-slate-900">
+            {member.profile?.name || "No name"}
           </div>
-        )}
-      </td>
-      <td className="px-4 py-3 text-slate-600">
-        {member.email || "—"}
-      </td>
-      <td className="px-4 py-3">
-        <Badge variant={isAdmin ? "default" : "secondary"}>
-          {isAdmin && <Shield className="size-3 mr-1" />}
-          {isAdmin ? "Admin" : "Member"}
-        </Badge>
-      </td>
-      <td className="px-4 py-3">
-        <Badge
-          variant={
-            member.membership.directoryVisibility === "visible"
-              ? "outline"
-              : "secondary"
-          }
-        >
-          {member.membership.directoryVisibility === "visible"
-            ? "Visible"
-            : "Hidden"}
-        </Badge>
-      </td>
-      <td className="px-4 py-3 text-slate-600">{joinedDate}</td>
-      <td className="px-4 py-3">
-        <div className="flex items-center gap-2">
-          <div className="w-20 h-2 bg-slate-100 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full ${
-                member.completeness > 70
-                  ? "bg-green-500"
-                  : member.completeness >= 40
-                    ? "bg-amber-500"
-                    : "bg-red-500"
-              }`}
-              style={{ width: `${member.completeness}%` }}
+          {member.profile?.headline && (
+            <div className="text-sm text-slate-500 truncate max-w-[200px]">
+              {member.profile.headline}
+            </div>
+          )}
+        </td>
+        <td className="px-4 py-3 text-slate-600">
+          {member.email || "—"}
+        </td>
+        <td className="px-4 py-3">
+          <Badge variant={isAdmin ? "default" : "secondary"}>
+            {isAdmin && <Shield className="size-3 mr-1" />}
+            {isAdmin ? "Admin" : "Member"}
+          </Badge>
+        </td>
+        <td className="px-4 py-3">
+          {engagement ? (
+            <EngagementBadge
+              level={engagement.level}
+              hasOverride={engagement.hasOverride}
+              adminExplanation={engagement.adminExplanation}
+              onClick={() => setOverrideDialogOpen(true)}
             />
+          ) : (
+            <PendingEngagementBadge />
+          )}
+        </td>
+        <td className="px-4 py-3">
+          <Badge
+            variant={
+              member.membership.directoryVisibility === "visible"
+                ? "outline"
+                : "secondary"
+            }
+          >
+            {member.membership.directoryVisibility === "visible"
+              ? "Visible"
+              : "Hidden"}
+          </Badge>
+        </td>
+        <td className="px-4 py-3 text-slate-600">{joinedDate}</td>
+        <td className="px-4 py-3">
+          <div className="flex items-center gap-2">
+            <div className="w-20 h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full ${
+                  member.completeness > 70
+                    ? "bg-green-500"
+                    : member.completeness >= 40
+                      ? "bg-amber-500"
+                      : "bg-red-500"
+                }`}
+                style={{ width: `${member.completeness}%` }}
+              />
+            </div>
+            <span className="text-sm text-slate-500">
+              {member.completeness}%
+            </span>
           </div>
-          <span className="text-sm text-slate-500">
-            {member.completeness}%
-          </span>
-        </div>
-      </td>
-      <td className="px-4 py-3 text-right">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <Spinner className="size-4" />
-              ) : (
-                <MoreHorizontal className="size-4" />
+        </td>
+        <td className="px-4 py-3 text-right">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Spinner className="size-4" />
+                ) : (
+                  <MoreHorizontal className="size-4" />
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {engagement && (
+                <>
+                  <DropdownMenuItem onClick={() => setOverrideDialogOpen(true)}>
+                    <Settings className="size-4 mr-2" />
+                    Override Engagement
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
               )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {!isAdmin && (
-              <DropdownMenuItem onClick={handlePromote}>
-                <Shield className="size-4 mr-2" />
-                Promote to Admin
-              </DropdownMenuItem>
-            )}
-            {isAdmin && !isSelf && (
-              <DropdownMenuItem onClick={handleDemote}>
-                <ShieldOff className="size-4 mr-2" />
-                Demote to Member
-              </DropdownMenuItem>
-            )}
-            {isAdmin && isSelf && (
-              <DropdownMenuItem disabled>
-                <ShieldOff className="size-4 mr-2 opacity-50" />
-                Cannot demote self
-              </DropdownMenuItem>
-            )}
-            {!isSelf && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleRemove}
-                  className="text-red-600"
-                >
-                  <Trash2 className="size-4 mr-2" />
-                  Remove from Organization
+              {!isAdmin && (
+                <DropdownMenuItem onClick={handlePromote}>
+                  <Shield className="size-4 mr-2" />
+                  Promote to Admin
                 </DropdownMenuItem>
-              </>
-            )}
-            {isSelf && (
-              <DropdownMenuItem disabled>
-                <Trash2 className="size-4 mr-2 opacity-50" />
-                Use &quot;Leave Org&quot; instead
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </td>
-    </tr>
+              )}
+              {isAdmin && !isSelf && (
+                <DropdownMenuItem onClick={handleDemote}>
+                  <ShieldOff className="size-4 mr-2" />
+                  Demote to Member
+                </DropdownMenuItem>
+              )}
+              {isAdmin && isSelf && (
+                <DropdownMenuItem disabled>
+                  <ShieldOff className="size-4 mr-2 opacity-50" />
+                  Cannot demote self
+                </DropdownMenuItem>
+              )}
+              {!isSelf && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleRemove}
+                    className="text-red-600"
+                  >
+                    <Trash2 className="size-4 mr-2" />
+                    Remove from Organization
+                  </DropdownMenuItem>
+                </>
+              )}
+              {isSelf && (
+                <DropdownMenuItem disabled>
+                  <Trash2 className="size-4 mr-2 opacity-50" />
+                  Use &quot;Leave Org&quot; instead
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </td>
+      </tr>
+
+      {/* Override Dialog */}
+      {engagement && (
+        <OverrideDialog
+          open={overrideDialogOpen}
+          onOpenChange={setOverrideDialogOpen}
+          engagementId={engagement._id}
+          memberName={member.profile?.name || "Member"}
+          currentLevel={engagement.level}
+          currentExplanation={engagement.adminExplanation}
+          hasOverride={engagement.hasOverride}
+          overrideNotes={engagement.overrideNotes}
+          orgId={orgId}
+          userId={member.membership.userId}
+        />
+      )}
+    </>
   );
 }
