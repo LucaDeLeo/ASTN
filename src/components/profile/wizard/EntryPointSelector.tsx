@@ -36,16 +36,16 @@ const ENTRY_OPTIONS: EntryOption[] = [
     isPrimary: true,
   },
   {
-    id: "paste",
-    icon: ClipboardPaste,
-    label: "Paste text",
-    description: "Copy from LinkedIn or your resume",
-  },
-  {
     id: "chat",
     icon: MessageSquare,
     label: "Chat with AI",
     description: "Answer questions and we'll build your profile for you",
+  },
+  {
+    id: "paste",
+    icon: ClipboardPaste,
+    label: "Paste text",
+    description: "Copy from LinkedIn or your resume",
   },
   {
     id: "manual",
