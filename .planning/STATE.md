@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** Phase 14 - Attendance Tracking (complete)
+**Current focus:** Phase 15 - Engagement Scoring (plan 1 of 3 complete)
 
 ## Current Position
 
-Phase: 14 of 16 (Attendance Tracking)
-Plan: 3 of 3 in current phase
-Status: Phase complete
-Last activity: 2026-01-19 - Completed 14-03-PLAN.md (attendance views: history page, profile summary, privacy settings)
+Phase: 15 of 16 (Engagement Scoring)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-01-19 - Completed 15-01-PLAN.md (engagement scoring backend)
 
-Progress: [█████████████████████████░░░░░] 73% (46/49 plans: v1.0 + v1.1 complete, v1.2 phases 11-14 complete)
+Progress: [█████████████████████████░░░░░] 76% (47/49 plans: v1.0 + v1.1 complete, v1.2 phases 11-14 complete, 15-01 complete)
 
 ## Milestone History
 
@@ -25,10 +25,10 @@ Progress: [███████████████████████
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 46 (v1.0: 21 + v1.1: 13 + v1.2: 12)
+- Total plans completed: 47 (v1.0: 21 + v1.1: 13 + v1.2: 13)
 - Average duration: ~10 min/plan
 - v1.1 execution: 4 phases in ~2 days
-- v1.2 execution: Phase 11 complete (3 plans, ~12 min), Phase 12 complete (3 plans, ~11 min), Phase 13 complete (3 plans, ~19 min), Phase 14 complete (3 plans, ~11 min)
+- v1.2 execution: Phase 11 complete (3 plans, ~12 min), Phase 12 complete (3 plans, ~11 min), Phase 13 complete (3 plans, ~19 min), Phase 14 complete (3 plans, ~11 min), Phase 15 in progress (1 plan, ~6 min)
 
 **By Phase (v1.1):**
 
@@ -47,6 +47,7 @@ Progress: [███████████████████████
 | 12-event-management | 3 | ~11min | ~4min |
 | 13-event-notifications | 3 | ~19min | ~6min |
 | 14-attendance-tracking | 3 | ~11min | ~4min |
+| 15-engagement-scoring | 1/3 | ~6min | ~6min |
 
 ## Accumulated Context
 
@@ -89,6 +90,10 @@ Recent decisions affecting current work:
 - [14-02]: AttendancePrompt renders inline in notification list (not click-to-navigate)
 - [14-03]: Profile-level privacy defaults stored in privacySettings.attendancePrivacyDefaults
 - [14-03]: Privacy updates can batch-update existing attendance records
+- [15-01]: Claude Haiku for cost-effective engagement classification
+- [15-01]: 100ms delay between member classifications for rate limiting
+- [15-01]: Override expiration checked during batch computation
+- [15-01]: User-facing text never shows "At Risk" - softer language used
 
 ### Pending Todos
 
@@ -107,10 +112,10 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-19
-Stopped at: Completed 14-03-PLAN.md (phase 14 complete)
+Stopped at: Completed 15-01-PLAN.md (engagement scoring backend)
 Resume file: None
-Next action: `/gsd:discuss-phase 15` (engagement scoring)
+Next action: `/gsd:execute-phase 15` (plan 15-02)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-19 - Completed 14-03-PLAN.md (attendance views: history page, profile summary, privacy settings)*
+*Last updated: 2026-01-19 - Completed 15-01-PLAN.md (engagement scoring backend with LLM classification and daily cron)*
