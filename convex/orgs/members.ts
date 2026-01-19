@@ -175,3 +175,95 @@ export const getMemberAttendanceHistory = query({
     );
   },
 });
+
+/**
+ * Get member's engagement data and override history for audit
+ * Returns current engagement state and full history of admin overrides
+ */
+export const getMemberEngagementHistory = query({
+  args: {
+    orgId: v.id("organizations"),
+    userId: v.string(),
+  },
+  handler: async (ctx, { orgId, userId }) => {
+    await requireOrgAdmin(ctx, orgId);
+
+    // Verify user is a member of this org
+    const membership = await ctx.db
+      .query("orgMemberships")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("orgId"), orgId))
+      .first();
+
+    if (!membership) {
+      throw new Error("User is not a member of this organization");
+    }
+
+    // Get current engagement record
+    const engagement = await ctx.db
+      .query("memberEngagement")
+      .withIndex("by_user_org", (q) => q.eq("userId", userId).eq("orgId", orgId))
+      .first();
+
+    if (!engagement) {
+      return {
+        current: null,
+        history: [],
+      };
+    }
+
+    // Get override history
+    const overrideHistory = await ctx.db
+      .query("engagementOverrideHistory")
+      .withIndex("by_engagement", (q) => q.eq("engagementId", engagement._id))
+      .collect();
+
+    // Enrich history with admin names
+    const enrichedHistory = await Promise.all(
+      overrideHistory.map(async (record) => {
+        // Get admin membership to find admin user
+        const adminMembership = await ctx.db.get(
+          "orgMemberships",
+          record.performedBy
+        );
+        let adminName = "Unknown admin";
+
+        if (adminMembership) {
+          const adminProfile = await ctx.db
+            .query("profiles")
+            .withIndex("by_user", (q) => q.eq("userId", adminMembership.userId))
+            .first();
+          adminName = adminProfile?.name ?? "Admin";
+        }
+
+        return {
+          _id: record._id,
+          action: record.action,
+          previousLevel: record.previousLevel,
+          newLevel: record.newLevel,
+          notes: record.notes,
+          adminName,
+          performedAt: record.performedAt,
+        };
+      })
+    );
+
+    // Sort by date descending
+    enrichedHistory.sort((a, b) => b.performedAt - a.performedAt);
+
+    return {
+      current: {
+        level: engagement.override?.level ?? engagement.level,
+        computedLevel: engagement.level,
+        adminExplanation: engagement.adminExplanation,
+        userExplanation: engagement.userExplanation,
+        signals: engagement.signals,
+        hasOverride: !!engagement.override,
+        overrideNotes: engagement.override?.notes,
+        overrideExpiresAt: engagement.override?.expiresAt,
+        computedAt: engagement.computedAt,
+      },
+      history: enrichedHistory,
+    };
+  },
+});
