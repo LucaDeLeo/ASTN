@@ -98,6 +98,10 @@ Recent decisions affecting current work:
 - [15-02]: Badge colors: green=Active, blue=Moderate, amber=At Risk, purple=New, gray=Inactive
 - [15-02]: Manual override indicated by (Manual) suffix on badge
 - [15-02]: Engagement data fetched at page level, distributed via Map for O(1) lookup
+- [16-01]: Time range options: 7d, 30d, 90d, all (default 30d)
+- [16-01]: Engagement labels use friendly names: Active instead of highly_engaged
+- [16-01]: Career distribution shows top 6 seeking values
+- [16-01]: joinedThisMonth field reused for time-range-filtered join count
 - [16-03]: Profile name always visible to admins for identification
 - [16-03]: Connections visibility level visible to org admins (org membership = connection)
 - [16-03]: Attendance history sorted by event date descending
