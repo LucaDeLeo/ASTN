@@ -1,7 +1,10 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AuthLoading, Authenticated, Unauthenticated, useQuery  } from "convex/react";
+import { format } from "date-fns";
 import {
   Briefcase,
+  CalendarCheck,
+  ChevronRight,
   Edit,
   GraduationCap,
   MapPin,
@@ -51,6 +54,7 @@ function UnauthenticatedRedirect() {
 function ProfileContent() {
   const profile = useQuery(api.profiles.getOrCreateProfile);
   const completeness = useQuery(api.profiles.getMyCompleteness);
+  const attendanceSummary = useQuery(api.attendance.queries.getMyAttendanceSummary);
 
   if (profile === undefined || completeness === undefined) {
     return (
@@ -276,8 +280,102 @@ function ProfileContent() {
               </p>
             )}
           </Card>
+
+          {/* Event Attendance */}
+          <Card className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <CalendarCheck className="size-5 text-slate-400" />
+              <h2 className="text-lg font-semibold text-slate-900">
+                Event Attendance
+              </h2>
+            </div>
+            {attendanceSummary === undefined ? (
+              <div className="flex justify-center py-4">
+                <Spinner />
+              </div>
+            ) : !attendanceSummary || attendanceSummary.total === 0 ? (
+              <div>
+                <p className="text-slate-400 italic mb-4">
+                  No events attended yet
+                </p>
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/orgs">Browse Organizations</Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-slate-600">
+                  {attendanceSummary.attended} event
+                  {attendanceSummary.attended !== 1 ? "s" : ""} attended
+                </p>
+
+                {attendanceSummary.recent.length > 0 && (
+                  <div className="space-y-2">
+                    {attendanceSummary.recent.map((record) => (
+                      <div
+                        key={record._id}
+                        className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-slate-900 truncate">
+                            {record.event.title}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {record.org?.name} &middot;{" "}
+                            {format(record.event.startAt, "MMM d, yyyy")}
+                          </p>
+                        </div>
+                        <AttendanceStatusBadge status={record.status} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <Link
+                  to="/profile/attendance"
+                  className="inline-flex items-center text-sm text-primary hover:underline"
+                >
+                  View full history
+                  <ChevronRight className="size-4" />
+                </Link>
+              </div>
+            )}
+          </Card>
         </div>
       </div>
     </main>
   );
+}
+
+function AttendanceStatusBadge({
+  status,
+}: {
+  status: "attended" | "partial" | "not_attended" | "unknown";
+}) {
+  switch (status) {
+    case "attended":
+      return (
+        <Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-xs">
+          Attended
+        </Badge>
+      );
+    case "partial":
+      return (
+        <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 text-xs">
+          Partial
+        </Badge>
+      );
+    case "not_attended":
+      return (
+        <Badge variant="secondary" className="text-slate-500 text-xs">
+          No
+        </Badge>
+      );
+    case "unknown":
+      return (
+        <Badge variant="outline" className="text-slate-400 text-xs">
+          Unknown
+        </Badge>
+      );
+  }
 }

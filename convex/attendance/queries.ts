@@ -102,3 +102,65 @@ export const getPendingPrompts = query({
     );
   },
 });
+
+/**
+ * Get attendance summary for current user
+ * Returns total count, attended count, and last 3 attendance records
+ */
+export const getMyAttendanceSummary = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
+
+    // Get all attendance records for counting
+    const allAttendance = await ctx.db
+      .query("attendance")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    // Get last 3 records for recent list
+    const recentRecords = await ctx.db
+      .query("attendance")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .order("desc")
+      .take(3);
+
+    // Count attended (attended + partial)
+    const attendedCount = allAttendance.filter(
+      (r) => r.status === "attended" || r.status === "partial"
+    ).length;
+
+    // Enrich recent records with event and org details
+    const recent = await Promise.all(
+      recentRecords.map(async (record) => {
+        const event = await ctx.db.get(record.eventId);
+        const org = await ctx.db.get(record.orgId);
+
+        if (!event) return null;
+
+        return {
+          _id: record._id,
+          status: record.status,
+          event: {
+            title: event.title,
+            startAt: event.startAt,
+          },
+          org: org
+            ? {
+                name: org.name,
+              }
+            : null,
+        };
+      })
+    );
+
+    return {
+      total: allAttendance.length,
+      attended: attendedCount,
+      recent: recent.filter(
+        (r): r is NonNullable<typeof r> => r !== null
+      ),
+    };
+  },
+});
