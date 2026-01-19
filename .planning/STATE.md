@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-19)
 ## Current Position
 
 Phase: 16 of 16 (CRM Dashboard & Programs)
-Plan: 4 of 6 in current phase
+Plan: 6 of 6 in current phase
 Status: In progress
-Last activity: 2026-01-19 - Completed 16-04-PLAN.md (Programs Schema & Backend)
+Last activity: 2026-01-19 - Completed 16-06-PLAN.md (Program Admin UI)
 
-Progress: [████████████████████████████████] 84% (49/51 plans: v1.0 + v1.1 complete, v1.2 phases 11-15 complete, 16-01 to 16-04 complete)
+Progress: [████████████████████████████████████] 100% (51/51 plans: v1.0 + v1.1 complete, v1.2 phases 11-16 complete)
 
 ## Milestone History
 
@@ -25,10 +25,10 @@ Progress: [███████████████████████
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 49 (v1.0: 21 + v1.1: 13 + v1.2: 15)
+- Total plans completed: 51 (v1.0: 21 + v1.1: 13 + v1.2: 17)
 - Average duration: ~10 min/plan
 - v1.1 execution: 4 phases in ~2 days
-- v1.2 execution: Phase 11 complete (3 plans, ~12 min), Phase 12 complete (3 plans, ~11 min), Phase 13 complete (3 plans, ~19 min), Phase 14 complete (3 plans, ~11 min), Phase 15 complete (2 plans, ~11 min), Phase 16 in progress (4 plans, ~18 min so far)
+- v1.2 execution: Phase 11 complete (3 plans, ~12 min), Phase 12 complete (3 plans, ~11 min), Phase 13 complete (3 plans, ~19 min), Phase 14 complete (3 plans, ~11 min), Phase 15 complete (2 plans, ~11 min), Phase 16 complete (6 plans, ~23 min)
 
 **By Phase (v1.1):**
 
@@ -48,7 +48,7 @@ Progress: [███████████████████████
 | 13-event-notifications | 3 | ~19min | ~6min |
 | 14-attendance-tracking | 3 | ~11min | ~4min |
 | 15-engagement-scoring | 2 | ~11min | ~6min |
-| 16-crm-dashboard-programs | 4/6 | ~18min | ~5min |
+| 16-crm-dashboard-programs | 6 | ~23min | ~4min |
 
 ## Accumulated Context
 
@@ -109,6 +109,9 @@ Recent decisions affecting current work:
 - [16-04]: Soft delete via archiving for programs (status: archived)
 - [16-04]: Auto-completion triggers when attendance count criteria met
 - [16-04]: Privacy: member emails not exposed in participant list
+- [16-06]: 5-column quick actions grid in admin dashboard (expanded from 4)
+- [16-06]: Attendance tracking inline with +/- buttons for quick updates
+- [16-06]: Status dropdown embedded in dropdown menu for compact UI
 
 ### Pending Todos
 
@@ -127,10 +130,10 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-19
-Stopped at: Completed 16-04-PLAN.md (Programs Schema & Backend)
+Stopped at: Completed 16-06-PLAN.md (Program Admin UI)
 Resume file: None
-Next action: Execute 16-05-PLAN.md (Program Admin UI)
+Next action: v1.2 milestone complete - audit and archive
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-19 - Completed 16-04-PLAN.md (programs and programParticipation tables with CRUD and enrollment mutations)*
+*Last updated: 2026-01-19 - Completed 16-06-PLAN.md (program admin UI with participant management)*
