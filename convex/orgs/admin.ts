@@ -1,8 +1,8 @@
-import { query, mutation } from "../_generated/server";
-import type { QueryCtx, MutationCtx } from "../_generated/server";
 import { v } from "convex/values";
+import { mutation, query } from "../_generated/server";
 import { auth } from "../auth";
-import type { Id, Doc } from "../_generated/dataModel";
+import type { MutationCtx, QueryCtx } from "../_generated/server";
+import type { Doc, Id } from "../_generated/dataModel";
 
 // Helper: Require current user is an admin of the given org
 async function requireOrgAdmin(
@@ -41,7 +41,7 @@ export const removeMember = mutation({
     const adminMembership = await requireOrgAdmin(ctx, orgId);
 
     // Get the target membership
-    const targetMembership = await ctx.db.get(membershipId);
+    const targetMembership = await ctx.db.get("orgMemberships", membershipId);
     if (!targetMembership) {
       throw new Error("Membership not found");
     }
@@ -59,7 +59,7 @@ export const removeMember = mutation({
     }
 
     // Delete the membership
-    await ctx.db.delete(membershipId);
+    await ctx.db.delete("orgMemberships", membershipId);
 
     return { success: true };
   },
@@ -75,7 +75,7 @@ export const promoteToAdmin = mutation({
     await requireOrgAdmin(ctx, orgId);
 
     // Get the target membership
-    const targetMembership = await ctx.db.get(membershipId);
+    const targetMembership = await ctx.db.get("orgMemberships", membershipId);
     if (!targetMembership) {
       throw new Error("Membership not found");
     }
@@ -86,7 +86,7 @@ export const promoteToAdmin = mutation({
     }
 
     // Update role to admin
-    await ctx.db.patch(membershipId, {
+    await ctx.db.patch("orgMemberships", membershipId, {
       role: "admin",
     });
 
@@ -104,7 +104,7 @@ export const demoteToMember = mutation({
     const adminMembership = await requireOrgAdmin(ctx, orgId);
 
     // Get the target membership
-    const targetMembership = await ctx.db.get(membershipId);
+    const targetMembership = await ctx.db.get("orgMemberships", membershipId);
     if (!targetMembership) {
       throw new Error("Membership not found");
     }
@@ -134,7 +134,7 @@ export const demoteToMember = mutation({
     }
 
     // Update role to member
-    await ctx.db.patch(membershipId, {
+    await ctx.db.patch("orgMemberships", membershipId, {
       role: "member",
     });
 
@@ -199,7 +199,7 @@ export const revokeInviteLink = mutation({
   args: { inviteLinkId: v.id("orgInviteLinks") },
   handler: async (ctx, { inviteLinkId }) => {
     // Get the invite link to check its orgId
-    const inviteLink = await ctx.db.get(inviteLinkId);
+    const inviteLink = await ctx.db.get("orgInviteLinks", inviteLinkId);
     if (!inviteLink) {
       throw new Error("Invite link not found");
     }
@@ -208,7 +208,7 @@ export const revokeInviteLink = mutation({
     await requireOrgAdmin(ctx, inviteLink.orgId);
 
     // Delete the invite link
-    await ctx.db.delete(inviteLinkId);
+    await ctx.db.delete("orgInviteLinks", inviteLinkId);
 
     return { success: true };
   },
@@ -238,7 +238,7 @@ export const getAllMembersWithProfiles = query({
 
         // Get user email from auth users table
         // userId is the string representation of the user's Id
-        const user = await ctx.db.get(membership.userId as Id<"users">);
+        const user = await ctx.db.get("users", membership.userId as Id<"users">);
         const email = user?.email ?? null;
 
         // Calculate profile completeness
@@ -271,5 +271,50 @@ export const getAllMembersWithProfiles = query({
     );
 
     return membersWithProfiles;
+  },
+});
+
+// Update lu.ma configuration for the organization
+export const updateLumaConfig = mutation({
+  args: {
+    orgId: v.id("organizations"),
+    lumaCalendarUrl: v.optional(v.string()),
+    lumaApiKey: v.optional(v.string()),
+  },
+  handler: async (ctx, { orgId, lumaCalendarUrl, lumaApiKey }) => {
+    await requireOrgAdmin(ctx, orgId);
+
+    // Get current org to verify it exists
+    const org = await ctx.db.get("organizations", orgId);
+    if (!org) {
+      throw new Error("Organization not found");
+    }
+
+    // Update lu.ma config fields
+    await ctx.db.patch("organizations", orgId, {
+      lumaCalendarUrl: lumaCalendarUrl || undefined,
+      lumaApiKey: lumaApiKey || undefined,
+    });
+
+    return { success: true };
+  },
+});
+
+// Get lu.ma configuration for an organization (admin only)
+export const getLumaConfig = query({
+  args: { orgId: v.id("organizations") },
+  handler: async (ctx, { orgId }) => {
+    await requireOrgAdmin(ctx, orgId);
+
+    const org = await ctx.db.get("organizations", orgId);
+    if (!org) {
+      throw new Error("Organization not found");
+    }
+
+    return {
+      lumaCalendarUrl: org.lumaCalendarUrl,
+      lumaApiKey: org.lumaApiKey,
+      eventsLastSynced: org.eventsLastSynced,
+    };
   },
 });
