@@ -3,7 +3,6 @@ import { useMutation, useQuery } from "convex/react";
 import {
   Building2,
   MoreHorizontal,
-  Search,
   Settings,
   Shield,
   ShieldOff,
@@ -21,6 +20,10 @@ import {
 import { OverrideDialog } from "~/components/engagement/OverrideDialog";
 import { AuthHeader } from "~/components/layout/auth-header";
 import { ExportButton } from "~/components/org/ExportButton";
+import {
+  MemberFilters,
+  type MemberFiltersType,
+} from "~/components/org/MemberFilters";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
@@ -31,7 +34,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
 
 export const Route = createFileRoute("/org/$slug/admin/members")({
@@ -51,7 +53,7 @@ type EngagementData = {
 
 function OrgAdminMembers() {
   const { slug } = Route.useParams();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState<MemberFiltersType>({});
 
   const org = useQuery(api.orgs.directory.getOrgBySlug, { slug });
   const membership = useQuery(
@@ -79,6 +81,83 @@ function OrgAdminMembers() {
     }
     return map;
   }, [engagementData]);
+
+  // Extract available skills from members data
+  const availableSkills = useMemo(() => {
+    const skills = new Set<string>();
+    members?.forEach((m) =>
+      m.profile?.skills?.forEach((s) => skills.add(s))
+    );
+    return Array.from(skills).sort();
+  }, [members]);
+
+  // Extract available locations from members data
+  const availableLocations = useMemo(() => {
+    const locations = new Set<string>();
+    members?.forEach((m) => {
+      if (m.profile?.location) locations.add(m.profile.location);
+    });
+    return Array.from(locations).sort();
+  }, [members]);
+
+  // Filter members by all active filters
+  const filteredMembers = useMemo(() => {
+    if (!members) return [];
+    return members.filter((member) => {
+      // Search filter (name, email)
+      if (filters.search) {
+        const query = filters.search.toLowerCase();
+        const name = member.profile?.name?.toLowerCase() ?? "";
+        const email = member.email?.toLowerCase() ?? "";
+        if (!name.includes(query) && !email.includes(query)) return false;
+      }
+
+      // Engagement filter
+      if (filters.engagementLevels?.length) {
+        const engagement = engagementMap.get(member.membership.userId);
+        const level = engagement?.level ?? "new";
+        if (!filters.engagementLevels.includes(level)) return false;
+      }
+
+      // Skills filter (any match)
+      if (filters.skills?.length) {
+        const memberSkills = member.profile?.skills ?? [];
+        if (!filters.skills.some((s) => memberSkills.includes(s))) return false;
+      }
+
+      // Location filter
+      if (filters.locations?.length) {
+        const location = member.profile?.location ?? "";
+        if (!filters.locations.includes(location)) return false;
+      }
+
+      // Join date range
+      if (
+        filters.joinedAfter &&
+        member.membership.joinedAt < filters.joinedAfter
+      ) {
+        return false;
+      }
+      if (
+        filters.joinedBefore &&
+        member.membership.joinedAt > filters.joinedBefore
+      ) {
+        return false;
+      }
+
+      // Directory visibility filter
+      if (
+        filters.directoryVisibility &&
+        filters.directoryVisibility !== "all"
+      ) {
+        if (member.membership.directoryVisibility !== filters.directoryVisibility) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [members, engagementMap, filters]);
 
   // Loading state
   if (org === undefined || membership === undefined) {
@@ -143,16 +222,6 @@ function OrgAdminMembers() {
     );
   }
 
-  // Filter members by search query
-  const filteredMembers =
-    members?.filter((m) => {
-      if (!searchQuery) return true;
-      const query = searchQuery.toLowerCase();
-      const name = m.profile?.name?.toLowerCase() || "";
-      const email = m.email?.toLowerCase() || "";
-      return name.includes(query) || email.includes(query);
-    }) || [];
-
   return (
     <div className="min-h-screen bg-slate-50">
       <AuthHeader />
@@ -190,16 +259,13 @@ function OrgAdminMembers() {
             </div>
           </div>
 
-          {/* Search */}
-          <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-            <Input
-              placeholder="Search by name or email..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+          {/* Filters */}
+          <MemberFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            availableSkills={availableSkills}
+            availableLocations={availableLocations}
+          />
 
           {/* Members Table */}
           {members === undefined ? (
@@ -212,11 +278,13 @@ function OrgAdminMembers() {
                 <Users className="size-6 text-slate-400" />
               </div>
               <h3 className="text-lg font-medium text-slate-900 mb-2">
-                {searchQuery ? "No members found" : "No members yet"}
+                {Object.keys(filters).length > 0
+                  ? "No members found"
+                  : "No members yet"}
               </h3>
               <p className="text-slate-500 text-sm">
-                {searchQuery
-                  ? "Try a different search term"
+                {Object.keys(filters).length > 0
+                  ? "Try adjusting your filters"
                   : "Share an invite link to add members"}
               </p>
             </Card>
