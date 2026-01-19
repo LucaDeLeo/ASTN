@@ -126,7 +126,7 @@ Plans:
 - [x] 11-02-PLAN.md — Dashboard suggestions + settings UI
 - [x] 11-03-PLAN.md — Browse page with map
 
-#### Phase 12: Event Management
+#### Phase 12: Event Management ✓
 **Goal**: Orgs can connect lu.ma calendars and users can view events on dashboard
 **Depends on**: Phase 11
 **Requirements**: EVT-02, EVT-03 (EVT-01 via lu.ma, EVT-04 via lu.ma link-out)
@@ -136,11 +136,12 @@ Plans:
   3. User can see events from their orgs on their dashboard
   4. User can RSVP to events via lu.ma link-out
 **Plans**: 3 plans
+**Completed**: 2026-01-19
 
 Plans:
-- [ ] 12-01-PLAN.md — Schema + lu.ma sync backend
-- [ ] 12-02-PLAN.md — Org events page + admin settings
-- [ ] 12-03-PLAN.md — Dashboard events section
+- [x] 12-01-PLAN.md — Schema + lu.ma sync backend
+- [x] 12-02-PLAN.md — Org events page + admin settings
+- [x] 12-03-PLAN.md — Dashboard events section
 
 #### Phase 13: Event Notifications
 **Goal**: Users receive configurable event notifications and reminders
@@ -219,7 +220,7 @@ Phases execute in numeric order: 11 → 12 → 13 → 14 → 15 → 16
 | 1-7 | v1.0 | 19/19 | Complete | 2025-12-27 |
 | 8-10 | v1.1 | 8/8 | Complete | 2026-01-19 |
 | 11. Org Discovery | v1.2 | 3/3 | Complete | 2026-01-19 |
-| 12. Event Management | v1.2 | 0/3 | Not started | - |
+| 12. Event Management | v1.2 | 3/3 | Complete | 2026-01-19 |
 | 13. Event Notifications | v1.2 | 0/2 | Not started | - |
 | 14. Attendance Tracking | v1.2 | 0/2 | Not started | - |
 | 15. Engagement Scoring | v1.2 | 0/2 | Not started | - |
