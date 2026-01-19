@@ -191,9 +191,19 @@ export default defineSchema({
     name: v.string(),
     slug: v.optional(v.string()),
     logoUrl: v.optional(v.string()),
+    description: v.optional(v.string()), // Brief org description for display
+    city: v.optional(v.string()), // e.g., "Buenos Aires", "San Francisco"
+    country: v.optional(v.string()), // e.g., "Argentina", "United States"
+    coordinates: v.optional(
+      v.object({ lat: v.number(), lng: v.number() })
+    ), // For map display
+    isGlobal: v.optional(v.boolean()), // True for orgs without specific location
+    memberCount: v.optional(v.number()), // Denormalized for display
   })
     .index("by_name", ["name"])
     .index("by_slug", ["slug"])
+    .index("by_country", ["country"])
+    .index("by_city_country", ["city", "country"])
     .searchIndex("search_name", {
       searchField: "name",
     }),
