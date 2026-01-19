@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** Phase 15 - Engagement Scoring (plan 1 of 3 complete)
+**Current focus:** Phase 15 - Engagement Scoring (plan 2 of 3 complete)
 
 ## Current Position
 
 Phase: 15 of 16 (Engagement Scoring)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-01-19 - Completed 15-01-PLAN.md (engagement scoring backend)
+Last activity: 2026-01-19 - Completed 15-02-PLAN.md (engagement admin UI)
 
-Progress: [█████████████████████████░░░░░] 76% (47/49 plans: v1.0 + v1.1 complete, v1.2 phases 11-14 complete, 15-01 complete)
+Progress: [██████████████████████████░░░░] 78% (48/49 plans: v1.0 + v1.1 complete, v1.2 phases 11-14 complete, 15-01 + 15-02 complete)
 
 ## Milestone History
 
@@ -25,10 +25,10 @@ Progress: [███████████████████████
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 47 (v1.0: 21 + v1.1: 13 + v1.2: 13)
+- Total plans completed: 48 (v1.0: 21 + v1.1: 13 + v1.2: 14)
 - Average duration: ~10 min/plan
 - v1.1 execution: 4 phases in ~2 days
-- v1.2 execution: Phase 11 complete (3 plans, ~12 min), Phase 12 complete (3 plans, ~11 min), Phase 13 complete (3 plans, ~19 min), Phase 14 complete (3 plans, ~11 min), Phase 15 in progress (1 plan, ~6 min)
+- v1.2 execution: Phase 11 complete (3 plans, ~12 min), Phase 12 complete (3 plans, ~11 min), Phase 13 complete (3 plans, ~19 min), Phase 14 complete (3 plans, ~11 min), Phase 15 in progress (2 plans, ~11 min)
 
 **By Phase (v1.1):**
 
@@ -47,7 +47,7 @@ Progress: [███████████████████████
 | 12-event-management | 3 | ~11min | ~4min |
 | 13-event-notifications | 3 | ~19min | ~6min |
 | 14-attendance-tracking | 3 | ~11min | ~4min |
-| 15-engagement-scoring | 1/3 | ~6min | ~6min |
+| 15-engagement-scoring | 2/3 | ~11min | ~6min |
 
 ## Accumulated Context
 
@@ -94,6 +94,9 @@ Recent decisions affecting current work:
 - [15-01]: 100ms delay between member classifications for rate limiting
 - [15-01]: Override expiration checked during batch computation
 - [15-01]: User-facing text never shows "At Risk" - softer language used
+- [15-02]: Badge colors: green=Active, blue=Moderate, amber=At Risk, purple=New, gray=Inactive
+- [15-02]: Manual override indicated by (Manual) suffix on badge
+- [15-02]: Engagement data fetched at page level, distributed via Map for O(1) lookup
 
 ### Pending Todos
 
@@ -112,10 +115,10 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-19
-Stopped at: Completed 15-01-PLAN.md (engagement scoring backend)
+Stopped at: Completed 15-02-PLAN.md (engagement admin UI)
 Resume file: None
-Next action: `/gsd:execute-phase 15` (plan 15-02)
+Next action: `/gsd:execute-phase 15` (plan 15-03)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-19 - Completed 15-01-PLAN.md (engagement scoring backend with LLM classification and daily cron)*
+*Last updated: 2026-01-19 - Completed 15-02-PLAN.md (engagement admin UI with badges, override dialog, and member directory integration)*
