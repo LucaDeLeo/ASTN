@@ -548,4 +548,103 @@ export default defineSchema({
   })
     .index("by_engagement", ["engagementId"])
     .index("by_org", ["orgId"]),
+
+  // Programs (org-specific activities like reading groups, fellowships)
+  programs: defineTable({
+    orgId: v.id("organizations"),
+
+    // Identity
+    name: v.string(),
+    slug: v.string(), // URL-safe identifier within org
+    description: v.optional(v.string()),
+
+    // Program type
+    type: v.union(
+      v.literal("reading_group"),
+      v.literal("fellowship"),
+      v.literal("mentorship"),
+      v.literal("cohort"),
+      v.literal("workshop_series"),
+      v.literal("custom")
+    ),
+
+    // Dates
+    startDate: v.optional(v.number()), // Unix timestamp
+    endDate: v.optional(v.number()),
+    status: v.union(
+      v.literal("planning"),
+      v.literal("active"),
+      v.literal("completed"),
+      v.literal("archived")
+    ),
+
+    // Enrollment configuration
+    enrollmentMethod: v.union(
+      v.literal("admin_only"), // Only admins can add members
+      v.literal("self_enroll"), // Members can join freely
+      v.literal("approval_required") // Members request, admin approves
+    ),
+    maxParticipants: v.optional(v.number()),
+
+    // Completion criteria (optional)
+    completionCriteria: v.optional(
+      v.object({
+        type: v.union(
+          v.literal("attendance_count"),
+          v.literal("attendance_percentage"),
+          v.literal("manual")
+        ),
+        requiredCount: v.optional(v.number()), // For attendance_count
+        requiredPercentage: v.optional(v.number()), // For attendance_percentage
+      })
+    ),
+
+    // Linked events (for auto-attendance counting)
+    linkedEventIds: v.optional(v.array(v.id("events"))),
+
+    // Metadata
+    createdBy: v.id("orgMemberships"),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_org_status", ["orgId", "status"])
+    .index("by_org_slug", ["orgId", "slug"]),
+
+  // Program participation tracking
+  programParticipation: defineTable({
+    programId: v.id("programs"),
+    userId: v.string(),
+    orgId: v.id("organizations"), // Denormalized for queries
+
+    // Enrollment status
+    status: v.union(
+      v.literal("pending"), // Requested, awaiting approval
+      v.literal("enrolled"), // Active participant
+      v.literal("completed"), // Finished program (graduated)
+      v.literal("withdrawn"), // Left program
+      v.literal("removed") // Removed by admin
+    ),
+
+    // Tracking
+    enrolledAt: v.number(),
+    completedAt: v.optional(v.number()),
+
+    // Manual attendance tracking (for non-event activities)
+    manualAttendanceCount: v.optional(v.number()),
+    attendanceNotes: v.optional(v.string()),
+
+    // Admin notes
+    adminNotes: v.optional(v.string()),
+
+    // Enrollment request (if approval_required)
+    requestedAt: v.optional(v.number()),
+    approvedBy: v.optional(v.id("orgMemberships")),
+    approvedAt: v.optional(v.number()),
+  })
+    .index("by_program", ["programId"])
+    .index("by_user", ["userId"])
+    .index("by_org", ["orgId"])
+    .index("by_program_status", ["programId", "status"])
+    .index("by_user_org", ["userId", "orgId"]),
 });
