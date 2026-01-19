@@ -479,4 +479,73 @@ export default defineSchema({
   })
     .index("by_event", ["eventId"])
     .index("by_user_event", ["userId", "eventId"]),
+
+  // Member engagement levels (per user-org pair)
+  memberEngagement: defineTable({
+    userId: v.string(),
+    orgId: v.id("organizations"),
+
+    // Computed engagement level
+    level: v.union(
+      v.literal("highly_engaged"),
+      v.literal("moderate"),
+      v.literal("at_risk"),
+      v.literal("new"),
+      v.literal("inactive")
+    ),
+
+    // Explanations from LLM
+    adminExplanation: v.string(), // Detailed with signals for admins
+    userExplanation: v.string(), // Friendly messaging for users
+
+    // Input signals (stored for audit/debugging)
+    signals: v.object({
+      eventsAttended90d: v.number(),
+      lastAttendedAt: v.optional(v.number()),
+      rsvpCount90d: v.number(),
+      profileUpdatedAt: v.optional(v.number()),
+      joinedAt: v.number(),
+    }),
+
+    // Override (optional - only set when admin overrides)
+    override: v.optional(
+      v.object({
+        level: v.union(
+          v.literal("highly_engaged"),
+          v.literal("moderate"),
+          v.literal("at_risk"),
+          v.literal("new"),
+          v.literal("inactive")
+        ),
+        notes: v.string(),
+        overriddenBy: v.id("orgMemberships"),
+        overriddenAt: v.number(),
+        expiresAt: v.optional(v.number()),
+      })
+    ),
+
+    // Metadata
+    computedAt: v.number(),
+    modelVersion: v.string(),
+  })
+    .index("by_user_org", ["userId", "orgId"])
+    .index("by_org", ["orgId"])
+    .index("by_org_level", ["orgId", "level"]),
+
+  // Engagement override history (audit trail)
+  engagementOverrideHistory: defineTable({
+    engagementId: v.id("memberEngagement"),
+    userId: v.string(),
+    orgId: v.id("organizations"),
+
+    previousLevel: v.string(),
+    newLevel: v.string(),
+    notes: v.string(),
+
+    action: v.union(v.literal("override"), v.literal("clear")),
+    performedBy: v.id("orgMemberships"),
+    performedAt: v.number(),
+  })
+    .index("by_engagement", ["engagementId"])
+    .index("by_org", ["orgId"]),
 });
