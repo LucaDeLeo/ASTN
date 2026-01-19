@@ -127,21 +127,20 @@ Plans:
 - [x] 11-03-PLAN.md — Browse page with map
 
 #### Phase 12: Event Management
-**Goal**: Org admins can create events and users can RSVP
+**Goal**: Orgs can connect lu.ma calendars and users can view events on dashboard
 **Depends on**: Phase 11
-**Requirements**: EVT-01, EVT-02, EVT-03, EVT-04
+**Requirements**: EVT-02, EVT-03 (EVT-01 via lu.ma, EVT-04 via lu.ma link-out)
 **Success Criteria** (what must be TRUE):
-  1. Org admin can create events with title, description, date/time, location, capacity
-  2. Org has a public event listing page showing upcoming and past events
+  1. Org admin can configure lu.ma calendar integration
+  2. Org has a public event listing page showing lu.ma embed
   3. User can see events from their orgs on their dashboard
-  4. User can RSVP to events (Going / Not Going)
-  5. User can view event details and update their RSVP
-**Plans**: TBD
+  4. User can RSVP to events via lu.ma link-out
+**Plans**: 3 plans
 
 Plans:
-- [ ] 12-01: TBD
-- [ ] 12-02: TBD
-- [ ] 12-03: TBD
+- [ ] 12-01-PLAN.md — Schema + lu.ma sync backend
+- [ ] 12-02-PLAN.md — Org events page + admin settings
+- [ ] 12-03-PLAN.md — Dashboard events section
 
 #### Phase 13: Event Notifications
 **Goal**: Users receive configurable event notifications and reminders
