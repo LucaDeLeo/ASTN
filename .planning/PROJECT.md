@@ -8,15 +8,15 @@ A career command center for AI safety talent. Individuals maintain living profil
 
 Individuals get enough value from smart matching + recommendations that they keep profiles fresh — this is the flywheel that makes everything else work.
 
-## Current Milestone: v1.1 Profile Input Speedup
+## Current State
 
-**Goal:** Reduce friction in profile creation by letting users upload existing documents instead of filling forms from scratch.
+**Shipped:** v1.1 Profile Input Speedup (2026-01-19)
 
-**Target features:**
-- Upload PDF (CV or LinkedIn "Save as PDF" export)
-- Paste text block with career info
-- LLM extracts structured data and auto-fills profile form
-- User reviews/edits, then enrichment chat fills remaining gaps
+v1.1 added faster profile creation via PDF/text upload with LLM extraction, a review UI for extracted data, and a 4-way entry point wizard (upload, paste, manual, chat-first).
+
+**Tech stack:** Convex + TanStack Start + React 19 + shadcn/ui + Claude Sonnet 4.5/Haiku 4.5
+
+**Codebase:** ~84,000 lines TypeScript, ~360 files
 
 ## Requirements
 
@@ -29,13 +29,14 @@ Individuals get enough value from smart matching + recommendations that they kee
 - ✓ Org dashboard for BAISH to view their members (basic CRM) — v1.0
 - ✓ Automated opportunity aggregation from 80k job board and aisafety.com — v1.0
 - ✓ Email digests for matches — v1.0
+- ✓ PDF/document upload for profile creation (CV, LinkedIn export) — v1.1
+- ✓ Text paste for profile creation (any format) — v1.1
+- ✓ LLM extraction from uploaded content → auto-fill form fields — v1.1
+- ✓ Context-aware enrichment chat (knows what's populated, only asks about gaps) — v1.1
 
 ### Active
 
-- [ ] PDF/document upload for profile creation (CV, LinkedIn export)
-- [ ] Text paste for profile creation (any format)
-- [ ] LLM extraction from uploaded content → auto-fill form fields
-- [ ] Context-aware enrichment chat (knows what's populated, only asks about gaps)
+(Next milestone requirements to be defined via /gsd:new-milestone)
 
 ### Out of Scope
 
@@ -50,18 +51,15 @@ Individuals get enough value from smart matching + recommendations that they kee
 
 ## Context
 
-**Current state:** v1.0 MVP shipped 2026-01-18. Ready for BAISH pilot (50-100 profiles).
-
-**Tech stack:** Convex + TanStack Start + React 19 + shadcn/ui + Claude Sonnet 4.5/Haiku 4.5
-
-**Codebase:** ~73,000 lines TypeScript, 289 files
+**Current state:** v1.1 shipped 2026-01-19. Ready for BAISH pilot (50-100 profiles) with faster profile creation.
 
 **Known issues:**
 - `@ts-nocheck` in batchActions.ts (Convex action type inference workaround)
 - OAuth flows require real browser testing
 - Aggregation requires 80K/Airtable API keys configured
+- test-upload.tsx route should be removed after development verification
 
-**Launch plan:** Workshop-based onboarding where members create profiles and get immediate matches during the session.
+**Launch plan:** Workshop-based onboarding where members create profiles (via upload, paste, or AI chat) and get immediate matches during the session.
 
 **Three-sided network:**
 1. Individuals — get matching + recommendations, keep profiles updated
@@ -90,6 +88,12 @@ Individuals get enough value from smart matching + recommendations that they kee
 | Claude Sonnet 4.5 + Haiku 4.5 | Latest models, Sonnet for quality reasoning, Haiku for speed/cost | ✓ Good — Haiku fast for enrichment, quality TBD |
 | Tier labels (great/good/exploring) not percentages | More encouraging, less anxiety-inducing for job seekers | ✓ Good — aligns with encouraging tone |
 | Cold start prevention (opportunities first) | Ensure users see matches immediately on signup | ✓ Good — no empty state for new users |
+| Claude Haiku 4.5 for extraction | Fast, cheap (~$0.001/resume), vision capability for PDFs | ✓ Good — ~5-10 second extraction |
+| Extract-then-discard for privacy | No document retention after extraction | ✓ Good — privacy-preserving |
+| Explicit user review required | All extracted data must be reviewed before saving | ✓ Good — user maintains control |
+| 4-way entry point wizard | Upload, paste, manual, chat-first options | ✓ Good — covers all user preferences |
+| Default acceptance in review UI | Users reject unwanted fields rather than accepting each | ✓ Good — reduced friction |
+| Fuzzy skill matching (0.7 threshold) | Suggest ASTN skills from resume content | ✓ Good — helpful suggestions |
 
 ---
-*Last updated: 2026-01-18 after v1.1 milestone started*
+*Last updated: 2026-01-19 after v1.1 milestone complete*
