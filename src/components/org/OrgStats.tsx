@@ -11,16 +11,56 @@ interface OrgStatsProps {
       medium: number;
       low: number;
     };
+    // Enhanced stats (optional for backward compatibility)
+    engagementDistribution?: {
+      highly_engaged: number;
+      moderate: number;
+      at_risk: number;
+      new: number;
+      inactive: number;
+      pending: number;
+    };
+    careerDistribution?: Record<string, number>;
+    eventMetrics?: {
+      totalResponses: number;
+      attendedCount: number;
+      attendanceRate: number;
+    };
+    timeRange?: string;
   };
 }
 
 export function OrgStats({ stats }: OrgStatsProps) {
-  const { skillsDistribution, completenessDistribution } = stats;
+  const {
+    skillsDistribution,
+    completenessDistribution,
+    engagementDistribution,
+    careerDistribution,
+    eventMetrics,
+  } = stats;
 
   const totalMembers =
     completenessDistribution.high +
     completenessDistribution.medium +
     completenessDistribution.low;
+
+  // Calculate total for engagement distribution
+  const totalEngagement = engagementDistribution
+    ? engagementDistribution.highly_engaged +
+      engagementDistribution.moderate +
+      engagementDistribution.at_risk +
+      engagementDistribution.new +
+      engagementDistribution.inactive +
+      engagementDistribution.pending
+    : 0;
+
+  // Get top career stages sorted by count
+  const topCareerStages = careerDistribution
+    ? Object.entries(careerDistribution)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 6)
+    : [];
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
@@ -68,6 +108,77 @@ export function OrgStats({ stats }: OrgStatsProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Engagement Distribution */}
+      {engagementDistribution && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Member Engagement</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {totalEngagement === 0 ? (
+              <p className="text-slate-500 text-sm">
+                No engagement data available yet. Run engagement scoring to see
+                distribution.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                <DistributionBar
+                  label="Active"
+                  count={engagementDistribution.highly_engaged}
+                  total={totalEngagement}
+                  color="bg-green-500"
+                />
+                <DistributionBar
+                  label="Moderate"
+                  count={engagementDistribution.moderate}
+                  total={totalEngagement}
+                  color="bg-blue-500"
+                />
+                <DistributionBar
+                  label="At Risk"
+                  count={engagementDistribution.at_risk}
+                  total={totalEngagement}
+                  color="bg-amber-500"
+                />
+                <DistributionBar
+                  label="New"
+                  count={engagementDistribution.new}
+                  total={totalEngagement}
+                  color="bg-purple-500"
+                />
+                <DistributionBar
+                  label="Inactive"
+                  count={engagementDistribution.inactive}
+                  total={totalEngagement}
+                  color="bg-slate-400"
+                />
+                {engagementDistribution.pending > 0 && (
+                  <DistributionBar
+                    label="Pending"
+                    count={engagementDistribution.pending}
+                    total={totalEngagement}
+                    color="bg-slate-300"
+                  />
+                )}
+
+                {/* Event Metrics Summary */}
+                {eventMetrics && eventMetrics.totalResponses > 0 && (
+                  <div className="pt-4 border-t">
+                    <p className="text-sm text-slate-600">
+                      <span className="font-medium">
+                        {eventMetrics.attendanceRate}%
+                      </span>{" "}
+                      attendance rate ({eventMetrics.attendedCount}/
+                      {eventMetrics.totalResponses} responses)
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Profile Completeness Distribution */}
       <Card>
@@ -119,6 +230,45 @@ export function OrgStats({ stats }: OrgStatsProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Career Breakdown */}
+      {careerDistribution && topCareerStages.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Career Breakdown</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {topCareerStages.map((stage) => {
+                const maxCount = Math.max(
+                  ...topCareerStages.map((s) => s.count),
+                  1
+                );
+                const percentage = (stage.count / maxCount) * 100;
+
+                return (
+                  <div key={stage.name}>
+                    <div className="flex items-center justify-between text-sm mb-1">
+                      <span className="text-slate-700 truncate pr-2">
+                        {stage.name}
+                      </span>
+                      <span className="text-slate-500 shrink-0">
+                        {stage.count}
+                      </span>
+                    </div>
+                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary rounded-full transition-all duration-300"
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
@@ -152,6 +302,39 @@ function CompletenessBar({
         </span>
       </div>
       <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-300 ${color}`}
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+interface DistributionBarProps {
+  label: string;
+  count: number;
+  total: number;
+  color: string;
+}
+
+function DistributionBar({
+  label,
+  count,
+  total,
+  color,
+}: DistributionBarProps) {
+  const percentage = total > 0 ? (count / total) * 100 : 0;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between text-sm mb-1">
+        <span className="text-slate-700 font-medium">{label}</span>
+        <span className="text-slate-500">
+          {count} ({Math.round(percentage)}%)
+        </span>
+      </div>
+      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-300 ${color}`}
           style={{ width: `${percentage}%` }}
