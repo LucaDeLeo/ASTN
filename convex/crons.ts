@@ -37,4 +37,22 @@ crons.weekly(
   {}
 );
 
+// Run hourly to process daily event digest for each timezone's 9 AM
+// Offset from match alerts at :00 to avoid collision
+crons.hourly(
+  "send-daily-event-digest",
+  { minuteUTC: 30 },
+  internal.emails.batchActions.processDailyEventDigestBatch,
+  {}
+);
+
+// Run weekly on Sunday evening UTC (same time as weekly opportunity digest)
+// Users who have both enabled will get both in same window
+crons.weekly(
+  "send-weekly-event-digest",
+  { dayOfWeek: "sunday", hourUTC: 22, minuteUTC: 30 },
+  internal.emails.batchActions.processWeeklyEventDigestBatch,
+  {}
+);
+
 export default crons;
