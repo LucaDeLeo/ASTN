@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** Phase 15 - Engagement Scoring (complete)
+**Current focus:** Phase 16 - CRM Dashboard & Programs (in progress)
 
 ## Current Position
 
-Phase: 15 of 16 (Engagement Scoring)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-01-19 - Completed phase 15 (engagement scoring)
+Phase: 16 of 16 (CRM Dashboard & Programs)
+Plan: 4 of 6 in current phase
+Status: In progress
+Last activity: 2026-01-19 - Completed 16-04-PLAN.md (Programs Schema & Backend)
 
-Progress: [██████████████████████████████] 80% (48/51 plans: v1.0 + v1.1 complete, v1.2 phases 11-15 complete)
+Progress: [████████████████████████████████] 84% (49/51 plans: v1.0 + v1.1 complete, v1.2 phases 11-15 complete, 16-01 to 16-04 complete)
 
 ## Milestone History
 
@@ -25,10 +25,10 @@ Progress: [███████████████████████
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 48 (v1.0: 21 + v1.1: 13 + v1.2: 14)
+- Total plans completed: 49 (v1.0: 21 + v1.1: 13 + v1.2: 15)
 - Average duration: ~10 min/plan
 - v1.1 execution: 4 phases in ~2 days
-- v1.2 execution: Phase 11 complete (3 plans, ~12 min), Phase 12 complete (3 plans, ~11 min), Phase 13 complete (3 plans, ~19 min), Phase 14 complete (3 plans, ~11 min), Phase 15 in progress (2 plans, ~11 min)
+- v1.2 execution: Phase 11 complete (3 plans, ~12 min), Phase 12 complete (3 plans, ~11 min), Phase 13 complete (3 plans, ~19 min), Phase 14 complete (3 plans, ~11 min), Phase 15 complete (2 plans, ~11 min), Phase 16 in progress (4 plans, ~18 min so far)
 
 **By Phase (v1.1):**
 
@@ -48,6 +48,7 @@ Progress: [███████████████████████
 | 13-event-notifications | 3 | ~19min | ~6min |
 | 14-attendance-tracking | 3 | ~11min | ~4min |
 | 15-engagement-scoring | 2 | ~11min | ~6min |
+| 16-crm-dashboard-programs | 4/6 | ~18min | ~5min |
 
 ## Accumulated Context
 
@@ -97,6 +98,9 @@ Recent decisions affecting current work:
 - [15-02]: Badge colors: green=Active, blue=Moderate, amber=At Risk, purple=New, gray=Inactive
 - [15-02]: Manual override indicated by (Manual) suffix on badge
 - [15-02]: Engagement data fetched at page level, distributed via Map for O(1) lookup
+- [16-04]: Soft delete via archiving for programs (status: archived)
+- [16-04]: Auto-completion triggers when attendance count criteria met
+- [16-04]: Privacy: member emails not exposed in participant list
 
 ### Pending Todos
 
@@ -115,10 +119,10 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-19
-Stopped at: Completed phase 15 (engagement scoring)
+Stopped at: Completed 16-04-PLAN.md (Programs Schema & Backend)
 Resume file: None
-Next action: `/gsd:discuss-phase 16` (CRM dashboard & programs)
+Next action: Execute 16-05-PLAN.md (Program Admin UI)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-19 - Completed phase 15 (engagement scoring with LLM classification, admin UI, and override system)*
+*Last updated: 2026-01-19 - Completed 16-04-PLAN.md (programs and programParticipation tables with CRUD and enrollment mutations)*
