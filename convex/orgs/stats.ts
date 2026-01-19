@@ -140,3 +140,165 @@ function calculateCompleteness(profile: Doc<"profiles">): number {
   const completedCount = sections.filter(Boolean).length;
   return Math.round((completedCount / sections.length) * 100);
 }
+
+// Get enhanced stats with time range filtering, engagement distribution, and career breakdown
+export const getEnhancedOrgStats = query({
+  args: {
+    orgId: v.id("organizations"),
+    timeRange: v.optional(
+      v.union(
+        v.literal("7d"),
+        v.literal("30d"),
+        v.literal("90d"),
+        v.literal("all")
+      )
+    ),
+  },
+  handler: async (ctx, { orgId, timeRange = "30d" }) => {
+    await requireOrgAdmin(ctx, orgId);
+
+    const now = Date.now();
+    const ranges: Record<string, number> = {
+      "7d": 7 * 24 * 60 * 60 * 1000,
+      "30d": 30 * 24 * 60 * 60 * 1000,
+      "90d": 90 * 24 * 60 * 60 * 1000,
+      all: now, // From epoch
+    };
+    const since = now - ranges[timeRange];
+
+    // Get all memberships for this org
+    const memberships = await ctx.db
+      .query("orgMemberships")
+      .withIndex("by_org", (q) => q.eq("orgId", orgId))
+      .collect();
+
+    const memberCount = memberships.length;
+    const adminCount = memberships.filter((m) => m.role === "admin").length;
+
+    // Count members who joined in the time range
+    const joinedInRange = memberships.filter(
+      (m) => m.joinedAt >= since
+    ).length;
+
+    // Get engagement data for this org
+    const engagementRecords = await ctx.db
+      .query("memberEngagement")
+      .withIndex("by_org", (q) => q.eq("orgId", orgId))
+      .collect();
+
+    // Build engagement distribution
+    const engagementDistribution: Record<string, number> = {
+      highly_engaged: 0,
+      moderate: 0,
+      at_risk: 0,
+      new: 0,
+      inactive: 0,
+      pending: 0, // No engagement record yet
+    };
+
+    const engagementMap = new Map(
+      engagementRecords.map((e) => [e.userId, e])
+    );
+    for (const m of memberships) {
+      const eng = engagementMap.get(m.userId);
+      if (eng) {
+        // Use effective level (override if present, otherwise computed)
+        const level = eng.override?.level ?? eng.level;
+        engagementDistribution[level]++;
+      } else {
+        engagementDistribution.pending++;
+      }
+    }
+
+    // Build career stage distribution and skills distribution from profiles
+    const careerDistribution: Record<string, number> = {};
+    const skillCounts: Record<string, number> = {};
+    const profilesWithCompleteness: Array<{
+      profile: Doc<"profiles"> | null;
+      completeness: number;
+    }> = [];
+
+    for (const m of memberships) {
+      const profile = await ctx.db
+        .query("profiles")
+        .withIndex("by_user", (q) => q.eq("userId", m.userId))
+        .first();
+
+      if (profile) {
+        // Career distribution
+        const stage = profile.seeking ?? "Unknown";
+        careerDistribution[stage] = (careerDistribution[stage] ?? 0) + 1;
+
+        // Skills distribution
+        if (profile.skills) {
+          for (const skill of profile.skills) {
+            skillCounts[skill] = (skillCounts[skill] || 0) + 1;
+          }
+        }
+
+        // Completeness tracking
+        const completeness = calculateCompleteness(profile);
+        profilesWithCompleteness.push({ profile, completeness });
+      } else {
+        careerDistribution["Unknown"] =
+          (careerDistribution["Unknown"] ?? 0) + 1;
+        profilesWithCompleteness.push({ profile: null, completeness: 0 });
+      }
+    }
+
+    // Get top 10 skills sorted by count
+    const skillsDistribution = Object.entries(skillCounts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+    // Completeness distribution
+    const completenessDistribution = {
+      high: 0, // > 70%
+      medium: 0, // 40-70%
+      low: 0, // < 40%
+    };
+
+    for (const { completeness } of profilesWithCompleteness) {
+      if (completeness > 70) {
+        completenessDistribution.high++;
+      } else if (completeness >= 40) {
+        completenessDistribution.medium++;
+      } else {
+        completenessDistribution.low++;
+      }
+    }
+
+    // Get event attendance metrics for the time range
+    const attendance = await ctx.db
+      .query("attendance")
+      .withIndex("by_org", (q) => q.eq("orgId", orgId))
+      .filter((q) => q.gte(q.field("createdAt"), since))
+      .collect();
+
+    const attendedCount = attendance.filter(
+      (a) => a.status === "attended" || a.status === "partial"
+    ).length;
+
+    const eventMetrics = {
+      totalResponses: attendance.length,
+      attendedCount,
+      attendanceRate:
+        attendance.length > 0
+          ? Math.round((attendedCount / attendance.length) * 100)
+          : 0,
+    };
+
+    return {
+      memberCount,
+      adminCount,
+      joinedThisMonth: joinedInRange, // Keep field name for backward compatibility
+      skillsDistribution,
+      completenessDistribution,
+      engagementDistribution,
+      careerDistribution,
+      eventMetrics,
+      timeRange,
+    };
+  },
+});
