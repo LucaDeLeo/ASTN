@@ -1,674 +1,616 @@
-# Architecture Research
+# Architecture Research: v1.2 Org CRM & Events
 
-**Domain:** Career Platform / Talent Matching System (AI Safety Focus)
-**Researched:** 2026-01-17
-**Confidence:** MEDIUM-HIGH
+**Domain:** Org CRM, Events, Attendance Tracking, Engagement Scoring
+**Researched:** 2026-01-19
+**Confidence:** HIGH (builds on existing patterns)
 
-## Standard Architecture
+## Executive Summary
 
-### System Overview
+v1.2 extends the existing ASTN architecture with three new domains: events, attendance tracking, and engagement scoring. The architecture follows established Convex patterns (queries/mutations for data, actions for LLM work, crons for scheduled tasks) while adding new tables and relationships that integrate cleanly with the existing org/membership model.
+
+The key architectural insight: **engagement scoring is computed from observable behavior (event attendance, profile updates, platform activity), not self-reported data**. This makes the CRM self-maintaining - orgs see accurate engagement levels without asking members to fill out forms.
+
+## System Overview
 
 ```
 +------------------------------------------------------------------+
 |                         CLIENT LAYER                              |
 |  +------------------+  +------------------+  +------------------+ |
-|  |   Talent Portal  |  |   Org Dashboard  |  |   Admin Panel    | |
-|  | (Profile, Match) |  | (Members, Stats) |  |  (Moderation)    | |
+|  |   Member Portal  |  |   Org Dashboard  |  |   Event Pages    | |
+|  | (existing)       |  | (CRM, engagement)|  | (new)            | |
 |  +--------+---------+  +--------+---------+  +--------+---------+ |
 +-----------|--------------------|----------------------|-----------+
             |                    |                      |
             v                    v                      v
 +------------------------------------------------------------------+
-|                     CONVEX REAL-TIME LAYER                        |
+|                     CONVEX DATA LAYER                             |
 |  +------------------+  +------------------+  +------------------+ |
-|  |  Auth (Clerk)    |  | Profile Queries  |  | Match Queries    | |
-|  |  + Convex Auth   |  | (Real-time sync) |  | (Live updates)   | |
+|  |  organizations   |  |     events       |  |  eventAttendance | |
+|  |  orgMemberships  |  | (new table)      |  |  (new table)     | |
 |  +------------------+  +------------------+  +------------------+ |
 |  +------------------+  +------------------+  +------------------+ |
-|  | Profile Mutations|  | Match Mutations  |  |  Org Mutations   | |
-|  | (Transactional)  |  | (Transactional)  |  | (Transactional)  | |
+|  |  engagementLogs  |  | memberEngagement |  |   profiles       | |
+|  |  (new table)     |  | (new table)      |  |   (existing)     | |
 |  +------------------+  +------------------+  +------------------+ |
 +------------------------------------------------------------------+
             |                    |                      |
 +-----------v--------------------v----------------------v-----------+
 |                       CONVEX ACTIONS                              |
 |  +------------------+  +------------------+  +------------------+ |
-|  | LLM Matching     |  | Profile Builder  |  | Job Aggregator   | |
-|  | (Claude Sonnet)  |  | (Claude Haiku)   |  | (External APIs)  | |
-|  +------------------+  +------------------+  +------------------+ |
-|  +------------------+  +------------------+  +------------------+ |
-|  | Notification     |  |  Email Service   |  |  Scheduled Jobs  | |
-|  | (Digests)        |  |  (Resend)        |  |  (Cron actions)  | |
+|  | Event Notifier   |  | Attendance Check |  | Engagement Scorer| |
+|  | (email/push)     |  | (cron, "attend?")| | (LLM-computed)   | |
 |  +------------------+  +------------------+  +------------------+ |
 +------------------------------------------------------------------+
-            |                    |                      |
-+-----------v--------------------v----------------------v-----------+
-|                    CONVEX DATA LAYER                              |
-|  +------------------------------------------------------------+ |
-|  |                    Convex Database                          | |
-|  |  Documents: profiles, opportunities, organizations,         | |
-|  |             matches, users, notifications                   | |
-|  |  Real-time subscriptions, ACID transactions,               | |
-|  |  Serializable isolation                                     | |
-|  +------------------------------------------------------------+ |
-+------------------------------------------------------------------+
 ```
 
-### Component Responsibilities
+## Schema Additions
 
-| Component | Responsibility | Convex Implementation |
-|-----------|----------------|------------------------|
-| Profile Builder | Collect structured profile data via form + LLM conversation | Convex mutations + Claude Haiku 4.5 actions for structured extraction |
-| Match Engine | Score profile-opportunity fit via programmatic context | Convex actions calling Claude Sonnet 4.5 with constructed context |
-| LLM Gateway | Centralize all LLM calls, manage prompts | Convex actions wrapping Anthropic SDK |
-| Job Aggregator | Sync opportunities from external sources | Convex scheduled actions (cron) fetching 80K Hours, aisafety.com |
-| Notification Service | Send digests, alerts based on user preferences | Convex actions + Resend for email |
-| Multi-tenant Layer | Org-scoped views of same data | Query-level filtering with organizationId + function-level auth checks |
+### New Tables
 
-## Recommended Project Structure
-
-```
-src/
-├── app/                        # Next.js App Router
-│   ├── (auth)/                 # Auth pages (login, signup)
-│   ├── (dashboard)/            # Authenticated routes
-│   │   ├── profile/            # Profile creation/editing
-│   │   ├── opportunities/      # Browse & match opportunities
-│   │   └── org/                # Organization dashboard
-│   └── layout.tsx
-├── components/                 # React components
-│   ├── profile/                # Profile-related components
-│   ├── opportunities/          # Opportunity components
-│   └── ui/                     # Generic UI (shadcn)
-├── lib/                        # Client-side utilities
-│   └── utils.ts                # Helper functions
-└── types/                      # Shared TypeScript types
-
-convex/                         # Convex backend (all server logic)
-├── _generated/                 # Auto-generated types
-├── schema.ts                   # Database schema definition
-├── auth.ts                     # Auth configuration
-├── profiles.ts                 # Profile queries & mutations
-├── opportunities.ts            # Opportunity queries & mutations
-├── organizations.ts            # Org queries & mutations
-├── matching/                   # Matching logic
-│   ├── engine.ts               # Core matching action
-│   ├── context.ts              # Context construction for LLM
-│   └── scoring.ts              # Score interpretation
-├── llm/                        # LLM integration
-│   ├── client.ts               # Anthropic client setup
-│   ├── prompts.ts              # Prompt templates
-│   └── extractors.ts           # Structured data extraction
-├── aggregation/                # Job aggregation
-│   ├── sources/                # Per-source adapters
-│   │   ├── eightyK.ts          # 80,000 Hours adapter
-│   │   └── aisafety.ts         # aisafety.com adapter
-│   └── sync.ts                 # Sync orchestration action
-├── notifications/              # Notification system
-│   ├── digests.ts              # Digest generation
-│   └── email.ts                # Email sending action
-└── crons.ts                    # Scheduled job definitions
-```
-
-### Structure Rationale
-
-- **app/**: Next.js App Router for file-based routing; minimal API routes since Convex handles backend
-- **convex/**: All backend logic lives here; TypeScript functions that run server-side
-- **convex/schema.ts**: Single source of truth for data model; generates types automatically
-- **convex/matching/**: Core algorithm isolated; programmatic context construction pattern
-- **convex/llm/**: Centralized LLM access via actions; prevents prompt sprawl
-- **No separate API layer**: Convex functions are the API; real-time by default
-
-## Architectural Patterns
-
-### Pattern 1: Programmatic Context Construction for Matching
-
-**What:** Build LLM context programmatically from structured data, let LLM score and explain matches
-**When to use:** When you want full control over what context the LLM sees and transparent reasoning
-**Trade-offs:** More explicit than embeddings; requires careful context design; easier to debug and iterate
-
-**Approach:**
-Instead of: embed profile -> embed opportunity -> vector similarity
-Do: query relevant structured data -> construct LLM prompt with context -> LLM scores/explains match
-
-**Example:**
 ```typescript
-// convex/matching/context.ts
-import { Doc } from "./_generated/dataModel";
+// convex/schema.ts additions
 
-export function constructMatchContext(
-  profile: Doc<"profiles">,
-  opportunity: Doc<"opportunities">
-): string {
-  return `
-## Candidate Profile
-- Current Role: ${profile.currentRole}
-- Years of Experience: ${profile.yearsExperience}
-- Technical Skills: ${profile.skills.join(", ")}
-- AI Safety Interests: ${profile.aiSafetyInterests.join(", ")}
-- Location Preference: ${profile.locationPreference}
-- Career Goals: ${profile.careerGoals}
-- Background Summary: ${profile.narrativeSummary}
+// Events created by org admins
+events: defineTable({
+  orgId: v.id("organizations"),
 
-## Opportunity
-- Title: ${opportunity.title}
-- Organization: ${opportunity.organization}
-- Type: ${opportunity.type}
-- Required Skills: ${opportunity.requiredSkills.join(", ")}
-- Preferred Skills: ${opportunity.preferredSkills?.join(", ") || "None specified"}
-- Experience Level: ${opportunity.experienceLevel}
-- Location: ${opportunity.location}
-- Description: ${opportunity.description}
-- AI Safety Focus Area: ${opportunity.aiSafetyFocus}
-  `.trim();
-}
+  // Event details
+  title: v.string(),
+  description: v.optional(v.string()),
+  eventType: v.union(
+    v.literal("meetup"),
+    v.literal("workshop"),
+    v.literal("talk"),
+    v.literal("social"),
+    v.literal("other")
+  ),
 
-// convex/matching/engine.ts
-import { action } from "./_generated/server";
-import { v } from "convex/values";
+  // Timing
+  startTime: v.number(),  // Unix timestamp
+  endTime: v.optional(v.number()),
+  timezone: v.string(),   // IANA timezone
+
+  // Location
+  location: v.optional(v.string()),  // Physical address or "Online"
+  isOnline: v.boolean(),
+  virtualLink: v.optional(v.string()),  // Zoom/Meet link
+
+  // Metadata
+  createdBy: v.id("orgMemberships"),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+  status: v.union(
+    v.literal("upcoming"),
+    v.literal("past"),
+    v.literal("cancelled")
+  ),
+})
+  .index("by_org", ["orgId"])
+  .index("by_org_status", ["orgId", "status"])
+  .index("by_start_time", ["startTime"]),
+
+// Event attendance records
+eventAttendance: defineTable({
+  eventId: v.id("events"),
+  membershipId: v.id("orgMemberships"),
+  userId: v.string(),  // Denormalized for profile queries
+
+  // Attendance status
+  rsvpStatus: v.union(
+    v.literal("going"),
+    v.literal("maybe"),
+    v.literal("not_going"),
+    v.literal("no_response")
+  ),
+  attended: v.optional(v.boolean()),  // Confirmed after event
+
+  // Post-attendance
+  attendanceConfirmedAt: v.optional(v.number()),
+  feedbackSubmitted: v.optional(v.boolean()),
+  feedbackText: v.optional(v.string()),
+  feedbackRating: v.optional(v.number()),  // 1-5
+
+  // Notification tracking
+  attendancePromptSentAt: v.optional(v.number()),
+  reminderSentAt: v.optional(v.number()),
+
+  createdAt: v.number(),
+  updatedAt: v.number(),
+})
+  .index("by_event", ["eventId"])
+  .index("by_membership", ["membershipId"])
+  .index("by_user", ["userId"])
+  .index("by_event_rsvp", ["eventId", "rsvpStatus"]),
+
+// Activity log for engagement tracking
+engagementLogs: defineTable({
+  userId: v.string(),
+  orgId: v.id("organizations"),
+  membershipId: v.id("orgMemberships"),
+
+  // Activity type
+  activityType: v.union(
+    v.literal("event_attended"),
+    v.literal("event_rsvp"),
+    v.literal("profile_updated"),
+    v.literal("matches_viewed"),
+    v.literal("joined_org"),
+    v.literal("feedback_submitted")
+  ),
+
+  // Activity-specific data
+  metadata: v.optional(v.object({
+    eventId: v.optional(v.id("events")),
+    eventTitle: v.optional(v.string()),
+    profileSection: v.optional(v.string()),
+    matchCount: v.optional(v.number()),
+  })),
+
+  timestamp: v.number(),
+})
+  .index("by_user", ["userId"])
+  .index("by_org", ["orgId"])
+  .index("by_membership", ["membershipId"])
+  .index("by_org_user", ["orgId", "userId"])
+  .index("by_timestamp", ["timestamp"]),
+
+// Computed engagement per member per org
+memberEngagement: defineTable({
+  membershipId: v.id("orgMemberships"),
+  orgId: v.id("organizations"),
+  userId: v.string(),
+
+  // Engagement metrics (raw counts)
+  eventsAttended30d: v.number(),
+  eventsAttendedTotal: v.number(),
+  lastEventAttended: v.optional(v.number()),
+  profileUpdatedAt: v.optional(v.number()),
+  lastActive: v.number(),
+
+  // LLM-computed engagement level
+  computedLevel: v.union(
+    v.literal("highly_engaged"),
+    v.literal("engaged"),
+    v.literal("occasional"),
+    v.literal("inactive")
+  ),
+  computedAt: v.number(),
+  computedRationale: v.optional(v.string()),  // LLM explanation
+
+  // Admin override
+  adminOverrideLevel: v.optional(v.union(
+    v.literal("highly_engaged"),
+    v.literal("engaged"),
+    v.literal("occasional"),
+    v.literal("inactive")
+  )),
+  adminOverrideBy: v.optional(v.id("orgMemberships")),
+  adminOverrideAt: v.optional(v.number()),
+  adminOverrideReason: v.optional(v.string()),
+
+  updatedAt: v.number(),
+})
+  .index("by_membership", ["membershipId"])
+  .index("by_org", ["orgId"])
+  .index("by_org_level", ["orgId", "computedLevel"]),
+```
+
+### Schema Additions to Existing Tables
+
+```typescript
+// Add to profiles table
+profiles: defineTable({
+  // ... existing fields ...
+
+  // Event preferences (new)
+  eventNotifications: v.optional(v.object({
+    enabled: v.boolean(),
+    frequency: v.union(
+      v.literal("all"),      // Every event
+      v.literal("weekly"),   // Weekly digest
+      v.literal("none")      // Disabled
+    ),
+    reminderHours: v.optional(v.number()),  // Hours before event
+  })),
+}),
+
+// Add to organizations table
+organizations: defineTable({
+  // ... existing fields ...
+
+  // Org discovery (new)
+  location: v.optional(v.string()),       // City/region
+  coordinates: v.optional(v.object({
+    lat: v.number(),
+    lng: v.number(),
+  })),
+  isOnlineCommunity: v.optional(v.boolean()),
+  description: v.optional(v.string()),
+  website: v.optional(v.string()),
+  discoverableInSearch: v.optional(v.boolean()),  // Default true
+}),
+```
+
+## Component Boundaries
+
+### Data Access Layer (Convex Functions)
+
+| Component | Responsibility | Files |
+|-----------|----------------|-------|
+| Event CRUD | Create, read, update, cancel events | `convex/events/mutations.ts`, `convex/events/queries.ts` |
+| Attendance | RSVP, attendance confirmation, feedback | `convex/attendance/mutations.ts`, `convex/attendance/queries.ts` |
+| Engagement Logs | Record activity, query history | `convex/engagement/logs.ts` |
+| Engagement Scoring | LLM computation, admin override | `convex/engagement/scoring.ts` (action) |
+| Org Discovery | Search, geography-based suggestions | `convex/orgs/discovery.ts` |
+
+### UI Components
+
+| Component | Responsibility | Route |
+|-----------|----------------|-------|
+| Org Discovery | Search, map, suggestions | `/orgs` (new) |
+| Event List | Upcoming/past events for an org | `/org/$slug/events` (new) |
+| Event Detail | Event info, RSVP, attendees | `/org/$slug/events/$id` (new) |
+| Attendance Prompt | "Did you attend?" modal | Component in `/org/$slug/events` |
+| Org CRM Dashboard | Member list with engagement | `/org/$slug/admin` (extend existing) |
+| Member Profile View | Attendance history on profile | `/org/$slug/admin/members/$id` (new) |
+
+### Background Jobs (Crons)
+
+| Job | Schedule | Responsibility |
+|-----|----------|----------------|
+| Event Reminders | Hourly | Send reminders to RSVPed members |
+| Attendance Prompts | Daily at 10 AM local | Ask "Did you attend?" for past events |
+| Engagement Recompute | Daily at 3 AM UTC | Recompute engagement scores for active orgs |
+| Event Status Update | Hourly | Move events from "upcoming" to "past" |
+
+## Data Flow Diagrams
+
+### Event Creation Flow
+
+```
+[Org Admin creates event]
+       |
+       v
+[Convex mutation: events.create]
+       |
+       v
+[Event stored in events table]
+       |
+       v (if notifications enabled)
+[Schedule notification job]
+       |
+       v (at configured time)
+[Convex action: sendEventNotification]
+       |
+       v
+[Email sent via Resend to members with eventNotifications.enabled]
+```
+
+### Attendance Tracking Flow
+
+```
+[Event time passes]
+       |
+       v (cron job, next day 10 AM user local)
+[Convex action: sendAttendancePrompt]
+       |
+       v
+[Email/notification: "Did you attend [Event]?"]
+       |
+       v (user clicks)
+[Landing page: /org/$slug/events/$id/attendance]
+       |
+       +---> [Yes] ---> [Feedback form]
+       |                      |
+       |                      v
+       |               [Convex mutation: confirmAttendance]
+       |                      |
+       |                      v
+       |               [engagementLogs entry created]
+       |                      |
+       |                      v
+       |               [memberEngagement updated]
+       |
+       +---> [No] ---> [Convex mutation: markNotAttended]
+       |
+       +---> [Dismiss] ---> [No action, can respond later]
+       |
+       +---> [Remind Later] ---> [Schedule follow-up]
+```
+
+### Engagement Scoring Flow
+
+```
+[Daily cron: 3 AM UTC]
+       |
+       v
+[Query orgs with active members]
+       |
+       v (for each org)
+[Query engagementLogs for org members]
+       |
+       v
+[Aggregate: events attended, profile updates, last active]
+       |
+       v
+[Construct context for LLM]
+       |
+       v
+[Claude Haiku 4.5: compute engagement level + rationale]
+       |
+       v
+[Convex mutation: update memberEngagement]
+       |
+       v
+[Real-time sync to org admin dashboard]
+```
+
+## Integration with Existing System
+
+### What Stays the Same
+
+- **Auth flow**: Uses existing @convex-dev/auth
+- **Org membership model**: `orgMemberships` table unchanged, extended with engagement data
+- **Profile model**: `profiles` table extended with event notification preferences
+- **Email infrastructure**: Existing Resend integration via `convex/emails/send.ts`
+- **Cron infrastructure**: Existing `convex/crons.ts` pattern
+- **Admin auth helper**: Existing `requireOrgAdmin()` pattern in `convex/orgs/admin.ts`
+
+### What Gets Extended
+
+| Existing Component | Extension |
+|--------------------|-----------|
+| `/org/$slug/admin` | Add engagement tab, filter by engagement level |
+| `/org/$slug/admin/members` | Add attendance history, engagement score display |
+| `getOrgStats` query | Add event count, attendance rate, engagement distribution |
+| `getAllMembersWithProfiles` | Add engagement data, last activity |
+| Profile page | Add event attendance history section (user's own orgs) |
+| Notification preferences | Add event notification settings |
+
+### What's New
+
+| New Component | Purpose |
+|---------------|---------|
+| Events subsystem | Full event lifecycle management |
+| Attendance subsystem | Track confirmed attendance |
+| Engagement subsystem | Log activities, compute scores |
+| Org discovery | Search, geography, suggestions |
+
+## LLM Integration for Engagement Scoring
+
+### Why LLM (Not Just Rules)
+
+Rule-based scoring (e.g., "attended 3+ events = highly engaged") is brittle:
+- Doesn't account for event frequency (3 events in 6 months vs 3 events in 1 year)
+- Doesn't weight recent activity higher
+- Can't explain the reasoning to admins
+
+LLM scoring provides:
+- Contextual interpretation of activity patterns
+- Natural language explanation for admins
+- Easy to adjust by modifying the prompt (not code)
+
+### Implementation Pattern
+
+```typescript
+// convex/engagement/scoring.ts
+"use node";
+
 import Anthropic from "@anthropic-ai/sdk";
+import { internalAction } from "../_generated/server";
+import { internal } from "../_generated/api";
 
-export const scoreMatch = action({
-  args: { profileId: v.id("profiles"), opportunityId: v.id("opportunities") },
-  handler: async (ctx, args) => {
-    const profile = await ctx.runQuery(internal.profiles.get, { id: args.profileId });
-    const opportunity = await ctx.runQuery(internal.opportunities.get, { id: args.opportunityId });
+const ENGAGEMENT_PROMPT = `You are evaluating a community member's engagement level.
 
-    const context = constructMatchContext(profile, opportunity);
+Given their activity data, classify them as:
+- highly_engaged: Regular event attendance, active profile, consistent participation
+- engaged: Attends events periodically, keeps profile reasonably current
+- occasional: Rare participation, may have joined but not active
+- inactive: No recent activity, profile possibly stale
 
+Activity data:
+{activityContext}
+
+Respond with JSON:
+{
+  "level": "highly_engaged" | "engaged" | "occasional" | "inactive",
+  "rationale": "Brief explanation for admins (1-2 sentences)"
+}`;
+
+export const computeEngagementForMember = internalAction({
+  args: { membershipId: v.id("orgMemberships") },
+  handler: async (ctx, { membershipId }) => {
+    // 1. Get activity data
+    const activities = await ctx.runQuery(
+      internal.engagement.logs.getRecentActivities,
+      { membershipId, days: 90 }
+    );
+
+    // 2. Build context
+    const context = buildActivityContext(activities);
+
+    // 3. Call Claude Haiku (fast, cheap)
     const anthropic = new Anthropic();
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-5-20250514",
-      max_tokens: 1024,
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 256,
       messages: [{
         role: "user",
-        content: `${MATCH_SCORING_PROMPT}\n\n${context}`
+        content: ENGAGEMENT_PROMPT.replace("{activityContext}", context)
       }]
     });
 
-    // Parse structured response
-    const result = parseMatchResponse(response.content[0].text);
-
-    // Store match result via mutation
-    await ctx.runMutation(internal.matches.upsert, {
-      profileId: args.profileId,
-      opportunityId: args.opportunityId,
-      score: result.score,
-      explanation: result.explanation,
-      strengthAreas: result.strengths,
-      gapAreas: result.gaps,
-      acceptanceProbability: result.acceptanceProbability
+    // 4. Parse and store
+    const result = JSON.parse(response.content[0].text);
+    await ctx.runMutation(internal.engagement.mutations.updateEngagement, {
+      membershipId,
+      computedLevel: result.level,
+      computedRationale: result.rationale,
     });
-
-    return result;
   }
 });
 ```
 
-### Pattern 2: LLM Structured Extraction via Tool Use
+### Admin Override Pattern
 
-**What:** Use Claude tool use to extract structured data from conversation
-**When to use:** Converting free-form LLM conversation into database-ready structured fields
-**Trade-offs:** Reliable schema enforcement; requires well-designed prompts and tool definitions
+Admins can override the LLM score when they have context the system doesn't:
+- "This person is highly engaged offline but doesn't use the platform"
+- "This person is temporarily inactive due to personal circumstances"
 
-**Example:**
 ```typescript
-// convex/llm/extractors.ts
-import Anthropic from "@anthropic-ai/sdk";
-
-const profileExtractionTool = {
-  name: "extract_profile",
-  description: "Extract structured profile information from the conversation",
-  input_schema: {
-    type: "object" as const,
-    properties: {
-      current_role: { type: "string", description: "Current job title or role" },
-      years_experience: { type: "number", description: "Years of relevant experience" },
-      skills: {
-        type: "array",
-        items: { type: "string" },
-        description: "Technical and professional skills"
-      },
-      ai_safety_interests: {
-        type: "array",
-        items: { type: "string" },
-        description: "Specific AI safety areas of interest"
-      },
-      location_preference: {
-        type: "string",
-        enum: ["remote", "hybrid", "onsite"],
-        description: "Work location preference"
-      },
-      career_goals: { type: "string", description: "Career aspirations and goals" }
-    },
-    required: ["current_role", "skills", "ai_safety_interests"]
-  }
-};
-
-export async function extractProfileFromConversation(
-  messages: Array<{ role: "user" | "assistant"; content: string }>
-) {
-  const anthropic = new Anthropic();
-
-  const response = await anthropic.messages.create({
-    model: "claude-haiku-4-5-20250514",
-    max_tokens: 1024,
-    tools: [profileExtractionTool],
-    tool_choice: { type: "tool", name: "extract_profile" },
-    messages
-  });
-
-  const toolUse = response.content.find(block => block.type === "tool_use");
-  if (toolUse && toolUse.type === "tool_use") {
-    return toolUse.input as ExtractedProfile;
-  }
-  throw new Error("Failed to extract profile data");
-}
-```
-
-### Pattern 3: Convex Query-Level Multi-Tenancy
-
-**What:** Enforce organization data isolation at query/mutation level with auth checks
-**When to use:** When orgs should only see their members' profiles and related data
-**Trade-offs:** Explicit in code (easy to reason about); requires discipline to include in all functions
-
-**Example:**
-```typescript
-// convex/profiles.ts
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
-
-// Query with org scoping
-export const listOrgProfiles = query({
-  args: { organizationId: v.id("organizations") },
-  handler: async (ctx, args) => {
-    // Verify user has access to this org
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
-
-    const membership = await ctx.db
-      .query("memberships")
-      .withIndex("by_user_org", (q) =>
-        q.eq("userId", identity.subject).eq("organizationId", args.organizationId)
-      )
-      .unique();
-
-    if (!membership) throw new Error("Not a member of this organization");
-
-    // Return only profiles belonging to this org
-    return await ctx.db
-      .query("profiles")
-      .withIndex("by_organization", (q) => q.eq("organizationId", args.organizationId))
-      .collect();
-  }
-});
-
-// Mutation with ownership check
-export const updateProfile = mutation({
+export const setEngagementOverride = mutation({
   args: {
-    profileId: v.id("profiles"),
-    updates: v.object({
-      currentRole: v.optional(v.string()),
-      skills: v.optional(v.array(v.string())),
-      // ... other fields
-    })
+    membershipId: v.id("orgMemberships"),
+    level: engagementLevelValidator,
+    reason: v.string(),
   },
-  handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+  handler: async (ctx, { membershipId, level, reason }) => {
+    const adminMembership = await requireOrgAdmin(ctx, orgId);
 
-    const profile = await ctx.db.get(args.profileId);
-    if (!profile || profile.userId !== identity.subject) {
-      throw new Error("Cannot update profile you don't own");
-    }
-
-    await ctx.db.patch(args.profileId, {
-      ...args.updates,
-      updatedAt: Date.now()
+    await ctx.db.patch(memberEngagementId, {
+      adminOverrideLevel: level,
+      adminOverrideBy: adminMembership._id,
+      adminOverrideAt: Date.now(),
+      adminOverrideReason: reason,
     });
   }
 });
 ```
 
-### Pattern 4: Hybrid Profile Data Model (Convex Documents)
+## Suggested Build Order
 
-**What:** Store both structured fields (queryable) and unstructured data (LLM context) in documents
-**When to use:** When you need to filter/sort on some fields but preserve rich context for LLM
-**Trade-offs:** Some data duplication; clear separation of concerns
+Based on dependencies between components:
 
-**Example:**
-```typescript
-// convex/schema.ts
-import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
+### Phase 1: Org Discovery Foundation
 
-export default defineSchema({
-  profiles: defineTable({
-    userId: v.string(),  // From auth identity
-    organizationId: v.optional(v.id("organizations")),
+**Dependencies:** Existing org tables
+**Builds:** Searchable org list, geography fields
 
-    // Structured fields (queryable, filterable)
-    currentRole: v.string(),
-    yearsExperience: v.number(),
-    locationPreference: v.union(
-      v.literal("remote"),
-      v.literal("hybrid"),
-      v.literal("onsite")
-    ),
-    skills: v.array(v.string()),
-    aiSafetyInterests: v.array(v.string()),
-    careerGoals: v.string(),
+1. Add `location`, `coordinates`, `description`, `website`, `discoverableInSearch` to organizations table
+2. Build org search query with full-text search
+3. Build geography-based suggestions query (simple distance calculation)
+4. Create `/orgs` route with search UI
+5. Update org pages to show description, location
 
-    // Unstructured context (for LLM matching)
-    conversationHistory: v.array(v.object({
-      role: v.union(v.literal("user"), v.literal("assistant")),
-      content: v.string(),
-      timestamp: v.number()
-    })),
-    narrativeSummary: v.string(),  // LLM-generated summary of profile
+### Phase 2: Events Core
 
-    // Metadata
-    version: v.number(),
-    createdAt: v.number(),
-    updatedAt: v.number()
-  })
-    .index("by_user", ["userId"])
-    .index("by_organization", ["organizationId"])
-    .index("by_skills", ["skills"]),
+**Dependencies:** Phase 1 (orgs discoverable)
+**Builds:** Event creation, listing, RSVP
 
-  opportunities: defineTable({
-    title: v.string(),
-    organization: v.string(),
-    type: v.union(
-      v.literal("full-time"),
-      v.literal("part-time"),
-      v.literal("contract"),
-      v.literal("internship"),
-      v.literal("fellowship"),
-      v.literal("grant")
-    ),
-    description: v.string(),
-    requiredSkills: v.array(v.string()),
-    preferredSkills: v.optional(v.array(v.string())),
-    experienceLevel: v.string(),
-    location: v.string(),
-    aiSafetyFocus: v.string(),
-    sourceUrl: v.string(),
-    sourceId: v.string(),  // Dedupe key
-    status: v.union(v.literal("active"), v.literal("closed"), v.literal("expired")),
+1. Add `events` table
+2. Build event CRUD mutations
+3. Add event notification preferences to profiles
+4. Create `/org/$slug/events` route (list)
+5. Create `/org/$slug/events/new` route (admin create)
+6. Create `/org/$slug/events/$id` route (detail)
+7. Build RSVP mutation
 
-    createdAt: v.number(),
-    updatedAt: v.number(),
-    expiresAt: v.optional(v.number())
-  })
-    .index("by_source", ["sourceId"])
-    .index("by_status", ["status"])
-    .index("by_organization", ["organization"]),
+### Phase 3: Event Notifications
 
-  matches: defineTable({
-    profileId: v.id("profiles"),
-    opportunityId: v.id("opportunities"),
-    score: v.number(),  // 0-100
-    explanation: v.string(),
-    strengthAreas: v.array(v.string()),
-    gapAreas: v.array(v.string()),
-    acceptanceProbability: v.number(),  // 0-1
+**Dependencies:** Phase 2 (events exist)
+**Builds:** Reminders, attendance prompts
 
-    // User feedback
-    userFeedback: v.optional(v.union(
-      v.literal("interested"),
-      v.literal("not_interested"),
-      v.literal("applied")
-    )),
+1. Add `eventAttendance` table
+2. Build event reminder cron job
+3. Build event notification email templates
+4. Build attendance prompt cron job
+5. Create attendance confirmation UI
 
-    computedAt: v.number(),
-    version: v.number()
-  })
-    .index("by_profile", ["profileId"])
-    .index("by_opportunity", ["opportunityId"])
-    .index("by_profile_score", ["profileId", "score"]),
+### Phase 4: Attendance Tracking
 
-  organizations: defineTable({
-    name: v.string(),
-    slug: v.string(),
-    description: v.optional(v.string()),
-    website: v.optional(v.string()),
+**Dependencies:** Phase 3 (attendance prompts sent)
+**Builds:** Confirmed attendance, feedback
 
-    createdAt: v.number()
-  })
-    .index("by_slug", ["slug"]),
+1. Build attendance confirmation mutation
+2. Build feedback submission UI
+3. Add attendance history to member profile view
+4. Create `/org/$slug/events/$id/attendance` landing page
 
-  memberships: defineTable({
-    userId: v.string(),
-    organizationId: v.id("organizations"),
-    role: v.union(v.literal("admin"), v.literal("member")),
+### Phase 5: Engagement Scoring
 
-    createdAt: v.number()
-  })
-    .index("by_user", ["userId"])
-    .index("by_org", ["organizationId"])
-    .index("by_user_org", ["userId", "organizationId"])
-});
-```
+**Dependencies:** Phase 4 (attendance data exists)
+**Builds:** Activity logs, LLM scoring, admin override
 
-## Data Flow
+1. Add `engagementLogs` table
+2. Add `memberEngagement` table
+3. Build activity logging (event attendance, profile updates)
+4. Build engagement scoring action (LLM)
+5. Build engagement recompute cron job
+6. Add admin override mutation
+7. Extend org admin dashboard with engagement view
 
-### Profile Creation Flow
+### Phase 6: CRM Integration
 
-```
-[User starts profile]
-       |
-       v
-[Form collects structured data]
-       |
-       v
-[Convex mutation saves initial profile]
-       |
-       v (real-time sync to client)
-[LLM conversation for enrichment] (Convex action + Claude Haiku 4.5)
-       |
-       v (Tool Use extraction)
-[Extract additional structured fields]
-       |
-       v
-[Convex mutation updates profile with enriched data]
-       |
-       v
-[Generate narrative summary] (Haiku 4.5)
-       |
-       v
-[Trigger initial match computation] (async action)
-```
+**Dependencies:** Phase 5 (engagement data exists)
+**Builds:** Full CRM view, exports
 
-### Matching Flow (Programmatic Context)
-
-```
-[User requests matches / New opportunity triggers recompute]
-       |
-       v
-[Query profile data from Convex]
-       |
-       v
-[Query active opportunities from Convex]
-       |
-       v (for each opportunity)
-[Construct match context programmatically]
-  - Profile: role, skills, interests, goals, narrative
-  - Opportunity: requirements, description, focus area
-       |
-       v
-[Call Claude Sonnet 4.5 with context + scoring prompt]
-       |
-       v
-[Parse structured response: score, explanation, strengths, gaps]
-       |
-       v
-[Convex mutation stores match results]
-       |
-       v (real-time sync)
-[Client receives updated matches automatically]
-```
-
-### Opportunity Aggregation Flow
-
-```
-[Convex cron triggers daily/hourly]
-       |
-       v
-[Convex action: Fetch from 80K Hours] <--> [Convex action: Fetch from aisafety.com]
-       |                                          |
-       v                                          v
-[Parse & normalize]                       [Parse & normalize]
-       |                                          |
-       +------------------+-------------------+
-                          |
-                          v
-[Deduplicate via sourceId index]
-       |
-       v
-[Convex mutation: Upsert opportunities]
-       |
-       v (real-time sync to subscribed clients)
-[Queue match recomputation for affected profiles] (internal action)
-```
-
-### Key Data Flows
-
-1. **Profile -> Match Context:** Profile data (structured + narrative) formatted into prompt context for LLM scoring
-2. **Opportunity -> Match Context:** Job descriptions formatted with requirements for LLM evaluation
-3. **Match Computation:** Profile context + Opportunity context -> Claude Sonnet 4.5 -> score + explanation
-4. **Real-time Updates:** All Convex queries auto-subscribe; matches update in UI instantly when computed
-5. **Notification Trigger:** High-score new matches -> queue notification action -> batch into digest or send immediately
+1. Extend `/org/$slug/admin/members` with engagement display
+2. Add engagement filters to member list
+3. Add engagement history timeline to member detail
+4. Extend export to include engagement data
+5. Add engagement distribution to org stats
 
 ## Scaling Considerations
 
-| Scale | Architecture Adjustments |
-|-------|--------------------------|
-| 0-500 profiles | Default Convex fine. Compute matches on-demand. Real-time works great. |
-| 500-5K profiles | Pre-compute matches via scheduled actions. Cache top matches in dedicated table. |
-| 5K-50K profiles | Batch match computation. Prioritize active users. Consider match staleness vs freshness tradeoffs. |
-| 50K+ profiles | Tiered matching (quick filter -> detailed match). Geographic/interest-based sharding of computation. |
+| Scale | Considerations |
+|-------|----------------|
+| 1-5 orgs, <500 members | Default architecture fine. Compute engagement on-demand. |
+| 5-20 orgs, 500-2K members | Pre-compute engagement scores daily. Batch attendance prompts. |
+| 20+ orgs, 2K+ members | Shard engagement computation by org. Consider engagement staleness tolerance. |
 
-### Scaling Priorities
+### Key Bottlenecks
 
-1. **First bottleneck:** LLM API calls for match scoring/explanations. Mitigation: Cache match results, batch computation in off-peak, use Haiku for pre-filtering before Sonnet for detailed scoring.
-2. **Second bottleneck:** Match recomputation volume when new opportunities arrive. Mitigation: Incremental matching (only recompute for profiles with relevant skills/interests).
-3. **Third bottleneck:** Real-time subscription fan-out at scale. Mitigation: Convex handles this well; consider pagination for large result sets.
+1. **Engagement scoring LLM calls**: Mitigated by daily batch computation (not on-demand)
+2. **Event notification fan-out**: Mitigated by batching by timezone
+3. **Activity log volume**: Mitigated by keeping only 90-day rolling window for scoring
 
-## Anti-Patterns
+## Anti-Patterns to Avoid
 
-### Anti-Pattern 1: Storing Only Structured Profile Data
+### Anti-Pattern 1: Real-Time Engagement Scoring
 
-**What people do:** Extract structured fields from LLM conversation, discard conversation history
-**Why it's wrong:** Loses context needed for accurate LLM matching and explanations later
-**Do this instead:** Store both structured fields (for queries/filtering) and raw conversation/narrative (for LLM context)
+**What to avoid:** Recompute engagement on every page load
+**Why bad:** Expensive LLM calls, unnecessary (engagement doesn't change instantly)
+**Instead:** Daily batch computation, serve from `memberEngagement` table
 
-### Anti-Pattern 2: Generating Minimal Context for LLM Matching
+### Anti-Pattern 2: Storing All Activity Forever
 
-**What people do:** Send only `{skills: [...], role: "..."}` to LLM for matching
-**Why it's wrong:** Loses semantic richness; "wants to work on AI alignment at technical orgs" becomes just keywords
-**Do this instead:** Construct rich context including narrative, goals, interests, and full opportunity description
+**What to avoid:** Keep every activity log entry indefinitely
+**Why bad:** Table grows unbounded, slows queries
+**Instead:** Roll up old data, keep 90-day window for scoring, archive or delete older
 
-### Anti-Pattern 3: Real-Time Match Computation for Every Request
+### Anti-Pattern 3: Notification Spam
 
-**What people do:** Compute LLM match scoring on every /matches page load
-**Why it's wrong:** Expensive (LLM calls), slow (user waits), wasteful (matches don't change that often)
-**Do this instead:** Pre-compute matches in background actions, serve from matches table, recompute on profile/opportunity changes
+**What to avoid:** Send event notification for every event to every member
+**Why bad:** Users unsubscribe, notification fatigue
+**Instead:** Honor user preferences, batch into digests, respect frequency settings
 
-### Anti-Pattern 4: Tenant Filtering Only at Query Level Without Auth
+### Anti-Pattern 4: Blocking Attendance on Feedback
 
-**What people do:** Filter by organizationId but don't verify user membership
-**Why it's wrong:** Any user could pass any organizationId if they guess/enumerate IDs
-**Do this instead:** Always verify auth identity + membership before returning org-scoped data
+**What to avoid:** Require feedback before marking attendance
+**Why bad:** Reduces attendance confirmation rate
+**Instead:** Feedback is optional, prompted but not required
 
-### Anti-Pattern 5: Scraping Without Fallback Strategy
+### Anti-Pattern 5: Single Engagement Score Across Orgs
 
-**What people do:** Rely solely on web scraping for opportunity aggregation
-**Why it's wrong:** Sites change structure; IP blocks; legal risk; unreliable data
-**Do this instead:** Prefer APIs where available; build resilient scrapers with error handling; manual import as fallback
-
-### Anti-Pattern 6: Synchronous LLM Calls in Mutations
-
-**What people do:** Call Claude directly inside Convex mutations
-**Why it's wrong:** Mutations must be deterministic in Convex; LLM calls are non-deterministic side effects
-**Do this instead:** Use Convex actions for LLM calls, then call mutations to store results
-
-## Integration Points
-
-### External Services
-
-| Service | Integration Pattern | Notes |
-|---------|---------------------|-------|
-| Anthropic (Claude Sonnet/Haiku 4.5) | Convex actions via SDK | Sonnet for detailed matching, Haiku for extraction/conversation |
-| 80,000 Hours Job Board | Convex action with scraper | No known public API; build resilient scraper with rate limiting |
-| aisafety.com | Convex action with scraper | No known public API; coordinate with maintainers if possible |
-| Email (Resend) | Convex action | For digests, alerts, notifications |
-| Auth (Clerk + Convex Auth) | Convex auth integration | Handle user sessions, org membership |
-
-### Internal Boundaries (Convex)
-
-| Boundary | Communication | Notes |
-|----------|---------------|-------|
-| Queries <-> Mutations | Direct in-process | Same Convex deployment; real-time sync automatic |
-| Mutations <-> Actions | `ctx.runMutation` from actions | Actions call mutations to persist side-effect results |
-| Actions <-> External | HTTP/SDK calls | LLM APIs, scrapers, email services |
-| Scheduled Jobs <-> Actions | Cron definitions in crons.ts | Background work runs as actions |
-
-## Build Order Implications
-
-Based on component dependencies, recommended implementation order:
-
-### Phase 1: Foundation (Must build first)
-1. **Convex schema** - Core tables (users, profiles, opportunities, organizations)
-2. **Auth integration** - Clerk + Convex auth, user sessions
-3. **Basic profile CRUD** - Form-based profile creation (no LLM yet)
-
-### Phase 2: Core Matching (Depends on Phase 1)
-4. **Opportunity model + manual import** - Get some opportunities in the system
-5. **Context construction** - Build the profile+opportunity context formatter
-6. **Basic matching action** - Claude Sonnet 4.5 scoring with constructed context
-
-### Phase 3: LLM Enhancement (Depends on Phase 2)
-7. **LLM conversation for profile** - Enrich profiles via Haiku conversation
-8. **Match explanations** - Detailed reasoning from Sonnet
-9. **Acceptance probability** - LLM-estimated fit scores
-
-### Phase 4: Multi-Tenant + Aggregation (Can parallel with Phase 3)
-10. **Org membership model** - memberships table, auth checks
-11. **Org dashboard** - View members, stats with proper scoping
-12. **Job aggregation** - Scheduled actions syncing from 80K Hours, aisafety.com
-
-### Phase 5: Engagement (Depends on Phase 3+4)
-13. **Notification system** - Digests, alerts via Resend
-14. **Match caching** - Pre-compute and store in matches table
-15. **Analytics** - Usage tracking, match quality metrics
+**What to avoid:** One engagement score per user
+**Why bad:** User might be active in one org, inactive in another
+**Instead:** Engagement is per-membership (user + org combination)
 
 ## Sources
 
-### Convex Architecture
-- [How Convex Works](https://stack.convex.dev/how-convex-works)
-- [Convex Overview](https://docs.convex.dev/understanding/)
-- [Components for Backend](https://stack.convex.dev/backend-components)
-- [Horizontally Scaling Functions](https://stack.convex.dev/horizontally-scaling-functions)
-- [Convex Functions Documentation](https://docs.convex.dev/functions)
+### Convex Patterns
+- Existing ASTN codebase patterns for org membership, auth, LLM actions
+- Convex documentation for scheduled jobs and actions
 
-### Matching & Recommendation Patterns
-- [Algorithms and Architecture for Job Recommendations (O'Reilly/Indeed)](https://www.oreilly.com/content/algorithms-and-architecture-for-job-recommendations/)
-- [System Design for Recommendations and Search (Eugene Yan)](https://eugeneyan.com/writing/system-design-for-discovery/)
+### Event Management
+- Standard event RSVP patterns from Meetup, Eventbrite, Luma
+- Post-event feedback patterns from workshop platforms
 
-### LLM Integration
-- [AI Hiring with LLMs: Multi-Agent Framework (arXiv)](https://arxiv.org/html/2504.02870v1)
-- [How to Use LLMs in Recruitment (HeroHunt)](https://www.herohunt.ai/blog/how-to-use-llms-in-recruitment)
-
-### Notification Systems
-- [Design a Notification System (Medium)](https://medium.com/@bangermadhur/design-a-notification-system-a-complete-system-design-guide-3b20d49298de)
-
-### Job Board Aggregation
-- [Job Board Scraping Guide 2025 (Job Boardly)](https://www.jobboardly.com/blog/job-board-scraping-complete-guide-2025)
-- [80,000 Hours Job Board](https://jobs.80000hours.org/)
-- [AISafety.com Jobs](https://www.aisafety.com/jobs)
+### Engagement Scoring
+- Community engagement scoring patterns from Discord, Slack
+- LLM-based classification patterns from existing ASTN matching
 
 ---
-*Architecture research for: AI Safety Talent Network (ASTN)*
-*Researched: 2026-01-17*
-*Updated: 2026-01-17 - Convex backend, programmatic matching (no vector search), Claude Sonnet/Haiku 4.5*
+*Architecture research for: ASTN v1.2 Org CRM & Events*
+*Researched: 2026-01-19*
+*Confidence: HIGH - builds on proven patterns in existing codebase*

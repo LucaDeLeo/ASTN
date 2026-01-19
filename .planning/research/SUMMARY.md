@@ -1,186 +1,192 @@
-# Project Research Summary
+# Project Research Summary: v1.2 Org CRM & Events
 
-**Project:** AI Safety Talent Network (ASTN)
-**Domain:** Career platform / Talent matching system for AI safety field
-**Researched:** 2026-01-17
-**Confidence:** MEDIUM-HIGH
+**Project:** AI Safety Talent Network (ASTN) - Milestone v1.2
+**Domain:** Community management, event management, engagement scoring
+**Researched:** 2026-01-19
+**Confidence:** HIGH
 
 ## Executive Summary
 
-ASTN is a two-sided talent marketplace targeting the AI safety niche. This is a well-understood domain architecturally (career platforms, recommendation systems, multi-tenant dashboards), but with novel LLM-powered features that push beyond typical implementations. The recommended approach is a Next.js 16 + Supabase + Vercel stack with Clerk auth, using a two-stage matching architecture (vector retrieval + LLM ranking). The LLM layer should use Claude 3.5 Sonnet for high-quality reasoning (profile conversations, match explanations) and GPT-4o-mini for bulk operations (embeddings, initial filtering).
-
-The core value proposition is "conversational profile creation that generates actionable career recommendations." This differentiates from 80,000 Hours (passive job board) and LinkedIn (generic matching). The key technical innovations are: LLM-powered profile enrichment, match explanations that show reasoning, and acceptance probability estimates. However, the acceptance probability feature carries the highest risk of hallucination and should be labeled experimental or deferred.
-
-The critical risks are: (1) **Cold start** - launching without sufficient opportunities will kill the platform immediately; aggregate jobs BEFORE building user features; (2) **Profile decay** - users won't update unless they get value, so the recommendation engine must deliver from day one; (3) **LLM hallucination** - one confidently wrong recommendation destroys trust; ground all LLM output in verified data. The niche market size (~50-200 active AI safety opportunities worldwide) is a reality to manage through expectation-setting, not a problem to solve.
+- **Zero new dependencies required**: The existing ASTN stack (Convex, TanStack, Resend, Claude Haiku) handles 100% of v1.2 requirements. No npm installs needed.
+- **Self-updating CRM is the key differentiator**: Unlike traditional org CRMs where members never update data, ASTN's members maintain their own profiles (for matching value) while orgs get a CRM view. This solves the fundamental CRM data-decay problem.
+- **Three critical pitfalls to design around**: (1) notification fatigue will destroy engagement if not architected with batching from day one, (2) post-event attendance tracking fails at <10% completion if feedback is required before confirmation, (3) real-time CRM dashboards will create performance/cost explosion at 50+ members.
+- **LLM engagement scoring must be explainable with admin override**: The AI safety community is particularly sensitive to opaque AI systems. Scores need visible input signals and human override capability.
+- **Build order is critical**: Events depend on org discovery, attendance depends on events, engagement scoring depends on attendance data. Cannot parallelize these phases.
 
 ## Key Findings
 
-### Recommended Stack
+### Stack Decisions
 
-The stack prioritizes developer velocity and serverless deployment while avoiding infrastructure overhead. All services have generous free tiers sufficient for the 50-100 user pilot.
+**Use (already installed):**
+- **Convex scheduler + crons**: Event reminders, attendance prompts, engagement recomputation
+- **date-fns + date-fns-tz**: Timezone handling for events (already has IANA timezone pattern)
+- **@convex-dev/resend**: Event notifications using existing email batch patterns
+- **Claude Haiku 4.5**: Engagement scoring (same pattern as matching/compute.ts)
+- **Convex search indexes**: Member directory search (already using for skillsTaxonomy)
 
-**Core technologies:**
-- **Next.js 16.x**: Full-stack React framework with App Router, Turbopack (now stable), and React Server Components. Industry standard for 2025.
-- **Supabase (PostgreSQL 16+)**: Managed database with built-in pgvector for embeddings, Row-Level Security for multi-tenant org dashboards.
-- **Prisma 6.x**: Type-safe ORM with declarative schema. v6 removed Rust engine for faster serverless cold starts.
-- **Vercel AI SDK 6.x**: Unified API for OpenAI/Anthropic. Enables streaming, function calling, and structured outputs.
-- **Clerk 6.x**: Authentication with org management built-in. 5-minute setup, 10K MAU free.
-- **Inngest**: Background jobs for scraping, matching, and email digests. Purpose-built for serverless.
-- **Resend + React Email**: Transactional email with React component templates.
+**Do NOT add:**
+- **FullCalendar/react-big-calendar**: Overkill for simple event list. Use shadcn/ui cards.
+- **rrule**: Only if recurring events become a requirement (not in initial scope)
+- **Push notification services**: Email sufficient for pilot phase
+- **moment-timezone/dayjs/luxon**: Already have date-fns-tz
 
-**What NOT to use:** LangChain (over-abstraction), MongoDB/Firebase (relational data needs joins), Puppeteer (Playwright has better anti-detection), separate vector DB at MVP scale (pgvector sufficient for <1M vectors).
+### Table Stakes vs Differentiators
 
-**Estimated pilot cost:** ~$11/month (primarily LLM API costs).
+**Must have (orgs expect these):**
+- Member directory with search/filter
+- Event creation, listing, RSVP
+- Event notifications (email reminders)
+- Attendance tracking (post-event confirmation)
+- Basic org stats (member counts, breakdown by career stage)
+- CSV export of member data
 
-### Expected Features
+**Differentiators (competitive advantage):**
+- Self-updating profiles (members maintain for personal value, orgs benefit)
+- LLM-computed engagement levels with transparency
+- Admin override for engagement with audit trail
+- Post-event "Did you attend?" with 1-click confirmation (separate from feedback)
+- Geography-based org suggestions
+- Configurable notification preferences per-org
 
-**Must have (table stakes):**
-- User profiles with skills/experience (AI safety-specific taxonomy)
-- Opportunity listings (aggregated from 80K Hours + manual)
-- Search and filtering by role type, location, experience
-- Email digest notifications (weekly personalized summaries)
-- Privacy controls (hide from specific orgs, e.g., current employer)
-- OAuth authentication (Google/GitHub)
-- Mobile-responsive design
+**Defer to v2+:**
+- Real-time chat/messaging (creates spam burden, LinkedIn 2.0 problem)
+- Event ticketing/payments (Luma/Eventbrite do this well)
+- Complex event check-in (QR codes, NFC badges)
+- Gamification (badges, streaks)
+- Recurring event management (manual duplication is fine at current scale)
 
-**Should have (differentiators):**
-- LLM conversational profile creation (core innovation)
-- Smart matching with explanations ("why this fits you")
-- Personalized "what to do next" recommendations
-- Acceptance probability estimation (labeled experimental)
-- Basic org dashboard (CRM view for pilot local groups)
-- Automated opportunity aggregation
+### Architecture Highlights
 
-**Defer (v2+):**
-- Full application tracker (users have existing systems)
-- Real-time messaging between users (scope creep, moderation burden)
-- Social feed / content posting (EA Forum already serves this)
-- Gamification (inappropriate for mission-driven context)
-- Video interviews/assessments (high friction)
+**New tables required:**
+1. `events` - Event details, timing, location, status
+2. `eventAttendance` - RSVP status, attendance confirmation, feedback
+3. `engagementLogs` - Activity records (event_attended, profile_updated, etc.)
+4. `memberEngagement` - Computed engagement level per member per org
 
-### Architecture Approach
+**Key patterns to follow:**
+- LLM scoring pattern from `matching/compute.ts` (Haiku 4.5, tool_use, internal actions)
+- Cron pattern from `crons.ts` (hourly reminders, daily recomputation)
+- Email batch pattern from `emails/batchActions.ts`
 
-The architecture follows a standard three-tier pattern (client, API, data) with a processing layer for LLM operations and background jobs. The key architectural decision is **two-stage matching**: fast vector retrieval (pgvector) to get ~100 candidates, then LLM re-ranking with explanations for the top ~20. This balances speed, cost, and quality.
+**Anti-patterns to avoid:**
+- Real-time subscriptions for aggregate CRM views (use pagination + refresh)
+- Storing engagement in profile (coupling; use separate table)
+- Single engagement score across orgs (per-membership, not per-user)
+- Blocking attendance on feedback (separate 1-click confirmation from optional feedback)
 
-**Major components:**
-1. **Profile Builder** - Form + LLM conversation, structured extraction via function calling
-2. **Match Engine** - Two-stage retrieval + ranking, generates explanations
-3. **LLM Gateway** - Centralized prompt management, rate limiting, cost tracking
-4. **Job Aggregator** - Background scraping of 80K Hours, aisafety.com, org career pages
-5. **Notification Service** - Weekly digests, match alerts via Resend
-6. **Multi-tenant Layer** - PostgreSQL Row-Level Security for org-scoped data views
+### Top Pitfalls to Avoid
 
-**Key patterns:**
-- Hybrid data model: structured fields (queryable) + unstructured narrative (LLM context) + embeddings (semantic search)
-- Background job processing for expensive operations (matching, embedding generation)
-- Pre-compute matches, serve from cache, recompute on changes
+1. **Notification fatigue** - Design with batching/digest as default. Implement notification budget (max 3 non-urgent per day). Build granular per-org preferences from start.
 
-### Critical Pitfalls
+2. **Post-event attendance abandonment** - Separate attendance confirmation (1-click "Yes/No") from feedback (optional follow-up). Send within 2-4 hours of event end. Never require feedback before confirming attendance.
 
-1. **Cold Start** - Must aggregate opportunities BEFORE launching user features. Users who see zero matches never return. Mitigation: Import from 80K Hours, aisafety.com, and org career pages before pilot. Target: 3+ opportunities per user segment.
+3. **CRM dashboard performance explosion** - Do NOT use real-time subscriptions for member lists. Use server-side pagination, denormalized stats documents, fetch full profiles only on member detail click.
 
-2. **LLM Hallucination** - LLMs will confidently fabricate job requirements, org details, or acceptance probabilities. Mitigation: Ground ALL LLM output in verified database content. Show explanations as "Matched because [data]" not "You would be perfect because [generated]". Consider deferring acceptance probability to v2.
+4. **LLM engagement trust collapse** - Make scoring explainable (show input signals). Provide admin override with audit trail. Use engagement "levels" not numeric scores to avoid false precision.
 
-3. **Profile Decay** - Profiles become stale within months. Dead profiles make matching worse, which reduces value, which reduces updates. Mitigation: Build micro-update prompts, activity signals as implicit preferences, profile freshness indicators.
-
-4. **Aggregation Fragility** - Scraped job sources WILL break. HTML structure changes, rate limits, IP blocks. Mitigation: Build monitoring, staleness detection, manual curation fallback. Show "Last verified: X" on all listings.
-
-5. **Privacy Violations** - Career data is highly sensitive (current employer, salary expectations). Mitigation: Minimal data collection, user-controlled visibility, clear consent flows, no LLM training on user data, data retention policy from day one.
+5. **Location privacy exposure** - Explicit consent for location-based suggestions. Filter on backend, never expose user location to org admins. Allow opt-out of location-based discovery.
 
 ## Implications for Roadmap
 
-Based on research, suggested phase structure:
+### Phase 1: Org Discovery Foundation
+**Rationale:** Events and CRM require discoverable orgs. Foundation must exist first.
+**Delivers:** Searchable org list, geography-based suggestions, invite links
+**Addresses:** Org discovery features from FEATURES.md
+**Avoids:** Location privacy exposure (design consent model)
+**Schema:** Add location, coordinates, description, website to organizations table
 
-### Phase 1: Foundation + Data Layer
-**Rationale:** Cold start prevention requires opportunities before users. Auth and data model enable everything else.
-**Delivers:** Database schema, auth system, opportunity data model, aggregation infrastructure, basic opportunity display
-**Addresses:** Auth (table stakes), opportunity listings (table stakes), aggregation (enables matching)
-**Avoids:** Cold start pitfall - ensures opportunities exist before user onboarding begins
+### Phase 2: Events Core
+**Rationale:** Attendance tracking (Phase 3) requires events to exist
+**Delivers:** Event creation by admins, event listing, RSVP functionality
+**Uses:** Convex scheduler for reminders, date-fns-tz for timezone handling
+**Avoids:** RSVP no-shows (implement waitlist, reminders with easy cancel)
+**Schema:** New events table, eventAttendance table
 
-### Phase 2: Profile + Matching Core
-**Rationale:** Profiles depend on auth/data layer. Matching requires both profiles and opportunities. This is the core value proposition.
-**Delivers:** Form-based profile creation, LLM profile enrichment, embedding generation, two-stage matching, match explanations
-**Uses:** Supabase, Prisma, Vercel AI SDK (Claude + OpenAI embeddings), pgvector
-**Implements:** Profile Builder, Match Engine, LLM Gateway
-**Avoids:** LLM hallucination - implements grounded explanations
+### Phase 3: Attendance Tracking
+**Rationale:** Engagement scoring (Phase 4) requires attendance data
+**Delivers:** Post-event "Did you attend?" flow, feedback collection, attendance history on profiles
+**Implements:** Email notifications via Resend (existing pattern)
+**Avoids:** Low completion rate (1-click confirmation, send within 2-4 hours)
 
-### Phase 3: Engagement + Org Features
-**Rationale:** Email notifications require matching to work first. Org dashboard requires profiles and privacy controls.
-**Delivers:** Weekly digest emails, notification preferences, org dashboard (CRM view), privacy controls
-**Uses:** Resend, React Email, Inngest for scheduling, PostgreSQL RLS for multi-tenancy
-**Implements:** Notification Service, Multi-tenant Layer
-**Avoids:** Profile decay - builds engagement loops to drive updates
+### Phase 4: Notification System
+**Rationale:** Events and attendance create notification needs; must batch properly
+**Delivers:** Configurable event reminders, notification preferences UI, batched delivery
+**Avoids:** Notification fatigue (budget, batching, granular preferences)
+**Schema:** Extend notificationPreferences with eventReminders, orgAnnouncements
 
-### Phase 4: Enhancement + Scale Prep
-**Rationale:** Acceptance probability needs baseline matching working. Analytics need usage data. Scale prep before public launch.
-**Delivers:** Acceptance probability (experimental), recommendation feedback loop, match caching, analytics dashboard, bias audits
-**Addresses:** Differentiator features, performance optimization
-**Avoids:** Filter bubble - implements diversity metrics before scaling
+### Phase 5: Engagement Scoring
+**Rationale:** Requires attendance data from Phase 3 to be meaningful
+**Delivers:** LLM-computed engagement levels, admin override capability, engagement signals display
+**Uses:** Claude Haiku 4.5 (same as matching), internal actions pattern
+**Avoids:** Trust collapse (explainable scores, override with audit trail)
+**Schema:** engagementLogs table, memberEngagement table
 
-### Phase 5: Public Launch Readiness
-**Rationale:** Security hardening, monitoring, and polish before opening beyond pilot.
-**Delivers:** Security audit, rate limiting, abuse prevention, onboarding polish, documentation
-**Addresses:** Production readiness
+### Phase 6: CRM Dashboard
+**Rationale:** Pulls together all data from previous phases
+**Delivers:** Member directory with engagement, filtering by level, export, org stats
+**Avoids:** Performance explosion (server-side pagination, no real-time aggregates)
+**Implements:** Virtual scrolling for member lists (TanStack Virtual)
 
 ### Phase Ordering Rationale
 
-- **Opportunities before profiles:** Two-sided marketplace research is unanimous - the supply side (opportunities) must exist before demand side (job seekers) arrives. One bad first experience = permanent abandonment.
-- **Matching before notifications:** Email digests are only valuable if they contain good matches. Building notifications before matching works creates spam and unsubscribes.
-- **Org dashboard after privacy:** Row-Level Security must be in place before any org-scoped data access. Privacy first, then sharing.
-- **LLM features gradual rollout:** Start with simpler retrieval matching, add LLM explanations once grounded, defer acceptance probability until confident in calibration.
+- **Sequential dependencies**: Org discovery -> Events -> Attendance -> Engagement -> CRM. Each phase produces data the next phase consumes.
+- **Notification system must be designed early** (Phase 4) before multiple notification sources (events, reminders, attendance prompts) create fatigue.
+- **Engagement scoring waits for attendance data** to avoid computing meaningless scores.
+- **CRM dashboard comes last** because it aggregates data from all other features.
 
 ### Research Flags
 
-Phases likely needing deeper research during planning:
-- **Phase 2 (LLM Profile Enrichment):** Function calling schemas for structured extraction need iteration. Prompt engineering for profile conversation is novel.
-- **Phase 2 (Matching Algorithm):** Two-stage retrieval + ranking implementation has many tuning parameters. Need to research embedding strategies for profiles vs opportunities.
+**Phases needing deeper research during planning:**
+- **Phase 4 (Notifications)**: Need to finalize notification budget rules, batching windows, preference schema details
+- **Phase 5 (Engagement)**: Need to refine LLM prompt for engagement scoring, decide engagement level thresholds
 
-Phases with standard patterns (skip research-phase):
-- **Phase 1 (Foundation):** Well-documented Next.js + Supabase + Clerk patterns. Prisma schema design is straightforward.
-- **Phase 3 (Email/Notifications):** Resend + React Email has excellent documentation. Inngest cron patterns are standard.
-- **Phase 5 (Launch Prep):** Standard security and monitoring practices.
+**Phases with standard patterns (skip research-phase):**
+- **Phase 1 (Org Discovery)**: Standard search + location patterns, well-documented
+- **Phase 2 (Events Core)**: Common event CRUD, many examples
+- **Phase 3 (Attendance)**: Simple confirmation flow, existing email patterns
+- **Phase 6 (CRM Dashboard)**: Extends existing admin patterns, pagination well-documented
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All technologies verified with official 2025/2026 docs. Version compatibility confirmed. |
-| Features | MEDIUM-HIGH | Table stakes well-established from competitor analysis. LLM-powered differentiators are novel with limited precedent. |
-| Architecture | MEDIUM-HIGH | Two-stage matching is industry standard (Indeed, LinkedIn). LLM integration patterns are emerging but documented. |
-| Pitfalls | HIGH | Marketplace dynamics extensively documented. LLM risks well-understood. Privacy requirements clear. |
+| Stack | HIGH | Zero new deps; all patterns verified against existing codebase |
+| Features | MEDIUM-HIGH | Table stakes clear; differentiators validated against Oxford OAISI reference |
+| Architecture | HIGH | Builds on proven Convex patterns; schema extensions straightforward |
+| Pitfalls | MEDIUM-HIGH | Industry patterns well-documented; Convex-specific warnings verified |
 
-**Overall confidence:** MEDIUM-HIGH
+**Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Acceptance probability calibration:** No precedent for this feature. Consider labeling as "experimental" or "LLM-estimated" rather than authoritative. May need to defer or redesign based on early user feedback.
-- **AI safety skills taxonomy:** Must be defined before meaningful matching. Research found no existing taxonomy. Need community input during Phase 1 or early Phase 2.
-- **80K Hours API/partnership:** Research found no public API. Scraping is the current assumption but partnership would be more reliable. Worth exploring during Phase 1.
-- **Embedding strategy:** Research confirms hybrid approach (structured + narrative) but optimal text composition for embeddings needs experimentation.
-- **Profile update incentives:** "Update for better recommendations" is the theory but needs validation. If recommendations don't noticeably improve, need alternative engagement hooks.
+- **Notification frequency defaults**: Need user testing to find optimal defaults for event reminders
+- **Engagement level thresholds**: "Highly engaged = 3+ events" is arbitrary; may need adjustment per org
+- **Privacy consent UX**: Location consent flow needs design; research provides principles, not specifics
+
+## Open Questions for Requirements
+
+1. **Should engagement scores be visible to members?** Research suggests admin-only, but AI safety community values transparency.
+2. **What's the maximum notification frequency users will tolerate?** Start conservative (weekly digest) or aggressive (every event)?
+3. **Should invite links require admin approval for new members?** Some orgs want gatekeeping, others want open access.
+4. **How granular should event type filtering be?** Start with broad categories or let orgs define custom types?
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- [Next.js 16 Release Notes](https://nextjs.org/blog/next-16) - Version, features, Turbopack stability
-- [Vercel AI SDK Documentation](https://ai-sdk.dev/docs/introduction) - v6 features, provider abstraction
-- [Prisma Documentation](https://www.prisma.io/docs) - ORM capabilities, v6 engine changes
-- [Supabase Documentation](https://supabase.com/docs) - pgvector, RLS, platform features
-- [Clerk Documentation](https://clerk.com/docs) - Auth, org management, pricing
-- [Inngest Documentation](https://www.inngest.com/docs) - Background job patterns
+- ASTN codebase (package.json, schema.ts, matching/compute.ts, crons.ts)
+- Convex documentation on scheduled functions, cron jobs, search indexes
+- date-fns and date-fns-tz documentation
 
 ### Secondary (MEDIUM confidence)
-- [NFX: 19 Marketplace Tactics](https://www.nfx.com/post/19-marketplace-tactics-for-overcoming-the-chicken-or-egg-problem) - Cold start strategies
-- [Indeed: Algorithms and Architecture for Job Recommendations](https://www.oreilly.com/content/algorithms-and-architecture-for-job-recommendations/) - Two-stage matching pattern
-- [Eugene Yan: System Design for Discovery](https://eugeneyan.com/writing/system-design-for-discovery/) - Recommendation architecture
-- [80,000 Hours Job Board](https://jobs.80000hours.org/) - Competitor analysis, opportunity source
-- [Wellfound](https://wellfound.com/) - Feature benchmarking
+- iMIS, Association Analytics, Rhythm Software on engagement scoring models
+- EventX, vFairs, Qualtrics on event attendance tracking
+- Typeform on post-event survey timing (42% higher response within 2 hours)
+- MagicBell, Courier.com on notification fatigue patterns
 
-### Tertiary (LOW confidence)
-- LLM-powered profile enrichment patterns - emerging space, limited production case studies
-- Acceptance probability estimation - novel feature, no direct precedent found
-- AI safety talent market size - estimates vary, need validation with pilot data
+### Tertiary (validation needed)
+- Engagement level thresholds (3+ events = highly engaged) - needs org-specific tuning
+- Notification budget (max 3/day) - needs user testing
 
 ---
-*Research completed: 2026-01-17*
+*Research completed: 2026-01-19*
 *Ready for roadmap: yes*
