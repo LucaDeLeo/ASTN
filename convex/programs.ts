@@ -245,3 +245,201 @@ export const deleteProgram = mutation({
     return { success: true };
   },
 });
+
+// Get program participants
+export const getProgramParticipants = query({
+  args: {
+    programId: v.id("programs"),
+  },
+  handler: async (ctx, { programId }) => {
+    const program = await ctx.db.get("programs", programId);
+    if (!program) throw new Error("Program not found");
+
+    await requireOrgAdmin(ctx, program.orgId);
+
+    const participations = await ctx.db
+      .query("programParticipation")
+      .withIndex("by_program", (q) => q.eq("programId", programId))
+      .collect();
+
+    // Enrich with profile data
+    const enrichedParticipants = await Promise.all(
+      participations.map(async (p) => {
+        const profile = await ctx.db
+          .query("profiles")
+          .withIndex("by_user", (q) => q.eq("userId", p.userId))
+          .first();
+
+        return {
+          ...p,
+          memberName: profile?.name ?? "Unknown",
+          memberEmail: null, // Privacy: don't expose email in list
+        };
+      })
+    );
+
+    return enrichedParticipants;
+  },
+});
+
+// Enroll a member in a program
+export const enrollMember = mutation({
+  args: {
+    programId: v.id("programs"),
+    userId: v.string(),
+    adminNotes: v.optional(v.string()),
+  },
+  handler: async (ctx, { programId, userId, adminNotes }) => {
+    const program = await ctx.db.get("programs", programId);
+    if (!program) throw new Error("Program not found");
+
+    const adminMembership = await requireOrgAdmin(ctx, program.orgId);
+
+    // Verify user is a member of the org
+    const userMembership = await ctx.db
+      .query("orgMemberships")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("orgId"), program.orgId))
+      .first();
+
+    if (!userMembership) {
+      throw new Error("User is not a member of this organization");
+    }
+
+    // Check if already enrolled
+    const existing = await ctx.db
+      .query("programParticipation")
+      .withIndex("by_program", (q) => q.eq("programId", programId))
+      .filter((q) => q.eq(q.field("userId"), userId))
+      .first();
+
+    if (
+      existing &&
+      (existing.status === "enrolled" || existing.status === "pending")
+    ) {
+      throw new Error("User is already enrolled or has a pending enrollment");
+    }
+
+    // Check capacity
+    if (program.maxParticipants) {
+      const enrolledCount = await ctx.db
+        .query("programParticipation")
+        .withIndex("by_program_status", (q) =>
+          q.eq("programId", programId).eq("status", "enrolled")
+        )
+        .collect();
+
+      if (enrolledCount.length >= program.maxParticipants) {
+        throw new Error("Program is at capacity");
+      }
+    }
+
+    const now = Date.now();
+    const participationId = await ctx.db.insert("programParticipation", {
+      programId,
+      userId,
+      orgId: program.orgId,
+      status: "enrolled",
+      enrolledAt: now,
+      adminNotes,
+      approvedBy: adminMembership._id,
+      approvedAt: now,
+    });
+
+    return { participationId };
+  },
+});
+
+// Unenroll/remove a member from a program
+export const unenrollMember = mutation({
+  args: {
+    participationId: v.id("programParticipation"),
+    reason: v.optional(v.string()),
+  },
+  handler: async (ctx, { participationId, reason }) => {
+    const participation = await ctx.db.get(
+      "programParticipation",
+      participationId
+    );
+    if (!participation) throw new Error("Participation not found");
+
+    await requireOrgAdmin(ctx, participation.orgId);
+
+    await ctx.db.patch("programParticipation", participationId, {
+      status: "removed",
+      adminNotes: reason
+        ? `${participation.adminNotes ?? ""}\nRemoved: ${reason}`.trim()
+        : participation.adminNotes,
+    });
+
+    return { success: true };
+  },
+});
+
+// Mark a participant as completed (manual completion)
+export const markCompleted = mutation({
+  args: {
+    participationId: v.id("programParticipation"),
+    notes: v.optional(v.string()),
+  },
+  handler: async (ctx, { participationId, notes }) => {
+    const participation = await ctx.db.get(
+      "programParticipation",
+      participationId
+    );
+    if (!participation) throw new Error("Participation not found");
+
+    await requireOrgAdmin(ctx, participation.orgId);
+
+    if (participation.status !== "enrolled") {
+      throw new Error("Can only mark enrolled participants as completed");
+    }
+
+    await ctx.db.patch("programParticipation", participationId, {
+      status: "completed",
+      completedAt: Date.now(),
+      adminNotes: notes
+        ? `${participation.adminNotes ?? ""}\nCompleted: ${notes}`.trim()
+        : participation.adminNotes,
+    });
+
+    return { success: true };
+  },
+});
+
+// Update manual attendance count for a participant
+export const updateManualAttendance = mutation({
+  args: {
+    participationId: v.id("programParticipation"),
+    count: v.number(),
+    notes: v.optional(v.string()),
+  },
+  handler: async (ctx, { participationId, count, notes }) => {
+    const participation = await ctx.db.get(
+      "programParticipation",
+      participationId
+    );
+    if (!participation) throw new Error("Participation not found");
+
+    await requireOrgAdmin(ctx, participation.orgId);
+
+    await ctx.db.patch("programParticipation", participationId, {
+      manualAttendanceCount: count,
+      attendanceNotes: notes,
+    });
+
+    // Check if this triggers auto-completion
+    const program = await ctx.db.get("programs", participation.programId);
+    if (program?.completionCriteria?.type === "attendance_count") {
+      const required = program.completionCriteria.requiredCount ?? 0;
+      if (count >= required && participation.status === "enrolled") {
+        await ctx.db.patch("programParticipation", participationId, {
+          status: "completed",
+          completedAt: Date.now(),
+        });
+      }
+    }
+
+    return { success: true };
+  },
+});
