@@ -104,10 +104,12 @@ Plans:
   1. Profile wizard offers four clear entry points: upload, paste, manual, chat-first
   2. Enrichment chat knows what data was extracted and skips redundant questions
   3. User can switch from upload flow to manual entry at any point without losing progress
-**Plans**: TBD
+**Plans**: 3 plans in 3 waves
 
 Plans:
-- [ ] 10-01: TBD
+- [ ] 10-01-PLAN.md — Entry point UI components (step indicator, entry selector, LinkedIn tip)
+- [ ] 10-02-PLAN.md — Wizard orchestration (state machine, post-apply summary)
+- [ ] 10-03-PLAN.md — Route integration & verification checkpoint
 
 ## Progress
 
@@ -125,7 +127,7 @@ Phases execute in numeric order: 7 → 7.1 (if any) → 8 → 8.1 (if any) → 9
 | 7. File Upload Foundation | v1.1 | 4/4 | Complete | 2026-01-18 |
 | 8. LLM Extraction Core | v1.1 | 3/3 | Complete | 2026-01-18 |
 | 9. Review & Apply UI | v1.1 | 3/3 | Complete | 2026-01-18 |
-| 10. Wizard Integration | v1.1 | 0/TBD | Not started | - |
+| 10. Wizard Integration | v1.1 | 0/3 | Not started | - |
 
 ---
 *v1.1 roadmap created: 2026-01-18*
