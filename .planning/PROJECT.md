@@ -8,6 +8,23 @@ A career command center for AI safety talent. Individuals maintain living profil
 
 Individuals get enough value from smart matching + recommendations that they keep profiles fresh — this is the flywheel that makes everything else work.
 
+## Current Milestone: v1.2 Org CRM & Events
+
+**Goal:** Transform ASTN into a self-maintaining CRM for field-building orgs — members discover local hubs, attend events, and orgs get a live view of their community without chasing people to update spreadsheets.
+
+**Target features:**
+- Org discovery (geography-based suggestions, searchable list, invite links)
+- Local events (orgs create events, members get configurable notifications)
+- Post-event attendance flow ("Did you attend?" → feedback form)
+- Attendance tracked on member profiles
+- Org dashboard as full CRM (member list, profiles, engagement history)
+- LLM-computed engagement levels with admin override
+
+**Stretch:**
+- Custom program tracking per org (reading groups, fellowships, etc.)
+- Granular attendance by program
+- Travel reminders when near a hub
+
 ## Current State
 
 **Shipped:** v1.1 Profile Input Speedup (2026-01-19)
@@ -36,7 +53,18 @@ v1.1 added faster profile creation via PDF/text upload with LLM extraction, a re
 
 ### Active
 
-(Next milestone requirements to be defined via /gsd:new-milestone)
+- [ ] Org discovery — geography-based suggestions for nearby hubs
+- [ ] Org discovery — searchable list with online communities
+- [ ] Org discovery — invite links for direct org joining
+- [ ] Local events — orgs can create events with details
+- [ ] Local events — configurable notifications (frequency, channel, disable)
+- [ ] Event attendance — post-event "Did you attend?" notification
+- [ ] Event attendance — feedback form (immediate, dismiss, remind later)
+- [ ] Event attendance — tracked on member profiles
+- [ ] Org CRM — full member directory with profiles
+- [ ] Org CRM — engagement history per member
+- [ ] Engagement scoring — LLM-computed from activity
+- [ ] Engagement scoring — admin override capability
 
 ### Out of Scope
 
@@ -96,4 +124,4 @@ v1.1 added faster profile creation via PDF/text upload with LLM extraction, a re
 | Fuzzy skill matching (0.7 threshold) | Suggest ASTN skills from resume content | ✓ Good — helpful suggestions |
 
 ---
-*Last updated: 2026-01-19 after v1.1 milestone complete*
+*Last updated: 2026-01-19 after v1.2 milestone defined*
