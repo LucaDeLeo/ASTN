@@ -11,6 +11,14 @@ crons.daily(
   internal.aggregation.sync.runFullSync
 );
 
+// Run daily at 7 AM UTC (after opportunity sync at 6 AM)
+// Syncs events from lu.ma for orgs with API keys configured
+crons.daily(
+  "sync-luma-events",
+  { hourUTC: 7, minuteUTC: 0 },
+  internal.events.sync.runFullEventSync
+);
+
 // Run hourly to process match alerts for each timezone's 8 AM
 // Each hour, users whose local time is 8 AM receive their alerts
 crons.hourly(
