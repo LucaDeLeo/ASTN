@@ -22,9 +22,10 @@ interface EnrichmentStepProps {
     hasEnrichmentConversation?: boolean;
   } | null;
   fromExtraction?: boolean;
+  chatFirst?: boolean;
 }
 
-export function EnrichmentStep({ profile, fromExtraction }: EnrichmentStepProps) {
+export function EnrichmentStep({ profile, fromExtraction, chatFirst }: EnrichmentStepProps) {
   const [mode, setMode] = useState<"chat" | "review">("chat");
   const [isApplying, setIsApplying] = useState(false);
   const [applied, setApplied] = useState(false);
@@ -48,20 +49,26 @@ export function EnrichmentStep({ profile, fromExtraction }: EnrichmentStepProps)
     resetExtractions,
   } = useEnrichment(profile?._id ?? null);
 
-  // Auto-send greeting when arriving from resume extraction
+  // Auto-send greeting when arriving from resume extraction or chat-first entry
   useEffect(() => {
     if (
-      fromExtraction &&
       profile?._id &&
       messages.length === 0 &&
       !isLoading &&
       !hasAutoGreeted.current
     ) {
-      hasAutoGreeted.current = true;
-      // Send a greeting to trigger the LLM to acknowledge the imported data
-      void sendMessage("Hi! I just imported my resume. Can you help me complete my profile?");
+      if (fromExtraction) {
+        hasAutoGreeted.current = true;
+        // Send a greeting to trigger the LLM to acknowledge the imported data
+        void sendMessage("Hi! I just imported my resume. Can you help me complete my profile?");
+      } else if (chatFirst) {
+        hasAutoGreeted.current = true;
+        // Chat-first: user starting from scratch, seed conversation with intent
+        void sendMessage("Hi! I'd like help creating my profile. I'm starting from scratch.");
+      }
+      // If neither, no auto-greet (user types first message)
     }
-  }, [fromExtraction, profile?._id, messages.length, isLoading, sendMessage]);
+  }, [fromExtraction, chatFirst, profile?._id, messages.length, isLoading, sendMessage]);
 
   const handleExtract = async () => {
     await extractProfile();

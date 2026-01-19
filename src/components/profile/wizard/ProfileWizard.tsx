@@ -27,6 +27,7 @@ interface ProfileWizardProps {
   currentStep: StepId;
   onStepChange: (step: StepId) => void;
   fromExtraction?: boolean;
+  chatFirst?: boolean;
 }
 
 const STEPS: Array<StepId> = [
@@ -51,7 +52,7 @@ const _STEP_LABELS: Record<StepId, string> = {
 };
 void _STEP_LABELS; // Mark as intentionally unused for now
 
-export function ProfileWizard({ currentStep, onStepChange, fromExtraction }: ProfileWizardProps) {
+export function ProfileWizard({ currentStep, onStepChange, fromExtraction, chatFirst }: ProfileWizardProps) {
   const profile = useQuery(api.profiles.getOrCreateProfile);
   const createProfile = useMutation(api.profiles.create);
 
@@ -140,7 +141,7 @@ export function ProfileWizard({ currentStep, onStepChange, fromExtraction }: Pro
           />
         );
       case "enrichment":
-        return <EnrichmentStep profile={profile} fromExtraction={fromExtraction} />;
+        return <EnrichmentStep profile={profile} fromExtraction={fromExtraction} chatFirst={chatFirst} />;
       case "privacy":
         return (
           <PrivacyStep
