@@ -393,7 +393,8 @@ export default defineSchema({
     type: v.union(
       v.literal("event_new"),
       v.literal("event_reminder"),
-      v.literal("event_updated")
+      v.literal("event_updated"),
+      v.literal("attendance_prompt")
     ),
     eventId: v.optional(v.id("events")),
     orgId: v.optional(v.id("organizations")),
@@ -402,6 +403,9 @@ export default defineSchema({
     actionUrl: v.optional(v.string()),
     read: v.boolean(),
     createdAt: v.number(),
+    // For attendance prompts
+    promptNumber: v.optional(v.number()), // 1 or 2
+    respondedAt: v.optional(v.number()), // When user responded
   })
     .index("by_user", ["userId"])
     .index("by_user_read", ["userId", "read"]),
@@ -423,6 +427,49 @@ export default defineSchema({
     timing: v.union(v.literal("1_week"), v.literal("1_day"), v.literal("1_hour")),
     scheduledFunctionId: v.string(),
     scheduledFor: v.number(),
+  })
+    .index("by_event", ["eventId"])
+    .index("by_user_event", ["userId", "eventId"]),
+
+  // Attendance records (post-event confirmation and feedback)
+  attendance: defineTable({
+    userId: v.string(),
+    eventId: v.id("events"),
+    orgId: v.id("organizations"), // Denormalized for privacy queries
+
+    // Response
+    status: v.union(
+      v.literal("attended"),
+      v.literal("partial"),
+      v.literal("not_attended"),
+      v.literal("unknown")
+    ),
+    respondedAt: v.optional(v.number()),
+
+    // Feedback (optional)
+    feedbackRating: v.optional(v.number()), // 1-5 stars
+    feedbackText: v.optional(v.string()),
+    feedbackSubmittedAt: v.optional(v.number()),
+
+    // Privacy
+    showOnProfile: v.boolean(),
+    showToOtherOrgs: v.boolean(),
+
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_event", ["eventId"])
+    .index("by_org", ["orgId"])
+    .index("by_user_event", ["userId", "eventId"]),
+
+  // Scheduled attendance prompts (for tracking and deduplication)
+  scheduledAttendancePrompts: defineTable({
+    eventId: v.id("events"),
+    userId: v.string(),
+    scheduledFunctionId: v.string(),
+    scheduledFor: v.number(),
+    promptNumber: v.number(), // 1 or 2
   })
     .index("by_event", ["eventId"])
     .index("by_user_event", ["userId", "eventId"]),
