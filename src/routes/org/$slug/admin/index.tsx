@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
-import { Building2, Calendar, Download, Settings, Shield, UserPlus, Users } from "lucide-react";
+import { Building2, Calendar, Download, FolderPlus, Settings, Shield, UserPlus, Users } from "lucide-react";
 import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
 import { AuthHeader } from "~/components/layout/auth-header";
@@ -213,11 +213,22 @@ function OrgAdminDashboard() {
           </div>
 
           {/* Quick Actions */}
-          <div className="grid gap-4 sm:grid-cols-4 mb-8">
+          <div className="grid gap-4 sm:grid-cols-5 mb-8">
             <Button asChild className="h-auto py-4">
               <Link to="/org/$slug/admin/members" params={{ slug }}>
                 <Users className="size-5 mr-2" />
                 View Members
+              </Link>
+            </Button>
+
+            <Button
+              variant="outline"
+              className="h-auto py-4"
+              asChild
+            >
+              <Link to="/org/$slug/admin/programs" params={{ slug }}>
+                <FolderPlus className="size-5 mr-2" />
+                Programs
               </Link>
             </Button>
 
