@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-19)
 ## Current Position
 
 Phase: 13 of 16 (Event Notifications)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-01-19 - Completed 13-01-PLAN.md (event notification schema + preferences UI)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-01-19 - Completed 13-02-PLAN.md (event digest emails + real-time notifications)
 
-Progress: [█████████████████████░░░░░░░░░] 64% (41/48 plans: v1.0 + v1.1 complete, v1.2 phase 11-12 + 13-01 complete)
+Progress: [██████████████████████░░░░░░░░] 66% (42/48 plans: v1.0 + v1.1 complete, v1.2 phase 11-13 complete)
 
 ## Milestone History
 
@@ -25,10 +25,10 @@ Progress: [█████████████████████░░
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 41 (v1.0: 21 + v1.1: 13 + v1.2: 7)
+- Total plans completed: 42 (v1.0: 21 + v1.1: 13 + v1.2: 8)
 - Average duration: ~10 min/plan
 - v1.1 execution: 4 phases in ~2 days
-- v1.2 execution: Phase 11 complete (3 plans, ~12 min), Phase 12 complete (3 plans, ~11 min), Phase 13 in progress (1/2 plans)
+- v1.2 execution: Phase 11 complete (3 plans, ~12 min), Phase 12 complete (3 plans, ~11 min), Phase 13 complete (2 plans, ~11 min)
 
 **By Phase (v1.1):**
 
@@ -45,7 +45,7 @@ Progress: [█████████████████████░░
 |-------|-------|-------|----------|
 | 11-org-discovery | 3 | ~12min | ~4min |
 | 12-event-management | 3 | ~11min | ~4min |
-| 13-event-notifications | 1/2 | ~4min | ~4min |
+| 13-event-notifications | 2 | ~11min | ~5.5min |
 
 ## Accumulated Context
 
@@ -75,6 +75,9 @@ Recent decisions affecting current work:
 - [13-01]: Weekly digest as default event notification frequency
 - [13-01]: 1 day + 1 hour before as default reminders
 - [13-01]: Org muting stored as mutedOrgIds array
+- [13-02]: Daily digest targets 9 AM local time (offset from match alerts at 8 AM)
+- [13-02]: Weekly event digest runs Sunday 22:30 UTC (30 min after opportunity digest)
+- [13-02]: Rate limit of 5 notifications per hour per user for "all" frequency
 
 ### Pending Todos
 
@@ -93,10 +96,10 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-19
-Stopped at: Completed 13-01-PLAN.md
+Stopped at: Completed 13-02-PLAN.md (Phase 13 complete)
 Resume file: None
-Next action: `/gsd:execute-phase 13`
+Next action: `/gsd:plan-phase 14`
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-19 - Completed 13-01-PLAN.md (event notification schema + preferences UI)*
+*Last updated: 2026-01-19 - Completed 13-02-PLAN.md (event digest emails + real-time notifications)*
