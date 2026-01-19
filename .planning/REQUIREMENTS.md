@@ -12,9 +12,9 @@
 
 ### Org Discovery
 
-- [ ] **ORG-01**: User can see geography-based org suggestions on their dashboard
-- [ ] **ORG-02**: User can browse/search org directory with location filter
-- [ ] **ORG-03**: User can join an org via shareable invite link
+- [x] **ORG-01**: User can see geography-based org suggestions on their dashboard
+- [x] **ORG-02**: User can browse/search org directory with location filter
+- [x] **ORG-03**: User can join an org via shareable invite link
 
 ### Event Management
 
@@ -84,9 +84,9 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| ORG-01 | Phase 11 | Pending |
-| ORG-02 | Phase 11 | Pending |
-| ORG-03 | Phase 11 | Pending |
+| ORG-01 | Phase 11 | Complete |
+| ORG-02 | Phase 11 | Complete |
+| ORG-03 | Phase 11 | Complete |
 | EVT-01 | Phase 12 | Pending |
 | EVT-02 | Phase 12 | Pending |
 | EVT-03 | Phase 12 | Pending |

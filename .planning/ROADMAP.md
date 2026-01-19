@@ -109,7 +109,7 @@ Plans:
 
 **Milestone Goal:** Transform ASTN into a self-maintaining CRM for field-building orgs — members discover local hubs, attend events, and orgs get a live view of their community.
 
-#### Phase 11: Org Discovery
+#### Phase 11: Org Discovery ✓
 **Goal**: Users can discover and join relevant organizations
 **Depends on**: Phase 10 (existing org infrastructure)
 **Requirements**: ORG-01, ORG-02, ORG-03
@@ -119,11 +119,12 @@ Plans:
   3. User can join an org via shareable invite link
   4. Location-based suggestions respect user privacy preferences
 **Plans**: 3 plans
+**Completed**: 2026-01-19
 
 Plans:
-- [ ] 11-01-PLAN.md — Schema foundation + discovery backend
-- [ ] 11-02-PLAN.md — Dashboard suggestions + settings UI
-- [ ] 11-03-PLAN.md — Browse page with map
+- [x] 11-01-PLAN.md — Schema foundation + discovery backend
+- [x] 11-02-PLAN.md — Dashboard suggestions + settings UI
+- [x] 11-03-PLAN.md — Browse page with map
 
 #### Phase 12: Event Management
 **Goal**: Org admins can create events and users can RSVP
@@ -218,7 +219,7 @@ Phases execute in numeric order: 11 → 12 → 13 → 14 → 15 → 16
 |-------|-----------|----------------|--------|-----------|
 | 1-7 | v1.0 | 19/19 | Complete | 2025-12-27 |
 | 8-10 | v1.1 | 8/8 | Complete | 2026-01-19 |
-| 11. Org Discovery | v1.2 | 0/3 | Not started | - |
+| 11. Org Discovery | v1.2 | 3/3 | Complete | 2026-01-19 |
 | 12. Event Management | v1.2 | 0/3 | Not started | - |
 | 13. Event Notifications | v1.2 | 0/2 | Not started | - |
 | 14. Attendance Tracking | v1.2 | 0/2 | Not started | - |
