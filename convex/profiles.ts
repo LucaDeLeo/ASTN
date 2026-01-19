@@ -445,3 +445,62 @@ export const applyExtractedProfile = mutation({
     return { success: true, profileId: profile._id };
   },
 });
+
+// Get location privacy setting for current user
+export const getLocationPrivacy = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) {
+      return null;
+    }
+
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
+    if (!profile) {
+      return { locationDiscoverable: false };
+    }
+
+    return {
+      locationDiscoverable: profile.privacySettings?.locationDiscoverable ?? false,
+    };
+  },
+});
+
+// Update location privacy setting for current user
+export const updateLocationPrivacy = mutation({
+  args: { locationDiscoverable: v.boolean() },
+  handler: async (ctx, { locationDiscoverable }) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
+    if (!profile) {
+      throw new Error("Profile not found");
+    }
+
+    // Merge with existing privacy settings
+    const existingSettings = profile.privacySettings ?? {
+      defaultVisibility: "private" as const,
+    };
+
+    await ctx.db.patch(profile._id, {
+      privacySettings: {
+        ...existingSettings,
+        locationDiscoverable,
+      },
+      updatedAt: Date.now(),
+    });
+
+    return { success: true };
+  },
+});

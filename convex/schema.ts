@@ -73,6 +73,7 @@ export default defineSchema({
           })
         ),
         hiddenFromOrgs: v.optional(v.array(v.string())),
+        locationDiscoverable: v.optional(v.boolean()), // Opt-in for location-based org suggestions
       })
     ),
 
