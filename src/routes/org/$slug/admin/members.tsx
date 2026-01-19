@@ -2,6 +2,8 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import {
   Building2,
+  ChevronLeft,
+  ChevronRight,
   MoreHorizontal,
   Settings,
   Shield,
@@ -54,6 +56,14 @@ type EngagementData = {
 function OrgAdminMembers() {
   const { slug } = Route.useParams();
   const [filters, setFilters] = useState<MemberFiltersType>({});
+  const [page, setPage] = useState(1);
+  const pageSize = 25;
+
+  // Reset page to 1 when filters change
+  const handleFiltersChange = (newFilters: MemberFiltersType) => {
+    setFilters(newFilters);
+    setPage(1);
+  };
 
   const org = useQuery(api.orgs.directory.getOrgBySlug, { slug });
   const membership = useQuery(
@@ -159,6 +169,14 @@ function OrgAdminMembers() {
     });
   }, [members, engagementMap, filters]);
 
+  // Calculate paginated members
+  const paginatedMembers = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredMembers.slice(start, start + pageSize);
+  }, [filteredMembers, page, pageSize]);
+
+  const totalPages = Math.ceil(filteredMembers.length / pageSize);
+
   // Loading state
   if (org === undefined || membership === undefined) {
     return (
@@ -262,7 +280,7 @@ function OrgAdminMembers() {
           {/* Filters */}
           <MemberFilters
             filters={filters}
-            onFiltersChange={setFilters}
+            onFiltersChange={handleFiltersChange}
             availableSkills={availableSkills}
             availableLocations={availableLocations}
           />
@@ -321,7 +339,7 @@ function OrgAdminMembers() {
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {filteredMembers.map((member) => (
+                    {paginatedMembers.map((member) => (
                       <MemberRow
                         key={member.membership._id}
                         member={member}
@@ -333,6 +351,39 @@ function OrgAdminMembers() {
                   </tbody>
                 </table>
               </div>
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between px-4 py-3 border-t">
+                  <div className="text-sm text-slate-500">
+                    Showing {(page - 1) * pageSize + 1} to{" "}
+                    {Math.min(page * pageSize, filteredMembers.length)} of{" "}
+                    {filteredMembers.length} members
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage((p) => p - 1)}
+                      disabled={page === 1}
+                    >
+                      <ChevronLeft className="size-4" />
+                      Previous
+                    </Button>
+                    <span className="text-sm text-slate-600">
+                      Page {page} of {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage((p) => p + 1)}
+                      disabled={page === totalPages}
+                    >
+                      Next
+                      <ChevronRight className="size-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </Card>
           )}
         </div>
