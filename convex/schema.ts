@@ -200,6 +200,11 @@ export default defineSchema({
     ), // For map display
     isGlobal: v.optional(v.boolean()), // True for orgs without specific location
     memberCount: v.optional(v.number()), // Denormalized for display
+
+    // Lu.ma integration for events
+    lumaCalendarUrl: v.optional(v.string()), // Public calendar URL (e.g., "https://lu.ma/baish") for embed
+    lumaApiKey: v.optional(v.string()), // API key for sync (requires Luma Plus)
+    eventsLastSynced: v.optional(v.number()), // Timestamp of last sync
   })
     .index("by_name", ["name"])
     .index("by_slug", ["slug"])
@@ -336,4 +341,29 @@ export default defineSchema({
       searchField: "title",
       filterFields: ["status", "roleType", "isRemote"],
     }),
+
+  // Events (synced from lu.ma)
+  events: defineTable({
+    orgId: v.id("organizations"),
+    lumaEventId: v.string(), // lu.ma event ID (e.g., "evt-abc123")
+
+    // Core fields from lu.ma API
+    title: v.string(),
+    description: v.optional(v.string()),
+    startAt: v.number(), // Unix timestamp
+    endAt: v.optional(v.number()), // Unix timestamp
+    timezone: v.string(), // IANA timezone
+    coverUrl: v.optional(v.string()), // Event cover image
+    url: v.string(), // lu.ma event URL for RSVP link-out
+
+    // Location (can be virtual or physical)
+    location: v.optional(v.string()), // Address or "Online"
+    isVirtual: v.boolean(), // True if online event
+
+    // Metadata
+    syncedAt: v.number(),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_org_start", ["orgId", "startAt"])
+    .index("by_luma_id", ["lumaEventId"]),
 });
