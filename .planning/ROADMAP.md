@@ -4,7 +4,7 @@
 
 - ✅ **v1.0 Core Matching** - Phases 1-7 (shipped 2025-12-27)
 - ✅ **v1.1 Profile Input Speedup** - Phases 8-10 (shipped 2026-01-19)
-- 🚧 **v1.2 Org CRM & Events** - Phases 11-16 (in progress)
+- ✅ **v1.2 Org CRM & Events** - Phases 11-16 (shipped 2026-01-19)
 
 ## Phases
 
@@ -105,7 +105,8 @@ Plans:
 
 </details>
 
-### 🚧 v1.2 Org CRM & Events (In Progress)
+<details>
+<summary>✅ v1.2 Org CRM & Events (Phases 11-16) - SHIPPED 2026-01-19</summary>
 
 **Milestone Goal:** Transform ASTN into a self-maintaining CRM for field-building orgs — members discover local hubs, attend events, and orgs get a live view of their community.
 
@@ -195,7 +196,7 @@ Plans:
 - [x] 15-01-PLAN.md — Schema + backend (LLM classification, daily cron)
 - [x] 15-02-PLAN.md — Admin UI (engagement badges, override dialog)
 
-#### Phase 16: CRM Dashboard & Programs
+#### Phase 16: CRM Dashboard & Programs ✓
 **Goal**: Org admins have full CRM visibility with program tracking
 **Depends on**: Phase 15
 **Requirements**: CRM-01, CRM-02, CRM-03, CRM-04, CRM-05, CRM-06, PRG-01, PRG-02, PRG-03
@@ -209,14 +210,17 @@ Plans:
   7. Org admin can track member participation in programs
   8. Attendance can be tracked granularly by program
 **Plans**: 6 plans
+**Completed**: 2026-01-19
 
 Plans:
-- [ ] 16-01-PLAN.md - Enhanced stats backend (time range, engagement/career distributions)
-- [ ] 16-02-PLAN.md - Member directory filters (engagement, skills, location, pagination)
-- [ ] 16-03-PLAN.md - Member profile backend (privacy-controlled queries, history)
-- [ ] 16-04-PLAN.md - Programs schema and backend (CRUD, enrollment, completion)
-- [ ] 16-05-PLAN.md - Member profile page UI (attendance/engagement history, export)
-- [ ] 16-06-PLAN.md - Programs admin UI (list, create, participant management)
+- [x] 16-01-PLAN.md — Enhanced stats backend (time range, engagement/career distributions)
+- [x] 16-02-PLAN.md — Member directory filters (engagement, skills, location, pagination)
+- [x] 16-03-PLAN.md — Member profile backend (privacy-controlled queries, history)
+- [x] 16-04-PLAN.md — Programs schema and backend (CRUD, enrollment, completion)
+- [x] 16-05-PLAN.md — Member profile page UI (attendance/engagement history, export)
+- [x] 16-06-PLAN.md — Programs admin UI (list, create, participant management)
+
+</details>
 
 ## Progress
 
@@ -232,4 +236,4 @@ Phases execute in numeric order: 11 → 12 → 13 → 14 → 15 → 16
 | 13. Event Notifications | v1.2 | 3/3 | Complete | 2026-01-19 |
 | 14. Attendance Tracking | v1.2 | 3/3 | Complete | 2026-01-19 |
 | 15. Engagement Scoring | v1.2 | 2/2 | Complete | 2026-01-19 |
-| 16. CRM Dashboard & Programs | v1.2 | 0/6 | Not started | - |
+| 16. CRM Dashboard & Programs | v1.2 | 6/6 | Complete | 2026-01-19 |

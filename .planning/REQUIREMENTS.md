@@ -36,12 +36,12 @@
 
 ### Org CRM Dashboard
 
-- [ ] **CRM-01**: Org admin can view filterable member directory
-- [ ] **CRM-02**: Org admin can view member profiles (privacy-controlled)
-- [ ] **CRM-03**: Org admin can see basic community stats (member count, career breakdown)
-- [ ] **CRM-04**: Org admin can export member data as CSV
-- [ ] **CRM-05**: Org admin can see per-member attendance records
-- [ ] **CRM-06**: Org admin can see engagement history per member
+- [x] **CRM-01**: Org admin can view filterable member directory
+- [x] **CRM-02**: Org admin can view member profiles (privacy-controlled)
+- [x] **CRM-03**: Org admin can see basic community stats (member count, career breakdown)
+- [x] **CRM-04**: Org admin can export member data as CSV
+- [x] **CRM-05**: Org admin can see per-member attendance records
+- [x] **CRM-06**: Org admin can see engagement history per member
 
 ### Engagement Scoring
 
@@ -51,9 +51,9 @@
 
 ### Custom Programs
 
-- [ ] **PRG-01**: Org admin can define org-specific programs (reading groups, fellowships, etc.)
-- [ ] **PRG-02**: Org admin can track member participation in programs
-- [ ] **PRG-03**: Granular attendance tracking by program
+- [x] **PRG-01**: Org admin can define org-specific programs (reading groups, fellowships, etc.)
+- [x] **PRG-02**: Org admin can track member participation in programs
+- [x] **PRG-03**: Granular attendance tracking by program
 
 ---
 
@@ -99,18 +99,18 @@
 | ATT-03 | Phase 14 | Complete |
 | ATT-04 | Phase 14 | Complete |
 | ATT-05 | Phase 14 | Complete |
-| CRM-01 | Phase 16 | Pending |
-| CRM-02 | Phase 16 | Pending |
-| CRM-03 | Phase 16 | Pending |
-| CRM-04 | Phase 16 | Pending |
-| CRM-05 | Phase 16 | Pending |
-| CRM-06 | Phase 16 | Pending |
+| CRM-01 | Phase 16 | Complete |
+| CRM-02 | Phase 16 | Complete |
+| CRM-03 | Phase 16 | Complete |
+| CRM-04 | Phase 16 | Complete |
+| CRM-05 | Phase 16 | Complete |
+| CRM-06 | Phase 16 | Complete |
 | ENG-01 | Phase 15 | Complete |
 | ENG-02 | Phase 15 | Complete |
 | ENG-03 | Phase 15 | Complete |
-| PRG-01 | Phase 16 | Pending |
-| PRG-02 | Phase 16 | Pending |
-| PRG-03 | Phase 16 | Pending |
+| PRG-01 | Phase 16 | Complete |
+| PRG-02 | Phase 16 | Complete |
+| PRG-03 | Phase 16 | Complete |
 
 ---
 
