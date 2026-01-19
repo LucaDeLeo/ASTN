@@ -208,12 +208,15 @@ Plans:
   6. Org admin can define org-specific programs (reading groups, fellowships, etc.)
   7. Org admin can track member participation in programs
   8. Attendance can be tracked granularly by program
-**Plans**: TBD
+**Plans**: 6 plans
 
 Plans:
-- [ ] 16-01: TBD
-- [ ] 16-02: TBD
-- [ ] 16-03: TBD
+- [ ] 16-01-PLAN.md - Enhanced stats backend (time range, engagement/career distributions)
+- [ ] 16-02-PLAN.md - Member directory filters (engagement, skills, location, pagination)
+- [ ] 16-03-PLAN.md - Member profile backend (privacy-controlled queries, history)
+- [ ] 16-04-PLAN.md - Programs schema and backend (CRUD, enrollment, completion)
+- [ ] 16-05-PLAN.md - Member profile page UI (attendance/engagement history, export)
+- [ ] 16-06-PLAN.md - Programs admin UI (list, create, participant management)
 
 ## Progress
 
@@ -229,4 +232,4 @@ Phases execute in numeric order: 11 → 12 → 13 → 14 → 15 → 16
 | 13. Event Notifications | v1.2 | 3/3 | Complete | 2026-01-19 |
 | 14. Attendance Tracking | v1.2 | 3/3 | Complete | 2026-01-19 |
 | 15. Engagement Scoring | v1.2 | 2/2 | Complete | 2026-01-19 |
-| 16. CRM Dashboard & Programs | v1.2 | 0/3 | Not started | - |
+| 16. CRM Dashboard & Programs | v1.2 | 0/6 | Not started | - |
