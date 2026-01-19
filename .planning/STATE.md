@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** Phase 11 - Org Discovery
+**Current focus:** Phase 11 - Org Discovery (Complete)
 
 ## Current Position
 
 Phase: 11 of 16 (Org Discovery)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-01-19 — Completed 11-01-PLAN.md (Discovery Backend)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-01-19 - Completed 11-02-PLAN.md (Discovery UI)
 
-Progress: [████████████████░░░░░░░░░░░░░░] 52% (35/48 plans: v1.0 + v1.1 complete, v1.2 phase 11 plan 1 done)
+Progress: [█████████████████░░░░░░░░░░░░░] 53% (36/48 plans: v1.0 + v1.1 complete, v1.2 phase 11 complete)
 
 ## Milestone History
 
@@ -25,10 +25,10 @@ Progress: [████████████████░░░░░░░
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 35 (v1.0: 21 + v1.1: 13 + v1.2: 1)
+- Total plans completed: 36 (v1.0: 21 + v1.1: 13 + v1.2: 2)
 - Average duration: ~12 min/plan
 - v1.1 execution: 4 phases in ~2 days
-- v1.2 execution: started
+- v1.2 execution: Phase 11 complete (2 plans, ~6 min total)
 
 **By Phase (v1.1):**
 
@@ -39,6 +39,12 @@ Progress: [████████████████░░░░░░░
 | 09-review-apply-ui | 3 | ~22min | ~7min |
 | 10-wizard-integration | 3 | ~10min | ~3min |
 
+**By Phase (v1.2):**
+
+| Phase | Plans | Total | Avg/Plan |
+|-------|-------|-------|----------|
+| 11-org-discovery | 2 | ~6min | ~3min |
+
 ## Accumulated Context
 
 ### Decisions
@@ -46,11 +52,13 @@ Progress: [████████████████░░░░░░░
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- [v1.2 Research]: Zero new npm dependencies — existing stack handles everything
+- [v1.2 Research]: Zero new npm dependencies - existing stack handles everything
 - [v1.2 Research]: Sequential build order (org discovery -> events -> attendance -> engagement -> CRM)
-- [v1.2 Research]: Notification fatigue is #1 threat — design with batching from day one
+- [v1.2 Research]: Notification fatigue is #1 threat - design with batching from day one
 - [11-01]: Location discovery is opt-in (locationDiscoverable defaults to false)
 - [11-01]: Simple city parsing from "City, Country" format; global orgs as fallback
+- [11-02]: CSS scroll-snap for carousel (simpler, native feel)
+- [11-02]: Immediate toggle feedback via toast for LocationPrivacyToggle
 
 ### Pending Todos
 
@@ -68,10 +76,10 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-19
-Stopped at: Completed 11-01-PLAN.md
+Stopped at: Completed 11-02-PLAN.md (Phase 11 complete)
 Resume file: None
-Next action: Execute 11-02-PLAN.md (Discovery UI)
+Next action: Execute phase 12 (Events)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-19 — Completed 11-01-PLAN.md*
+*Last updated: 2026-01-19 - Completed 11-02-PLAN.md*
