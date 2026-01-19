@@ -74,6 +74,12 @@ export default defineSchema({
         ),
         hiddenFromOrgs: v.optional(v.array(v.string())),
         locationDiscoverable: v.optional(v.boolean()), // Opt-in for location-based org suggestions
+        attendancePrivacyDefaults: v.optional(
+          v.object({
+            showOnProfile: v.boolean(), // Whether attendance appears on profile
+            showToOtherOrgs: v.boolean(), // Whether non-host orgs can see attendance
+          })
+        ),
       })
     ),
 

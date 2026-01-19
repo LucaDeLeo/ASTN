@@ -54,15 +54,23 @@ export const recordAttendance = mutation({
         updatedAt: now,
       });
     } else {
-      // Create new record with default privacy settings
+      // Get user's privacy defaults from profile
+      const profile = await ctx.db
+        .query("profiles")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .first();
+
+      const privacyDefaults = profile?.privacySettings?.attendancePrivacyDefaults;
+
+      // Create new record with user's default privacy settings
       await ctx.db.insert("attendance", {
         userId,
         eventId,
         orgId: event.orgId,
         status,
         respondedAt: now,
-        showOnProfile: true, // Default to visible on profile
-        showToOtherOrgs: false, // Default to private from other orgs
+        showOnProfile: privacyDefaults?.showOnProfile ?? true,
+        showToOtherOrgs: privacyDefaults?.showToOtherOrgs ?? false,
         createdAt: now,
         updatedAt: now,
       });
@@ -196,5 +204,65 @@ export const snoozeAttendancePrompt = mutation({
     }
 
     return { snoozed: true, scheduledFor: scheduledTime };
+  },
+});
+
+/**
+ * Update attendance privacy defaults
+ * Stores defaults in profile and optionally updates existing records
+ */
+export const updateAttendancePrivacy = mutation({
+  args: {
+    showOnProfile: v.boolean(),
+    showToOtherOrgs: v.boolean(),
+    updateExisting: v.optional(v.boolean()), // Whether to update existing records too
+  },
+  handler: async (ctx, { showOnProfile, showToOtherOrgs, updateExisting }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    // Get or create profile
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
+    if (!profile) throw new Error("Profile not found");
+
+    const now = Date.now();
+
+    // Update profile privacy settings
+    const existingPrivacySettings = profile.privacySettings || {
+      defaultVisibility: "public" as const,
+    };
+
+    await ctx.db.patch(profile._id, {
+      privacySettings: {
+        ...existingPrivacySettings,
+        attendancePrivacyDefaults: {
+          showOnProfile,
+          showToOtherOrgs,
+        },
+      },
+      updatedAt: now,
+    });
+
+    // Optionally update existing attendance records
+    if (updateExisting) {
+      const existingRecords = await ctx.db
+        .query("attendance")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect();
+
+      for (const record of existingRecords) {
+        await ctx.db.patch(record._id, {
+          showOnProfile,
+          showToOtherOrgs,
+          updatedAt: now,
+        });
+      }
+    }
+
+    return { success: true };
   },
 });

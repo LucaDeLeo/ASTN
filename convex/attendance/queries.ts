@@ -104,6 +104,30 @@ export const getPendingPrompts = query({
 });
 
 /**
+ * Get attendance privacy defaults for current user
+ * Returns the user's default privacy settings for attendance records
+ */
+export const getAttendancePrivacyDefaults = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
+
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
+    // Return defaults from profile, or system defaults if not set
+    const defaults = profile?.privacySettings?.attendancePrivacyDefaults;
+    return {
+      showOnProfile: defaults?.showOnProfile ?? true,
+      showToOtherOrgs: defaults?.showToOtherOrgs ?? false,
+    };
+  },
+});
+
+/**
  * Get attendance summary for current user
  * Returns total count, attended count, and last 3 attendance records
  */
