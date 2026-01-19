@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-19)
 ## Current Position
 
 Phase: 13 of 16 (Event Notifications)
-Plan: 2 of 2 in current phase
+Plan: 3 of 3 in current phase
 Status: Phase complete
-Last activity: 2026-01-19 - Completed 13-02-PLAN.md (event digest emails + real-time notifications)
+Last activity: 2026-01-19 - Completed 13-03-PLAN.md (in-app notification center + event reminders)
 
-Progress: [██████████████████████░░░░░░░░] 66% (42/48 plans: v1.0 + v1.1 complete, v1.2 phase 11-13 complete)
+Progress: [██████████████████████░░░░░░░░] 67% (43/49 plans: v1.0 + v1.1 complete, v1.2 phase 11-13 complete)
 
 ## Milestone History
 
@@ -25,10 +25,10 @@ Progress: [██████████████████████░
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 42 (v1.0: 21 + v1.1: 13 + v1.2: 8)
+- Total plans completed: 43 (v1.0: 21 + v1.1: 13 + v1.2: 9)
 - Average duration: ~10 min/plan
 - v1.1 execution: 4 phases in ~2 days
-- v1.2 execution: Phase 11 complete (3 plans, ~12 min), Phase 12 complete (3 plans, ~11 min), Phase 13 complete (2 plans, ~11 min)
+- v1.2 execution: Phase 11 complete (3 plans, ~12 min), Phase 12 complete (3 plans, ~11 min), Phase 13 complete (3 plans, ~19 min)
 
 **By Phase (v1.1):**
 
@@ -45,7 +45,7 @@ Progress: [██████████████████████░
 |-------|-------|-------|----------|
 | 11-org-discovery | 3 | ~12min | ~4min |
 | 12-event-management | 3 | ~11min | ~4min |
-| 13-event-notifications | 2 | ~11min | ~5.5min |
+| 13-event-notifications | 3 | ~19min | ~6min |
 
 ## Accumulated Context
 
@@ -78,6 +78,9 @@ Recent decisions affecting current work:
 - [13-02]: Daily digest targets 9 AM local time (offset from match alerts at 8 AM)
 - [13-02]: Weekly event digest runs Sunday 22:30 UTC (30 min after opportunity digest)
 - [13-02]: Rate limit of 5 notifications per hour per user for "all" frequency
+- [13-03]: Intersection Observer at 50% visibility for event view tracking
+- [13-03]: Scheduler-based reminders using ctx.scheduler.runAt for future notifications
+- [13-03]: scheduledReminders table tracks function IDs for cancellation
 
 ### Pending Todos
 
@@ -96,10 +99,10 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-19
-Stopped at: Completed 13-02-PLAN.md (Phase 13 complete)
+Stopped at: Completed 13-03-PLAN.md (Phase 13 complete)
 Resume file: None
 Next action: `/gsd:plan-phase 14`
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-19 - Completed 13-02-PLAN.md (event digest emails + real-time notifications)*
+*Last updated: 2026-01-19 - Completed 13-03-PLAN.md (in-app notification center + event reminders)*
