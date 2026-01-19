@@ -153,11 +153,12 @@ Plans:
   3. User can set reminder preferences (1 day before, 1 hour before, none)
   4. System sends notifications according to user preferences
   5. Notifications batch properly to avoid fatigue
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 13-01: TBD
-- [ ] 13-02: TBD
+- [ ] 13-01-PLAN.md — Schema + event notification preferences UI
+- [ ] 13-02-PLAN.md — Event digest emails (daily/weekly)
+- [ ] 13-03-PLAN.md — In-app notifications + reminder scheduling
 
 #### Phase 14: Attendance Tracking
 **Goal**: Users confirm event attendance and provide feedback
@@ -221,7 +222,7 @@ Phases execute in numeric order: 11 → 12 → 13 → 14 → 15 → 16
 | 8-10 | v1.1 | 8/8 | Complete | 2026-01-19 |
 | 11. Org Discovery | v1.2 | 3/3 | Complete | 2026-01-19 |
 | 12. Event Management | v1.2 | 3/3 | Complete | 2026-01-19 |
-| 13. Event Notifications | v1.2 | 0/2 | Not started | - |
+| 13. Event Notifications | v1.2 | 0/3 | Not started | - |
 | 14. Attendance Tracking | v1.2 | 0/2 | Not started | - |
 | 15. Engagement Scoring | v1.2 | 0/2 | Not started | - |
 | 16. CRM Dashboard & Programs | v1.2 | 0/3 | Not started | - |
