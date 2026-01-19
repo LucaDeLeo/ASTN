@@ -188,11 +188,11 @@ Plans:
   2. Engagement scores include natural language explanations showing input signals
   3. Org admin can override engagement level with notes
   4. Override history is preserved for audit
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 15-01: TBD
-- [ ] 15-02: TBD
+- [ ] 15-01-PLAN.md — Schema + backend (LLM classification, daily cron)
+- [ ] 15-02-PLAN.md — Admin UI (engagement badges, override dialog)
 
 #### Phase 16: CRM Dashboard & Programs
 **Goal**: Org admins have full CRM visibility with program tracking
