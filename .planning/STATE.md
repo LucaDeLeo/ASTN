@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-19)
 ## Current Position
 
 Phase: 12 of 16 (Event Management)
-Plan: 1 of 3 in current phase
-Status: In progress
-Last activity: 2026-01-19 - Completed 12-01-PLAN.md (events schema + lu.ma sync)
+Plan: 3 of 3 in current phase
+Status: Phase complete
+Last activity: 2026-01-19 - Completed 12-03-PLAN.md (dashboard events)
 
-Progress: [██████████████████░░░░░░░░░░░░] 57% (38/48 plans: v1.0 + v1.1 complete, v1.2 phase 11 + 12-01 complete)
+Progress: [████████████████████░░░░░░░░░░] 62% (40/48 plans: v1.0 + v1.1 complete, v1.2 phase 11 + 12 complete)
 
 ## Milestone History
 
@@ -25,10 +25,10 @@ Progress: [██████████████████░░░░░
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 38 (v1.0: 21 + v1.1: 13 + v1.2: 4)
+- Total plans completed: 40 (v1.0: 21 + v1.1: 13 + v1.2: 6)
 - Average duration: ~10 min/plan
 - v1.1 execution: 4 phases in ~2 days
-- v1.2 execution: Phase 11 complete (3 plans, ~12 min), Phase 12 in progress
+- v1.2 execution: Phase 11 complete (3 plans, ~12 min), Phase 12 complete (3 plans, ~11 min)
 
 **By Phase (v1.1):**
 
@@ -44,7 +44,7 @@ Progress: [██████████████████░░░░░
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 11-org-discovery | 3 | ~12min | ~4min |
-| 12-event-management | 1/3 | ~3min | ~3min |
+| 12-event-management | 3 | ~11min | ~4min |
 
 ## Accumulated Context
 
@@ -65,6 +65,9 @@ Recent decisions affecting current work:
 - [12-01]: Lu.ma API key is per-calendar, implicitly identifies which calendar to fetch
 - [12-01]: Event sync window: 30 days past to 90 days future
 - [12-01]: Rate limiting: 200ms between pages, 1s between orgs, 60s retry on 429
+- [12-03]: Events grouped by org name on dashboard for clear organization
+- [12-03]: Max 5 events shown per org with overflow indicator
+- [12-03]: Date format: 'Fri, Jan 24 at 6:00 PM' using date-fns
 
 ### Pending Todos
 
@@ -83,10 +86,10 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-19
-Stopped at: Completed 12-01-PLAN.md
+Stopped at: Completed 12-03-PLAN.md
 Resume file: None
-Next action: Execute 12-02-PLAN.md (org event pages)
+Next action: Execute Phase 13 (attendance-tracking)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-19 - Completed 12-01-PLAN.md (events schema + lu.ma sync)*
+*Last updated: 2026-01-19 - Completed 12-03-PLAN.md (dashboard events)*
