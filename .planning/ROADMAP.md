@@ -2,58 +2,224 @@
 
 ## Milestones
 
-- SHIPPED **v1.0 MVP** - Phases 1-6 (shipped 2026-01-18)
-- SHIPPED **v1.1 Profile Input Speedup** - Phases 7-10 (shipped 2026-01-19)
+- ✅ **v1.0 Core Matching** - Phases 1-7 (shipped 2025-12-27)
+- ✅ **v1.1 Profile Input Speedup** - Phases 8-10 (shipped 2026-01-19)
+- 🚧 **v1.2 Org CRM & Events** - Phases 11-16 (in progress)
 
 ## Phases
 
 <details>
-<summary>v1.0 MVP (Phases 1-6) - SHIPPED 2026-01-18</summary>
+<summary>✅ v1.0 Core Matching (Phases 1-7) - SHIPPED 2025-12-27</summary>
 
-See `.planning/milestones/v1.0-ROADMAP.md` for full v1.0 roadmap details.
+### Phase 1: Foundation
+**Goal**: Project scaffolding with auth and basic routing
+**Plans**: 4 plans
 
-**Summary:**
-- Phase 1: Foundation + Opportunities (4 plans)
-- Phase 2: Authentication (2 plans)
-- Phase 3: Profiles (4 plans)
-- Phase 4: Matching (3 plans)
-- Phase 5: Engagement + Org (6 plans)
-- Phase 6: Polish + Tech Debt (2 plans)
+Plans:
+- [x] 01-01: Project setup
+- [x] 01-02: Auth system
+- [x] 01-03: Basic routing
+- [x] 01-04: Database schema
 
-**Total:** 21 plans completed
+### Phase 2: Profile Core
+**Goal**: Users can create and edit profiles
+**Plans**: 3 plans
+
+Plans:
+- [x] 02-01: Profile schema and API
+- [x] 02-02: Profile form UI
+- [x] 02-03: Profile completeness tracking
+
+### Phase 3: Opportunity Aggregation
+**Goal**: System aggregates opportunities from external sources
+**Plans**: 3 plans
+
+Plans:
+- [x] 03-01: 80K Hours adapter
+- [x] 03-02: aisafety.com adapter
+- [x] 03-03: Cron-based sync
+
+### Phase 4: Matching Engine
+**Goal**: System matches profiles to opportunities with explanations
+**Plans**: 3 plans
+
+Plans:
+- [x] 04-01: Matching algorithm
+- [x] 04-02: Match explanations
+- [x] 04-03: Match tiers
+
+### Phase 5: Recommendations
+**Goal**: Users receive personalized recommendations
+**Plans**: 2 plans
+
+Plans:
+- [x] 05-01: Recommendation engine
+- [x] 05-02: Recommendation UI
+
+### Phase 6: Org Dashboard
+**Goal**: Org admins can view their members
+**Plans**: 2 plans
+
+Plans:
+- [x] 06-01: Org dashboard UI
+- [x] 06-02: Member export
+
+### Phase 7: Email Digests
+**Goal**: Users receive match digests via email
+**Plans**: 2 plans
+
+Plans:
+- [x] 07-01: Email templates
+- [x] 07-02: Digest scheduling
 
 </details>
 
 <details>
-<summary>v1.1 Profile Input Speedup (Phases 7-10) - SHIPPED 2026-01-19</summary>
+<summary>✅ v1.1 Profile Input Speedup (Phases 8-10) - SHIPPED 2026-01-19</summary>
 
-See `.planning/milestones/v1.1-ROADMAP.md` for full v1.1 roadmap details.
+### Phase 8: Document Extraction
+**Goal**: Users can upload documents for profile extraction
+**Plans**: 3 plans
 
-**Summary:**
-- Phase 7: File Upload Foundation (4 plans)
-- Phase 8: LLM Extraction Core (3 plans)
-- Phase 9: Review & Apply UI (3 plans)
-- Phase 10: Wizard Integration (3 plans)
+Plans:
+- [x] 08-01: PDF/document upload
+- [x] 08-02: LLM extraction pipeline
+- [x] 08-03: Extracted data review UI
 
-**Total:** 13 plans completed
+### Phase 9: Text Paste Input
+**Goal**: Users can paste text for profile extraction
+**Plans**: 2 plans
+
+Plans:
+- [x] 09-01: Text paste UI
+- [x] 09-02: Context-aware extraction
+
+### Phase 10: Entry Point Wizard
+**Goal**: Users choose their preferred profile creation method
+**Plans**: 3 plans
+
+Plans:
+- [x] 10-01: Wizard UI
+- [x] 10-02: Method routing
+- [x] 10-03: Chat-first option
 
 </details>
 
+### 🚧 v1.2 Org CRM & Events (In Progress)
+
+**Milestone Goal:** Transform ASTN into a self-maintaining CRM for field-building orgs — members discover local hubs, attend events, and orgs get a live view of their community.
+
+#### Phase 11: Org Discovery
+**Goal**: Users can discover and join relevant organizations
+**Depends on**: Phase 10 (existing org infrastructure)
+**Requirements**: ORG-01, ORG-02, ORG-03
+**Success Criteria** (what must be TRUE):
+  1. User sees geography-based org suggestions on their dashboard
+  2. User can browse and search orgs with location filtering
+  3. User can join an org via shareable invite link
+  4. Location-based suggestions respect user privacy preferences
+**Plans**: TBD
+
+Plans:
+- [ ] 11-01: TBD
+- [ ] 11-02: TBD
+
+#### Phase 12: Event Management
+**Goal**: Org admins can create events and users can RSVP
+**Depends on**: Phase 11
+**Requirements**: EVT-01, EVT-02, EVT-03, EVT-04
+**Success Criteria** (what must be TRUE):
+  1. Org admin can create events with title, description, date/time, location, capacity
+  2. Org has a public event listing page showing upcoming and past events
+  3. User can see events from their orgs on their dashboard
+  4. User can RSVP to events (Going / Not Going)
+  5. User can view event details and update their RSVP
+**Plans**: TBD
+
+Plans:
+- [ ] 12-01: TBD
+- [ ] 12-02: TBD
+- [ ] 12-03: TBD
+
+#### Phase 13: Event Notifications
+**Goal**: Users receive configurable event notifications and reminders
+**Depends on**: Phase 12
+**Requirements**: EVT-05, EVT-06, EVT-07
+**Success Criteria** (what must be TRUE):
+  1. User can configure event notification frequency (all / digest / none)
+  2. User can filter notifications by event type
+  3. User can set reminder preferences (1 day before, 1 hour before, none)
+  4. System sends notifications according to user preferences
+  5. Notifications batch properly to avoid fatigue
+**Plans**: TBD
+
+Plans:
+- [ ] 13-01: TBD
+- [ ] 13-02: TBD
+
+#### Phase 14: Attendance Tracking
+**Goal**: Users confirm event attendance and provide feedback
+**Depends on**: Phase 13
+**Requirements**: ATT-01, ATT-02, ATT-03, ATT-04, ATT-05
+**Success Criteria** (what must be TRUE):
+  1. User receives post-event "Did you attend?" notification within 2-4 hours
+  2. User can confirm attendance with one tap
+  3. User can view their attendance history on their profile
+  4. User can optionally provide feedback after attending (star rating + text)
+  5. User can dismiss or defer attendance prompts
+**Plans**: TBD
+
+Plans:
+- [ ] 14-01: TBD
+- [ ] 14-02: TBD
+
+#### Phase 15: Engagement Scoring
+**Goal**: System computes explainable engagement levels with admin override
+**Depends on**: Phase 14 (needs attendance data)
+**Requirements**: ENG-01, ENG-02, ENG-03
+**Success Criteria** (what must be TRUE):
+  1. System computes engagement levels via LLM (Highly Engaged / Moderate / At Risk / New / Inactive)
+  2. Engagement scores include natural language explanations showing input signals
+  3. Org admin can override engagement level with notes
+  4. Override history is preserved for audit
+**Plans**: TBD
+
+Plans:
+- [ ] 15-01: TBD
+- [ ] 15-02: TBD
+
+#### Phase 16: CRM Dashboard & Programs
+**Goal**: Org admins have full CRM visibility with program tracking
+**Depends on**: Phase 15
+**Requirements**: CRM-01, CRM-02, CRM-03, CRM-04, CRM-05, CRM-06, PRG-01, PRG-02, PRG-03
+**Success Criteria** (what must be TRUE):
+  1. Org admin can view filterable member directory
+  2. Org admin can view member profiles (privacy-controlled)
+  3. Org admin can see basic community stats (member count, career breakdown)
+  4. Org admin can export member data as CSV
+  5. Org admin can see per-member attendance records and engagement history
+  6. Org admin can define org-specific programs (reading groups, fellowships, etc.)
+  7. Org admin can track member participation in programs
+  8. Attendance can be tracked granularly by program
+**Plans**: TBD
+
+Plans:
+- [ ] 16-01: TBD
+- [ ] 16-02: TBD
+- [ ] 16-03: TBD
+
 ## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 11 → 12 → 13 → 14 → 15 → 16
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 1. Foundation + Opportunities | v1.0 | 4/4 | Complete | 2026-01-17 |
-| 2. Authentication | v1.0 | 2/2 | Complete | 2026-01-17 |
-| 3. Profiles | v1.0 | 4/4 | Complete | 2026-01-17 |
-| 4. Matching | v1.0 | 3/3 | Complete | 2026-01-18 |
-| 5. Engagement + Org | v1.0 | 6/6 | Complete | 2026-01-18 |
-| 6. Polish + Tech Debt | v1.0 | 2/2 | Complete | 2026-01-18 |
-| 7. File Upload Foundation | v1.1 | 4/4 | Complete | 2026-01-18 |
-| 8. LLM Extraction Core | v1.1 | 3/3 | Complete | 2026-01-18 |
-| 9. Review & Apply UI | v1.1 | 3/3 | Complete | 2026-01-18 |
-| 10. Wizard Integration | v1.1 | 3/3 | Complete | 2026-01-19 |
-
----
-*v1.1 archived: 2026-01-19*
-*Next milestone: Run /gsd:new-milestone to define v1.2 or v2.0*
+| 1-7 | v1.0 | 19/19 | Complete | 2025-12-27 |
+| 8-10 | v1.1 | 8/8 | Complete | 2026-01-19 |
+| 11. Org Discovery | v1.2 | 0/2 | Not started | - |
+| 12. Event Management | v1.2 | 0/3 | Not started | - |
+| 13. Event Notifications | v1.2 | 0/2 | Not started | - |
+| 14. Attendance Tracking | v1.2 | 0/2 | Not started | - |
+| 15. Engagement Scoring | v1.2 | 0/2 | Not started | - |
+| 16. CRM Dashboard & Programs | v1.2 | 0/3 | Not started | - |

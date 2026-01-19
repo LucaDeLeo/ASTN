@@ -84,33 +84,33 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| ORG-01 | TBD | Pending |
-| ORG-02 | TBD | Pending |
-| ORG-03 | TBD | Pending |
-| EVT-01 | TBD | Pending |
-| EVT-02 | TBD | Pending |
-| EVT-03 | TBD | Pending |
-| EVT-04 | TBD | Pending |
-| EVT-05 | TBD | Pending |
-| EVT-06 | TBD | Pending |
-| EVT-07 | TBD | Pending |
-| ATT-01 | TBD | Pending |
-| ATT-02 | TBD | Pending |
-| ATT-03 | TBD | Pending |
-| ATT-04 | TBD | Pending |
-| ATT-05 | TBD | Pending |
-| CRM-01 | TBD | Pending |
-| CRM-02 | TBD | Pending |
-| CRM-03 | TBD | Pending |
-| CRM-04 | TBD | Pending |
-| CRM-05 | TBD | Pending |
-| CRM-06 | TBD | Pending |
-| ENG-01 | TBD | Pending |
-| ENG-02 | TBD | Pending |
-| ENG-03 | TBD | Pending |
-| PRG-01 | TBD | Pending |
-| PRG-02 | TBD | Pending |
-| PRG-03 | TBD | Pending |
+| ORG-01 | Phase 11 | Pending |
+| ORG-02 | Phase 11 | Pending |
+| ORG-03 | Phase 11 | Pending |
+| EVT-01 | Phase 12 | Pending |
+| EVT-02 | Phase 12 | Pending |
+| EVT-03 | Phase 12 | Pending |
+| EVT-04 | Phase 12 | Pending |
+| EVT-05 | Phase 13 | Pending |
+| EVT-06 | Phase 13 | Pending |
+| EVT-07 | Phase 13 | Pending |
+| ATT-01 | Phase 14 | Pending |
+| ATT-02 | Phase 14 | Pending |
+| ATT-03 | Phase 14 | Pending |
+| ATT-04 | Phase 14 | Pending |
+| ATT-05 | Phase 14 | Pending |
+| CRM-01 | Phase 16 | Pending |
+| CRM-02 | Phase 16 | Pending |
+| CRM-03 | Phase 16 | Pending |
+| CRM-04 | Phase 16 | Pending |
+| CRM-05 | Phase 16 | Pending |
+| CRM-06 | Phase 16 | Pending |
+| ENG-01 | Phase 15 | Pending |
+| ENG-02 | Phase 15 | Pending |
+| ENG-03 | Phase 15 | Pending |
+| PRG-01 | Phase 16 | Pending |
+| PRG-02 | Phase 16 | Pending |
+| PRG-03 | Phase 16 | Pending |
 
 ---
 
