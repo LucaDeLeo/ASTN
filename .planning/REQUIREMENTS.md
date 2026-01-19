@@ -22,9 +22,9 @@
 - [x] **EVT-02**: Org has an event listing page showing upcoming and past events
 - [x] **EVT-03**: User can see events from their orgs on their dashboard
 - [x] **EVT-04**: User can RSVP to events (Going / Not Going) — *via lu.ma link-out*
-- [ ] **EVT-05**: User can configure event notification frequency (all / digest / none)
-- [ ] **EVT-06**: User can filter notifications by event type
-- [ ] **EVT-07**: User can set reminder preferences (1 day before, 1 hour before, none)
+- [x] **EVT-05**: User can configure event notification frequency (all / digest / none)
+- [x] **EVT-06**: User can filter notifications by event type
+- [x] **EVT-07**: User can set reminder preferences (1 day before, 1 hour before, none)
 
 ### Attendance Tracking
 
@@ -91,9 +91,9 @@
 | EVT-02 | Phase 12 | Complete |
 | EVT-03 | Phase 12 | Complete |
 | EVT-04 | Phase 12 | Complete (via lu.ma) |
-| EVT-05 | Phase 13 | Pending |
-| EVT-06 | Phase 13 | Pending |
-| EVT-07 | Phase 13 | Pending |
+| EVT-05 | Phase 13 | Complete |
+| EVT-06 | Phase 13 | Complete |
+| EVT-07 | Phase 13 | Complete |
 | ATT-01 | Phase 14 | Pending |
 | ATT-02 | Phase 14 | Pending |
 | ATT-03 | Phase 14 | Pending |
