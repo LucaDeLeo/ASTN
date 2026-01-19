@@ -1,8 +1,9 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { AuthLoading, Authenticated, Unauthenticated, useQuery } from "convex/react";
-import { MapPin, Settings } from "lucide-react";
+import { Calendar, MapPin, Settings } from "lucide-react";
 import { api } from "../../convex/_generated/api";
 import { AuthHeader } from "~/components/layout/auth-header";
+import { EventCard } from "~/components/events/EventCard";
 import { OrgCarousel } from "~/components/org/OrgCarousel";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
@@ -58,9 +59,23 @@ function LandingPage() {
 function Dashboard() {
   const suggestedOrgs = useQuery(api.orgs.discovery.getSuggestedOrgs);
   const locationPrivacy = useQuery(api.profiles.getLocationPrivacy);
+  const dashboardEvents = useQuery(api.events.queries.getDashboardEvents);
 
   // Determine if user has location discovery enabled
   const locationEnabled = locationPrivacy?.locationDiscoverable ?? false;
+
+  // Group user's org events by org for display
+  const eventsByOrg = dashboardEvents?.userOrgEvents.reduce(
+    (acc, event) => {
+      const orgName = event.org.name;
+      if (!acc[orgName]) {
+        acc[orgName] = [];
+      }
+      acc[orgName].push(event);
+      return acc;
+    },
+    {} as Record<string, typeof dashboardEvents.userOrgEvents>
+  );
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -81,6 +96,71 @@ function Dashboard() {
           <OrgCarousel orgs={suggestedOrgs} />
         ) : (
           <EmptyStatePrompt locationEnabled={locationEnabled} />
+        )}
+      </section>
+
+      {/* Upcoming Events Section */}
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold text-slate-900 mb-2">
+          Upcoming Events
+        </h2>
+        <p className="text-slate-600 mb-4">Events from your organizations</p>
+
+        {dashboardEvents === undefined ? (
+          <div className="flex items-center justify-center py-8">
+            <Spinner />
+          </div>
+        ) : dashboardEvents.userOrgEvents.length > 0 ? (
+          // Show events grouped by org
+          <div className="space-y-6">
+            {eventsByOrg &&
+              Object.entries(eventsByOrg).map(([orgName, events]) => (
+                <div key={orgName}>
+                  <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wide mb-3">
+                    {orgName} Events
+                  </h3>
+                  <div className="space-y-3">
+                    {events.slice(0, 5).map((event) => (
+                      <EventCard key={event._id} event={event} />
+                    ))}
+                    {events.length > 5 && (
+                      <p className="text-sm text-slate-500 pl-1">
+                        +{events.length - 5} more events
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+          </div>
+        ) : dashboardEvents.otherOrgEvents.length > 0 ? (
+          // No org events but other events exist
+          <div className="space-y-4">
+            <Card className="p-4 text-center bg-slate-50">
+              <p className="text-slate-600 text-sm">
+                No events from your organizations.{" "}
+                <Link
+                  to="/orgs"
+                  className="text-primary hover:underline font-medium"
+                >
+                  Join organizations
+                </Link>{" "}
+                to see their events here.
+              </p>
+            </Card>
+            <div>
+              <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wide mb-3">
+                Discover Events
+              </h3>
+              <div className="space-y-3">
+                {dashboardEvents.otherOrgEvents.slice(0, 3).map((event) => (
+                  <EventCard key={event._id} event={event} />
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          // No events at all
+          <EventsEmptyState />
         )}
       </section>
 
@@ -140,6 +220,25 @@ function EmptyStatePrompt({ locationEnabled }: { locationEnabled: boolean }) {
           <Settings className="size-4" />
           Enable in Settings
         </Link>
+      </Button>
+    </Card>
+  );
+}
+
+function EventsEmptyState() {
+  return (
+    <Card className="p-6 text-center">
+      <div className="size-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
+        <Calendar className="size-6 text-slate-400" />
+      </div>
+      <h3 className="text-lg font-medium text-slate-900 mb-2">
+        No upcoming events
+      </h3>
+      <p className="text-slate-500 text-sm mb-4">
+        Join organizations to see their events here.
+      </p>
+      <Button asChild variant="outline" size="sm">
+        <Link to="/orgs">Browse Organizations</Link>
       </Button>
     </Card>
   );
