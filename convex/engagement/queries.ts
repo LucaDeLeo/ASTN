@@ -145,6 +145,34 @@ async function requireOrgAdmin(
 }
 
 /**
+ * Get all engagement data for an organization (admin only)
+ * For admin member directory - shows engagement for all members
+ */
+export const getOrgEngagementForAdmin = query({
+  args: { orgId: v.id("organizations") },
+  handler: async (ctx, { orgId }) => {
+    await requireOrgAdmin(ctx, orgId);
+
+    // Get all engagement records for this org
+    const engagementRecords = await ctx.db
+      .query("memberEngagement")
+      .withIndex("by_org", (q) => q.eq("orgId", orgId))
+      .collect();
+
+    // Return engagement data keyed by userId for easy lookup
+    return engagementRecords.map((e) => ({
+      _id: e._id,
+      userId: e.userId,
+      level: e.override?.level || e.level,
+      computedLevel: e.level,
+      adminExplanation: e.adminExplanation,
+      hasOverride: !!e.override,
+      overrideNotes: e.override?.notes,
+    }));
+  },
+});
+
+/**
  * Get engagement for a specific member (admin only)
  * For admin dashboard - shows full details including admin explanation
  */
