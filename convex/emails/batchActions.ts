@@ -3,7 +3,7 @@
 
 import { internalAction } from "../_generated/server";
 import { internal } from "../_generated/api";
-import { renderMatchAlert, renderWeeklyDigest } from "./templates";
+import { renderMatchAlert, renderWeeklyDigest, renderEventDigest } from "./templates";
 import type { Doc, Id } from "../_generated/dataModel";
 
 // Target hour for match alert emails (8 AM user local time)
@@ -251,6 +251,135 @@ export const processWeeklyDigestBatch = internalAction({
     }
 
     console.log(`Weekly digest batch complete: ${emailsSent} emails sent`);
+    return { processed: users.length, emailsSent };
+  },
+});
+
+// ===== Event Digest Batch Processing =====
+
+// Target hour for daily event digest emails (9 AM user local time)
+const DAILY_DIGEST_TARGET_HOUR = 9;
+
+// Types for event digest users
+interface EventDigestUser {
+  userId: string;
+  email: string;
+  timezone: string;
+  profileId: Id<"profiles">;
+  userName: string;
+  mutedOrgIds: Array<Id<"organizations">>;
+}
+
+/**
+ * Process daily event digest emails for users in the current timezone bucket
+ * Runs hourly at :30 to check which timezones hit 9 AM
+ */
+export const processDailyEventDigestBatch = internalAction({
+  args: {},
+  handler: async (ctx) => {
+    console.log("Starting daily event digest batch processing...");
+
+    const users: Array<EventDigestUser> = await ctx.runQuery(
+      internal.emails.send.getUsersForDailyEventDigestBatch,
+      { targetLocalHour: DAILY_DIGEST_TARGET_HOUR }
+    );
+
+    if (users.length === 0) {
+      console.log("No users in the 9 AM timezone bucket for daily digest");
+      return { processed: 0, emailsSent: 0 };
+    }
+
+    console.log(`Processing ${users.length} users for daily event digest`);
+
+    let emailsSent = 0;
+    const now = Date.now();
+
+    // Process in batches
+    for (let i = 0; i < users.length; i += BATCH_SIZE) {
+      const batch = users.slice(i, i + BATCH_SIZE);
+
+      for (const user of batch) {
+        const events = await ctx.runQuery(
+          internal.emails.send.getUpcomingEventsForUser,
+          { userId: user.userId, mutedOrgIds: user.mutedOrgIds, since: now }
+        );
+
+        if (events.length === 0) continue;
+
+        const emailContent = await renderEventDigest({
+          userName: user.userName,
+          frequency: "daily",
+          events,
+        });
+
+        await ctx.runMutation(internal.emails.send.sendEventDigest, {
+          to: user.email,
+          subject: "Your daily event digest from ASTN",
+          html: emailContent,
+        });
+
+        emailsSent++;
+      }
+    }
+
+    console.log(`Daily event digest batch complete: ${emailsSent} emails sent`);
+    return { processed: users.length, emailsSent };
+  },
+});
+
+/**
+ * Process weekly event digest emails for users with weekly event digest
+ * Runs Sunday 22:30 UTC (after opportunity weekly digest)
+ */
+export const processWeeklyEventDigestBatch = internalAction({
+  args: {},
+  handler: async (ctx) => {
+    console.log("Starting weekly event digest batch processing...");
+
+    const users: Array<Omit<EventDigestUser, "timezone">> = await ctx.runQuery(
+      internal.emails.send.getUsersForWeeklyEventDigestBatch,
+      {}
+    );
+
+    if (users.length === 0) {
+      console.log("No users have weekly event digest enabled");
+      return { processed: 0, emailsSent: 0 };
+    }
+
+    console.log(`Processing ${users.length} users for weekly event digest`);
+
+    let emailsSent = 0;
+    const now = Date.now();
+
+    // Process in batches
+    for (let i = 0; i < users.length; i += BATCH_SIZE) {
+      const batch = users.slice(i, i + BATCH_SIZE);
+
+      for (const user of batch) {
+        const events = await ctx.runQuery(
+          internal.emails.send.getUpcomingEventsForUser,
+          { userId: user.userId, mutedOrgIds: user.mutedOrgIds, since: now }
+        );
+
+        if (events.length === 0) continue;
+
+        const emailContent = await renderEventDigest({
+          userName: user.userName,
+          frequency: "weekly",
+          events,
+        });
+
+        await ctx.runMutation(internal.emails.send.sendEventDigest, {
+          to: user.email,
+          subject: "Your weekly event digest from ASTN",
+          html: emailContent,
+        });
+
+        emailsSent++;
+      }
+    }
+
+    console.log(`Weekly event digest batch complete: ${emailsSent} emails sent`);
     return { processed: users.length, emailsSent };
   },
 });

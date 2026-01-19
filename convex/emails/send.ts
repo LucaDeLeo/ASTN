@@ -220,3 +220,177 @@ export const getOpportunity = internalQuery({
     return await ctx.db.get("opportunities", opportunityId);
   },
 });
+
+// ===== Event Digest Email Functions =====
+
+/**
+ * Send an event digest email
+ * Called by the event digest batch actions
+ */
+export const sendEventDigest = internalMutation({
+  args: {
+    to: v.string(),
+    subject: v.string(),
+    html: v.string(),
+  },
+  handler: async (ctx, { to, subject, html }) => {
+    await resend.sendEmail(ctx, {
+      from: FROM_ADDRESS,
+      to,
+      subject,
+      html,
+    });
+  },
+});
+
+/**
+ * Get users whose local time matches the target hour for daily event digest
+ */
+export const getUsersForDailyEventDigestBatch = internalQuery({
+  args: { targetLocalHour: v.number() },
+  handler: async (ctx, { targetLocalHour }) => {
+    const profiles = await ctx.db.query("profiles").collect();
+    const now = new Date();
+    type ProfileId = typeof profiles[0]["_id"];
+    type OrgId = NonNullable<
+      typeof profiles[0]["eventNotificationPreferences"]
+    >["mutedOrgIds"] extends Array<infer T> | undefined ? T : never;
+    const usersToNotify: Array<{
+      userId: string;
+      email: string;
+      timezone: string;
+      profileId: ProfileId;
+      userName: string;
+      mutedOrgIds: Array<OrgId>;
+    }> = [];
+
+    for (const profile of profiles) {
+      // Check for daily event digest frequency
+      if (profile.eventNotificationPreferences?.frequency !== "daily") continue;
+
+      const timezone = profile.notificationPreferences?.timezone || "UTC";
+      const userLocalTime = toZonedTime(now, timezone);
+      const userLocalHour = userLocalTime.getHours();
+
+      if (userLocalHour === targetLocalHour) {
+        const user = await ctx.db
+          .query("users")
+          .filter((q) => q.eq(q.field("_id"), profile.userId))
+          .first();
+
+        if (user?.email) {
+          usersToNotify.push({
+            userId: profile.userId,
+            email: user.email,
+            timezone,
+            profileId: profile._id,
+            userName: profile.name || "there",
+            mutedOrgIds: profile.eventNotificationPreferences?.mutedOrgIds || [],
+          });
+        }
+      }
+    }
+    return usersToNotify;
+  },
+});
+
+/**
+ * Get users with weekly event digest enabled
+ */
+export const getUsersForWeeklyEventDigestBatch = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const profiles = await ctx.db.query("profiles").collect();
+    type ProfileId = typeof profiles[0]["_id"];
+    type OrgId = NonNullable<
+      typeof profiles[0]["eventNotificationPreferences"]
+    >["mutedOrgIds"] extends Array<infer T> | undefined ? T : never;
+    const usersToNotify: Array<{
+      userId: string;
+      email: string;
+      profileId: ProfileId;
+      userName: string;
+      mutedOrgIds: Array<OrgId>;
+    }> = [];
+
+    for (const profile of profiles) {
+      // Check for weekly event digest frequency
+      if (profile.eventNotificationPreferences?.frequency !== "weekly") continue;
+
+      const user = await ctx.db
+        .query("users")
+        .filter((q) => q.eq(q.field("_id"), profile.userId))
+        .first();
+
+      if (user?.email) {
+        usersToNotify.push({
+          userId: profile.userId,
+          email: user.email,
+          profileId: profile._id,
+          userName: profile.name || "there",
+          mutedOrgIds: profile.eventNotificationPreferences?.mutedOrgIds || [],
+        });
+      }
+    }
+    return usersToNotify;
+  },
+});
+
+/**
+ * Get upcoming events for a user from their org memberships
+ * Excludes muted orgs
+ */
+export const getUpcomingEventsForUser = internalQuery({
+  args: {
+    userId: v.string(),
+    mutedOrgIds: v.array(v.id("organizations")),
+    since: v.number(),
+  },
+  handler: async (ctx, { userId, mutedOrgIds, since }) => {
+    // Get user's org memberships
+    const memberships = await ctx.db
+      .query("orgMemberships")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    const orgIds = memberships
+      .map((m) => m.orgId)
+      .filter((id) => !mutedOrgIds.includes(id));
+
+    // Get upcoming events from user's (non-muted) orgs
+    const events: Array<{
+      title: string;
+      orgName: string;
+      startAt: number;
+      location?: string;
+      isVirtual: boolean;
+      url: string;
+      description?: string;
+    }> = [];
+
+    for (const orgId of orgIds) {
+      const org = await ctx.db.get(orgId);
+      if (!org) continue;
+
+      const orgEvents = await ctx.db
+        .query("events")
+        .withIndex("by_org_start", (q) => q.eq("orgId", orgId).gt("startAt", since))
+        .take(10);
+
+      for (const e of orgEvents) {
+        events.push({
+          title: e.title,
+          orgName: org.name,
+          startAt: e.startAt,
+          location: e.location,
+          isVirtual: e.isVirtual,
+          url: e.url,
+          description: e.description,
+        });
+      }
+    }
+
+    // Sort by start time and limit to 20
+    return events.sort((a, b) => a.startAt - b.startAt).slice(0, 20);
+  },
+});
