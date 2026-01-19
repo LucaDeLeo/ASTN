@@ -63,4 +63,12 @@ crons.interval(
   internal.attendance.scheduler.schedulePostEventPrompts
 );
 
+// Run daily at 4 AM UTC (before match alerts at 8 AM)
+// Computes engagement scores for all org members with stale scores
+crons.daily(
+  "compute-engagement-scores",
+  { hourUTC: 4, minuteUTC: 0 },
+  internal.engagement.compute.runEngagementBatch
+);
+
 export default crons;
