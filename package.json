@@ -56,6 +56,7 @@
     "@convex-dev/eslint-plugin": "^1.1.1",
     "@tailwindcss/vite": "^4.1.13",
     "@tanstack/eslint-config": "^0.3.2",
+    "@types/leaflet": "^1.9.21",
     "@types/node": "^25.0.9",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",

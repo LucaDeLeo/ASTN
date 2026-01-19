@@ -5,8 +5,8 @@ import {
   createRootRouteWithContext,
 } from '@tanstack/react-router'
 import * as React from 'react'
-import type { QueryClient } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
+import type { QueryClient } from '@tanstack/react-query'
 import appCss from '~/styles/app.css?url'
 
 export const Route = createRootRouteWithContext<{
@@ -27,6 +27,11 @@ export const Route = createRootRouteWithContext<{
     ],
     links: [
       { rel: 'stylesheet', href: appCss },
+      // Leaflet CSS for map component
+      {
+        rel: 'stylesheet',
+        href: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+      },
       {
         rel: 'apple-touch-icon',
         sizes: '180x180',
@@ -69,6 +74,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         {children}
         <Toaster position="top-right" richColors />
+        {/* Leaflet JS for map component - loaded in body for global L */}
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" />
         <Scripts />
       </body>
     </html>
