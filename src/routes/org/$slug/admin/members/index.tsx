@@ -13,8 +13,8 @@ import {
   Users,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { api } from "../../../../../convex/_generated/api";
-import type { Doc, Id } from "../../../../../convex/_generated/dataModel";
+import { api } from "../../../../../../convex/_generated/api";
+import type { Doc, Id } from "../../../../../../convex/_generated/dataModel";
 import type { EngagementLevel } from "~/components/engagement/EngagementBadge";
 import {
   EngagementBadge,
@@ -39,7 +39,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Spinner } from "~/components/ui/spinner";
 
-export const Route = createFileRoute("/org/$slug/admin/members")({
+export const Route = createFileRoute("/org/$slug/admin/members/")({
   component: OrgAdminMembers,
 });
 

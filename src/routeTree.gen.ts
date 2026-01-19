@@ -31,9 +31,9 @@ import { Route as OrgSlugEventsRouteImport } from './routes/org/$slug/events'
 import { Route as AdminOpportunitiesNewRouteImport } from './routes/admin/opportunities/new'
 import { Route as OrgSlugAdminIndexRouteImport } from './routes/org/$slug/admin/index'
 import { Route as OrgSlugAdminSettingsRouteImport } from './routes/org/$slug/admin/settings'
-import { Route as OrgSlugAdminMembersRouteImport } from './routes/org/$slug/admin/members'
 import { Route as AdminOpportunitiesIdEditRouteImport } from './routes/admin/opportunities/$id/edit'
 import { Route as OrgSlugAdminProgramsIndexRouteImport } from './routes/org/$slug/admin/programs/index'
+import { Route as OrgSlugAdminMembersIndexRouteImport } from './routes/org/$slug/admin/members/index'
 import { Route as OrgSlugAdminProgramsProgramIdRouteImport } from './routes/org/$slug/admin/programs/$programId'
 import { Route as OrgSlugAdminMembersUserIdRouteImport } from './routes/org/$slug/admin/members/$userId'
 
@@ -147,11 +147,6 @@ const OrgSlugAdminSettingsRoute = OrgSlugAdminSettingsRouteImport.update({
   path: '/org/$slug/admin/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OrgSlugAdminMembersRoute = OrgSlugAdminMembersRouteImport.update({
-  id: '/org/$slug/admin/members',
-  path: '/org/$slug/admin/members',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminOpportunitiesIdEditRoute =
   AdminOpportunitiesIdEditRouteImport.update({
     id: '/opportunities/$id/edit',
@@ -164,6 +159,12 @@ const OrgSlugAdminProgramsIndexRoute =
     path: '/org/$slug/admin/programs/',
     getParentRoute: () => rootRouteImport,
   } as any)
+const OrgSlugAdminMembersIndexRoute =
+  OrgSlugAdminMembersIndexRouteImport.update({
+    id: '/org/$slug/admin/members/',
+    path: '/org/$slug/admin/members/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const OrgSlugAdminProgramsProgramIdRoute =
   OrgSlugAdminProgramsProgramIdRouteImport.update({
     id: '/org/$slug/admin/programs/$programId',
@@ -172,9 +173,9 @@ const OrgSlugAdminProgramsProgramIdRoute =
   } as any)
 const OrgSlugAdminMembersUserIdRoute =
   OrgSlugAdminMembersUserIdRouteImport.update({
-    id: '/$userId',
-    path: '/$userId',
-    getParentRoute: () => OrgSlugAdminMembersRoute,
+    id: '/org/$slug/admin/members/$userId',
+    path: '/org/$slug/admin/members/$userId',
+    getParentRoute: () => rootRouteImport,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -199,11 +200,11 @@ export interface FileRoutesByFullPath {
   '/admin/opportunities/': typeof AdminOpportunitiesIndexRoute
   '/org/$slug/': typeof OrgSlugIndexRoute
   '/admin/opportunities/$id/edit': typeof AdminOpportunitiesIdEditRoute
-  '/org/$slug/admin/members': typeof OrgSlugAdminMembersRouteWithChildren
   '/org/$slug/admin/settings': typeof OrgSlugAdminSettingsRoute
   '/org/$slug/admin/': typeof OrgSlugAdminIndexRoute
   '/org/$slug/admin/members/$userId': typeof OrgSlugAdminMembersUserIdRoute
   '/org/$slug/admin/programs/$programId': typeof OrgSlugAdminProgramsProgramIdRoute
+  '/org/$slug/admin/members/': typeof OrgSlugAdminMembersIndexRoute
   '/org/$slug/admin/programs/': typeof OrgSlugAdminProgramsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -226,11 +227,11 @@ export interface FileRoutesByTo {
   '/admin/opportunities': typeof AdminOpportunitiesIndexRoute
   '/org/$slug': typeof OrgSlugIndexRoute
   '/admin/opportunities/$id/edit': typeof AdminOpportunitiesIdEditRoute
-  '/org/$slug/admin/members': typeof OrgSlugAdminMembersRouteWithChildren
   '/org/$slug/admin/settings': typeof OrgSlugAdminSettingsRoute
   '/org/$slug/admin': typeof OrgSlugAdminIndexRoute
   '/org/$slug/admin/members/$userId': typeof OrgSlugAdminMembersUserIdRoute
   '/org/$slug/admin/programs/$programId': typeof OrgSlugAdminProgramsProgramIdRoute
+  '/org/$slug/admin/members': typeof OrgSlugAdminMembersIndexRoute
   '/org/$slug/admin/programs': typeof OrgSlugAdminProgramsIndexRoute
 }
 export interface FileRoutesById {
@@ -256,11 +257,11 @@ export interface FileRoutesById {
   '/admin/opportunities/': typeof AdminOpportunitiesIndexRoute
   '/org/$slug/': typeof OrgSlugIndexRoute
   '/admin/opportunities/$id/edit': typeof AdminOpportunitiesIdEditRoute
-  '/org/$slug/admin/members': typeof OrgSlugAdminMembersRouteWithChildren
   '/org/$slug/admin/settings': typeof OrgSlugAdminSettingsRoute
   '/org/$slug/admin/': typeof OrgSlugAdminIndexRoute
   '/org/$slug/admin/members/$userId': typeof OrgSlugAdminMembersUserIdRoute
   '/org/$slug/admin/programs/$programId': typeof OrgSlugAdminProgramsProgramIdRoute
+  '/org/$slug/admin/members/': typeof OrgSlugAdminMembersIndexRoute
   '/org/$slug/admin/programs/': typeof OrgSlugAdminProgramsIndexRoute
 }
 export interface FileRouteTypes {
@@ -287,11 +288,11 @@ export interface FileRouteTypes {
     | '/admin/opportunities/'
     | '/org/$slug/'
     | '/admin/opportunities/$id/edit'
-    | '/org/$slug/admin/members'
     | '/org/$slug/admin/settings'
     | '/org/$slug/admin/'
     | '/org/$slug/admin/members/$userId'
     | '/org/$slug/admin/programs/$programId'
+    | '/org/$slug/admin/members/'
     | '/org/$slug/admin/programs/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -314,11 +315,11 @@ export interface FileRouteTypes {
     | '/admin/opportunities'
     | '/org/$slug'
     | '/admin/opportunities/$id/edit'
-    | '/org/$slug/admin/members'
     | '/org/$slug/admin/settings'
     | '/org/$slug/admin'
     | '/org/$slug/admin/members/$userId'
     | '/org/$slug/admin/programs/$programId'
+    | '/org/$slug/admin/members'
     | '/org/$slug/admin/programs'
   id:
     | '__root__'
@@ -343,11 +344,11 @@ export interface FileRouteTypes {
     | '/admin/opportunities/'
     | '/org/$slug/'
     | '/admin/opportunities/$id/edit'
-    | '/org/$slug/admin/members'
     | '/org/$slug/admin/settings'
     | '/org/$slug/admin/'
     | '/org/$slug/admin/members/$userId'
     | '/org/$slug/admin/programs/$programId'
+    | '/org/$slug/admin/members/'
     | '/org/$slug/admin/programs/'
   fileRoutesById: FileRoutesById
 }
@@ -368,10 +369,11 @@ export interface RootRouteChildren {
   OrgSlugEventsRoute: typeof OrgSlugEventsRoute
   OrgSlugJoinRoute: typeof OrgSlugJoinRoute
   OrgSlugIndexRoute: typeof OrgSlugIndexRoute
-  OrgSlugAdminMembersRoute: typeof OrgSlugAdminMembersRouteWithChildren
   OrgSlugAdminSettingsRoute: typeof OrgSlugAdminSettingsRoute
   OrgSlugAdminIndexRoute: typeof OrgSlugAdminIndexRoute
+  OrgSlugAdminMembersUserIdRoute: typeof OrgSlugAdminMembersUserIdRoute
   OrgSlugAdminProgramsProgramIdRoute: typeof OrgSlugAdminProgramsProgramIdRoute
+  OrgSlugAdminMembersIndexRoute: typeof OrgSlugAdminMembersIndexRoute
   OrgSlugAdminProgramsIndexRoute: typeof OrgSlugAdminProgramsIndexRoute
 }
 
@@ -531,13 +533,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrgSlugAdminSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/org/$slug/admin/members': {
-      id: '/org/$slug/admin/members'
-      path: '/org/$slug/admin/members'
-      fullPath: '/org/$slug/admin/members'
-      preLoaderRoute: typeof OrgSlugAdminMembersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin/opportunities/$id/edit': {
       id: '/admin/opportunities/$id/edit'
       path: '/opportunities/$id/edit'
@@ -552,6 +547,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrgSlugAdminProgramsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/org/$slug/admin/members/': {
+      id: '/org/$slug/admin/members/'
+      path: '/org/$slug/admin/members'
+      fullPath: '/org/$slug/admin/members/'
+      preLoaderRoute: typeof OrgSlugAdminMembersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/org/$slug/admin/programs/$programId': {
       id: '/org/$slug/admin/programs/$programId'
       path: '/org/$slug/admin/programs/$programId'
@@ -561,10 +563,10 @@ declare module '@tanstack/react-router' {
     }
     '/org/$slug/admin/members/$userId': {
       id: '/org/$slug/admin/members/$userId'
-      path: '/$userId'
+      path: '/org/$slug/admin/members/$userId'
       fullPath: '/org/$slug/admin/members/$userId'
       preLoaderRoute: typeof OrgSlugAdminMembersUserIdRouteImport
-      parentRoute: typeof OrgSlugAdminMembersRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -599,17 +601,6 @@ const SettingsRouteRouteWithChildren = SettingsRouteRoute._addFileChildren(
   SettingsRouteRouteChildren,
 )
 
-interface OrgSlugAdminMembersRouteChildren {
-  OrgSlugAdminMembersUserIdRoute: typeof OrgSlugAdminMembersUserIdRoute
-}
-
-const OrgSlugAdminMembersRouteChildren: OrgSlugAdminMembersRouteChildren = {
-  OrgSlugAdminMembersUserIdRoute: OrgSlugAdminMembersUserIdRoute,
-}
-
-const OrgSlugAdminMembersRouteWithChildren =
-  OrgSlugAdminMembersRoute._addFileChildren(OrgSlugAdminMembersRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
@@ -627,10 +618,11 @@ const rootRouteChildren: RootRouteChildren = {
   OrgSlugEventsRoute: OrgSlugEventsRoute,
   OrgSlugJoinRoute: OrgSlugJoinRoute,
   OrgSlugIndexRoute: OrgSlugIndexRoute,
-  OrgSlugAdminMembersRoute: OrgSlugAdminMembersRouteWithChildren,
   OrgSlugAdminSettingsRoute: OrgSlugAdminSettingsRoute,
   OrgSlugAdminIndexRoute: OrgSlugAdminIndexRoute,
+  OrgSlugAdminMembersUserIdRoute: OrgSlugAdminMembersUserIdRoute,
   OrgSlugAdminProgramsProgramIdRoute: OrgSlugAdminProgramsProgramIdRoute,
+  OrgSlugAdminMembersIndexRoute: OrgSlugAdminMembersIndexRoute,
   OrgSlugAdminProgramsIndexRoute: OrgSlugAdminProgramsIndexRoute,
 }
 export const routeTree = rootRouteImport
