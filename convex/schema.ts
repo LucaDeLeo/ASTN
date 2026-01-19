@@ -93,6 +93,26 @@ export default defineSchema({
       })
     ),
 
+    // Event notification preferences (for event announcements and reminders)
+    eventNotificationPreferences: v.optional(
+      v.object({
+        frequency: v.union(
+          v.literal("all"),
+          v.literal("daily"),
+          v.literal("weekly"),
+          v.literal("none")
+        ),
+        reminderTiming: v.optional(
+          v.object({
+            oneWeekBefore: v.boolean(),
+            oneDayBefore: v.boolean(),
+            oneHourBefore: v.boolean(),
+          })
+        ),
+        mutedOrgIds: v.optional(v.array(v.id("organizations"))),
+      })
+    ),
+
     // Metadata
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -366,4 +386,44 @@ export default defineSchema({
     .index("by_org", ["orgId"])
     .index("by_org_start", ["orgId", "startAt"])
     .index("by_luma_id", ["lumaEventId"]),
+
+  // In-app notifications (bell icon notification center)
+  notifications: defineTable({
+    userId: v.string(),
+    type: v.union(
+      v.literal("event_new"),
+      v.literal("event_reminder"),
+      v.literal("event_updated")
+    ),
+    eventId: v.optional(v.id("events")),
+    orgId: v.optional(v.id("organizations")),
+    title: v.string(),
+    body: v.string(),
+    actionUrl: v.optional(v.string()),
+    read: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_read", ["userId", "read"]),
+
+  // Event view tracking (for reminder audience - users who viewed an event)
+  eventViews: defineTable({
+    userId: v.string(),
+    eventId: v.id("events"),
+    viewedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_event", ["eventId"])
+    .index("by_user_event", ["userId", "eventId"]),
+
+  // Scheduled reminders (for cancellation when events change)
+  scheduledReminders: defineTable({
+    eventId: v.id("events"),
+    userId: v.string(),
+    timing: v.union(v.literal("1_week"), v.literal("1_day"), v.literal("1_hour")),
+    scheduledFunctionId: v.string(),
+    scheduledFor: v.number(),
+  })
+    .index("by_event", ["eventId"])
+    .index("by_user_event", ["userId", "eventId"]),
 });
