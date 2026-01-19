@@ -28,10 +28,10 @@ Requirements for profile input speedup. Each maps to roadmap phases.
 
 ### Integration
 
-- [ ] **INTG-01**: Profile wizard offers four entry points: upload, paste, manual, chat
+- [x] **INTG-01**: Profile wizard offers four entry points: upload, paste, manual, chat
 - [x] **INTG-02**: Extracted data auto-fills profile form fields
-- [ ] **INTG-03**: Enrichment chat is context-aware (skips questions about extracted data)
-- [ ] **INTG-04**: User can switch from upload to manual entry at any point
+- [x] **INTG-03**: Enrichment chat is context-aware (skips questions about extracted data)
+- [x] **INTG-04**: User can switch from upload to manual entry at any point
 
 ## v2 Requirements
 
@@ -78,10 +78,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EXTR-05 | Phase 9 | Complete |
 | EXTR-06 | Phase 9 | Complete |
 | EXTR-07 | Phase 8 | Complete |
-| INTG-01 | Phase 10 | Pending |
+| INTG-01 | Phase 10 | Complete |
 | INTG-02 | Phase 9 | Complete |
-| INTG-03 | Phase 10 | Pending |
-| INTG-04 | Phase 10 | Pending |
+| INTG-03 | Phase 10 | Complete |
+| INTG-04 | Phase 10 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 17 total
@@ -90,4 +90,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-18*
-*Last updated: 2026-01-18 — traceability updated with phase mappings*
+*Last updated: 2026-01-19 — v1.1 complete, all requirements met*

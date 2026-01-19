@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** - Phases 1-6 (shipped 2026-01-18)
-- 🚧 **v1.1 Profile Input Speedup** - Phases 7-10 (in progress)
+- ✅ **v1.1 Profile Input Speedup** - Phases 7-10 (shipped 2026-01-19)
 
 ## Phases
 
@@ -24,7 +24,7 @@ See `.planning/milestones/v1.0-ROADMAP.md` for full v1.0 roadmap details.
 
 </details>
 
-### 🚧 v1.1 Profile Input Speedup (In Progress)
+### ✅ v1.1 Profile Input Speedup (Shipped 2026-01-19)
 
 **Milestone Goal:** Reduce friction in profile creation by letting users upload CVs/PDFs or paste text, have LLM extract structured data, auto-fill form, user reviews, then enrichment chat fills gaps.
 
@@ -37,7 +37,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 7: File Upload Foundation** - Upload infrastructure and UI
 - [x] **Phase 8: LLM Extraction Core** - PDF/text extraction with Claude Haiku
 - [x] **Phase 9: Review & Apply UI** - Preview, inline editing, apply to profile
-- [ ] **Phase 10: Wizard Integration** - Entry points and context-aware enrichment
+- [x] **Phase 10: Wizard Integration** - Entry points and context-aware enrichment
 
 ## Phase Details
 
@@ -107,9 +107,9 @@ Plans:
 **Plans**: 3 plans in 3 waves
 
 Plans:
-- [ ] 10-01-PLAN.md — Entry point UI components (step indicator, entry selector, LinkedIn tip)
-- [ ] 10-02-PLAN.md — Wizard orchestration (state machine, post-apply summary)
-- [ ] 10-03-PLAN.md — Route integration & verification checkpoint
+- [x] 10-01-PLAN.md — Entry point UI components (step indicator, entry selector, LinkedIn tip)
+- [x] 10-02-PLAN.md — Wizard orchestration (state machine, post-apply summary)
+- [x] 10-03-PLAN.md — Route integration & verification checkpoint
 
 ## Progress
 
@@ -127,7 +127,7 @@ Phases execute in numeric order: 7 → 7.1 (if any) → 8 → 8.1 (if any) → 9
 | 7. File Upload Foundation | v1.1 | 4/4 | Complete | 2026-01-18 |
 | 8. LLM Extraction Core | v1.1 | 3/3 | Complete | 2026-01-18 |
 | 9. Review & Apply UI | v1.1 | 3/3 | Complete | 2026-01-18 |
-| 10. Wizard Integration | v1.1 | 0/3 | Not started | - |
+| 10. Wizard Integration | v1.1 | 3/3 | Complete | 2026-01-19 |
 
 ---
 *v1.1 roadmap created: 2026-01-18*
