@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-19)
 ## Current Position
 
 Phase: 12 of 16 (Event Management)
-Plan: 0 of 3 in current phase
-Status: Ready to plan
-Last activity: 2026-01-19 - Phase 11 Org Discovery verified and complete
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-01-19 - Completed 12-01-PLAN.md (events schema + lu.ma sync)
 
-Progress: [█████████████████░░░░░░░░░░░░░] 55% (37/48 plans: v1.0 + v1.1 complete, v1.2 phase 11 complete)
+Progress: [██████████████████░░░░░░░░░░░░] 57% (38/48 plans: v1.0 + v1.1 complete, v1.2 phase 11 + 12-01 complete)
 
 ## Milestone History
 
@@ -25,10 +25,10 @@ Progress: [█████████████████░░░░░░
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 37 (v1.0: 21 + v1.1: 13 + v1.2: 3)
-- Average duration: ~11 min/plan
+- Total plans completed: 38 (v1.0: 21 + v1.1: 13 + v1.2: 4)
+- Average duration: ~10 min/plan
 - v1.1 execution: 4 phases in ~2 days
-- v1.2 execution: Phase 11 complete (3 plans, ~12 min total)
+- v1.2 execution: Phase 11 complete (3 plans, ~12 min), Phase 12 in progress
 
 **By Phase (v1.1):**
 
@@ -44,6 +44,7 @@ Progress: [█████████████████░░░░░░
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 11-org-discovery | 3 | ~12min | ~4min |
+| 12-event-management | 1/3 | ~3min | ~3min |
 
 ## Accumulated Context
 
@@ -61,6 +62,9 @@ Recent decisions affecting current work:
 - [11-02]: Immediate toggle feedback via toast for LocationPrivacyToggle
 - [11-03]: Leaflet via CDN avoids npm dependency; types via @types/leaflet
 - [11-03]: Map hidden on mobile for better UX on small screens
+- [12-01]: Lu.ma API key is per-calendar, implicitly identifies which calendar to fetch
+- [12-01]: Event sync window: 30 days past to 90 days future
+- [12-01]: Rate limiting: 200ms between pages, 1s between orgs, 60s retry on 429
 
 ### Pending Todos
 
@@ -68,6 +72,7 @@ Recent decisions affecting current work:
 - [ ] Remove test-upload.tsx route after development complete
 - [ ] Configure 80K Hours Algolia credentials
 - [ ] Obtain aisafety.com Airtable credentials from their team
+- [ ] Configure Lu.ma API key for orgs needing event sync (requires Luma Plus subscription)
 
 ### Blockers/Concerns
 
@@ -78,10 +83,10 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-19
-Stopped at: Phase 11 verified and complete
+Stopped at: Completed 12-01-PLAN.md
 Resume file: None
-Next action: `/gsd:discuss-phase 12`
+Next action: Execute 12-02-PLAN.md (org event pages)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-19 - Phase 11 verified and complete*
+*Last updated: 2026-01-19 - Completed 12-01-PLAN.md (events schema + lu.ma sync)*
