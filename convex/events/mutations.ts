@@ -1,5 +1,6 @@
-import { internalMutation } from "../_generated/server";
 import { v } from "convex/values";
+import { internalMutation } from "../_generated/server";
+import { internal } from "../_generated/api";
 
 /**
  * Upsert events from Lu.ma API for an organization.
@@ -35,18 +36,25 @@ export const upsertEvents = internalMutation({
 
       if (existing) {
         // Update existing event
-        await ctx.db.patch(existing._id, {
+        await ctx.db.patch("events", existing._id, {
           ...event,
           orgId,
           syncedAt: now,
         });
       } else {
         // Create new event
-        await ctx.db.insert("events", {
+        const newEventId = await ctx.db.insert("events", {
           ...event,
           orgId,
           syncedAt: now,
         });
+
+        // Notify users with "all" frequency preference (async to avoid timeout)
+        await ctx.scheduler.runAfter(
+          0,
+          internal.notifications.realtime.notifyAllFrequencyUsers,
+          { eventId: newEventId, orgId }
+        );
       }
     }
   },
@@ -61,6 +69,6 @@ export const updateOrgSyncTimestamp = internalMutation({
     timestamp: v.number(),
   },
   handler: async (ctx, { orgId, timestamp }) => {
-    await ctx.db.patch(orgId, { eventsLastSynced: timestamp });
+    await ctx.db.patch("organizations", orgId, { eventsLastSynced: timestamp });
   },
 });
