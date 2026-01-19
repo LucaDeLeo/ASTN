@@ -149,7 +149,7 @@ Plans:
 **Requirements**: EVT-05, EVT-06, EVT-07
 **Success Criteria** (what must be TRUE):
   1. User can configure event notification frequency (all / digest / none)
-  2. User can filter notifications by event type
+  2. User can mute specific orgs from event notifications
   3. User can set reminder preferences (1 day before, 1 hour before, none)
   4. System sends notifications according to user preferences
   5. Notifications batch properly to avoid fatigue
