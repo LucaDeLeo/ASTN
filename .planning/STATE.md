@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** v1.1 Profile Input Speedup - Phase 10 in progress
+**Current focus:** v1.1 Profile Input Speedup - Complete
 
 ## Current Position
 
 Phase: 10 of 10 (Wizard Integration)
-Plan: 2 of 3 complete
-Status: In progress
-Last activity: 2026-01-19 - Completed 10-02-PLAN.md (Flow Orchestration)
+Plan: 3 of 3 complete
+Status: Phase complete - v1.1 Milestone complete
+Last activity: 2026-01-19 - Completed 10-03-PLAN.md (Route Integration)
 
-Progress: [██████████████████████████████] 100% (33/33 plans complete)
+Progress: [██████████████████████████████] 100% (34/34 plans complete)
 
 ## Milestone History
 
@@ -35,7 +35,7 @@ Progress: [███████████████████████
 | 07-file-upload | 4 | ~72min | ~18min |
 | 08-llm-extraction | 3 | ~33min | ~11min |
 | 09-review-apply-ui | 3 | ~22min | ~7min |
-| 10-wizard-integration | 2 | ~5min | ~2.5min |
+| 10-wizard-integration | 3 | ~10min | ~3min |
 
 *Tracking begins fresh for v1.1*
 
@@ -69,6 +69,8 @@ Recent decisions affecting current work:
 - [10-01]: LinkedIn PDF tip collapsed by default
 - [10-02]: Discriminated union for WizardState enables type-safe step transitions
 - [10-02]: Hooks composed at wizard level (lifted state), not in children
+- [10-03]: Default step is "input" for entry point selection
+- [10-03]: chatFirst auto-greeting for AI-guided profile creation
 - [10-02]: extractedData preserved in state for back navigation
 
 ### Pending Todos
@@ -87,10 +89,10 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-19
-Stopped at: Completed 10-02-PLAN.md (Flow Orchestration)
+Stopped at: Completed 10-03-PLAN.md (Route Integration) - Phase 10 complete
 Resume file: None
-Next action: 10-03-PLAN.md (Route Integration)
+Next action: v1.1 milestone complete - run /gsd:audit-milestone or /gsd:complete-milestone
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-19 - Completed 10-02-PLAN.md (Flow Orchestration)*
+*Last updated: 2026-01-19 - Completed 10-03-PLAN.md (Route Integration) - v1.1 Complete*
