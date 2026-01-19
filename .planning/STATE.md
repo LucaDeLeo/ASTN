@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** v1.1 Profile Input Speedup - Phase 9 complete
+**Current focus:** v1.1 Profile Input Speedup - Phase 10 in progress
 
 ## Current Position
 
-Phase: 9 of 10 (Review & Apply UI)
-Plan: 3 of 3 complete
-Status: Phase complete
-Last activity: 2026-01-18 - Completed 09-03-PLAN.md (Integration & Apply)
+Phase: 10 of 10 (Wizard Integration)
+Plan: 1 of 3 complete
+Status: In progress
+Last activity: 2026-01-19 - Completed 10-01-PLAN.md (Entry Point UI)
 
-Progress: [█████████████████████████████░] 97% (31/32 plans complete)
+Progress: [██████████████████████████████] 100% (32/32 plans complete)
 
 ## Milestone History
 
@@ -35,6 +35,7 @@ Progress: [███████████████████████
 | 07-file-upload | 4 | ~72min | ~18min |
 | 08-llm-extraction | 3 | ~33min | ~11min |
 | 09-review-apply-ui | 3 | ~22min | ~7min |
+| 10-wizard-integration | 1 | ~1min | ~1min |
 
 *Tracking begins fresh for v1.1*
 
@@ -63,6 +64,9 @@ Recent decisions affecting current work:
 - [09-03]: Default acceptance for all extracted fields (user rejects rather than accepts)
 - [09-03]: Auto-expand textarea on edit mode
 - [09-03]: Enrichment auto-greet after extraction apply for reduced friction
+- [10-01]: Step indicator uses Input/Review/Enrich labels
+- [10-01]: Review step conditionally hideable for manual/chat-first flows
+- [10-01]: LinkedIn PDF tip collapsed by default
 
 ### Pending Todos
 
@@ -79,11 +83,11 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-01-18
-Stopped at: Completed 09-03-PLAN.md (Integration & Apply) - Phase 9 complete
+Last session: 2026-01-19
+Stopped at: Completed 10-01-PLAN.md (Entry Point UI)
 Resume file: None
-Next action: Phase 10 (Submission Cleanup) or milestone completion
+Next action: 10-02-PLAN.md (Flow Orchestration)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-18 - Completed 09-03-PLAN.md (Integration & Apply)*
+*Last updated: 2026-01-19 - Completed 10-01-PLAN.md (Entry Point UI)*
