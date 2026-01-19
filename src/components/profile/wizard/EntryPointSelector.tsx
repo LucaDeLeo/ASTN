@@ -76,7 +76,7 @@ function LinkedInPdfTip() {
       {isExpanded && (
         <div className="mt-2 text-xs text-muted-foreground space-y-1 pl-4 border-l-2 border-slate-200">
           <p>1. Go to your LinkedIn profile</p>
-          <p>2. Click the "More" button under your name</p>
+          <p>2. Click the "Resources" button under your name</p>
           <p>3. Select "Save to PDF"</p>
         </div>
       )}
