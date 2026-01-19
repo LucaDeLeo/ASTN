@@ -98,6 +98,10 @@ Recent decisions affecting current work:
 - [15-02]: Badge colors: green=Active, blue=Moderate, amber=At Risk, purple=New, gray=Inactive
 - [15-02]: Manual override indicated by (Manual) suffix on badge
 - [15-02]: Engagement data fetched at page level, distributed via Map for O(1) lookup
+- [16-03]: Profile name always visible to admins for identification
+- [16-03]: Connections visibility level visible to org admins (org membership = connection)
+- [16-03]: Attendance history sorted by event date descending
+- [16-03]: Override history enriched with admin names for audit
 - [16-04]: Soft delete via archiving for programs (status: archived)
 - [16-04]: Auto-completion triggers when attendance count criteria met
 - [16-04]: Privacy: member emails not exposed in participant list
