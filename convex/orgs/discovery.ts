@@ -1,3 +1,4 @@
+import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { auth } from "../auth";
 import type { Doc } from "../_generated/dataModel";
@@ -81,5 +82,69 @@ export const getSuggestedOrgs = query({
     );
 
     return filtered.slice(0, 5);
+  },
+});
+
+/**
+ * Get all organizations with optional filtering by country and search.
+ * Returns orgs with computed member counts, sorted alphabetically.
+ */
+export const getAllOrgs = query({
+  args: {
+    country: v.optional(v.string()),
+    searchQuery: v.optional(v.string()),
+  },
+  handler: async (ctx, { country, searchQuery }) => {
+    let orgs;
+
+    // If search query provided, use search index
+    if (searchQuery && searchQuery.trim()) {
+      orgs = await ctx.db
+        .query("organizations")
+        .withSearchIndex("search_name", (q) => q.search("name", searchQuery))
+        .collect();
+    }
+    // If country filter, use index
+    else if (country) {
+      orgs = await ctx.db
+        .query("organizations")
+        .withIndex("by_country", (q) => q.eq("country", country))
+        .collect();
+    }
+    // Otherwise get all
+    else {
+      orgs = await ctx.db.query("organizations").collect();
+    }
+
+    // For each org, get member count
+    const orgsWithCounts = await Promise.all(
+      orgs.map(async (org) => {
+        const memberCount = await ctx.db
+          .query("orgMemberships")
+          .withIndex("by_org", (q) => q.eq("orgId", org._id))
+          .collect()
+          .then((m) => m.length);
+
+        return {
+          ...org,
+          memberCount,
+        };
+      })
+    );
+
+    // Sort alphabetically by name
+    return orgsWithCounts.sort((a, b) => a.name.localeCompare(b.name));
+  },
+});
+
+/**
+ * Get unique countries from all organizations for filter dropdown.
+ */
+export const getOrgCountries = query({
+  args: {},
+  handler: async (ctx) => {
+    const orgs = await ctx.db.query("organizations").collect();
+    const countries = [...new Set(orgs.map((o) => o.country).filter(Boolean))];
+    return countries.sort() as Array<string>;
   },
 });
