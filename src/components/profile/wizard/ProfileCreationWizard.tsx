@@ -353,13 +353,10 @@ export function ProfileCreationWizard({
               : "opacity-0 scale-95 pointer-events-none"
           }`}
         >
-          <div className="space-y-4">
-            <EntryPointSelector onSelect={handleEntrySelect} />
-            {/* Document upload zone below entry selection */}
-            <div className="mt-6">
-              <DocumentUpload onFileSelect={handleFileSelect} />
-            </div>
-          </div>
+          <EntryPointSelector
+            onSelect={handleEntrySelect}
+            uploadSlot={<DocumentUpload onFileSelect={handleFileSelect} />}
+          />
         </div>
 
         {/* Text paste expanded */}

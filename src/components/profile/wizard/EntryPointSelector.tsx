@@ -15,6 +15,8 @@ type EntryPoint = "upload" | "paste" | "manual" | "chat";
 interface EntryPointSelectorProps {
   onSelect: (entryPoint: EntryPoint) => void;
   disabled?: boolean;
+  /** Slot rendered directly below the upload option (before other options) */
+  uploadSlot?: React.ReactNode;
 }
 
 interface EntryOption {
@@ -87,60 +89,76 @@ function LinkedInPdfTip() {
 export function EntryPointSelector({
   onSelect,
   disabled = false,
+  uploadSlot,
 }: EntryPointSelectorProps) {
-  return (
-    <div className="space-y-3">
-      {ENTRY_OPTIONS.map((option) => {
-        const Icon = option.icon;
-        const isPrimary = option.isPrimary;
+  // Split options: upload first, then others
+  const uploadOption = ENTRY_OPTIONS.find((o) => o.id === "upload")!;
+  const otherOptions = ENTRY_OPTIONS.filter((o) => o.id !== "upload");
 
-        return (
-          <div key={option.id}>
-            <Card
-              onClick={() => !disabled && onSelect(option.id)}
+  const renderOptionCard = (option: EntryOption) => {
+    const Icon = option.icon;
+    const isPrimary = option.isPrimary;
+
+    return (
+      <Card
+        onClick={() => !disabled && onSelect(option.id)}
+        className={cn(
+          "cursor-pointer transition-all py-4",
+          disabled && "opacity-50 cursor-not-allowed",
+          isPrimary
+            ? "border-primary bg-primary/5 hover:bg-primary/10 hover:border-primary/80"
+            : "hover:bg-slate-50 hover:border-slate-300"
+        )}
+      >
+        <div className="flex items-center gap-4 px-4">
+          <div
+            className={cn(
+              "flex size-10 shrink-0 items-center justify-center rounded-lg",
+              isPrimary
+                ? "bg-primary/10 text-primary"
+                : "bg-slate-100 text-slate-600"
+            )}
+          >
+            <Icon className="size-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div
               className={cn(
-                "cursor-pointer transition-all py-4",
-                disabled && "opacity-50 cursor-not-allowed",
-                isPrimary
-                  ? "border-primary bg-primary/5 hover:bg-primary/10 hover:border-primary/80"
-                  : "hover:bg-slate-50 hover:border-slate-300"
+                "font-medium",
+                isPrimary ? "text-primary" : "text-slate-900"
               )}
             >
-              <div className="flex items-center gap-4 px-4">
-                <div
-                  className={cn(
-                    "flex size-10 shrink-0 items-center justify-center rounded-lg",
-                    isPrimary
-                      ? "bg-primary/10 text-primary"
-                      : "bg-slate-100 text-slate-600"
-                  )}
-                >
-                  <Icon className="size-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div
-                    className={cn(
-                      "font-medium",
-                      isPrimary ? "text-primary" : "text-slate-900"
-                    )}
-                  >
-                    {option.label}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {option.description}
-                  </div>
-                </div>
-                {isPrimary && (
-                  <span className="shrink-0 rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-                    Recommended
-                  </span>
-                )}
-              </div>
-            </Card>
-            {option.id === "upload" && <LinkedInPdfTip />}
+              {option.label}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {option.description}
+            </div>
           </div>
-        );
-      })}
+          {isPrimary && (
+            <span className="shrink-0 rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+              Recommended
+            </span>
+          )}
+        </div>
+      </Card>
+    );
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Upload option first */}
+      <div>
+        {renderOptionCard(uploadOption)}
+        <LinkedInPdfTip />
+      </div>
+
+      {/* Upload slot (drop zone) directly below upload option */}
+      {uploadSlot && <div className="mt-4 mb-4">{uploadSlot}</div>}
+
+      {/* Other options */}
+      {otherOptions.map((option) => (
+        <div key={option.id}>{renderOptionCard(option)}</div>
+      ))}
     </div>
   );
 }
