@@ -42,16 +42,16 @@ const ENTRY_OPTIONS: EntryOption[] = [
     description: "Copy from LinkedIn or your resume",
   },
   {
+    id: "chat",
+    icon: MessageSquare,
+    label: "Chat with AI",
+    description: "Answer questions and we'll build your profile for you",
+  },
+  {
     id: "manual",
     icon: PenLine,
     label: "Fill out manually",
     description: "Enter your information step by step",
-  },
-  {
-    id: "chat",
-    icon: MessageSquare,
-    label: "Chat with AI",
-    description: "Let our AI guide you through the process",
   },
 ];
 
