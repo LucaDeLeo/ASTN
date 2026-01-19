@@ -109,7 +109,7 @@ Recent decisions affecting current work:
 Last session: 2026-01-19
 Stopped at: Completed 14-03-PLAN.md (phase 14 complete)
 Resume file: None
-Next action: `/gsd:execute-phase 15` (engagement scoring)
+Next action: `/gsd:discuss-phase 15` (engagement scoring)
 
 ---
 *State initialized: 2026-01-17*

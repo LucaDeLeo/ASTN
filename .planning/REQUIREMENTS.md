@@ -28,11 +28,11 @@
 
 ### Attendance Tracking
 
-- [ ] **ATT-01**: User receives post-event "Did you attend?" notification (within 2-4 hours)
-- [ ] **ATT-02**: User can confirm attendance with one tap
-- [ ] **ATT-03**: User can view their attendance history on their profile
-- [ ] **ATT-04**: User can optionally provide feedback after attending (star rating + text)
-- [ ] **ATT-05**: User can dismiss or defer attendance prompts
+- [x] **ATT-01**: User receives post-event "Did you attend?" notification (within 2-4 hours)
+- [x] **ATT-02**: User can confirm attendance with one tap
+- [x] **ATT-03**: User can view their attendance history on their profile
+- [x] **ATT-04**: User can optionally provide feedback after attending (star rating + text)
+- [x] **ATT-05**: User can dismiss or defer attendance prompts
 
 ### Org CRM Dashboard
 
@@ -94,11 +94,11 @@
 | EVT-05 | Phase 13 | Complete |
 | EVT-06 | Phase 13 | Complete |
 | EVT-07 | Phase 13 | Complete |
-| ATT-01 | Phase 14 | Pending |
-| ATT-02 | Phase 14 | Pending |
-| ATT-03 | Phase 14 | Pending |
-| ATT-04 | Phase 14 | Pending |
-| ATT-05 | Phase 14 | Pending |
+| ATT-01 | Phase 14 | Complete |
+| ATT-02 | Phase 14 | Complete |
+| ATT-03 | Phase 14 | Complete |
+| ATT-04 | Phase 14 | Complete |
+| ATT-05 | Phase 14 | Complete |
 | CRM-01 | Phase 16 | Pending |
 | CRM-02 | Phase 16 | Pending |
 | CRM-03 | Phase 16 | Pending |
