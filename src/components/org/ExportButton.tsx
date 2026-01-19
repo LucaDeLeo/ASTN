@@ -12,16 +12,40 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Spinner } from "~/components/ui/spinner";
 
+// Engagement level friendly labels for export
+const engagementLabels: Record<string, string> = {
+  highly_engaged: "Active",
+  moderate: "Moderate",
+  at_risk: "At Risk",
+  new: "New",
+  inactive: "Inactive",
+};
+
+interface EngagementExportData {
+  userId: string;
+  level: string;
+  hasOverride: boolean;
+}
+
 interface ExportButtonProps {
   orgId: Id<"organizations">;
   orgSlug: string;
+  engagementData?: EngagementExportData[];
 }
 
-export function ExportButton({ orgId, orgSlug }: ExportButtonProps) {
+export function ExportButton({ orgId, orgSlug, engagementData }: ExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
   const members = useQuery(api.orgs.admin.getAllMembersWithProfiles, { orgId });
 
-  const exportData = (format: "csv" | "json") => {
+  // Create engagement lookup map
+  const engagementMap = new Map<string, EngagementExportData>();
+  if (engagementData) {
+    for (const e of engagementData) {
+      engagementMap.set(e.userId, e);
+    }
+  }
+
+  const handleExport = (format: "csv" | "json") => {
     if (!members || members.length === 0) return;
 
     setIsExporting(true);
@@ -31,9 +55,9 @@ export function ExportButton({ orgId, orgSlug }: ExportButtonProps) {
       const filename = `${orgSlug}-members-${date}.${format}`;
 
       if (format === "json") {
-        exportJson(members, filename);
+        exportJson(members, engagementMap, filename);
       } else {
-        exportCsv(members, filename);
+        exportCsv(members, engagementMap, filename);
       }
     } finally {
       setIsExporting(false);
@@ -53,11 +77,11 @@ export function ExportButton({ orgId, orgSlug }: ExportButtonProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => exportData("csv")}>
+        <DropdownMenuItem onClick={() => handleExport("csv")}>
           <FileSpreadsheet className="size-4 mr-2" />
           Export as CSV
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => exportData("json")}>
+        <DropdownMenuItem onClick={() => handleExport("json")}>
           <FileJson className="size-4 mr-2" />
           Export as JSON
         </DropdownMenuItem>
@@ -74,8 +98,12 @@ type ExportMember = {
   completeness: number;
 };
 
-function exportJson(members: Array<ExportMember>, filename: string) {
-  const data = members.map((m) => transformMemberForExport(m));
+function exportJson(
+  members: Array<ExportMember>,
+  engagementMap: Map<string, EngagementExportData>,
+  filename: string
+) {
+  const data = members.map((m) => transformMemberForExport(m, engagementMap));
 
   const blob = new Blob([JSON.stringify(data, null, 2)], {
     type: "application/json",
@@ -83,7 +111,11 @@ function exportJson(members: Array<ExportMember>, filename: string) {
   downloadBlob(blob, filename);
 }
 
-function exportCsv(members: Array<ExportMember>, filename: string) {
+function exportCsv(
+  members: Array<ExportMember>,
+  engagementMap: Map<string, EngagementExportData>,
+  filename: string
+) {
   const headers = [
     "Name",
     "Email",
@@ -97,10 +129,12 @@ function exportCsv(members: Array<ExportMember>, filename: string) {
     "Role",
     "Joined Date",
     "Directory Visibility",
+    "Engagement Level",
+    "Has Override",
   ];
 
   const rows = members.map((m) => {
-    const data = transformMemberForExport(m);
+    const data = transformMemberForExport(m, engagementMap);
     return [
       escapeCsvField(data.name),
       escapeCsvField(data.email),
@@ -114,6 +148,8 @@ function exportCsv(members: Array<ExportMember>, filename: string) {
       data.role,
       data.joinedDate,
       data.directoryVisibility,
+      data.engagementLevel,
+      data.hasOverride,
     ];
   });
 
@@ -126,8 +162,12 @@ function exportCsv(members: Array<ExportMember>, filename: string) {
   downloadBlob(blob, filename);
 }
 
-function transformMemberForExport(member: ExportMember) {
+function transformMemberForExport(
+  member: ExportMember,
+  engagementMap: Map<string, EngagementExportData>
+) {
   const profile = member.profile;
+  const engagement = engagementMap.get(member.membership.userId);
 
   return {
     name: profile?.name || "",
@@ -142,6 +182,10 @@ function transformMemberForExport(member: ExportMember) {
     role: member.membership.role,
     joinedDate: new Date(member.membership.joinedAt).toISOString().split("T")[0],
     directoryVisibility: member.membership.directoryVisibility,
+    engagementLevel: engagement
+      ? engagementLabels[engagement.level] || engagement.level
+      : "Pending",
+    hasOverride: engagement?.hasOverride ? "Yes" : "No",
   };
 }
 

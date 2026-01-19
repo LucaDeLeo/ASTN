@@ -274,7 +274,15 @@ function OrgAdminMembers() {
                   {members?.length ?? "..."} members in {org.name}
                 </p>
               </div>
-              <ExportButton orgId={org._id} orgSlug={slug} />
+              <ExportButton
+                  orgId={org._id}
+                  orgSlug={slug}
+                  engagementData={engagementData?.map((e) => ({
+                    userId: e.userId,
+                    level: e.level,
+                    hasOverride: e.hasOverride,
+                  }))}
+                />
             </div>
           </div>
 
