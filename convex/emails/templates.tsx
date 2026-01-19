@@ -14,6 +14,7 @@ import {
   Text,
 } from "@react-email/components";
 import { render } from "@react-email/render";
+import { format } from "date-fns";
 
 // ASTN brand color (coral accent)
 const CORAL = "#FF6B4A";
@@ -289,4 +290,147 @@ export async function renderWeeklyDigest(
   props: WeeklyDigestProps
 ): Promise<string> {
   return await render(<WeeklyDigestEmail {...props} />);
+}
+
+// ===== Event Digest Email =====
+
+interface EventDigestProps {
+  userName: string;
+  frequency: "daily" | "weekly";
+  events: Array<{
+    title: string;
+    orgName: string;
+    startAt: number;
+    location?: string;
+    isVirtual: boolean;
+    url: string;
+    description?: string;
+  }>;
+}
+
+export function EventDigestEmail({
+  userName,
+  frequency,
+  events,
+}: EventDigestProps) {
+  // Group events by org using Map to avoid lint issues with Record indexing
+  const eventsByOrgMap = new Map<string, typeof events>();
+  for (const event of events) {
+    const existing = eventsByOrgMap.get(event.orgName);
+    if (existing) {
+      existing.push(event);
+    } else {
+      eventsByOrgMap.set(event.orgName, [event]);
+    }
+  }
+  const eventsByOrg = Object.fromEntries(eventsByOrgMap.entries());
+
+  const introText =
+    frequency === "daily"
+      ? "Here are upcoming events from your organizations:"
+      : "Here's your weekly event roundup:";
+
+  return (
+    <Html>
+      <Head />
+      <Preview>
+        {frequency === "daily"
+          ? `${events.length} upcoming events from your organizations`
+          : `Your weekly event roundup - ${events.length} upcoming events`}
+      </Preview>
+      <Tailwind>
+        <Body className="bg-gray-100 font-sans">
+          <Container className="bg-white mx-auto my-8 p-8 rounded-lg max-w-xl">
+            {/* Header with Logo */}
+            <Section>
+              <Img
+                src="https://astn.ai/logo.png"
+                width="120"
+                height="40"
+                alt="ASTN"
+                className="mx-auto mb-4"
+              />
+            </Section>
+
+            {/* Greeting */}
+            <Text className="text-xl font-semibold text-gray-900 mb-2">
+              Hi {userName},
+            </Text>
+            <Text className="text-gray-600 mb-6">{introText}</Text>
+
+            {/* Events grouped by org */}
+            {Object.entries(eventsByOrg).map(([orgName, orgEvents]) => {
+              const displayEvents = orgEvents.slice(0, 5);
+              const hasMore = orgEvents.length > 5;
+
+              return (
+                <Section key={orgName} className="mb-6">
+                  <Text
+                    className="text-lg font-semibold mb-3"
+                    style={{ color: CORAL }}
+                  >
+                    {orgName}
+                  </Text>
+                  {displayEvents.map((event, index) => (
+                    <Section
+                      key={index}
+                      className="mb-3 p-4 border-l-4 rounded-r-lg bg-gray-50"
+                      style={{ borderLeftColor: CORAL }}
+                    >
+                      <Text className="font-medium text-gray-900 mb-1">
+                        {event.title}
+                      </Text>
+                      <Text className="text-gray-600 text-sm mb-1">
+                        {format(new Date(event.startAt), "EEE, MMM d 'at' h:mm a")}
+                      </Text>
+                      <Text className="text-gray-500 text-sm mb-2">
+                        {event.isVirtual ? "Online" : event.location || "TBD"}
+                      </Text>
+                      {event.description && (
+                        <Text className="text-gray-600 text-sm mb-3">
+                          {event.description.slice(0, 100)}
+                          {event.description.length > 100 ? "..." : ""}
+                        </Text>
+                      )}
+                      <Button
+                        href={event.url}
+                        className="px-4 py-2 text-white text-sm font-medium rounded"
+                        style={{ backgroundColor: CORAL }}
+                      >
+                        View event & RSVP on lu.ma
+                      </Button>
+                    </Section>
+                  ))}
+                  {hasMore && (
+                    <Text className="text-sm text-gray-500">
+                      + {orgEvents.length - 5} more events from {orgName}
+                    </Text>
+                  )}
+                </Section>
+              );
+            })}
+
+            <Hr className="my-6 border-gray-200" />
+
+            {/* Footer */}
+            <Text className="text-xs text-gray-400 text-center">
+              AI Safety Talent Network - Connecting talent with AI safety
+              opportunities
+            </Text>
+            <Text className="text-xs text-gray-400 text-center">
+              <a href="https://astn.ai/settings" className="text-gray-400">
+                Manage notification preferences
+              </a>
+            </Text>
+          </Container>
+        </Body>
+      </Tailwind>
+    </Html>
+  );
+}
+
+export async function renderEventDigest(
+  props: EventDigestProps
+): Promise<string> {
+  return await render(<EventDigestEmail {...props} />);
 }
