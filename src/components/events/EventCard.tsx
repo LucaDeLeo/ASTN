@@ -1,5 +1,8 @@
-import { Calendar, ExternalLink, MapPin, Video } from "lucide-react";
+import { useMutation } from "convex/react";
 import { format } from "date-fns";
+import { Calendar, ExternalLink, MapPin, Video } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { Badge } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
@@ -23,11 +26,37 @@ export interface EventCardProps {
 }
 
 export function EventCard({ event }: EventCardProps) {
+  const cardRef = useRef<HTMLAnchorElement>(null);
+  const hasRecorded = useRef(false);
+  const recordView = useMutation(api.notifications.mutations.recordEventView);
+
+  // Track event view when card becomes visible
+  useEffect(() => {
+    const currentRef = cardRef.current;
+    if (!currentRef) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting && !hasRecorded.current) {
+          hasRecorded.current = true;
+          recordView({ eventId: event._id });
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(currentRef);
+
+    return () => observer.disconnect();
+  }, [event._id, recordView]);
+
   // Format: "Fri, Jan 24 at 6:00 PM"
   const formattedDate = format(event.startAt, "EEE, MMM d 'at' h:mm a");
 
   return (
     <a
+      ref={cardRef}
       href={event.url}
       target="_blank"
       rel="noopener noreferrer"
