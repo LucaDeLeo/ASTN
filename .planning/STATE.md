@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-19)
 ## Current Position
 
 Phase: 11 of 16 (Org Discovery)
-Plan: 0 of 2 in current phase
-Status: Ready to plan
-Last activity: 2026-01-19 — Roadmap created for v1.2 Org CRM & Events
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-01-19 — Completed 11-01-PLAN.md (Discovery Backend)
 
-Progress: [████████████████░░░░░░░░░░░░░░] 50% (34/48 plans: v1.0 + v1.1 complete, v1.2 starting)
+Progress: [████████████████░░░░░░░░░░░░░░] 52% (35/48 plans: v1.0 + v1.1 complete, v1.2 phase 11 plan 1 done)
 
 ## Milestone History
 
@@ -25,9 +25,10 @@ Progress: [████████████████░░░░░░░
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 34 (v1.0: 21 + v1.1: 13)
+- Total plans completed: 35 (v1.0: 21 + v1.1: 13 + v1.2: 1)
 - Average duration: ~12 min/plan
 - v1.1 execution: 4 phases in ~2 days
+- v1.2 execution: started
 
 **By Phase (v1.1):**
 
@@ -48,6 +49,8 @@ Recent decisions affecting current work:
 - [v1.2 Research]: Zero new npm dependencies — existing stack handles everything
 - [v1.2 Research]: Sequential build order (org discovery -> events -> attendance -> engagement -> CRM)
 - [v1.2 Research]: Notification fatigue is #1 threat — design with batching from day one
+- [11-01]: Location discovery is opt-in (locationDiscoverable defaults to false)
+- [11-01]: Simple city parsing from "City, Country" format; global orgs as fallback
 
 ### Pending Todos
 
@@ -60,15 +63,15 @@ Recent decisions affecting current work:
 
 - [Research]: Notification frequency defaults need user testing
 - [Research]: Engagement level thresholds may need per-org tuning
-- [Research]: Privacy consent UX for location needs design
+- [Resolved 11-01]: Privacy consent UX for location - implemented as opt-in toggle
 
 ## Session Continuity
 
 Last session: 2026-01-19
-Stopped at: v1.2 roadmap created
+Stopped at: Completed 11-01-PLAN.md
 Resume file: None
-Next action: `/gsd:plan-phase 11`
+Next action: Execute 11-02-PLAN.md (Discovery UI)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-19 — v1.2 roadmap created*
+*Last updated: 2026-01-19 — Completed 11-01-PLAN.md*
