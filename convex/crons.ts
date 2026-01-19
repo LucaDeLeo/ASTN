@@ -55,4 +55,12 @@ crons.weekly(
   {}
 );
 
+// Run every 10 minutes to check for ended events and schedule attendance prompts
+// Prompts are sent 1 hour after event end to users who viewed the event
+crons.interval(
+  "check-ended-events",
+  { minutes: 10 },
+  internal.attendance.scheduler.schedulePostEventPrompts
+);
+
 export default crons;
