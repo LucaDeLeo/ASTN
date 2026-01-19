@@ -45,9 +45,9 @@
 
 ### Engagement Scoring
 
-- [ ] **ENG-01**: System computes engagement levels via LLM (Highly Engaged / Moderate / At Risk / New / Inactive)
-- [ ] **ENG-02**: Org admin can override engagement level with notes
-- [ ] **ENG-03**: Engagement scores include natural language explanations
+- [x] **ENG-01**: System computes engagement levels via LLM (Highly Engaged / Moderate / At Risk / New / Inactive)
+- [x] **ENG-02**: Org admin can override engagement level with notes
+- [x] **ENG-03**: Engagement scores include natural language explanations
 
 ### Custom Programs
 
@@ -105,9 +105,9 @@
 | CRM-04 | Phase 16 | Pending |
 | CRM-05 | Phase 16 | Pending |
 | CRM-06 | Phase 16 | Pending |
-| ENG-01 | Phase 15 | Pending |
-| ENG-02 | Phase 15 | Pending |
-| ENG-03 | Phase 15 | Pending |
+| ENG-01 | Phase 15 | Complete |
+| ENG-02 | Phase 15 | Complete |
+| ENG-03 | Phase 15 | Complete |
 | PRG-01 | Phase 16 | Pending |
 | PRG-02 | Phase 16 | Pending |
 | PRG-03 | Phase 16 | Pending |

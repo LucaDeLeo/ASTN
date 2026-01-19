@@ -179,7 +179,7 @@ Plans:
 - [x] 14-02-PLAN.md — UI components + notification integration
 - [x] 14-03-PLAN.md — Attendance history + privacy settings
 
-#### Phase 15: Engagement Scoring
+#### Phase 15: Engagement Scoring ✓
 **Goal**: System computes explainable engagement levels with admin override
 **Depends on**: Phase 14 (needs attendance data)
 **Requirements**: ENG-01, ENG-02, ENG-03
@@ -189,10 +189,11 @@ Plans:
   3. Org admin can override engagement level with notes
   4. Override history is preserved for audit
 **Plans**: 2 plans
+**Completed**: 2026-01-19
 
 Plans:
-- [ ] 15-01-PLAN.md — Schema + backend (LLM classification, daily cron)
-- [ ] 15-02-PLAN.md — Admin UI (engagement badges, override dialog)
+- [x] 15-01-PLAN.md — Schema + backend (LLM classification, daily cron)
+- [x] 15-02-PLAN.md — Admin UI (engagement badges, override dialog)
 
 #### Phase 16: CRM Dashboard & Programs
 **Goal**: Org admins have full CRM visibility with program tracking
@@ -227,5 +228,5 @@ Phases execute in numeric order: 11 → 12 → 13 → 14 → 15 → 16
 | 12. Event Management | v1.2 | 3/3 | Complete | 2026-01-19 |
 | 13. Event Notifications | v1.2 | 3/3 | Complete | 2026-01-19 |
 | 14. Attendance Tracking | v1.2 | 3/3 | Complete | 2026-01-19 |
-| 15. Engagement Scoring | v1.2 | 0/2 | Not started | - |
+| 15. Engagement Scoring | v1.2 | 2/2 | Complete | 2026-01-19 |
 | 16. CRM Dashboard & Programs | v1.2 | 0/3 | Not started | - |
