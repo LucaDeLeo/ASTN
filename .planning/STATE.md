@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-19)
 ## Current Position
 
 Phase: 11 of 16 (Org Discovery)
-Plan: 2 of 2 in current phase
+Plan: 3 of 3 in current phase
 Status: Phase complete
-Last activity: 2026-01-19 - Completed 11-02-PLAN.md (Discovery UI)
+Last activity: 2026-01-19 - Completed 11-03-PLAN.md (Browse UI)
 
-Progress: [█████████████████░░░░░░░░░░░░░] 53% (36/48 plans: v1.0 + v1.1 complete, v1.2 phase 11 complete)
+Progress: [█████████████████░░░░░░░░░░░░░] 55% (37/48 plans: v1.0 + v1.1 complete, v1.2 phase 11 complete)
 
 ## Milestone History
 
@@ -25,10 +25,10 @@ Progress: [█████████████████░░░░░░
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 36 (v1.0: 21 + v1.1: 13 + v1.2: 2)
-- Average duration: ~12 min/plan
+- Total plans completed: 37 (v1.0: 21 + v1.1: 13 + v1.2: 3)
+- Average duration: ~11 min/plan
 - v1.1 execution: 4 phases in ~2 days
-- v1.2 execution: Phase 11 complete (2 plans, ~6 min total)
+- v1.2 execution: Phase 11 complete (3 plans, ~12 min total)
 
 **By Phase (v1.1):**
 
@@ -43,7 +43,7 @@ Progress: [█████████████████░░░░░░
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 11-org-discovery | 2 | ~6min | ~3min |
+| 11-org-discovery | 3 | ~12min | ~4min |
 
 ## Accumulated Context
 
@@ -59,6 +59,8 @@ Recent decisions affecting current work:
 - [11-01]: Simple city parsing from "City, Country" format; global orgs as fallback
 - [11-02]: CSS scroll-snap for carousel (simpler, native feel)
 - [11-02]: Immediate toggle feedback via toast for LocationPrivacyToggle
+- [11-03]: Leaflet via CDN avoids npm dependency; types via @types/leaflet
+- [11-03]: Map hidden on mobile for better UX on small screens
 
 ### Pending Todos
 
@@ -76,10 +78,10 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-19
-Stopped at: Completed 11-02-PLAN.md (Phase 11 complete)
+Stopped at: Completed 11-03-PLAN.md (Phase 11 complete)
 Resume file: None
 Next action: Execute phase 12 (Events)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-19 - Completed 11-02-PLAN.md*
+*Last updated: 2026-01-19 - Completed 11-03-PLAN.md*
