@@ -65,6 +65,9 @@ Recent decisions affecting current work:
 - [12-01]: Lu.ma API key is per-calendar, implicitly identifies which calendar to fetch
 - [12-01]: Event sync window: 30 days past to 90 days future
 - [12-01]: Rate limiting: 200ms between pages, 1s between orgs, 60s retry on 429
+- [12-02]: Lu.ma embed uses ?embed=true query param for clean iframe display
+- [12-02]: Events button only shown when lumaCalendarUrl is configured
+- [12-02]: Admin dashboard shows 4-column grid with Events status card
 - [12-03]: Events grouped by org name on dashboard for clear organization
 - [12-03]: Max 5 events shown per org with overflow indicator
 - [12-03]: Date format: 'Fri, Jan 24 at 6:00 PM' using date-fns
