@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
-import { Building2, Download, Shield, UserPlus, Users } from "lucide-react";
+import { Building2, Calendar, Download, Settings, Shield, UserPlus, Users } from "lucide-react";
 import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
 import { AuthHeader } from "~/components/layout/auth-header";
@@ -126,7 +126,7 @@ function OrgAdminDashboard() {
           </div>
 
           {/* Quick Stats Cards */}
-          <div className="grid gap-4 sm:grid-cols-3 mb-8">
+          <div className="grid gap-4 sm:grid-cols-4 mb-8">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-slate-500">
@@ -168,10 +168,35 @@ function OrgAdminDashboard() {
                 </div>
               </CardContent>
             </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-slate-500">
+                  Events
+                </CardTitle>
+                <Calendar className="size-4 text-slate-400" />
+              </CardHeader>
+              <CardContent>
+                {org.lumaCalendarUrl ? (
+                  <div className="flex items-center gap-2">
+                    <div className="size-2 rounded-full bg-green-500" />
+                    <span className="text-sm font-medium text-slate-700">Connected</span>
+                  </div>
+                ) : (
+                  <Link
+                    to="/org/$slug/admin/settings"
+                    params={{ slug }}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Not configured
+                  </Link>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Quick Actions */}
-          <div className="grid gap-4 sm:grid-cols-3 mb-8">
+          <div className="grid gap-4 sm:grid-cols-4 mb-8">
             <Button asChild className="h-auto py-4">
               <Link to="/org/$slug/admin/members" params={{ slug }}>
                 <Users className="size-5 mr-2" />
@@ -189,6 +214,17 @@ function OrgAdminDashboard() {
               <Link to="/org/$slug/admin/members" params={{ slug }}>
                 <Download className="size-5 mr-2" />
                 Export Data
+              </Link>
+            </Button>
+
+            <Button
+              variant="outline"
+              className="h-auto py-4"
+              asChild
+            >
+              <Link to="/org/$slug/admin/settings" params={{ slug }}>
+                <Settings className="size-5 mr-2" />
+                Settings
               </Link>
             </Button>
           </div>

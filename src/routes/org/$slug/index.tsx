@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { AuthLoading, Authenticated, useQuery } from "convex/react";
-import { Building2, Settings, Users } from "lucide-react";
+import { Building2, Calendar, Settings, Users } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { AuthHeader } from "~/components/layout/auth-header";
 import { MemberDirectory } from "~/components/org/MemberDirectory";
@@ -76,6 +76,7 @@ interface OrgHeaderProps {
     name: string;
     slug?: string;
     logoUrl?: string;
+    lumaCalendarUrl?: string;
   };
 }
 
@@ -112,13 +113,24 @@ function OrgHeader({ org }: OrgHeaderProps) {
           </div>
         </div>
 
-        <AuthLoading>
-          <Spinner className="size-5" />
-        </AuthLoading>
+        <div className="flex items-center gap-2">
+          {org.lumaCalendarUrl && org.slug && (
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/org/$slug/events" params={{ slug: org.slug }}>
+                <Calendar className="size-4 mr-1" />
+                Events
+              </Link>
+            </Button>
+          )}
 
-        <Authenticated>
-          <MembershipStatus orgId={org._id} orgSlug={org.slug} />
-        </Authenticated>
+          <AuthLoading>
+            <Spinner className="size-5" />
+          </AuthLoading>
+
+          <Authenticated>
+            <MembershipStatus orgId={org._id} orgSlug={org.slug} />
+          </Authenticated>
+        </div>
       </div>
     </Card>
   );
