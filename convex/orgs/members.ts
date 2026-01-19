@@ -114,3 +114,64 @@ export const getMemberProfileForAdmin = query({
     };
   },
 });
+
+/**
+ * Get member's attendance history for this org
+ * Returns all attendance records with event details, sorted by event date descending
+ */
+export const getMemberAttendanceHistory = query({
+  args: {
+    orgId: v.id("organizations"),
+    userId: v.string(),
+  },
+  handler: async (ctx, { orgId, userId }) => {
+    await requireOrgAdmin(ctx, orgId);
+
+    // Verify user is a member of this org
+    const membership = await ctx.db
+      .query("orgMemberships")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("orgId"), orgId))
+      .first();
+
+    if (!membership) {
+      throw new Error("User is not a member of this organization");
+    }
+
+    // Get all attendance records for this user in this org
+    const attendanceRecords = await ctx.db
+      .query("attendance")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("orgId"), orgId))
+      .collect();
+
+    // Enrich with event details
+    const enrichedRecords = await Promise.all(
+      attendanceRecords.map(async (record) => {
+        const event = await ctx.db.get("events", record.eventId);
+        return {
+          _id: record._id,
+          status: record.status,
+          respondedAt: record.respondedAt,
+          feedbackRating: record.feedbackRating,
+          feedbackText: record.feedbackText,
+          createdAt: record.createdAt,
+          event: event
+            ? {
+                _id: event._id,
+                title: event.title,
+                startAt: event.startAt,
+                location: event.location,
+                isVirtual: event.isVirtual,
+              }
+            : null,
+        };
+      })
+    );
+
+    // Sort by event date descending
+    return enrichedRecords.sort(
+      (a, b) => (b.event?.startAt ?? 0) - (a.event?.startAt ?? 0)
+    );
+  },
+});
