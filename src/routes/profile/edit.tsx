@@ -2,10 +2,12 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { AuthLoading, Authenticated, Unauthenticated } from "convex/react";
 import { AuthHeader } from "~/components/layout/auth-header";
+import { ProfileCreationWizard } from "~/components/profile/wizard/ProfileCreationWizard";
 import { ProfileWizard } from "~/components/profile/wizard/ProfileWizard";
 import { Spinner } from "~/components/ui/spinner";
 
 const stepSchema = z.enum([
+  "input", // Entry point selection (new wizard flow)
   "basic",
   "education",
   "work",
@@ -16,8 +18,9 @@ const stepSchema = z.enum([
 ]);
 
 const searchSchema = z.object({
-  step: stepSchema.optional().default("basic"),
+  step: stepSchema.optional().default("input"),
   fromExtraction: z.string().optional(),
+  chatFirst: z.string().optional(),
 });
 
 export const Route = createFileRoute("/profile/edit")({
@@ -55,29 +58,96 @@ function UnauthenticatedRedirect() {
 }
 
 function AuthenticatedContent() {
-  const { step, fromExtraction } = Route.useSearch();
+  const { step, fromExtraction, chatFirst } = Route.useSearch();
   const navigate = useNavigate();
 
-  const handleStepChange = (newStep: z.infer<typeof stepSchema>) => {
+  // Type guard for manual wizard steps
+  type ManualStepId = "basic" | "education" | "work" | "goals" | "skills" | "enrichment" | "privacy";
+  const isManualStep = (s: string): s is ManualStepId =>
+    ["basic", "education", "work", "goals", "skills", "enrichment", "privacy"].includes(s);
+
+  const handleStepChange = (newStep: ManualStepId) => {
     // Clear fromExtraction when navigating away
     navigate({ to: "/profile/edit", search: { step: newStep } });
   };
 
-  return (
-    <main className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Edit Profile</h1>
-        <p className="text-slate-500 mt-1">
-          Complete your profile to unlock smart matching and connect with
-          opportunities
-        </p>
-      </div>
+  // Handle ProfileCreationWizard completion - go to profile view
+  const handleWizardComplete = () => {
+    navigate({ to: "/profile" });
+  };
 
-      <ProfileWizard
-        currentStep={step}
-        onStepChange={handleStepChange}
-        fromExtraction={fromExtraction === "true"}
-      />
-    </main>
-  );
+  // Handle manual entry from wizard - switch to basic step
+  const handleManualEntry = () => {
+    navigate({ to: "/profile/edit", search: { step: "basic" } });
+  };
+
+  // Handle enrichment from wizard - switch to enrichment step with context
+  const handleEnrichFromWizard = (fromExtract: boolean) => {
+    navigate({
+      to: "/profile/edit",
+      search: { step: "enrichment", fromExtraction: fromExtract ? "true" : undefined, chatFirst: !fromExtract ? "true" : undefined },
+    });
+  };
+
+  // Determine page title/description based on step
+  const getPageHeader = () => {
+    if (step === "input") {
+      return {
+        title: "Create Your Profile",
+        description: "Choose how to get started with your AI Safety profile",
+      };
+    }
+    if (step === "enrichment") {
+      return {
+        title: "Profile Enrichment",
+        description: "Have a conversation with our AI to enhance your profile",
+      };
+    }
+    return {
+      title: "Edit Profile",
+      description: "Complete your profile to unlock smart matching and connect with opportunities",
+    };
+  };
+
+  const { title, description } = getPageHeader();
+
+  // Render ProfileCreationWizard for input step
+  if (step === "input") {
+    return (
+      <main className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
+          <p className="text-slate-500 mt-1">{description}</p>
+        </div>
+
+        <ProfileCreationWizard
+          onComplete={handleWizardComplete}
+          onManualEntry={handleManualEntry}
+          onEnrich={handleEnrichFromWizard}
+        />
+      </main>
+    );
+  }
+
+  // Render ProfileWizard for manual steps
+  if (isManualStep(step)) {
+    return (
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
+          <p className="text-slate-500 mt-1">{description}</p>
+        </div>
+
+        <ProfileWizard
+          currentStep={step}
+          onStepChange={handleStepChange}
+          fromExtraction={fromExtraction === "true"}
+          chatFirst={chatFirst === "true"}
+        />
+      </main>
+    );
+  }
+
+  // Fallback - should not reach here
+  return null;
 }

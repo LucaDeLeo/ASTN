@@ -38,6 +38,8 @@ type WizardState =
 
 interface ProfileCreationWizardProps {
   onComplete: () => void;
+  onManualEntry?: () => void;
+  onEnrich?: (fromExtraction: boolean) => void;
   initialStep?: "input" | "manual" | "chat";
 }
 
@@ -52,6 +54,8 @@ interface ProfileCreationWizardProps {
  */
 export function ProfileCreationWizard({
   onComplete,
+  onManualEntry,
+  onEnrich,
   initialStep = "input",
 }: ProfileCreationWizardProps) {
   // Initialize state based on initial step
@@ -247,9 +251,13 @@ export function ProfileCreationWizard({
 
   // Render manual step - signal to parent
   if (wizardState.step === "manual") {
-    // The wizard signals completion - parent should show ProfileWizard with step="basic"
-    // For now we just call onComplete since the routing handles this
-    // In a real implementation, you might have a callback like onManualEntry
+    // Signal parent to show ProfileWizard with step="basic"
+    if (onManualEntry) {
+      // Immediately call callback - parent handles navigation
+      onManualEntry();
+      return null;
+    }
+    // Fallback if no callback provided
     return (
       <div className="space-y-6">
         <WizardStepIndicator currentStep="input" showReviewStep={false} />
@@ -265,6 +273,12 @@ export function ProfileCreationWizard({
 
   // Render enrichment step
   if (wizardState.step === "enrich") {
+    // Signal parent to handle enrichment via route if callback provided
+    if (onEnrich) {
+      onEnrich(wizardState.fromExtraction);
+      return null;
+    }
+    // Fallback if no callback provided - render inline
     return (
       <div className="space-y-6">
         <WizardStepIndicator
