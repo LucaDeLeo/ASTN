@@ -171,11 +171,12 @@ Plans:
   3. User can view their attendance history on their profile
   4. User can optionally provide feedback after attending (star rating + text)
   5. User can dismiss or defer attendance prompts
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 14-01: TBD
-- [ ] 14-02: TBD
+- [ ] 14-01-PLAN.md — Schema + backend + post-event scheduler
+- [ ] 14-02-PLAN.md — UI components + notification integration
+- [ ] 14-03-PLAN.md — Attendance history + privacy settings
 
 #### Phase 15: Engagement Scoring
 **Goal**: System computes explainable engagement levels with admin override
@@ -224,6 +225,6 @@ Phases execute in numeric order: 11 → 12 → 13 → 14 → 15 → 16
 | 11. Org Discovery | v1.2 | 3/3 | Complete | 2026-01-19 |
 | 12. Event Management | v1.2 | 3/3 | Complete | 2026-01-19 |
 | 13. Event Notifications | v1.2 | 3/3 | Complete | 2026-01-19 |
-| 14. Attendance Tracking | v1.2 | 0/2 | Not started | - |
+| 14. Attendance Tracking | v1.2 | 0/3 | Not started | - |
 | 15. Engagement Scoring | v1.2 | 0/2 | Not started | - |
 | 16. CRM Dashboard & Programs | v1.2 | 0/3 | Not started | - |
