@@ -1,7 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { AuthLoading, Authenticated, Unauthenticated } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { AuthLoading, Authenticated, Unauthenticated } from "convex/react";
 import { LogOut, Settings, User } from "lucide-react";
+import { NotificationBell } from "~/components/notifications";
+import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -10,7 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 
 export function AuthHeader() {
   return (
@@ -48,6 +49,7 @@ export function AuthHeader() {
           </Unauthenticated>
 
           <Authenticated>
+            <NotificationBell />
             <UserMenu />
           </Authenticated>
         </nav>
