@@ -187,7 +187,7 @@ export const getEnhancedOrgStats = query({
       .collect();
 
     // Build engagement distribution
-    const engagementDistribution: Record<string, number> = {
+    const engagementDistribution = {
       highly_engaged: 0,
       moderate: 0,
       at_risk: 0,

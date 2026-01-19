@@ -9,21 +9,32 @@ import { OrgStats } from "~/components/org/OrgStats";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 export const Route = createFileRoute("/org/$slug/admin/")({
   component: OrgAdminDashboard,
 });
 
+type TimeRange = "7d" | "30d" | "90d" | "all";
+
 function OrgAdminDashboard() {
   const { slug } = Route.useParams();
+  const [timeRange, setTimeRange] = useState<TimeRange>("30d");
+
   const org = useQuery(api.orgs.directory.getOrgBySlug, { slug });
   const membership = useQuery(
     api.orgs.membership.getMembership,
     org ? { orgId: org._id } : "skip"
   );
   const stats = useQuery(
-    api.orgs.stats.getOrgStats,
-    org && membership?.role === "admin" ? { orgId: org._id } : "skip"
+    api.orgs.stats.getEnhancedOrgStats,
+    org && membership?.role === "admin" ? { orgId: org._id, timeRange } : "skip"
   );
 
   // Loading state
@@ -158,7 +169,13 @@ function OrgAdminDashboard() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-slate-500">
-                  New This Month
+                  {timeRange === "7d"
+                    ? "New This Week"
+                    : timeRange === "30d"
+                      ? "New This Month"
+                      : timeRange === "90d"
+                        ? "New (90 days)"
+                        : "Total Joined"}
                 </CardTitle>
                 <UserPlus className="size-4 text-slate-400" />
               </CardHeader>
@@ -227,6 +244,32 @@ function OrgAdminDashboard() {
                 Settings
               </Link>
             </Button>
+          </div>
+
+          {/* Statistics Section Header with Time Range Selector */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">
+                Community Statistics
+              </h2>
+              <p className="text-sm text-slate-500">
+                Overview of member engagement and skills
+              </p>
+            </div>
+            <Select
+              value={timeRange}
+              onValueChange={(value: TimeRange) => setTimeRange(value)}
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Time range" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7d">Last 7 days</SelectItem>
+                <SelectItem value="30d">Last 30 days</SelectItem>
+                <SelectItem value="90d">Last 90 days</SelectItem>
+                <SelectItem value="all">All time</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Statistics Visualization */}
