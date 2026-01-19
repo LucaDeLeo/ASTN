@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 Phase: 10 of 10 (Wizard Integration)
-Plan: 1 of 3 complete
+Plan: 2 of 3 complete
 Status: In progress
-Last activity: 2026-01-19 - Completed 10-01-PLAN.md (Entry Point UI)
+Last activity: 2026-01-19 - Completed 10-02-PLAN.md (Flow Orchestration)
 
-Progress: [██████████████████████████████] 100% (32/32 plans complete)
+Progress: [██████████████████████████████] 100% (33/33 plans complete)
 
 ## Milestone History
 
@@ -23,7 +23,7 @@ Progress: [███████████████████████
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 31 (v1.0: 21 + v1.1 Phase 7: 4 + Phase 8: 3 + Phase 9: 3)
+- Total plans completed: 33 (v1.0: 21 + v1.1 Phase 7: 4 + Phase 8: 3 + Phase 9: 3 + Phase 10: 2)
 - Average duration: N/A (not tracked in v1.0)
 - Total execution time: N/A
 
@@ -35,7 +35,7 @@ Progress: [███████████████████████
 | 07-file-upload | 4 | ~72min | ~18min |
 | 08-llm-extraction | 3 | ~33min | ~11min |
 | 09-review-apply-ui | 3 | ~22min | ~7min |
-| 10-wizard-integration | 1 | ~1min | ~1min |
+| 10-wizard-integration | 2 | ~5min | ~2.5min |
 
 *Tracking begins fresh for v1.1*
 
@@ -67,6 +67,9 @@ Recent decisions affecting current work:
 - [10-01]: Step indicator uses Input/Review/Enrich labels
 - [10-01]: Review step conditionally hideable for manual/chat-first flows
 - [10-01]: LinkedIn PDF tip collapsed by default
+- [10-02]: Discriminated union for WizardState enables type-safe step transitions
+- [10-02]: Hooks composed at wizard level (lifted state), not in children
+- [10-02]: extractedData preserved in state for back navigation
 
 ### Pending Todos
 
@@ -84,10 +87,10 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-01-19
-Stopped at: Completed 10-01-PLAN.md (Entry Point UI)
+Stopped at: Completed 10-02-PLAN.md (Flow Orchestration)
 Resume file: None
-Next action: 10-02-PLAN.md (Flow Orchestration)
+Next action: 10-03-PLAN.md (Route Integration)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-19 - Completed 10-01-PLAN.md (Entry Point UI)*
+*Last updated: 2026-01-19 - Completed 10-02-PLAN.md (Flow Orchestration)*
