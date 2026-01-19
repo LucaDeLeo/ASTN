@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { EventNotificationPrefsForm } from "~/components/settings/EventNotificationPrefsForm";
 import { LocationPrivacyToggle } from "~/components/settings/LocationPrivacyToggle";
 import { NotificationPrefsForm } from "~/components/settings/NotificationPrefsForm";
 
@@ -17,6 +18,7 @@ function SettingsPage() {
       </div>
 
       <NotificationPrefsForm />
+      <EventNotificationPrefsForm />
       <LocationPrivacyToggle />
     </main>
   );

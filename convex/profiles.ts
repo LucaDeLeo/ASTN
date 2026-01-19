@@ -504,3 +504,75 @@ export const updateLocationPrivacy = mutation({
     return { success: true };
   },
 });
+
+// Get event notification preferences for current user
+export const getEventNotificationPreferences = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return null;
+
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
+    if (!profile?.eventNotificationPreferences) {
+      // Return defaults for new users (weekly digest, 1 day + 1 hour reminders)
+      return {
+        frequency: "weekly" as const,
+        reminderTiming: {
+          oneWeekBefore: false,
+          oneDayBefore: true,
+          oneHourBefore: true,
+        },
+        mutedOrgIds: [] as Array<string>,
+      };
+    }
+
+    return {
+      ...profile.eventNotificationPreferences,
+      mutedOrgIds: profile.eventNotificationPreferences.mutedOrgIds ?? [],
+    };
+  },
+});
+
+// Update event notification preferences for current user
+export const updateEventNotificationPreferences = mutation({
+  args: {
+    frequency: v.union(
+      v.literal("all"),
+      v.literal("daily"),
+      v.literal("weekly"),
+      v.literal("none")
+    ),
+    reminderTiming: v.object({
+      oneWeekBefore: v.boolean(),
+      oneDayBefore: v.boolean(),
+      oneHourBefore: v.boolean(),
+    }),
+    mutedOrgIds: v.array(v.id("organizations")),
+  },
+  handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
+    if (!profile) throw new Error("Profile not found");
+
+    await ctx.db.patch(profile._id, {
+      eventNotificationPreferences: {
+        frequency: args.frequency,
+        reminderTiming: args.reminderTiming,
+        mutedOrgIds: args.mutedOrgIds,
+      },
+      updatedAt: Date.now(),
+    });
+
+    return { success: true };
+  },
+});
