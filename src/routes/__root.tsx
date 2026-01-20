@@ -43,12 +43,6 @@ export const Route = createRootRouteWithContext<{
         title: 'AI Safety Talent Network',
       },
     ],
-    scripts: [
-      // Theme script MUST run before CSS to prevent FOIT
-      {
-        children: themeScript,
-      },
-    ],
     links: [
       // Font preloads (MUST come before stylesheet for browser prioritization)
       {
@@ -109,6 +103,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Theme script MUST be first - runs synchronously before CSS loads to prevent flash */}
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <HeadContent />
       </head>
       <body>
