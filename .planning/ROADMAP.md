@@ -65,12 +65,12 @@ Plans:
   3. Page transitions provide continuity when navigating between routes
   4. Buttons have press "squish" feedback effect
   5. AnimatedCard component enables consistent stagger behavior across list pages
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 19-01: TBD
-- [ ] 19-02: TBD
-- [ ] 19-03: TBD
+- [ ] 19-01-PLAN.md - Core animation components (AnimatedCard, Card hover, Button press)
+- [ ] 19-02-PLAN.md - Apply to list pages (Matches, Dashboard) + view transitions
+- [ ] 19-03-PLAN.md - Visual verification checkpoint
 
 ### Phase 20: Polish & Integration
 **Goal**: Finalize dark mode, accessibility, and performance - ensure visual system works for all users
@@ -96,7 +96,7 @@ Phases execute in numeric order: 17 -> 18 -> 19 -> 20
 |-------|----------------|--------|-----------|
 | 17. Foundation & Tokens | 2/2 | ✓ Complete | 2026-01-19 |
 | 18. Core Visual Polish | 5/5 | ✓ Complete | 2026-01-19 |
-| 19. Motion System | 0/TBD | Not started | - |
+| 19. Motion System | 0/3 | Ready | - |
 | 20. Polish & Integration | 0/TBD | Not started | - |
 
 ---
