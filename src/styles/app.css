@@ -398,3 +398,20 @@
     animation: fade-in 150ms var(--ease-out) forwards !important;
   }
 }
+
+/* ==========================================================================
+   VIEW TRANSITIONS - Smooth crossfade between pages
+   ========================================================================== */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--duration-normal);
+  animation-timing-function: var(--ease-gentle);
+}
+
+/* Reduce motion: instant transition, no animation */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}

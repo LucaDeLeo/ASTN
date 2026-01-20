@@ -30,6 +30,7 @@ export function getRouter() {
       context: { queryClient },
       scrollRestoration: true,
       defaultPreloadStaleTime: 0, // Let React Query handle all caching
+      defaultViewTransition: true, // Enable View Transitions API for smooth page navigation
       defaultErrorComponent: (err) => <p>{err.error.stack}</p>,
       defaultNotFoundComponent: () => <p>not found</p>,
       Wrap: ({ children }) => (
