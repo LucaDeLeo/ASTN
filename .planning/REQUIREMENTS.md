@@ -96,33 +96,33 @@ Which phases cover which requirements. Updated during roadmap creation.
 ### Phase 18: Core Visual Polish (17 requirements)
 | Requirement | Description | Status |
 |-------------|-------------|--------|
-| TYPO-06 | Typography applied consistently across pages | Pending |
-| ATMO-01 | Warm off-white backgrounds | Pending |
-| ATMO-02 | Coral-tinted shadows | Pending |
-| ATMO-04 | Gradient system extended to other pages | Pending |
-| ATMO-05 | Noise/grain texture overlay | Pending |
-| ATMO-06 | Atmospheric depth on all main pages | Pending |
-| COMP-01 | Consistent border-radius system | Pending |
-| COMP-06 | GradientBg reusable background component | Pending |
-| PAGE-01 | Home page atmosphere updated | Pending |
-| PAGE-02 | Profile view page visual hierarchy | Pending |
-| PAGE-03 | Profile edit page styling | Pending |
-| PAGE-04 | Matches page card presentation | Pending |
-| PAGE-05 | Opportunities listing with effects | Pending |
-| PAGE-06 | Opportunity detail page polish | Pending |
-| PAGE-07 | Admin dashboard visual consistency | Pending |
-| PAGE-08 | Login/auth flow polish maintained | Pending |
-| PAGE-09 | Organizations page with map polish | Pending |
+| TYPO-06 | Typography applied consistently across pages | Complete |
+| ATMO-01 | Warm off-white backgrounds | Complete |
+| ATMO-02 | Coral-tinted shadows | Complete |
+| ATMO-04 | Gradient system extended to other pages | Complete |
+| ATMO-05 | Noise/grain texture overlay | Complete |
+| ATMO-06 | Atmospheric depth on all main pages | Complete |
+| COMP-01 | Consistent border-radius system | Complete |
+| COMP-06 | GradientBg reusable background component | Complete |
+| PAGE-01 | Home page atmosphere updated | Complete |
+| PAGE-02 | Profile view page visual hierarchy | Complete |
+| PAGE-03 | Profile edit page styling | Complete |
+| PAGE-04 | Matches page card presentation | Complete |
+| PAGE-05 | Opportunities listing with effects | Complete |
+| PAGE-06 | Opportunity detail page polish | Complete |
+| PAGE-07 | Admin dashboard visual consistency | Complete |
+| PAGE-08 | Login/auth flow polish maintained | Complete |
+| PAGE-09 | Organizations page with map polish | Complete |
 
 ### Phase 19: Motion System (6 requirements)
 | Requirement | Description | Status |
 |-------------|-------------|--------|
-| MOTN-01 | Card hover feedback (lift + shadow) | Pending |
-| MOTN-02 | Smooth transitions with organic easing | Pending |
-| MOTN-03 | Staggered card entrance animations | Pending |
-| MOTN-04 | Page transitions between routes | Pending |
-| MOTN-05 | Button press "squish" feedback | Pending |
-| COMP-05 | AnimatedCard component with stagger | Pending |
+| MOTN-01 | Card hover feedback (lift + shadow) | Complete |
+| MOTN-02 | Smooth transitions with organic easing | Complete |
+| MOTN-03 | Staggered card entrance animations | Complete |
+| MOTN-04 | Page transitions between routes | Complete |
+| MOTN-05 | Button press "squish" feedback | Complete |
+| COMP-05 | AnimatedCard component with stagger | Complete |
 
 ### Phase 20: Polish & Integration (3 requirements)
 | Requirement | Description | Status |
@@ -142,4 +142,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-19*
-*Last updated: 2026-01-19 - traceability updated after roadmap creation*
+*Last updated: 2026-01-20 - Phase 18 & 19 requirements marked complete*

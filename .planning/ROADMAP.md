@@ -15,7 +15,7 @@ Transform ASTN from generic shadcn/ui (3.7/10) to a warm, memorable visual ident
 
 - [x] **Phase 17: Foundation & Tokens** - Design tokens, font installation, CSS architecture
 - [x] **Phase 18: Core Visual Polish** - Warm backgrounds, shadows, typography across all pages
-- [ ] **Phase 19: Motion System** - Animations, hover effects, page transitions
+- [x] **Phase 19: Motion System** - Animations, hover effects, page transitions
 - [ ] **Phase 20: Polish & Integration** - Dark mode, focus states, accessibility, performance
 
 ## Phase Details
@@ -68,9 +68,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 19-01-PLAN.md - Core animation components (AnimatedCard, Card hover, Button press)
-- [ ] 19-02-PLAN.md - Apply to list pages (Matches, Dashboard) + view transitions
-- [ ] 19-03-PLAN.md - Visual verification checkpoint
+- [x] 19-01-PLAN.md - Core animation components (AnimatedCard, Card hover, Button press)
+- [x] 19-02-PLAN.md - Apply to list pages (Matches, Dashboard) + view transitions
+- [x] 19-03-PLAN.md - Visual verification checkpoint
 
 ### Phase 20: Polish & Integration
 **Goal**: Finalize dark mode, accessibility, and performance - ensure visual system works for all users
@@ -96,8 +96,8 @@ Phases execute in numeric order: 17 -> 18 -> 19 -> 20
 |-------|----------------|--------|-----------|
 | 17. Foundation & Tokens | 2/2 | ✓ Complete | 2026-01-19 |
 | 18. Core Visual Polish | 5/5 | ✓ Complete | 2026-01-19 |
-| 19. Motion System | 0/3 | Ready | - |
-| 20. Polish & Integration | 0/TBD | Not started | - |
+| 19. Motion System | 3/3 | ✓ Complete | 2026-01-20 |
+| 20. Polish & Integration | 0/TBD | Ready | - |
 
 ---
 *Roadmap created: 2026-01-19*
