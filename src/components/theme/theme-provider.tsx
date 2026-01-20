@@ -70,6 +70,11 @@ export function ThemeProvider({
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, [theme]);
 
+  // Sync cookie on mount (for existing localStorage users without cookie)
+  React.useEffect(() => {
+    document.cookie = `${storageKey}=${theme};path=/;max-age=31536000;SameSite=Lax`;
+  }, [storageKey, theme]);
+
   const setTheme = React.useCallback(
     (newTheme: Theme) => {
       try {
@@ -77,6 +82,8 @@ export function ThemeProvider({
       } catch {
         // localStorage not available
       }
+      // Save to cookie for SSR (1 year expiry)
+      document.cookie = `${storageKey}=${newTheme};path=/;max-age=31536000;SameSite=Lax`;
       setThemeState(newTheme);
     },
     [storageKey]
