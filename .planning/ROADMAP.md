@@ -81,11 +81,12 @@ Plans:
   2. All interactive elements have visible :focus-visible states
   3. Empty states display with warm visual treatment
   4. Core Web Vitals remain acceptable (LCP < 2.5s, CLS < 0.1)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 20-01: TBD
-- [ ] 20-02: TBD
+- [ ] 20-01-PLAN.md — Theme system and coral-based dark mode palette
+- [ ] 20-02-PLAN.md — Focus states and enhanced empty component
+- [ ] 20-03-PLAN.md — Performance verification and visual checkpoint
 
 ## Progress
 
@@ -97,7 +98,7 @@ Phases execute in numeric order: 17 -> 18 -> 19 -> 20
 | 17. Foundation & Tokens | 2/2 | ✓ Complete | 2026-01-19 |
 | 18. Core Visual Polish | 5/5 | ✓ Complete | 2026-01-19 |
 | 19. Motion System | 3/3 | ✓ Complete | 2026-01-20 |
-| 20. Polish & Integration | 0/TBD | Ready | - |
+| 20. Polish & Integration | 0/3 | Ready | - |
 
 ---
 *Roadmap created: 2026-01-19*
