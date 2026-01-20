@@ -8,6 +8,16 @@ A career command center for AI safety talent. Individuals maintain living profil
 
 Individuals get enough value from smart matching + recommendations that they keep profiles fresh — this is the flywheel that makes everything else work.
 
+## Current Milestone: v1.3 Visual Overhaul
+
+**Goal:** Transform ASTN from generic shadcn/ui to a warm, memorable, distinctly human visual identity that says "AI safety is about people."
+
+**Aesthetic direction:** Warm & Human — approachable, inviting, organic motion, soft gradients building on the coral palette.
+
+**Approach:** Design system foundations first (tokens, fonts, animations) → systematic rollout across all pages.
+
+**Target:** Take visual score from 3.7/10 to 8+/10.
+
 ## Current State
 
 **Shipped:** v1.2 Org CRM & Events (2026-01-19)
@@ -43,9 +53,44 @@ v1.2 transformed ASTN into a self-maintaining CRM where orgs track members, even
 
 ### Active
 
-<!-- No active requirements — ready for next milestone -->
+<!-- v1.3 Visual Overhaul -->
 
-(None — run `/gsd:new-milestone` to define next goals)
+**Typography System**
+- [ ] Custom display font for headings (warm, friendly, distinctive)
+- [ ] Custom body font pairing (readable, approachable)
+- [ ] Typographic scale with responsive sizing
+- [ ] Font loading infrastructure
+
+**Motion System**
+- [ ] Entrance animations with staggered delays for card grids
+- [ ] Hover micro-interactions on cards and buttons
+- [ ] Page transitions between routes
+- [ ] Organic easing curves (gentle, human-feeling)
+
+**Background & Atmosphere**
+- [ ] Gradient system extending login page treatment
+- [ ] Subtle grain/noise texture overlays
+- [ ] Atmospheric depth on all main pages
+- [ ] Empty state visual treatments
+
+**Color Expansion**
+- [ ] Complementary accent colors building on coral
+- [ ] Extended neutral palette for depth
+- [ ] Dark mode refinement (if applicable)
+
+**Component Refinement**
+- [ ] Card hover effects with shadow transitions
+- [ ] Button press feedback and states
+- [ ] Input field styling consistency
+- [ ] Badge and tag visual polish
+
+**Page Updates**
+- [ ] Home page atmosphere and layout
+- [ ] Profile pages (view/edit) visual hierarchy
+- [ ] Matches page card presentation
+- [ ] Opportunities listing and detail
+- [ ] Admin dashboard visual consistency
+- [ ] Login/auth flow polish
 
 ### Out of Scope
 
@@ -113,4 +158,4 @@ v1.2 transformed ASTN into a self-maintaining CRM where orgs track members, even
 | Server-side pagination for CRM | Prevent performance explosion at scale | ✓ Good — handles 100+ members |
 
 ---
-*Last updated: 2026-01-19 after v1.2 milestone complete*
+*Last updated: 2026-01-19 after v1.3 milestone started*
