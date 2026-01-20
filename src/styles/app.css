@@ -6,6 +6,10 @@
 @custom-variant dark (&:is(.dark *));
 
 @layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
+
   html,
   body {
     @apply text-gray-900 bg-gray-50 dark:bg-gray-950 dark:text-gray-200;
