@@ -3,6 +3,7 @@ import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { AuthHeader } from "~/components/layout/auth-header";
+import { GradientBg } from "~/components/layout/GradientBg";
 import { OpportunityDetail } from "~/components/opportunities/opportunity-detail";
 import { Button } from "~/components/ui/button";
 
@@ -18,47 +19,47 @@ function OpportunityPage() {
 
   if (opportunity === undefined) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <GradientBg variant="subtle">
         <AuthHeader />
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
             <div className="animate-pulse space-y-4">
-              <div className="h-32 bg-slate-100 rounded-sm" />
-              <div className="h-64 bg-slate-100 rounded-sm" />
+              <div className="h-32 bg-cream-100 rounded-sm" />
+              <div className="h-64 bg-cream-100 rounded-sm" />
             </div>
           </div>
         </main>
-      </div>
+      </GradientBg>
     );
   }
 
   if (opportunity === null) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <GradientBg variant="subtle">
         <AuthHeader />
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto text-center py-12">
-            <h1 className="text-2xl font-bold text-slate-900 mb-4 font-mono">
+            <h1 className="text-2xl font-display font-semibold text-slate-900 mb-4">
               Opportunity Not Found
             </h1>
-            <p className="text-slate-600 mb-6">
+            <p className="text-muted-foreground mb-6">
               This opportunity may have been removed or the link is incorrect.
             </p>
-            <Button asChild className="rounded-sm">
+            <Button asChild>
               <Link to="/opportunities">Browse All Opportunities</Link>
             </Button>
           </div>
         </main>
-      </div>
+      </GradientBg>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <GradientBg variant="subtle">
       <AuthHeader />
       <main className="container mx-auto px-4 py-8">
         <OpportunityDetail opportunity={opportunity} />
       </main>
-    </div>
+    </GradientBg>
   );
 }

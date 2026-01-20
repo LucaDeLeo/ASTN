@@ -19,11 +19,18 @@ function AdminLayout() {
         <UnauthenticatedRedirect />
       </Unauthenticated>
       <Authenticated>
-        <div className="min-h-screen bg-slate-50">
+        <div
+          className="min-h-screen"
+          style={{
+            backgroundImage: `radial-gradient(circle, oklch(0.65 0.08 30 / 0.25) 1.5px, transparent 1.5px)`,
+            backgroundSize: '20px 20px',
+            backgroundColor: 'oklch(0.98 0.01 90)'
+          }}
+        >
           <header className="border-b bg-white">
             <div className="container mx-auto px-4 py-4 flex items-center justify-between">
               <div className="flex items-center gap-6">
-                <Link to="/admin" className="font-semibold text-slate-900">
+                <Link to="/admin" className="font-display font-semibold text-slate-900">
                   ASTN Admin
                 </Link>
                 <nav className="flex gap-4">

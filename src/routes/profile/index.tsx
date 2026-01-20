@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
 import { AuthHeader } from "~/components/layout/auth-header";
+import { GradientBg } from "~/components/layout/GradientBg";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/profile/")({
 
 function ProfilePage() {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <GradientBg variant="subtle">
       <AuthHeader />
       <AuthLoading>
         <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">
@@ -37,7 +38,7 @@ function ProfilePage() {
       <Authenticated>
         <ProfileContent />
       </Authenticated>
-    </div>
+    </GradientBg>
   );
 }
 
@@ -72,10 +73,10 @@ function ProfileContent() {
           <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <User className="size-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">
+          <h1 className="text-2xl font-display font-semibold text-slate-900 mb-2">
             Create Your Profile
           </h1>
-          <p className="text-slate-500 mb-6">
+          <p className="text-muted-foreground mb-6">
             Set up your profile to get matched with AI safety opportunities
             tailored to your background and goals.
           </p>
@@ -93,11 +94,11 @@ function ProfileContent() {
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-2xl font-display font-semibold text-slate-900">
               {profile.name || "Your Profile"}
             </h1>
             {profile.headline && (
-              <p className="text-slate-600 mt-1">{profile.headline}</p>
+              <p className="text-muted-foreground mt-1">{profile.headline}</p>
             )}
           </div>
           <Button asChild>
@@ -132,8 +133,8 @@ function ProfileContent() {
           {/* Basic Info */}
           <Card className="p-6">
             <div className="flex items-center gap-2 mb-4">
-              <User className="size-5 text-slate-400" />
-              <h2 className="text-lg font-semibold text-slate-900">
+              <User className="size-5 text-coral-400" />
+              <h2 className="text-lg font-display font-semibold text-slate-900">
                 Basic Information
               </h2>
             </div>
@@ -165,8 +166,8 @@ function ProfileContent() {
           {/* Education */}
           <Card className="p-6">
             <div className="flex items-center gap-2 mb-4">
-              <GraduationCap className="size-5 text-slate-400" />
-              <h2 className="text-lg font-semibold text-slate-900">Education</h2>
+              <GraduationCap className="size-5 text-coral-400" />
+              <h2 className="text-lg font-display font-semibold text-slate-900">Education</h2>
             </div>
             {profile.education && profile.education.length > 0 ? (
               <div className="space-y-4">
@@ -193,8 +194,8 @@ function ProfileContent() {
           {/* Work History */}
           <Card className="p-6">
             <div className="flex items-center gap-2 mb-4">
-              <Briefcase className="size-5 text-slate-400" />
-              <h2 className="text-lg font-semibold text-slate-900">
+              <Briefcase className="size-5 text-coral-400" />
+              <h2 className="text-lg font-display font-semibold text-slate-900">
                 Work History
               </h2>
             </div>
@@ -240,8 +241,8 @@ function ProfileContent() {
           {/* Career Goals */}
           <Card className="p-6">
             <div className="flex items-center gap-2 mb-4">
-              <Target className="size-5 text-slate-400" />
-              <h2 className="text-lg font-semibold text-slate-900">
+              <Target className="size-5 text-coral-400" />
+              <h2 className="text-lg font-display font-semibold text-slate-900">
                 Career Goals
               </h2>
             </div>
@@ -284,8 +285,8 @@ function ProfileContent() {
           {/* Event Attendance */}
           <Card className="p-6">
             <div className="flex items-center gap-2 mb-4">
-              <CalendarCheck className="size-5 text-slate-400" />
-              <h2 className="text-lg font-semibold text-slate-900">
+              <CalendarCheck className="size-5 text-coral-400" />
+              <h2 className="text-lg font-display font-semibold text-slate-900">
                 Event Attendance
               </h2>
             </div>

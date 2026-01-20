@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { AuthLoading, Authenticated, Unauthenticated } from "convex/react";
 import { AuthHeader } from "~/components/layout/auth-header";
+import { GradientBg } from "~/components/layout/GradientBg";
 import { ProfileCreationWizard } from "~/components/profile/wizard/ProfileCreationWizard";
 import { ProfileWizard } from "~/components/profile/wizard/ProfileWizard";
 import { Spinner } from "~/components/ui/spinner";
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/profile/edit")({
 
 function ProfileEditPage() {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <GradientBg variant="subtle">
       <AuthHeader />
       <AuthLoading>
         <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">
@@ -43,7 +44,7 @@ function ProfileEditPage() {
       <Authenticated>
         <AuthenticatedContent />
       </Authenticated>
-    </div>
+    </GradientBg>
   );
 }
 
@@ -116,8 +117,8 @@ function AuthenticatedContent() {
     return (
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
-          <p className="text-slate-500 mt-1">{description}</p>
+          <h1 className="text-2xl font-display font-semibold text-slate-900">{title}</h1>
+          <p className="text-muted-foreground mt-1">{description}</p>
         </div>
 
         <ProfileCreationWizard
@@ -134,8 +135,8 @@ function AuthenticatedContent() {
     return (
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
-          <p className="text-slate-500 mt-1">{description}</p>
+          <h1 className="text-2xl font-display font-semibold text-slate-900">{title}</h1>
+          <p className="text-muted-foreground mt-1">{description}</p>
         </div>
 
         <ProfileWizard

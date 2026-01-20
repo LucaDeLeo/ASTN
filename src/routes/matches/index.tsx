@@ -4,6 +4,7 @@ import { RefreshCw, Sparkles, User } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../../../convex/_generated/api";
 import { AuthHeader } from "~/components/layout/auth-header";
+import { GradientBg } from "~/components/layout/GradientBg";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Spinner } from "~/components/ui/spinner";
@@ -49,7 +50,7 @@ export const Route = createFileRoute("/matches/")({
 
 function MatchesPage() {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <GradientBg variant="subtle">
       <AuthHeader />
       <AuthLoading>
         <LoadingState />
@@ -60,7 +61,7 @@ function MatchesPage() {
       <Authenticated>
         <MatchesContent />
       </Authenticated>
-    </div>
+    </GradientBg>
   );
 }
 
@@ -131,10 +132,10 @@ function MatchesContent() {
           <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <User className="size-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">
+          <h1 className="text-2xl font-display font-semibold text-slate-900 mb-2">
             Create Your Profile First
           </h1>
-          <p className="text-slate-500 mb-6">
+          <p className="text-muted-foreground mb-6">
             Complete your profile to get matched with AI safety opportunities tailored to your background and goals.
           </p>
           <Button asChild>
@@ -153,10 +154,10 @@ function MatchesContent() {
           <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <Sparkles className="size-8 text-primary animate-pulse" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">
+          <h1 className="text-2xl font-display font-semibold text-slate-900 mb-2">
             Finding Your Matches
           </h1>
-          <p className="text-slate-500 mb-4">
+          <p className="text-muted-foreground mb-4">
             Our AI is analyzing opportunities against your profile...
           </p>
           <Spinner />
@@ -170,7 +171,7 @@ function MatchesContent() {
     return (
       <main className="container mx-auto px-4 py-8">
         <Card className="max-w-lg mx-auto p-8 text-center">
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">
+          <h1 className="text-2xl font-display font-semibold text-slate-900 mb-2">
             Something went wrong
           </h1>
           <p className="text-red-500 mb-6">{computeError}</p>
@@ -189,12 +190,12 @@ function MatchesContent() {
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Your Matches</h1>
-            <p className="text-slate-500 mt-1">
+            <h1 className="text-2xl font-display font-semibold text-slate-900">Your Matches</h1>
+            <p className="text-muted-foreground mt-1">
               Opportunities matched to your profile and goals
             </p>
             {computedAt !== null && computedAt !== undefined && (
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Last updated: {new Date(computedAt).toLocaleDateString()}
               </p>
             )}
@@ -212,13 +213,13 @@ function MatchesContent() {
         {/* No matches state */}
         {!hasMatches && (
           <Card className="p-8 text-center">
-            <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-              <Sparkles className="size-8 text-slate-400" />
+            <div className="size-16 rounded-full bg-cream-100 flex items-center justify-center mx-auto mb-4">
+              <Sparkles className="size-8 text-coral-400" />
             </div>
-            <h2 className="text-xl font-semibold text-slate-900 mb-2">
+            <h2 className="text-xl font-display font-semibold text-slate-900 mb-2">
               No matches yet
             </h2>
-            <p className="text-slate-500 mb-6 max-w-md mx-auto">
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
               We couldn't find strong matches right now. Try completing more of your profile or check back when new opportunities are posted.
             </p>
             <div className="flex gap-3 justify-center">

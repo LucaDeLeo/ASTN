@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { AuthHeader } from "~/components/layout/auth-header";
+import { GradientBg } from "~/components/layout/GradientBg";
 import { OrgCard } from "~/components/org/OrgCard";
 import { OrgFilters } from "~/components/org/OrgFilters";
 import { OrgMap } from "~/components/org/OrgMap";
@@ -33,7 +34,7 @@ function OrgBrowsePage() {
   const orgsForMap = useMemo(() => orgs ?? [], [orgs]);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <GradientBg variant="subtle">
       <AuthHeader />
       <main className="flex flex-col lg:flex-row h-[calc(100vh-65px)]">
         {/* Map - left side on desktop, hidden on mobile */}
@@ -48,10 +49,10 @@ function OrgBrowsePage() {
         {/* List - right side, scrollable */}
         <div className="flex-1 overflow-y-auto p-4 lg:p-6">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">
+            <h1 className="text-2xl font-display font-semibold text-slate-900 mb-2">
               Organizations
             </h1>
-            <p className="text-slate-600">
+            <p className="text-muted-foreground">
               Discover AI safety organizations around the world
             </p>
           </div>
@@ -89,20 +90,20 @@ function OrgBrowsePage() {
           )}
         </div>
       </main>
-    </div>
+    </GradientBg>
   );
 }
 
 function EmptyState({ hasFilters }: { hasFilters: boolean }) {
   return (
     <div className="text-center py-12">
-      <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-        <Building2 className="size-8 text-slate-400" />
+      <div className="size-16 rounded-full bg-cream-100 flex items-center justify-center mx-auto mb-4">
+        <Building2 className="size-8 text-coral-400" />
       </div>
-      <h3 className="text-lg font-medium text-slate-900 mb-2">
+      <h3 className="text-lg font-display font-medium text-slate-900 mb-2">
         {hasFilters ? "No organizations found" : "No organizations yet"}
       </h3>
-      <p className="text-slate-500">
+      <p className="text-muted-foreground">
         {hasFilters
           ? "Try adjusting your filters or search query"
           : "Organizations will appear here once added"}

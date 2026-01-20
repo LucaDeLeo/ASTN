@@ -3,6 +3,7 @@ import { AuthLoading, Authenticated, Unauthenticated, useQuery } from "convex/re
 import { Calendar, MapPin, Settings } from "lucide-react";
 import { api } from "../../convex/_generated/api";
 import { AuthHeader } from "~/components/layout/auth-header";
+import { GradientBg } from "~/components/layout/GradientBg";
 import { EventCard } from "~/components/events/EventCard";
 import { OrgCarousel } from "~/components/org/OrgCarousel";
 import { Button } from "~/components/ui/button";
@@ -15,7 +16,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   return (
-    <div className="min-h-screen bg-background">
+    <GradientBg variant="subtle">
       <AuthHeader />
       <AuthLoading>
         <main className="container mx-auto px-4 py-16">
@@ -30,7 +31,7 @@ function Home() {
       <Authenticated>
         <Dashboard />
       </Authenticated>
-    </div>
+    </GradientBg>
   );
 }
 
@@ -38,7 +39,7 @@ function LandingPage() {
   return (
     <main className="container mx-auto px-4 py-16">
       <div className="max-w-2xl mx-auto text-center">
-        <h1 className="text-4xl font-bold text-foreground mb-4 font-mono tracking-tight">
+        <h1 className="text-4xl font-display font-semibold text-foreground mb-4 tracking-tight">
           AI Safety Talent Network
         </h1>
         <p className="text-lg text-muted-foreground mb-8">
@@ -81,10 +82,10 @@ function Dashboard() {
     <main className="container mx-auto px-4 py-8">
       {/* Org Suggestions Section */}
       <section className="mb-8">
-        <h2 className="text-xl font-semibold text-slate-900 mb-2">
+        <h2 className="text-xl font-display font-semibold text-slate-900 mb-2">
           Suggested Organizations
         </h2>
-        <p className="text-slate-600 mb-4">
+        <p className="text-muted-foreground mb-4">
           Organizations near you or with global presence
         </p>
 
@@ -101,10 +102,10 @@ function Dashboard() {
 
       {/* Upcoming Events Section */}
       <section className="mb-8">
-        <h2 className="text-xl font-semibold text-slate-900 mb-2">
+        <h2 className="text-xl font-display font-semibold text-slate-900 mb-2">
           Upcoming Events
         </h2>
-        <p className="text-slate-600 mb-4">Events from your organizations</p>
+        <p className="text-muted-foreground mb-4">Events from your organizations</p>
 
         {dashboardEvents === undefined ? (
           <div className="flex items-center justify-center py-8">
@@ -166,10 +167,10 @@ function Dashboard() {
 
       {/* Browse Opportunities CTA */}
       <section className="text-center py-8">
-        <h2 className="text-xl font-semibold text-slate-900 mb-2">
+        <h2 className="text-xl font-display font-semibold text-slate-900 mb-2">
           Explore Opportunities
         </h2>
-        <p className="text-slate-600 mb-4">
+        <p className="text-muted-foreground mb-4">
           Find AI safety roles that match your skills and interests
         </p>
         <Button
@@ -189,13 +190,13 @@ function EmptyStatePrompt({ locationEnabled }: { locationEnabled: boolean }) {
     // User has location enabled but no orgs matched
     return (
       <Card className="p-6 text-center">
-        <div className="size-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-          <MapPin className="size-6 text-slate-400" />
+        <div className="size-12 rounded-full bg-cream-100 flex items-center justify-center mx-auto mb-4">
+          <MapPin className="size-6 text-coral-400" />
         </div>
-        <h3 className="text-lg font-medium text-slate-900 mb-2">
+        <h3 className="text-lg font-display font-medium text-slate-900 mb-2">
           No organizations near you yet
         </h3>
-        <p className="text-slate-500 text-sm">
+        <p className="text-muted-foreground text-sm">
           We are still growing our network. Check back later for organizations in your area.
         </p>
       </Card>
@@ -205,13 +206,13 @@ function EmptyStatePrompt({ locationEnabled }: { locationEnabled: boolean }) {
   // User has not enabled location discovery
   return (
     <Card className="p-6 text-center">
-      <div className="size-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-        <MapPin className="size-6 text-slate-400" />
+      <div className="size-12 rounded-full bg-cream-100 flex items-center justify-center mx-auto mb-4">
+        <MapPin className="size-6 text-coral-400" />
       </div>
-      <h3 className="text-lg font-medium text-slate-900 mb-2">
+      <h3 className="text-lg font-display font-medium text-slate-900 mb-2">
         Enable location-based suggestions
       </h3>
-      <p className="text-slate-500 text-sm mb-4">
+      <p className="text-muted-foreground text-sm mb-4">
         Discover AI safety organizations near you. Your exact location is never
         shared with organizations.
       </p>
@@ -228,13 +229,13 @@ function EmptyStatePrompt({ locationEnabled }: { locationEnabled: boolean }) {
 function EventsEmptyState() {
   return (
     <Card className="p-6 text-center">
-      <div className="size-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-        <Calendar className="size-6 text-slate-400" />
+      <div className="size-12 rounded-full bg-cream-100 flex items-center justify-center mx-auto mb-4">
+        <Calendar className="size-6 text-coral-400" />
       </div>
-      <h3 className="text-lg font-medium text-slate-900 mb-2">
+      <h3 className="text-lg font-display font-medium text-slate-900 mb-2">
         No upcoming events
       </h3>
-      <p className="text-slate-500 text-sm mb-4">
+      <p className="text-muted-foreground text-sm mb-4">
         Join organizations to see their events here.
       </p>
       <Button asChild variant="outline" size="sm">

@@ -16,6 +16,7 @@ import { useEffect } from "react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { AuthHeader } from "~/components/layout/auth-header";
+import { GradientBg } from "~/components/layout/GradientBg";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
@@ -28,7 +29,7 @@ export const Route = createFileRoute("/matches/$id")({
 
 function MatchDetailPage() {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <GradientBg variant="subtle">
       <AuthHeader />
       <AuthLoading>
         <LoadingState />
@@ -39,7 +40,7 @@ function MatchDetailPage() {
       <Authenticated>
         <MatchDetailContent />
       </Authenticated>
-    </div>
+    </GradientBg>
   );
 }
 
@@ -79,10 +80,10 @@ function MatchDetailContent() {
     return (
       <main className="container mx-auto px-4 py-8">
         <Card className="max-w-lg mx-auto p-8 text-center">
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">
+          <h1 className="text-2xl font-display font-semibold text-slate-900 mb-2">
             Match Not Found
           </h1>
-          <p className="text-slate-500 mb-6">
+          <p className="text-muted-foreground mb-6">
             This match may have been updated or removed.
           </p>
           <Button asChild>
@@ -122,10 +123,10 @@ function MatchDetailContent() {
                 )}
               </div>
 
-              <h1 className="text-2xl font-bold text-slate-900">
+              <h1 className="text-2xl font-display font-semibold text-slate-900">
                 {match.opportunity.title}
               </h1>
-              <p className="text-lg text-slate-600 mt-1">
+              <p className="text-lg text-muted-foreground mt-1">
                 {match.opportunity.organization}
               </p>
 
@@ -161,7 +162,7 @@ function MatchDetailContent() {
 
         {/* Why this matches */}
         <Card className="p-6 mb-6">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-display font-semibold text-slate-900 mb-4 flex items-center gap-2">
             <CheckCircle className="size-5 text-emerald-500" />
             Why This Fits You
           </h2>
@@ -195,7 +196,7 @@ function MatchDetailContent() {
 
         {/* Recommendations */}
         <Card className="p-6 mb-6">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-display font-semibold text-slate-900 mb-4 flex items-center gap-2">
             <Lightbulb className="size-5 text-primary" />
             Recommendations
           </h2>
@@ -228,7 +229,7 @@ function MatchDetailContent() {
 
         {/* Opportunity description */}
         <Card className="p-6">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">
+          <h2 className="text-lg font-display font-semibold text-slate-900 mb-4">
             About This Opportunity
           </h2>
 

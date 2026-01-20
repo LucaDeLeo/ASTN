@@ -37,10 +37,17 @@ function OrgAdminDashboard() {
     org && membership?.role === "admin" ? { orgId: org._id, timeRange } : "skip"
   );
 
+  // Dot grid background style for admin pages
+  const dotGridStyle = {
+    backgroundImage: `radial-gradient(circle, oklch(0.65 0.08 30 / 0.25) 1.5px, transparent 1.5px)`,
+    backgroundSize: '20px 20px',
+    backgroundColor: 'oklch(0.98 0.01 90)'
+  };
+
   // Loading state
   if (org === undefined || membership === undefined) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen" style={dotGridStyle}>
         <AuthHeader />
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-5xl mx-auto">
@@ -61,7 +68,7 @@ function OrgAdminDashboard() {
   // Org not found
   if (org === null) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen" style={dotGridStyle}>
         <AuthHeader />
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-lg mx-auto text-center py-12">
@@ -86,7 +93,7 @@ function OrgAdminDashboard() {
   // Not an admin - redirect to org page
   if (!membership || membership.role !== "admin") {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen" style={dotGridStyle}>
         <AuthHeader />
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-lg mx-auto text-center py-12">
@@ -111,13 +118,13 @@ function OrgAdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen" style={dotGridStyle}>
       <AuthHeader />
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-5xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center gap-2 text-slate-500 text-sm mb-2">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm mb-2">
               <Link
                 to="/org/$slug"
                 params={{ slug }}
@@ -128,10 +135,10 @@ function OrgAdminDashboard() {
               <span>/</span>
               <span className="text-slate-700">Admin Dashboard</span>
             </div>
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-2xl font-display font-semibold text-slate-900">
               Admin Dashboard
             </h1>
-            <p className="text-slate-600 mt-1">
+            <p className="text-muted-foreground mt-1">
               Manage members and view organization statistics
             </p>
           </div>

@@ -135,6 +135,14 @@
   --ease-in-out: var(--ease-in-out);
 
   /* ==========================================================================
+     SHADOW UTILITIES - generates shadow-warm-*, etc.
+     ========================================================================== */
+  --shadow-warm-sm: var(--shadow-warm-sm);
+  --shadow-warm: var(--shadow-warm);
+  --shadow-warm-md: var(--shadow-warm-md);
+  --shadow-warm-lg: var(--shadow-warm-lg);
+
+  /* ==========================================================================
      ANIMATION DEFINITIONS - generates animate-fade-in, animate-slide-up, etc.
      ========================================================================== */
   --animate-fade-in: fade-in var(--duration-normal) var(--ease-gentle) forwards;
@@ -182,7 +190,7 @@
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 0.75rem;
 
   /* ==========================================================================
      ANIMATION TIMING TOKENS
@@ -207,6 +215,14 @@
      ========================================================================== */
   --scale-press: 0.97;
   --scale-hover: 1.02;
+
+  /* ==========================================================================
+     WARM SHADOW TOKENS - Coral-tinted shadows for warmth
+     ========================================================================== */
+  --shadow-warm-sm: 0 1px 2px oklch(0.70 0.04 30 / 0.06);
+  --shadow-warm: 0 4px 12px oklch(0.70 0.06 30 / 0.08);
+  --shadow-warm-md: 0 8px 24px oklch(0.70 0.08 30 / 0.12);
+  --shadow-warm-lg: 0 12px 40px oklch(0.70 0.08 30 / 0.15);
 
   /* ==========================================================================
      PRIMITIVE TOKENS - Raw values, not semantic
