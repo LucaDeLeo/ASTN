@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-19)
 
 ## Current Position
 
-Phase: 19 of 20 (Motion System)
-Plan: 03 of 03 complete
-Status: Phase complete
-Last activity: 2026-01-20 - Completed 19-03-PLAN.md (visual verification checkpoint)
+Phase: 20 of 20 (Polish & Integration)
+Plan: 01 of ?? in progress
+Status: In progress
+Last activity: 2026-01-20 - Completed 20-01-PLAN.md (theme system)
 
-Progress: v1.0 + v1.1 + v1.2 complete (54 plans), v1.3 Phases 17-19 complete (59 plans total)
+Progress: v1.0 + v1.1 + v1.2 complete (54 plans), v1.3 Phases 17-19 complete + 20-01 (60 plans total)
 
 ## Milestone History
 
@@ -46,6 +46,12 @@ Phase 19 decisions:
 - View transition uses 250ms with gentle easing for subtle crossfade
 - scrollbar-gutter: stable on html to prevent layout shift when scrollbar appears
 
+Phase 20 decisions:
+- Dark mode primary stays coral (oklch 0.70 0.16 30) for brand consistency
+- Background uses warm charcoal (0.13 lightness, hue 30) not OLED black
+- All dark mode neutrals have hue 30 for warm undertone
+- Dark shadows include coral glow effect
+
 ### Pending Todos
 
 - [ ] Buy domain (astn.ai or similar) and set up email sending via Resend
@@ -62,10 +68,10 @@ Phase 19 decisions:
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed Phase 19 (Motion System) - all 3 plans complete including visual verification
+Stopped at: Completed 20-01-PLAN.md (theme system)
 Resume file: None
-Next action: `/gsd:plan-phase 20` (UX Refinements)
+Next action: Continue Phase 20 execution (20-02 or next plan)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-20 - Phase 19 plan 03 complete (visual verification checkpoint)*
+*Last updated: 2026-01-20 - Phase 20 plan 01 complete (theme system)*
