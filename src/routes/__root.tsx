@@ -9,6 +9,10 @@ import { Toaster } from 'sonner'
 import type { QueryClient } from '@tanstack/react-query'
 import appCss from '~/styles/app.css?url'
 
+// Font preloads for FOIT/FOUT prevention
+import plusJakartaWoff2 from '@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2?url'
+import loraWoff2 from '@fontsource-variable/lora/files/lora-latin-wght-normal.woff2?url'
+
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
 }>()({
@@ -26,6 +30,22 @@ export const Route = createRootRouteWithContext<{
       },
     ],
     links: [
+      // Font preloads (MUST come before stylesheet for browser prioritization)
+      {
+        rel: 'preload',
+        href: plusJakartaWoff2,
+        as: 'font',
+        type: 'font/woff2',
+        crossOrigin: 'anonymous',
+      },
+      {
+        rel: 'preload',
+        href: loraWoff2,
+        as: 'font',
+        type: 'font/woff2',
+        crossOrigin: 'anonymous',
+      },
+      // Stylesheet (after preloads)
       { rel: 'stylesheet', href: appCss },
       // Leaflet CSS for map component
       {
