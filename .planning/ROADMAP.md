@@ -13,7 +13,7 @@ Transform ASTN from generic shadcn/ui (3.7/10) to a warm, memorable visual ident
 
 ## Phases
 
-- [ ] **Phase 17: Foundation & Tokens** - Design tokens, font installation, CSS architecture
+- [x] **Phase 17: Foundation & Tokens** - Design tokens, font installation, CSS architecture
 - [ ] **Phase 18: Core Visual Polish** - Warm backgrounds, shadows, typography across all pages
 - [ ] **Phase 19: Motion System** - Animations, hover effects, page transitions
 - [ ] **Phase 20: Polish & Integration** - Dark mode, focus states, accessibility, performance
@@ -33,8 +33,8 @@ Transform ASTN from generic shadcn/ui (3.7/10) to a warm, memorable visual ident
 **Plans**: 2 plans
 
 Plans:
-- [ ] 17-01-PLAN.md - Install fonts and define color/typography tokens
-- [ ] 17-02-PLAN.md - Animation tokens and font preloading infrastructure
+- [x] 17-01-PLAN.md - Install fonts and define color/typography tokens
+- [x] 17-02-PLAN.md - Animation tokens and font preloading infrastructure
 
 ### Phase 18: Core Visual Polish
 **Goal**: Apply warm visual treatment consistently across all pages - backgrounds, shadows, typography, and layout
@@ -93,7 +93,7 @@ Phases execute in numeric order: 17 -> 18 -> 19 -> 20
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 17. Foundation & Tokens | 0/2 | Not started | - |
+| 17. Foundation & Tokens | 2/2 | ✓ Complete | 2026-01-19 |
 | 18. Core Visual Polish | 0/TBD | Not started | - |
 | 19. Motion System | 0/TBD | Not started | - |
 | 20. Polish & Integration | 0/TBD | Not started | - |

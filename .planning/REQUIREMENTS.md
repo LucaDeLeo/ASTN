@@ -85,13 +85,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 ### Phase 17: Foundation & Tokens (7 requirements)
 | Requirement | Description | Status |
 |-------------|-------------|--------|
-| TYPO-01 | Custom display font (Plus Jakarta Sans Variable) | Pending |
-| TYPO-02 | Body font pairing configured | Pending |
-| TYPO-03 | Typographic scale with fluid type | Pending |
-| TYPO-04 | Font preloading in __root.tsx | Pending |
-| TYPO-05 | Optional serif accent font (Lora Variable) | Pending |
-| ATMO-03 | Extended warm neutral palette in design tokens | Pending |
-| MOTN-06 | Animation keyframes and easing in design tokens | Pending |
+| TYPO-01 | Custom display font (Plus Jakarta Sans Variable) | Complete |
+| TYPO-02 | Body font pairing configured | Complete |
+| TYPO-03 | Typographic scale with fluid type | Complete |
+| TYPO-04 | Font preloading in __root.tsx | Complete |
+| TYPO-05 | Optional serif accent font (Lora Variable) | Complete |
+| ATMO-03 | Extended warm neutral palette in design tokens | Complete |
+| MOTN-06 | Animation keyframes and easing in design tokens | Complete |
 
 ### Phase 18: Core Visual Polish (17 requirements)
 | Requirement | Description | Status |
