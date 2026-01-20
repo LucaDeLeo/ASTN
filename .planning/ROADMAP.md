@@ -30,12 +30,11 @@ Transform ASTN from generic shadcn/ui (3.7/10) to a warm, memorable visual ident
   3. Typographic scale produces appropriate sizes at all viewport widths (fluid type)
   4. Tailwind v4 @theme directive integrates tokens as utilities
   5. Animation keyframes and easing functions are defined and reusable
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 17-01: TBD
-- [ ] 17-02: TBD
-- [ ] 17-03: TBD
+- [ ] 17-01-PLAN.md - Install fonts and define color/typography tokens
+- [ ] 17-02-PLAN.md - Animation tokens and font preloading infrastructure
 
 ### Phase 18: Core Visual Polish
 **Goal**: Apply warm visual treatment consistently across all pages - backgrounds, shadows, typography, and layout
@@ -94,7 +93,7 @@ Phases execute in numeric order: 17 -> 18 -> 19 -> 20
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 17. Foundation & Tokens | 0/TBD | Not started | - |
+| 17. Foundation & Tokens | 0/2 | Not started | - |
 | 18. Core Visual Polish | 0/TBD | Not started | - |
 | 19. Motion System | 0/TBD | Not started | - |
 | 20. Polish & Integration | 0/TBD | Not started | - |
