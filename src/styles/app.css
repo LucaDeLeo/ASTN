@@ -124,10 +124,89 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* ==========================================================================
+     EASING UTILITIES - generates ease-spring, ease-gentle, etc.
+     ========================================================================== */
+  --ease-spring: var(--ease-spring);
+  --ease-gentle: var(--ease-gentle);
+  --ease-in: var(--ease-in);
+  --ease-out: var(--ease-out);
+  --ease-in-out: var(--ease-in-out);
+
+  /* ==========================================================================
+     ANIMATION DEFINITIONS - generates animate-fade-in, animate-slide-up, etc.
+     ========================================================================== */
+  --animate-fade-in: fade-in var(--duration-normal) var(--ease-gentle) forwards;
+  --animate-slide-up: slide-up var(--duration-slow) var(--ease-spring) forwards;
+  --animate-scale-in: scale-in var(--duration-normal) var(--ease-spring) forwards;
+  --animate-slide-down: slide-down var(--duration-slow) var(--ease-spring) forwards;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-down {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
 }
 
 :root {
   --radius: 0.625rem;
+
+  /* ==========================================================================
+     ANIMATION TIMING TOKENS
+     ========================================================================== */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+  --ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --ease-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);  /* Slight overshoot, organic settle */
+  --ease-gentle: cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  /* ==========================================================================
+     DURATION TOKENS - per CONTEXT.md: 200-400ms range
+     ========================================================================== */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+  --duration-slower: 600ms;
+
+  /* ==========================================================================
+     TRANSFORM TOKENS - for hover/press effects
+     ========================================================================== */
+  --scale-press: 0.97;
+  --scale-hover: 1.02;
 
   /* ==========================================================================
      PRIMITIVE TOKENS - Raw values, not semantic
@@ -283,4 +362,23 @@
 
 .animate-pulse-processing {
   animation: pulse-processing 1.5s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   REDUCED MOTION - Respects user preference, fade only, no movement
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Preserve fade animations for basic feedback */
+  .animate-fade-in {
+    animation: fade-in 150ms var(--ease-out) forwards !important;
+  }
 }
