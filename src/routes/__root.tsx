@@ -6,12 +6,26 @@ import {
 } from '@tanstack/react-router'
 import * as React from 'react'
 import { Toaster } from 'sonner'
+
 import type { QueryClient } from '@tanstack/react-query'
-import appCss from '~/styles/app.css?url'
 
 // Font preloads for FOIT/FOUT prevention
 import plusJakartaWoff2 from '@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2?url'
 import loraWoff2 from '@fontsource-variable/lora/files/lora-latin-wght-normal.woff2?url'
+
+import appCss from '~/styles/app.css?url'
+import { ThemeProvider } from '~/components/theme/theme-provider'
+
+// FOIT prevention script - runs before CSS to set dark class immediately
+const themeScript = `(function(){
+  try {
+    const theme = localStorage.getItem('astn-theme');
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (theme === 'dark' || (theme === 'system' && systemDark) || (!theme && systemDark)) {
+      document.documentElement.classList.add('dark');
+    }
+  } catch (e) {}
+})()`
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
@@ -27,6 +41,12 @@ export const Route = createRootRouteWithContext<{
       },
       {
         title: 'AI Safety Talent Network',
+      },
+    ],
+    scripts: [
+      // Theme script MUST run before CSS to prevent FOIT
+      {
+        children: themeScript,
       },
     ],
     links: [
@@ -87,13 +107,15 @@ function RootComponent() {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body>
-        {children}
-        <Toaster position="top-right" richColors />
+        <ThemeProvider defaultTheme="system" storageKey="astn-theme">
+          {children}
+          <Toaster position="top-right" richColors />
+        </ThemeProvider>
         {/* Leaflet JS for map component - loaded in body for global L */}
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" />
         <Scripts />

@@ -2,7 +2,9 @@ import { Link } from "@tanstack/react-router";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { AuthLoading, Authenticated, Unauthenticated } from "convex/react";
 import { LogOut, Settings, User } from "lucide-react";
+
 import { NotificationBell } from "~/components/notifications";
+import { ThemeToggle } from "~/components/theme/theme-toggle";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import {
@@ -15,15 +17,15 @@ import {
 
 export function AuthHeader() {
   return (
-    <header className="border-b bg-white">
+    <header className="border-b bg-background">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link to="/" className="font-semibold text-slate-900 font-mono">
+        <Link to="/" className="font-semibold text-foreground font-mono">
           AI Safety Talent Network
         </Link>
         <nav className="flex items-center gap-4">
           <Link
             to="/opportunities"
-            className="text-sm text-slate-600 hover:text-slate-900 [&.active]:text-slate-900 [&.active]:font-medium"
+            className="text-sm text-muted-foreground hover:text-foreground [&.active]:text-foreground [&.active]:font-medium"
           >
             Opportunities
           </Link>
@@ -31,15 +33,18 @@ export function AuthHeader() {
           <Authenticated>
             <Link
               to="/matches"
-              className="text-sm text-slate-600 hover:text-slate-900 [&.active]:text-slate-900 [&.active]:font-medium"
+              className="text-sm text-muted-foreground hover:text-foreground [&.active]:text-foreground [&.active]:font-medium"
             >
               Matches
             </Link>
           </Authenticated>
 
+          {/* Theme toggle - visible to all users */}
+          <ThemeToggle />
+
           {/* Auth state: loading, signed out, signed in */}
           <AuthLoading>
-            <div className="size-8 rounded-full bg-slate-100 animate-pulse" />
+            <div className="size-8 rounded-full bg-muted animate-pulse" />
           </AuthLoading>
 
           <Unauthenticated>
