@@ -46,13 +46,14 @@ Plans:
   3. Typography uses Plus Jakarta Sans for headings and body with proper hierarchy
   4. GradientBg component provides reusable warm atmospheric backgrounds
   5. All 9 main pages display with consistent visual treatment
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 18-01: TBD
-- [ ] 18-02: TBD
-- [ ] 18-03: TBD
-- [ ] 18-04: TBD
+- [ ] 18-01-PLAN.md - Foundation infrastructure (shadow tokens, GradientBg component, Card update)
+- [ ] 18-02-PLAN.md - List pages (Home, Matches list, Opportunities list)
+- [ ] 18-03-PLAN.md - Detail pages (Match detail, Opportunity detail)
+- [ ] 18-04-PLAN.md - Profile pages (Profile view, Profile edit)
+- [ ] 18-05-PLAN.md - Admin + Orgs + visual verification checkpoint
 
 ### Phase 19: Motion System
 **Goal**: Add purposeful animation that reinforces warmth - entrance animations, hover feedback, page transitions
@@ -94,7 +95,7 @@ Phases execute in numeric order: 17 -> 18 -> 19 -> 20
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 17. Foundation & Tokens | 2/2 | ✓ Complete | 2026-01-19 |
-| 18. Core Visual Polish | 0/TBD | Not started | - |
+| 18. Core Visual Polish | 0/5 | Not started | - |
 | 19. Motion System | 0/TBD | Not started | - |
 | 20. Polish & Integration | 0/TBD | Not started | - |
 
