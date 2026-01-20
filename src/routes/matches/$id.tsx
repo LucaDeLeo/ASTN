@@ -80,7 +80,7 @@ function MatchDetailContent() {
     return (
       <main className="container mx-auto px-4 py-8">
         <Card className="max-w-lg mx-auto p-8 text-center">
-          <h1 className="text-2xl font-display font-semibold text-slate-900 mb-2">
+          <h1 className="text-2xl font-display font-semibold text-foreground mb-2">
             Match Not Found
           </h1>
           <p className="text-muted-foreground mb-6">
@@ -103,7 +103,7 @@ function MatchDetailContent() {
         {/* Back link */}
         <Link
           to="/matches"
-          className="inline-flex items-center text-sm text-slate-500 hover:text-slate-900 mb-6"
+          className="inline-flex items-center text-sm text-slate-500 hover:text-foreground mb-6"
         >
           <ArrowLeft className="size-4 mr-1" />
           Back to matches
@@ -123,7 +123,7 @@ function MatchDetailContent() {
                 )}
               </div>
 
-              <h1 className="text-2xl font-display font-semibold text-slate-900">
+              <h1 className="text-2xl font-display font-semibold text-foreground">
                 {match.opportunity.title}
               </h1>
               <p className="text-lg text-muted-foreground mt-1">
@@ -162,7 +162,7 @@ function MatchDetailContent() {
 
         {/* Why this matches */}
         <Card className="p-6 mb-6">
-          <h2 className="text-lg font-display font-semibold text-slate-900 mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-display font-semibold text-foreground mb-4 flex items-center gap-2">
             <CheckCircle className="size-5 text-emerald-500" />
             Why This Fits You
           </h2>
@@ -196,7 +196,7 @@ function MatchDetailContent() {
 
         {/* Recommendations */}
         <Card className="p-6 mb-6">
-          <h2 className="text-lg font-display font-semibold text-slate-900 mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-display font-semibold text-foreground mb-4 flex items-center gap-2">
             <Lightbulb className="size-5 text-primary" />
             Recommendations
           </h2>
@@ -229,7 +229,7 @@ function MatchDetailContent() {
 
         {/* Opportunity description */}
         <Card className="p-6">
-          <h2 className="text-lg font-display font-semibold text-slate-900 mb-4">
+          <h2 className="text-lg font-display font-semibold text-foreground mb-4">
             About This Opportunity
           </h2>
 
@@ -239,7 +239,7 @@ function MatchDetailContent() {
 
           {match.opportunity.requirements && match.opportunity.requirements.length > 0 && (
             <div className="mt-6 pt-4 border-t">
-              <h3 className="font-medium text-slate-900 mb-3">Requirements</h3>
+              <h3 className="font-medium text-foreground mb-3">Requirements</h3>
               <ul className="space-y-2">
                 {match.opportunity.requirements.map((req, i) => (
                   <li key={i} className="flex items-start gap-2 text-slate-600">

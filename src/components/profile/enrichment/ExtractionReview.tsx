@@ -72,7 +72,7 @@ export function ExtractionReview({
           <ArrowLeft className="size-4" />
         </Button>
         <div>
-          <h3 className="text-lg font-medium text-slate-900">
+          <h3 className="text-lg font-medium text-foreground">
             Review Extracted Information
           </h3>
           <p className="text-sm text-slate-500">
@@ -97,7 +97,7 @@ export function ExtractionReview({
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
-                  <h4 className="font-medium text-slate-900">{item.label}</h4>
+                  <h4 className="font-medium text-foreground">{item.label}</h4>
                   {item.status !== "pending" && (
                     <Badge
                       variant={

@@ -71,7 +71,7 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
           <div className="flex-1">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-slate-900 font-mono">
+                <h1 className="text-2xl font-bold text-foreground font-mono">
                   {opportunity.title}
                 </h1>
                 <p className="text-lg text-slate-600 mt-1">

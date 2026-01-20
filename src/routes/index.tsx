@@ -83,7 +83,7 @@ function Dashboard() {
     <main className="container mx-auto px-4 py-8">
       {/* Org Suggestions Section */}
       <section className="mb-8">
-        <h2 className="text-xl font-display font-semibold text-slate-900 mb-2">
+        <h2 className="text-xl font-display font-semibold text-foreground mb-2">
           Suggested Organizations
         </h2>
         <p className="text-muted-foreground mb-4">
@@ -103,7 +103,7 @@ function Dashboard() {
 
       {/* Upcoming Events Section */}
       <section className="mb-8">
-        <h2 className="text-xl font-display font-semibold text-slate-900 mb-2">
+        <h2 className="text-xl font-display font-semibold text-foreground mb-2">
           Upcoming Events
         </h2>
         <p className="text-muted-foreground mb-4">Events from your organizations</p>
@@ -172,7 +172,7 @@ function Dashboard() {
 
       {/* Browse Opportunities CTA */}
       <section className="text-center py-8">
-        <h2 className="text-xl font-display font-semibold text-slate-900 mb-2">
+        <h2 className="text-xl font-display font-semibold text-foreground mb-2">
           Explore Opportunities
         </h2>
         <p className="text-muted-foreground mb-4">
@@ -198,7 +198,7 @@ function EmptyStatePrompt({ locationEnabled }: { locationEnabled: boolean }) {
         <div className="size-12 rounded-full bg-cream-100 flex items-center justify-center mx-auto mb-4">
           <MapPin className="size-6 text-coral-400" />
         </div>
-        <h3 className="text-lg font-display font-medium text-slate-900 mb-2">
+        <h3 className="text-lg font-display font-medium text-foreground mb-2">
           No organizations near you yet
         </h3>
         <p className="text-muted-foreground text-sm">
@@ -214,7 +214,7 @@ function EmptyStatePrompt({ locationEnabled }: { locationEnabled: boolean }) {
       <div className="size-12 rounded-full bg-cream-100 flex items-center justify-center mx-auto mb-4">
         <MapPin className="size-6 text-coral-400" />
       </div>
-      <h3 className="text-lg font-display font-medium text-slate-900 mb-2">
+      <h3 className="text-lg font-display font-medium text-foreground mb-2">
         Enable location-based suggestions
       </h3>
       <p className="text-muted-foreground text-sm mb-4">
@@ -237,7 +237,7 @@ function EventsEmptyState() {
       <div className="size-12 rounded-full bg-cream-100 flex items-center justify-center mx-auto mb-4">
         <Calendar className="size-6 text-coral-400" />
       </div>
-      <h3 className="text-lg font-display font-medium text-slate-900 mb-2">
+      <h3 className="text-lg font-display font-medium text-foreground mb-2">
         No upcoming events
       </h3>
       <p className="text-muted-foreground text-sm mb-4">

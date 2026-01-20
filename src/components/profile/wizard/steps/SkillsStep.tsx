@@ -35,7 +35,7 @@ export function SkillsStep({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-slate-900">Skills</h2>
+        <h2 className="text-xl font-semibold text-foreground">Skills</h2>
         <p className="text-sm text-slate-500 mt-1">
           Add your technical and professional skills relevant to AI safety work.
           These help us match you with opportunities that fit your expertise.

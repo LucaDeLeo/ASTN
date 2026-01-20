@@ -67,7 +67,7 @@ export function EnrichmentChat({
             <div className="size-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
               <MessageSquare className="size-6 text-blue-600" />
             </div>
-            <h3 className="text-lg font-medium text-slate-900 mb-2">
+            <h3 className="text-lg font-medium text-foreground mb-2">
               Start a conversation
             </h3>
             <p className="text-slate-500 text-sm max-w-sm">
@@ -90,7 +90,7 @@ export function EnrichmentChat({
                   "max-w-[80%] rounded-2xl px-4 py-2.5",
                   message.role === "user"
                     ? "bg-primary text-primary-foreground rounded-br-md"
-                    : "bg-slate-100 text-slate-900 rounded-bl-md"
+                    : "bg-slate-100 text-foreground rounded-bl-md"
                 )}
               >
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>

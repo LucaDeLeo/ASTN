@@ -31,7 +31,7 @@ export function PostApplySummary({
             <CheckCircle className="size-8 text-green-600" />
           </div>
           <div>
-            <h3 className="text-xl font-semibold text-slate-900">
+            <h3 className="text-xl font-semibold text-foreground">
               Profile updated from your resume!
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
@@ -44,7 +44,7 @@ export function PostApplySummary({
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Profile completeness</span>
-            <span className="font-medium text-slate-900">
+            <span className="font-medium text-foreground">
               {completedCount} of {totalCount} sections
             </span>
           </div>

@@ -122,7 +122,7 @@ export function OrgSelector({ selectedOrgs, onOrgsChange }: OrgSelectorProps) {
             variant="ghost"
             size="sm"
             onClick={() => setShowBrowse(!showBrowse)}
-            className="text-slate-600 hover:text-slate-900"
+            className="text-slate-600 hover:text-foreground"
           >
             {showBrowse ? (
               <>

@@ -70,7 +70,7 @@ function OpportunitiesPage() {
       <OpportunityFilters />
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-display font-semibold text-slate-900">Opportunities</h1>
+          <h1 className="text-2xl font-display font-semibold text-foreground">Opportunities</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {results.length} {results.length !== 1 ? "opportunities" : "opportunity"} loaded
             {status !== "Exhausted" && " (more available)"}

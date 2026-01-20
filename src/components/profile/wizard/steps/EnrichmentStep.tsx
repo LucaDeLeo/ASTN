@@ -140,7 +140,7 @@ export function EnrichmentStep({ profile, fromExtraction, chatFirst }: Enrichmen
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-xl font-semibold text-slate-900">
+          <h2 className="text-xl font-semibold text-foreground">
             Profile Enrichment
           </h2>
           <p className="text-sm text-slate-500 mt-1">Loading...</p>
@@ -154,7 +154,7 @@ export function EnrichmentStep({ profile, fromExtraction, chatFirst }: Enrichmen
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-slate-900">
+          <h2 className="text-xl font-semibold text-foreground">
             Profile Enrichment
           </h2>
           <p className="text-sm text-slate-500 mt-1">

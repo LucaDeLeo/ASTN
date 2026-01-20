@@ -83,7 +83,7 @@ export function ExtractionFieldCard({
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
-              <h4 className="font-medium text-slate-900">{label}</h4>
+              <h4 className="font-medium text-foreground">{label}</h4>
               <Badge variant="secondary" className="text-xs">
                 For verification only
               </Badge>
@@ -105,7 +105,7 @@ export function ExtractionFieldCard({
       <Card className="p-3 transition-all duration-200 shadow-sm border-slate-300 bg-white">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <h4 className="font-medium text-slate-900 mb-2">{label}</h4>
+            <h4 className="font-medium text-foreground mb-2">{label}</h4>
             <p className="text-sm text-slate-400 italic">{placeholder}</p>
           </div>
         </div>
@@ -126,7 +126,7 @@ export function ExtractionFieldCard({
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
-            <h4 className="font-medium text-slate-900">{label}</h4>
+            <h4 className="font-medium text-foreground">{label}</h4>
             {(status === "edited" || status === "rejected") && (
               <Badge
                 variant={status === "rejected" ? "secondary" : "default"}

@@ -87,7 +87,7 @@ export function EventCard({ event }: EventCardProps) {
 
           {/* Content */}
           <div className="flex-1 min-w-0">
-            <h4 className="font-medium text-slate-900 truncate">{event.title}</h4>
+            <h4 className="font-medium text-foreground truncate">{event.title}</h4>
 
             {/* Date/time */}
             <p className="text-sm text-slate-600 mt-1">{formattedDate}</p>

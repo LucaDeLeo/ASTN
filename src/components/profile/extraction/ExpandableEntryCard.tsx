@@ -126,7 +126,7 @@ export function ExpandableEntryCard({
                 "font-medium truncate",
                 status === "rejected"
                   ? "line-through text-slate-400"
-                  : "text-slate-900"
+                  : "text-foreground"
               )}
             >
               {title}
@@ -408,7 +408,7 @@ function WorkHistoryFields({ entry, onChange }: WorkHistoryFieldsProps) {
             }
           }}
           placeholder="Describe your role and responsibilities..."
-          className="w-full px-3 py-2 text-sm text-slate-900 border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-coral-500 focus:border-transparent resize-none min-h-[60px] whitespace-pre-wrap overflow-hidden"
+          className="w-full px-3 py-2 text-sm text-foreground border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-coral-500 focus:border-transparent resize-none min-h-[60px] whitespace-pre-wrap overflow-hidden"
         />
       </div>
     </>

@@ -132,7 +132,7 @@ function MatchesContent() {
           <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <User className="size-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-display font-semibold text-slate-900 mb-2">
+          <h1 className="text-2xl font-display font-semibold text-foreground mb-2">
             Create Your Profile First
           </h1>
           <p className="text-muted-foreground mb-6">
@@ -154,7 +154,7 @@ function MatchesContent() {
           <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <Sparkles className="size-8 text-primary animate-pulse" />
           </div>
-          <h1 className="text-2xl font-display font-semibold text-slate-900 mb-2">
+          <h1 className="text-2xl font-display font-semibold text-foreground mb-2">
             Finding Your Matches
           </h1>
           <p className="text-muted-foreground mb-4">
@@ -171,7 +171,7 @@ function MatchesContent() {
     return (
       <main className="container mx-auto px-4 py-8">
         <Card className="max-w-lg mx-auto p-8 text-center">
-          <h1 className="text-2xl font-display font-semibold text-slate-900 mb-2">
+          <h1 className="text-2xl font-display font-semibold text-foreground mb-2">
             Something went wrong
           </h1>
           <p className="text-red-500 mb-6">{computeError}</p>
@@ -190,7 +190,7 @@ function MatchesContent() {
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-display font-semibold text-slate-900">Your Matches</h1>
+            <h1 className="text-2xl font-display font-semibold text-foreground">Your Matches</h1>
             <p className="text-muted-foreground mt-1">
               Opportunities matched to your profile and goals
             </p>
@@ -216,7 +216,7 @@ function MatchesContent() {
             <div className="size-16 rounded-full bg-cream-100 flex items-center justify-center mx-auto mb-4">
               <Sparkles className="size-8 text-coral-400" />
             </div>
-            <h2 className="text-xl font-display font-semibold text-slate-900 mb-2">
+            <h2 className="text-xl font-display font-semibold text-foreground mb-2">
               No matches yet
             </h2>
             <p className="text-muted-foreground mb-6 max-w-md mx-auto">

@@ -77,7 +77,7 @@ function AttendanceContent() {
             <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center">
               <CalendarCheck className="size-5 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-2xl font-bold text-foreground">
               Attendance History
             </h1>
           </div>
@@ -87,7 +87,7 @@ function AttendanceContent() {
         {attendance.length === 0 ? (
           <Card className="p-8 text-center">
             <CalendarCheck className="size-12 text-slate-300 mx-auto mb-4" />
-            <h2 className="text-lg font-medium text-slate-900 mb-2">
+            <h2 className="text-lg font-medium text-foreground mb-2">
               No events attended yet
             </h2>
             <p className="text-slate-500 mb-6">
@@ -136,7 +136,7 @@ function AttendanceCard({ record }: { record: AttendanceRecord }) {
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           {/* Event title and org */}
-          <h3 className="font-semibold text-slate-900 truncate">
+          <h3 className="font-semibold text-foreground truncate">
             {record.event.title}
           </h3>
           {record.org && (

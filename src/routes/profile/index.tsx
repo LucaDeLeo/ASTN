@@ -73,7 +73,7 @@ function ProfileContent() {
           <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <User className="size-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-display font-semibold text-slate-900 mb-2">
+          <h1 className="text-2xl font-display font-semibold text-foreground mb-2">
             Create Your Profile
           </h1>
           <p className="text-muted-foreground mb-6">
@@ -94,7 +94,7 @@ function ProfileContent() {
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-display font-semibold text-slate-900">
+            <h1 className="text-2xl font-display font-semibold text-foreground">
               {profile.name || "Your Profile"}
             </h1>
             {profile.headline && (
@@ -134,14 +134,14 @@ function ProfileContent() {
           <Card className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <User className="size-5 text-coral-400" />
-              <h2 className="text-lg font-display font-semibold text-slate-900">
+              <h2 className="text-lg font-display font-semibold text-foreground">
                 Basic Information
               </h2>
             </div>
             <div className="space-y-3">
               {profile.name && (
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-900 font-medium">
+                  <span className="text-foreground font-medium">
                     {profile.name}
                   </span>
                   {profile.pronouns && (
@@ -167,13 +167,13 @@ function ProfileContent() {
           <Card className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <GraduationCap className="size-5 text-coral-400" />
-              <h2 className="text-lg font-display font-semibold text-slate-900">Education</h2>
+              <h2 className="text-lg font-display font-semibold text-foreground">Education</h2>
             </div>
             {profile.education && profile.education.length > 0 ? (
               <div className="space-y-4">
                 {profile.education.map((edu, index) => (
                   <div key={index} className="border-l-2 border-slate-200 pl-4">
-                    <p className="font-medium text-slate-900">
+                    <p className="font-medium text-foreground">
                       {edu.degree && `${edu.degree} in `}
                       {edu.field || "Unknown Field"}
                     </p>
@@ -195,7 +195,7 @@ function ProfileContent() {
           <Card className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <Briefcase className="size-5 text-coral-400" />
-              <h2 className="text-lg font-display font-semibold text-slate-900">
+              <h2 className="text-lg font-display font-semibold text-foreground">
                 Work History
               </h2>
             </div>
@@ -203,7 +203,7 @@ function ProfileContent() {
               <div className="space-y-4">
                 {profile.workHistory.map((work, index) => (
                   <div key={index} className="border-l-2 border-slate-200 pl-4">
-                    <p className="font-medium text-slate-900">{work.title}</p>
+                    <p className="font-medium text-foreground">{work.title}</p>
                     <p className="text-slate-600">{work.organization}</p>
                     {work.startDate && (
                       <p className="text-sm text-slate-500">
@@ -242,7 +242,7 @@ function ProfileContent() {
           <Card className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <Target className="size-5 text-coral-400" />
-              <h2 className="text-lg font-display font-semibold text-slate-900">
+              <h2 className="text-lg font-display font-semibold text-foreground">
                 Career Goals
               </h2>
             </div>
@@ -286,7 +286,7 @@ function ProfileContent() {
           <Card className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <CalendarCheck className="size-5 text-coral-400" />
-              <h2 className="text-lg font-display font-semibold text-slate-900">
+              <h2 className="text-lg font-display font-semibold text-foreground">
                 Event Attendance
               </h2>
             </div>
@@ -318,7 +318,7 @@ function ProfileContent() {
                         className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0"
                       >
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-slate-900 truncate">
+                          <p className="text-sm font-medium text-foreground truncate">
                             {record.event.title}
                           </p>
                           <p className="text-xs text-slate-500">

@@ -49,7 +49,7 @@ function OrgBrowsePage() {
         {/* List - right side, scrollable */}
         <div className="flex-1 overflow-y-auto p-4 lg:p-6">
           <div className="mb-6">
-            <h1 className="text-2xl font-display font-semibold text-slate-900 mb-2">
+            <h1 className="text-2xl font-display font-semibold text-foreground mb-2">
               Organizations
             </h1>
             <p className="text-muted-foreground">
@@ -100,7 +100,7 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
       <div className="size-16 rounded-full bg-cream-100 flex items-center justify-center mx-auto mb-4">
         <Building2 className="size-8 text-coral-400" />
       </div>
-      <h3 className="text-lg font-display font-medium text-slate-900 mb-2">
+      <h3 className="text-lg font-display font-medium text-foreground mb-2">
         {hasFilters ? "No organizations found" : "No organizations yet"}
       </h3>
       <p className="text-muted-foreground">

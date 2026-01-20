@@ -68,7 +68,7 @@ function ProgramsListPage() {
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-lg mx-auto text-center py-12">
             <Building2 className="size-16 text-slate-300 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-slate-900 mb-4">Organization Not Found</h1>
+            <h1 className="text-2xl font-bold text-foreground mb-4">Organization Not Found</h1>
             <Button asChild>
               <Link to="/">Go Home</Link>
             </Button>
@@ -85,7 +85,7 @@ function ProgramsListPage() {
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-lg mx-auto text-center py-12">
             <Shield className="size-16 text-slate-300 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-slate-900 mb-4">Admin Access Required</h1>
+            <h1 className="text-2xl font-bold text-foreground mb-4">Admin Access Required</h1>
             <Button asChild>
               <Link to="/org/$slug" params={{ slug }}>Back to Organization</Link>
             </Button>
@@ -115,7 +115,7 @@ function ProgramsListPage() {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-slate-900">Programs</h1>
+                <h1 className="text-2xl font-bold text-foreground">Programs</h1>
                 <p className="text-slate-600 mt-1">
                   Manage reading groups, fellowships, and other activities
                 </p>
@@ -157,7 +157,7 @@ function ProgramsListPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <FolderPlus className="size-12 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-slate-900 mb-2">
+                <h3 className="text-lg font-medium text-foreground mb-2">
                   {statusFilter === "all" ? "No programs yet" : `No ${statusFilter} programs`}
                 </h3>
                 <p className="text-slate-500 text-sm mb-4">

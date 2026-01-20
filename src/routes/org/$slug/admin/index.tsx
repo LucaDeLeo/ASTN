@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { useDotGridStyle } from "~/hooks/use-dot-grid-style";
 
 export const Route = createFileRoute("/org/$slug/admin/")({
   component: OrgAdminDashboard,
@@ -26,6 +27,7 @@ type TimeRange = "7d" | "30d" | "90d" | "all";
 function OrgAdminDashboard() {
   const { slug } = Route.useParams();
   const [timeRange, setTimeRange] = useState<TimeRange>("30d");
+  const dotGridStyle = useDotGridStyle();
 
   const org = useQuery(api.orgs.directory.getOrgBySlug, { slug });
   const membership = useQuery(
@@ -36,13 +38,6 @@ function OrgAdminDashboard() {
     api.orgs.stats.getEnhancedOrgStats,
     org && membership?.role === "admin" ? { orgId: org._id, timeRange } : "skip"
   );
-
-  // Dot grid background style for admin pages
-  const dotGridStyle = {
-    backgroundImage: `radial-gradient(circle, oklch(0.65 0.08 30 / 0.25) 1.5px, transparent 1.5px)`,
-    backgroundSize: '20px 20px',
-    backgroundColor: 'oklch(0.98 0.01 90)'
-  };
 
   // Loading state
   if (org === undefined || membership === undefined) {
@@ -75,7 +70,7 @@ function OrgAdminDashboard() {
             <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
               <Building2 className="size-8 text-slate-400" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-4">
+            <h1 className="text-2xl font-bold text-foreground mb-4">
               Organization Not Found
             </h1>
             <p className="text-slate-600 mb-6">
@@ -100,7 +95,7 @@ function OrgAdminDashboard() {
             <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
               <Shield className="size-8 text-slate-400" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-4">
+            <h1 className="text-2xl font-bold text-foreground mb-4">
               Admin Access Required
             </h1>
             <p className="text-slate-600 mb-6">
@@ -135,7 +130,7 @@ function OrgAdminDashboard() {
               <span>/</span>
               <span className="text-slate-700">Admin Dashboard</span>
             </div>
-            <h1 className="text-2xl font-display font-semibold text-slate-900">
+            <h1 className="text-2xl font-display font-semibold text-foreground">
               Admin Dashboard
             </h1>
             <p className="text-muted-foreground mt-1">
@@ -153,7 +148,7 @@ function OrgAdminDashboard() {
                 <Users className="size-4 text-slate-400" />
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-slate-900">
+                <div className="text-3xl font-bold text-foreground">
                   {stats?.memberCount ?? <Spinner className="size-6" />}
                 </div>
               </CardContent>
@@ -167,7 +162,7 @@ function OrgAdminDashboard() {
                 <Shield className="size-4 text-slate-400" />
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-slate-900">
+                <div className="text-3xl font-bold text-foreground">
                   {stats?.adminCount ?? <Spinner className="size-6" />}
                 </div>
               </CardContent>
@@ -187,7 +182,7 @@ function OrgAdminDashboard() {
                 <UserPlus className="size-4 text-slate-400" />
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-slate-900">
+                <div className="text-3xl font-bold text-foreground">
                   {stats?.joinedThisMonth ?? <Spinner className="size-6" />}
                 </div>
               </CardContent>
@@ -267,7 +262,7 @@ function OrgAdminDashboard() {
           {/* Statistics Section Header with Time Range Selector */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">
+              <h2 className="text-lg font-semibold text-foreground">
                 Community Statistics
               </h2>
               <p className="text-sm text-slate-500">

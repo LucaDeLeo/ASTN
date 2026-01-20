@@ -95,7 +95,7 @@ export function WorkHistoryStep({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-slate-900">Work History</h2>
+        <h2 className="text-xl font-semibold text-foreground">Work History</h2>
         <p className="text-sm text-slate-500 mt-1">
           Add your professional experience. Include relevant positions in AI
           safety, research, tech, or related fields.

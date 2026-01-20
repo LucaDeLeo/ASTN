@@ -149,7 +149,7 @@ export function PrivacyStep({
         <div className="size-16 rounded-full bg-green-100 flex items-center justify-center animate-bounce">
           <PartyPopper className="size-8 text-green-600" />
         </div>
-        <h2 className="text-xl font-semibold text-slate-900">
+        <h2 className="text-xl font-semibold text-foreground">
           Profile Complete!
         </h2>
         <p className="text-slate-500">Redirecting to your profile...</p>
@@ -161,7 +161,7 @@ export function PrivacyStep({
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-semibold text-slate-900">
+        <h2 className="text-xl font-semibold text-foreground">
           Privacy Settings
         </h2>
         <p className="text-sm text-slate-500 mt-1">
@@ -207,7 +207,7 @@ export function PrivacyStep({
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-slate-900">
+                    <span className="font-medium text-foreground">
                       {option.label}
                     </span>
                     {isSelected && (

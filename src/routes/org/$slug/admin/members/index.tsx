@@ -205,7 +205,7 @@ function OrgAdminMembers() {
             <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
               <Building2 className="size-8 text-slate-400" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-4">
+            <h1 className="text-2xl font-bold text-foreground mb-4">
               Organization Not Found
             </h1>
             <Button asChild>
@@ -227,7 +227,7 @@ function OrgAdminMembers() {
             <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
               <Shield className="size-8 text-slate-400" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-4">
+            <h1 className="text-2xl font-bold text-foreground mb-4">
               Admin Access Required
             </h1>
             <Button asChild>
@@ -269,7 +269,7 @@ function OrgAdminMembers() {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-slate-900">Members</h1>
+                <h1 className="text-2xl font-bold text-foreground">Members</h1>
                 <p className="text-slate-600 mt-1">
                   {members?.length ?? "..."} members in {org.name}
                 </p>
@@ -304,7 +304,7 @@ function OrgAdminMembers() {
               <div className="size-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
                 <Users className="size-6 text-slate-400" />
               </div>
-              <h3 className="text-lg font-medium text-slate-900 mb-2">
+              <h3 className="text-lg font-medium text-foreground mb-2">
                 {Object.keys(filters).length > 0
                   ? "No members found"
                   : "No members yet"}
@@ -493,7 +493,7 @@ function MemberRow({ member, engagement, orgId, slug, currentMembershipId }: Mem
             params={{ slug, userId: member.membership.userId }}
             className="block hover:bg-slate-50 -m-2 p-2 rounded transition-colors"
           >
-            <div className="font-medium text-slate-900 hover:text-primary">
+            <div className="font-medium text-foreground hover:text-primary">
               {member.profile?.name || "No name"}
             </div>
             {member.profile?.headline && (

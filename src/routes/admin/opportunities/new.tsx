@@ -8,7 +8,7 @@ export const Route = createFileRoute("/admin/opportunities/new")({
 function NewOpportunityPage() {
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">
+      <h1 className="text-2xl font-bold text-foreground mb-6">
         Add New Opportunity
       </h1>
       <OpportunityForm mode="create" />

@@ -39,7 +39,7 @@ function OpportunityPage() {
         <AuthHeader />
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto text-center py-12">
-            <h1 className="text-2xl font-display font-semibold text-slate-900 mb-4">
+            <h1 className="text-2xl font-display font-semibold text-foreground mb-4">
               Opportunity Not Found
             </h1>
             <p className="text-muted-foreground mb-6">

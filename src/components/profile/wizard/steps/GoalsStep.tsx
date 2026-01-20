@@ -64,7 +64,7 @@ export function GoalsStep({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-slate-900">Career Goals</h2>
+        <h2 className="text-xl font-semibold text-foreground">Career Goals</h2>
         <p className="text-sm text-slate-500 mt-1">
           Tell us about your career aspirations in AI safety. This helps us
           match you with the right opportunities.

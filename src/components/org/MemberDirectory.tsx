@@ -35,7 +35,7 @@ export function MemberDirectory({ orgId }: MemberDirectoryProps) {
         <div className="size-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
           <Users className="size-6 text-slate-400" />
         </div>
-        <h3 className="text-lg font-medium text-slate-900 mb-2">
+        <h3 className="text-lg font-medium text-foreground mb-2">
           No visible members yet
         </h3>
         <p className="text-slate-500 text-sm">
@@ -75,7 +75,7 @@ function MemberCard({ member }: MemberCardProps) {
     <Card className="p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-2">
         <div>
-          <h3 className="font-medium text-slate-900">{member.profile.name}</h3>
+          <h3 className="font-medium text-foreground">{member.profile.name}</h3>
           {member.profile.headline && (
             <p className="text-sm text-slate-600 line-clamp-2">
               {member.profile.headline}

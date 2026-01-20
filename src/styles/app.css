@@ -3,16 +3,11 @@
 @import "@fontsource-variable/plus-jakarta-sans";
 @import "@fontsource-variable/lora";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark, .dark *));
 
 @layer base {
   html {
     scrollbar-gutter: stable;
-  }
-
-  html,
-  body {
-    @apply text-gray-900 bg-gray-50 dark:bg-gray-950 dark:text-gray-200;
   }
 
   .using-mouse * {
@@ -300,37 +295,37 @@
 
 .dark {
   /* Base backgrounds - soft charcoal, not OLED black */
-  --background: oklch(0.13 0.005 30);        /* Subtle warm undertone */
+  --background: oklch(0.16 0.005 30);        /* Subtle warm undertone */
   --foreground: oklch(0.93 0.01 90);         /* Warm off-white */
 
-  /* Card/popover - slightly elevated from background */
-  --card: oklch(0.17 0.005 30);
+  /* Card/popover - elevated from background for visible contrast */
+  --card: oklch(0.22 0.005 30);
   --card-foreground: oklch(0.93 0.01 90);
-  --popover: oklch(0.17 0.005 30);
+  --popover: oklch(0.22 0.005 30);
   --popover-foreground: oklch(0.93 0.01 90);
 
   /* Primary - KEEP coral accent (same as light mode) */
   --primary: oklch(0.70 0.16 30);
-  --primary-foreground: oklch(0.13 0.005 30);
+  --primary-foreground: oklch(0.16 0.005 30);
 
   /* Secondary - warm dark gray */
-  --secondary: oklch(0.22 0.01 30);
+  --secondary: oklch(0.26 0.01 30);
   --secondary-foreground: oklch(0.93 0.01 90);
 
   /* Muted - for subtle backgrounds */
-  --muted: oklch(0.22 0.01 30);
+  --muted: oklch(0.26 0.01 30);
   --muted-foreground: oklch(0.65 0.02 90);
 
   /* Accent - coral-tinted for hover states */
-  --accent: oklch(0.25 0.03 30);
+  --accent: oklch(0.28 0.03 30);
   --accent-foreground: oklch(0.93 0.01 90);
 
   /* Destructive - brighter in dark mode for visibility */
   --destructive: oklch(0.65 0.20 25);
 
   /* Borders - subtle warm tint */
-  --border: oklch(0.28 0.01 30);
-  --input: oklch(0.22 0.01 30);
+  --border: oklch(0.32 0.01 30);
+  --input: oklch(0.26 0.01 30);
 
   /* Ring - coral for focus states */
   --ring: oklch(0.70 0.16 30);
@@ -343,13 +338,13 @@
   --chart-5: oklch(0.55 0.18 25);
 
   /* Sidebar - consistent with card */
-  --sidebar: oklch(0.15 0.005 30);
+  --sidebar: oklch(0.18 0.005 30);
   --sidebar-foreground: oklch(0.93 0.01 90);
   --sidebar-primary: oklch(0.70 0.16 30);
-  --sidebar-primary-foreground: oklch(0.13 0.005 30);
-  --sidebar-accent: oklch(0.22 0.01 30);
+  --sidebar-primary-foreground: oklch(0.16 0.005 30);
+  --sidebar-accent: oklch(0.26 0.01 30);
   --sidebar-accent-foreground: oklch(0.93 0.01 90);
-  --sidebar-border: oklch(0.28 0.01 30);
+  --sidebar-border: oklch(0.32 0.01 30);
   --sidebar-ring: oklch(0.70 0.16 30);
 
   /* Dark mode shadow tokens - subtle glow instead of drop shadow */

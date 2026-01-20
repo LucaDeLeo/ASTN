@@ -36,7 +36,7 @@ export function BasicInfoStep({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-slate-900">
+        <h2 className="text-xl font-semibold text-foreground">
           Basic Information
         </h2>
         <p className="text-sm text-slate-500 mt-1">

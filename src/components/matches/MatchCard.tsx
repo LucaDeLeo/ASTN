@@ -53,7 +53,7 @@ export function MatchCard({ match }: MatchCardProps) {
             params={{ id: match._id }}
             className="block group"
           >
-            <h3 className="font-semibold text-slate-900 group-hover:text-primary truncate">
+            <h3 className="font-semibold text-foreground group-hover:text-primary truncate">
               {match.opportunity.title}
             </h3>
             <p className="text-sm text-slate-600">{match.opportunity.organization}</p>

@@ -35,7 +35,7 @@ function AdminOpportunitiesPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Opportunities</h1>
+        <h1 className="text-2xl font-bold text-foreground">Opportunities</h1>
         <Button asChild>
           <Link to="/admin/opportunities/new">
             <Plus className="w-4 h-4 mr-2" />
@@ -61,7 +61,7 @@ function AdminOpportunitiesPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-medium text-slate-900">{opp.title}</h3>
+                      <h3 className="font-medium text-foreground">{opp.title}</h3>
                       <Badge
                         variant={opp.status === "active" ? "default" : "secondary"}
                       >

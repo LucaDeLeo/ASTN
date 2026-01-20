@@ -45,7 +45,7 @@ export function OrgCard({ org, variant = "carousel" }: OrgCardProps) {
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <h3 className="font-medium text-slate-900 truncate">{org.name}</h3>
+          <h3 className="font-medium text-foreground truncate">{org.name}</h3>
           {location && (
             <div className="flex items-center gap-1 text-sm text-slate-500 mt-0.5">
               <MapPin className="size-3 shrink-0" />

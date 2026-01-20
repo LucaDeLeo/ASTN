@@ -61,11 +61,11 @@ export function WizardProgress({
     <div className="w-64 shrink-0">
       <div className="sticky top-8">
         <div className="bg-white rounded-lg border p-4 space-y-4">
-          <div className="text-sm font-medium text-slate-900">
+          <div className="text-sm font-medium text-foreground">
             Profile Completeness
           </div>
 
-          <div className="text-2xl font-semibold text-slate-900">
+          <div className="text-2xl font-semibold text-foreground">
             {completedCount}{" "}
             <span className="text-base font-normal text-slate-500">
               of {totalCount} complete
@@ -85,7 +85,7 @@ export function WizardProgress({
                     "w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-left transition-colors",
                     isCurrent
                       ? "bg-primary/10 text-primary font-medium"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      : "text-slate-600 hover:bg-slate-50 hover:text-foreground"
                   )}
                 >
                   {isComplete ? (

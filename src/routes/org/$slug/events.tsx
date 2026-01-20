@@ -42,7 +42,7 @@ function OrgEventsPage() {
             <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
               <Building2 className="size-8 text-slate-400" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-4">
+            <h1 className="text-2xl font-bold text-foreground mb-4">
               Organization Not Found
             </h1>
             <p className="text-slate-600 mb-6">
@@ -88,7 +88,7 @@ function OrgEventsPage() {
                   <span>/</span>
                   <span className="text-slate-700">Events</span>
                 </div>
-                <h1 className="text-xl font-bold text-slate-900">
+                <h1 className="text-xl font-bold text-foreground">
                   <Calendar className="size-5 inline-block mr-2 -mt-0.5" />
                   Events Calendar
                 </h1>
@@ -117,7 +117,7 @@ function OrgEventsPage() {
               <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
                 <Calendar className="size-8 text-slate-400" />
               </div>
-              <h2 className="text-lg font-semibold text-slate-900 mb-2">
+              <h2 className="text-lg font-semibold text-foreground mb-2">
                 No Events Calendar
               </h2>
               <p className="text-slate-600">

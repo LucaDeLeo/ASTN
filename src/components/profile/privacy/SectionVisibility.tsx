@@ -66,7 +66,7 @@ export function SectionVisibility({
           <EffectiveIcon className="size-4 text-slate-600" />
         </div>
         <div>
-          <p className="text-sm font-medium text-slate-900">{label}</p>
+          <p className="text-sm font-medium text-foreground">{label}</p>
           <p className="text-xs text-slate-500">
             {value
               ? `Override: ${VISIBILITY_OPTIONS.find((o) => o.value === value)?.label}`

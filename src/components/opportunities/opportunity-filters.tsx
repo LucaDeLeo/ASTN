@@ -70,12 +70,12 @@ export function OpportunityFilters() {
     roleType !== "all" || locationFilter !== "all" || searchTerm !== "";
 
   return (
-    <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
+    <div className="bg-white dark:bg-card border-b border-slate-200 dark:border-border sticky top-0 z-10">
       <div className="container mx-auto px-4 py-4">
         <div className="flex flex-wrap items-center gap-3">
           {/* Search - Secondary per CONTEXT.md */}
           <div className="relative w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search opportunities..."
@@ -122,7 +122,7 @@ export function OpportunityFilters() {
               variant="ghost"
               size="sm"
               onClick={clearFilters}
-              className="text-slate-500"
+              className="text-slate-500 dark:text-muted-foreground"
             >
               <X className="w-4 h-4 mr-1" />
               Clear

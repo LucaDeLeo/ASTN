@@ -19,11 +19,11 @@ type Opportunity = {
 };
 
 const ROLE_TYPE_COLORS: Record<string, string> = {
-  research: "bg-purple-100 text-purple-800 border-purple-200",
-  engineering: "bg-blue-100 text-blue-800 border-blue-200",
-  operations: "bg-green-100 text-green-800 border-green-200",
-  policy: "bg-amber-100 text-amber-800 border-amber-200",
-  other: "bg-slate-100 text-slate-800 border-slate-200",
+  research: "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700/50",
+  engineering: "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700/50",
+  operations: "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700/50",
+  policy: "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700/50",
+  other: "bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-600/50",
 };
 
 export function OpportunityCard({
@@ -40,7 +40,7 @@ export function OpportunityCard({
       <Card
         className="
           hover:shadow-lg transition-all duration-200 cursor-pointer
-          border-slate-200 hover:border-primary/30
+          border-slate-200 dark:border-border hover:border-primary/30
           hover:-translate-y-0.5 active:translate-y-0
           rounded-none sm:rounded-sm
         "
@@ -56,11 +56,11 @@ export function OpportunityCard({
                 <img
                   src={opportunity.organizationLogoUrl}
                   alt={`${opportunity.organization} logo`}
-                  className="w-12 h-12 rounded-sm object-contain bg-slate-50 border border-slate-100"
+                  className="w-12 h-12 rounded-sm object-contain bg-slate-50 dark:bg-muted border border-slate-100 dark:border-border"
                 />
               ) : (
-                <div className="w-12 h-12 rounded-sm bg-slate-100 flex items-center justify-center border border-slate-200">
-                  <Building2 className="w-6 h-6 text-slate-400" />
+                <div className="w-12 h-12 rounded-sm bg-muted flex items-center justify-center border border-border">
+                  <Building2 className="w-6 h-6 text-muted-foreground" />
                 </div>
               )}
             </div>
@@ -69,10 +69,10 @@ export function OpportunityCard({
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <h3 className="font-semibold text-slate-900 leading-tight font-mono tracking-tight">
+                  <h3 className="font-semibold text-foreground leading-tight font-mono tracking-tight">
                     {opportunity.title}
                   </h3>
-                  <p className="text-sm text-slate-600 mt-0.5">
+                  <p className="text-sm text-muted-foreground mt-0.5">
                     {opportunity.organization}
                   </p>
                 </div>
@@ -81,7 +81,7 @@ export function OpportunityCard({
                 </Badge>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-slate-500">
+              <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5" />
                   {opportunity.location}
@@ -108,7 +108,7 @@ export function OpportunityCard({
               </div>
 
               {/* Freshness indicator (OPPS-06) */}
-              <p className="text-xs text-slate-400 mt-2 font-mono">
+              <p className="text-xs text-muted-foreground mt-2 font-mono">
                 Last verified: {formatDistanceToNow(opportunity.lastVerified, { addSuffix: true })}
               </p>
             </div>

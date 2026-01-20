@@ -78,7 +78,7 @@ export function EducationStep({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-slate-900">Education</h2>
+        <h2 className="text-xl font-semibold text-foreground">Education</h2>
         <p className="text-sm text-slate-500 mt-1">
           Add your educational background. This helps match you with
           opportunities that fit your qualifications.

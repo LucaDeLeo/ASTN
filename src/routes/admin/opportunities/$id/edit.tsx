@@ -29,7 +29,7 @@ function EditOpportunityPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">
+      <h1 className="text-2xl font-bold text-foreground mb-6">
         Edit Opportunity
       </h1>
       <OpportunityForm

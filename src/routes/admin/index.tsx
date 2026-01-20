@@ -8,7 +8,7 @@ export const Route = createFileRoute("/admin/")({
 function AdminDashboard() {
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Admin Dashboard</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-6">Admin Dashboard</h1>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Link to="/admin/opportunities">
           <Card className="hover:shadow-md transition-shadow cursor-pointer">

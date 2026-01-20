@@ -70,7 +70,7 @@ function OrgAdminSettings() {
             <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
               <Building2 className="size-8 text-slate-400" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-4">
+            <h1 className="text-2xl font-bold text-foreground mb-4">
               Organization Not Found
             </h1>
             <Button asChild>
@@ -92,7 +92,7 @@ function OrgAdminSettings() {
             <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
               <Shield className="size-8 text-slate-400" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-4">
+            <h1 className="text-2xl font-bold text-foreground mb-4">
               Admin Access Required
             </h1>
             <Button asChild>
@@ -151,7 +151,7 @@ function OrgAdminSettings() {
               <span>/</span>
               <span className="text-slate-700">Settings</span>
             </div>
-            <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
+            <h1 className="text-2xl font-bold text-foreground">Settings</h1>
             <p className="text-slate-600 mt-1">
               Configure integrations and organization settings
             </p>
@@ -203,7 +203,7 @@ function OrgAdminSettings() {
                   {lumaConfig.eventsLastSynced && (
                     <div className="rounded-lg bg-slate-50 px-4 py-3 text-sm">
                       <span className="text-slate-600">Last synced: </span>
-                      <span className="text-slate-900">
+                      <span className="text-foreground">
                         {new Date(lumaConfig.eventsLastSynced).toLocaleString()}
                       </span>
                     </div>

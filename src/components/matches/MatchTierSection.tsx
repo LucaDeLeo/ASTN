@@ -51,7 +51,7 @@ export function MatchTierSection({ tier, matches }: MatchTierSectionProps) {
     <section className="mb-8">
       <div className="flex items-center gap-2 mb-2">
         <Icon className={`size-5 ${meta.color}`} />
-        <h2 className="text-lg font-semibold text-slate-900">{meta.title}</h2>
+        <h2 className="text-lg font-semibold text-foreground">{meta.title}</h2>
         <span className="text-sm text-slate-500">({matches.length})</span>
       </div>
       <p className="text-sm text-slate-500 mb-4">{meta.description}</p>

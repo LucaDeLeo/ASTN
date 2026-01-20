@@ -117,7 +117,7 @@ function AuthenticatedContent() {
     return (
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-6">
-          <h1 className="text-2xl font-display font-semibold text-slate-900">{title}</h1>
+          <h1 className="text-2xl font-display font-semibold text-foreground">{title}</h1>
           <p className="text-muted-foreground mt-1">{description}</p>
         </div>
 
@@ -135,7 +135,7 @@ function AuthenticatedContent() {
     return (
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-display font-semibold text-slate-900">{title}</h1>
+          <h1 className="text-2xl font-display font-semibold text-foreground">{title}</h1>
           <p className="text-muted-foreground mt-1">{description}</p>
         </div>
 

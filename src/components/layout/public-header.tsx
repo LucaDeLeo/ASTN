@@ -5,13 +5,13 @@ export function PublicHeader() {
   return (
     <header className="border-b bg-white">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link to="/" className="font-semibold text-slate-900 font-mono">
+        <Link to="/" className="font-semibold text-foreground font-mono">
           AI Safety Talent Network
         </Link>
         <nav className="flex items-center gap-4">
           <Link
             to="/opportunities"
-            className="text-sm text-slate-600 hover:text-slate-900 [&.active]:text-slate-900 [&.active]:font-medium"
+            className="text-sm text-slate-600 hover:text-foreground [&.active]:text-foreground [&.active]:font-medium"
           >
             Opportunities
           </Link>

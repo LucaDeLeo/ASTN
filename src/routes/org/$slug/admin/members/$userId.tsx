@@ -106,7 +106,7 @@ function MemberProfilePage() {
             <Card className="mt-6">
               <CardContent className="py-12 text-center">
                 <EyeOff className="size-12 text-slate-300 mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-slate-900 mb-2">
+                <h2 className="text-xl font-semibold text-foreground mb-2">
                   Profile Hidden
                 </h2>
                 <p className="text-slate-500">
@@ -146,7 +146,7 @@ function MemberProfilePage() {
                   <User className="size-10 text-slate-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-2xl font-bold text-slate-900">
+                  <h1 className="text-2xl font-bold text-foreground">
                     {profile.name ?? "No name"}
                   </h1>
                   {visibleSections.basicInfo && profile.headline && (
@@ -230,7 +230,7 @@ function NotFound({ message }: { message: string }) {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-lg mx-auto text-center py-12">
           <Building2 className="size-16 text-slate-300 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-slate-900 mb-4">{message}</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-4">{message}</h1>
           <Button asChild>
             <Link to="/">Go Home</Link>
           </Button>
@@ -247,7 +247,7 @@ function AccessDenied({ slug }: { slug: string }) {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-lg mx-auto text-center py-12">
           <Shield className="size-16 text-slate-300 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-slate-900 mb-4">Admin Access Required</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-4">Admin Access Required</h1>
           <Button asChild>
             <Link to="/org/$slug" params={{ slug }}>Back to Organization</Link>
           </Button>
@@ -318,7 +318,7 @@ function ProfileDetailsCard({
             <ul className="space-y-2">
               {profile.education.map((edu, idx) => (
                 <li key={idx} className="text-sm">
-                  <div className="font-medium text-slate-900">{edu.institution}</div>
+                  <div className="font-medium text-foreground">{edu.institution}</div>
                   {(edu.degree || edu.field) && (
                     <div className="text-slate-500">
                       {[edu.degree, edu.field].filter(Boolean).join(" in ")}
@@ -349,7 +349,7 @@ function ProfileDetailsCard({
             <ul className="space-y-2">
               {profile.workHistory.map((work, idx) => (
                 <li key={idx} className="text-sm">
-                  <div className="font-medium text-slate-900">{work.title}</div>
+                  <div className="font-medium text-foreground">{work.title}</div>
                   <div className="text-slate-500">{work.organization}</div>
                   {(work.startDate || work.endDate) && (
                     <div className="text-slate-400 text-xs">
@@ -691,7 +691,7 @@ function AttendanceHistoryCard({ history }: { history: AttendanceHistoryData }) 
                   <td className="px-3 py-2">
                     {record.event ? (
                       <div>
-                        <div className="font-medium text-slate-900 text-sm">
+                        <div className="font-medium text-foreground text-sm">
                           {record.event.title}
                         </div>
                         <div className="text-xs text-slate-500 flex items-center gap-1">

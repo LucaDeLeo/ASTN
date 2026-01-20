@@ -125,7 +125,7 @@ export function EntryPointSelector({
             <div
               className={cn(
                 "font-medium",
-                isPrimary ? "text-primary" : "text-slate-900"
+                isPrimary ? "text-primary" : "text-foreground"
               )}
             >
               {option.label}

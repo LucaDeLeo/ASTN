@@ -171,7 +171,7 @@ export function SkillsInput({
                     : "hover:bg-slate-50"
                 }`}
               >
-                <span className="text-slate-900">{skill.name}</span>
+                <span className="text-foreground">{skill.name}</span>
                 <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
                   {skill.category}
                 </span>

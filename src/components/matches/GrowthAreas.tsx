@@ -21,7 +21,7 @@ export function GrowthAreas({ areas }: GrowthAreasProps) {
     <Card className="p-6 bg-slate-50">
       <div className="flex items-center gap-2 mb-4">
         <TrendingUp className="size-5 text-primary" />
-        <h2 className="text-lg font-semibold text-slate-900">Your Growth Areas</h2>
+        <h2 className="text-lg font-semibold text-foreground">Your Growth Areas</h2>
       </div>
       <p className="text-sm text-slate-500 mb-4">
         Based on your matches, here are areas to focus on to improve your fit
@@ -34,7 +34,7 @@ export function GrowthAreas({ areas }: GrowthAreasProps) {
             <div key={area.theme} className="bg-white rounded-lg p-4 border">
               <div className="flex items-center gap-2 mb-2">
                 <Icon className="size-4 text-slate-400" />
-                <h3 className="font-medium text-slate-900">{area.theme}</h3>
+                <h3 className="font-medium text-foreground">{area.theme}</h3>
               </div>
               <ul className="space-y-1 text-sm text-slate-600">
                 {area.items.map((item, i) => (

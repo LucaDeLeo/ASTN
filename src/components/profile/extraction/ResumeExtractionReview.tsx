@@ -90,7 +90,7 @@ export function ResumeExtractionReview({
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h3 className="text-lg font-medium text-slate-900">
+        <h3 className="text-lg font-medium text-foreground">
           Review Extracted Information
         </h3>
         <p className="text-sm text-slate-500">

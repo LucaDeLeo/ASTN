@@ -122,7 +122,7 @@ function ProgramDetailPage() {
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-lg mx-auto text-center py-12">
             <Building2 className="size-16 text-slate-300 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-slate-900 mb-4">
+            <h1 className="text-2xl font-bold text-foreground mb-4">
               Organization Not Found
             </h1>
             <Button asChild>
@@ -141,7 +141,7 @@ function ProgramDetailPage() {
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-lg mx-auto text-center py-12">
             <Shield className="size-16 text-slate-300 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-slate-900 mb-4">
+            <h1 className="text-2xl font-bold text-foreground mb-4">
               Admin Access Required
             </h1>
             <Button asChild>
@@ -162,7 +162,7 @@ function ProgramDetailPage() {
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-lg mx-auto text-center py-12">
             <Building2 className="size-16 text-slate-300 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-slate-900 mb-4">
+            <h1 className="text-2xl font-bold text-foreground mb-4">
               Program Not Found
             </h1>
             <Button asChild>
@@ -213,7 +213,7 @@ function ProgramDetailPage() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold text-slate-900">
+                  <h1 className="text-2xl font-bold text-foreground">
                     {program.name}
                   </h1>
                   <Badge className={statusColors[program.status]}>
@@ -249,13 +249,13 @@ function ProgramDetailPage() {
               <div className="grid gap-6 sm:grid-cols-3">
                 <div>
                   <p className="text-sm text-slate-500 mb-1">Description</p>
-                  <p className="text-slate-900">
+                  <p className="text-foreground">
                     {program.description || "No description"}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-500 mb-1">Capacity</p>
-                  <p className="text-slate-900">
+                  <p className="text-foreground">
                     {program.maxParticipants
                       ? `${program.participantCount} / ${program.maxParticipants}`
                       : `${program.participantCount} (unlimited)`}
@@ -265,7 +265,7 @@ function ProgramDetailPage() {
                   <p className="text-sm text-slate-500 mb-1">
                     Completion Criteria
                   </p>
-                  <p className="text-slate-900">
+                  <p className="text-foreground">
                     {program.completionCriteria
                       ? program.completionCriteria.type === "attendance_count"
                         ? `${program.completionCriteria.requiredCount} sessions`
@@ -298,7 +298,7 @@ function ProgramDetailPage() {
               ) : participants.length === 0 ? (
                 <div className="text-center py-8">
                   <Users className="size-12 text-slate-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-slate-900 mb-2">
+                  <h3 className="text-lg font-medium text-foreground mb-2">
                     No participants yet
                   </h3>
                   <p className="text-slate-500 text-sm">
@@ -437,7 +437,7 @@ function ParticipantRow({ participant, program }: ParticipantRowProps) {
   return (
     <tr className="hover:bg-slate-50">
       <td className="px-4 py-3">
-        <div className="font-medium text-slate-900">{participant.memberName}</div>
+        <div className="font-medium text-foreground">{participant.memberName}</div>
       </td>
       <td className="px-4 py-3">
         <Badge className={participantStatusColors[participant.status]}>
@@ -456,7 +456,7 @@ function ParticipantRow({ participant, program }: ParticipantRowProps) {
             >
               <Minus className="size-4" />
             </Button>
-            <span className="w-12 text-center text-slate-900">
+            <span className="w-12 text-center text-foreground">
               {attendanceCount}
               {program.completionCriteria?.type === "attendance_count" &&
                 ` / ${program.completionCriteria.requiredCount}`}
@@ -601,7 +601,7 @@ function AddParticipantDialog({
                     className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50"
                   >
                     <div>
-                      <div className="font-medium text-slate-900">
+                      <div className="font-medium text-foreground">
                         {member.profile?.name || "No name"}
                       </div>
                       {member.email && (
