@@ -2,6 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { AuthLoading, Authenticated, Unauthenticated, useQuery } from "convex/react";
 import { Calendar, MapPin, Settings } from "lucide-react";
 import { api } from "../../convex/_generated/api";
+import { AnimatedCard } from "~/components/animation/AnimatedCard";
 import { AuthHeader } from "~/components/layout/auth-header";
 import { GradientBg } from "~/components/layout/GradientBg";
 import { EventCard } from "~/components/events/EventCard";
@@ -121,8 +122,10 @@ function Dashboard() {
                     {orgName} Events
                   </h3>
                   <div className="space-y-3">
-                    {events.slice(0, 5).map((event) => (
-                      <EventCard key={event._id} event={event} />
+                    {events.slice(0, 5).map((event, index) => (
+                      <AnimatedCard key={event._id} index={index}>
+                        <EventCard event={event} />
+                      </AnimatedCard>
                     ))}
                     {events.length > 5 && (
                       <p className="text-sm text-slate-500 pl-1">
@@ -153,8 +156,10 @@ function Dashboard() {
                 Discover Events
               </h3>
               <div className="space-y-3">
-                {dashboardEvents.otherOrgEvents.slice(0, 3).map((event) => (
-                  <EventCard key={event._id} event={event} />
+                {dashboardEvents.otherOrgEvents.slice(0, 3).map((event, index) => (
+                  <AnimatedCard key={event._id} index={index}>
+                    <EventCard event={event} />
+                  </AnimatedCard>
                 ))}
               </div>
             </div>
