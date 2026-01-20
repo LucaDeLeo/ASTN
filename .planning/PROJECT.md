@@ -8,32 +8,15 @@ A career command center for AI safety talent. Individuals maintain living profil
 
 Individuals get enough value from smart matching + recommendations that they keep profiles fresh — this is the flywheel that makes everything else work.
 
-## Current Milestone: v1.2 Org CRM & Events
-
-**Goal:** Transform ASTN into a self-maintaining CRM for field-building orgs — members discover local hubs, attend events, and orgs get a live view of their community without chasing people to update spreadsheets.
-
-**Target features:**
-- Org discovery (geography-based suggestions, searchable list, invite links)
-- Local events (orgs create events, members get configurable notifications)
-- Post-event attendance flow ("Did you attend?" → feedback form)
-- Attendance tracked on member profiles
-- Org dashboard as full CRM (member list, profiles, engagement history)
-- LLM-computed engagement levels with admin override
-
-**Stretch:**
-- Custom program tracking per org (reading groups, fellowships, etc.)
-- Granular attendance by program
-- Travel reminders when near a hub
-
 ## Current State
 
-**Shipped:** v1.1 Profile Input Speedup (2026-01-19)
+**Shipped:** v1.2 Org CRM & Events (2026-01-19)
 
-v1.1 added faster profile creation via PDF/text upload with LLM extraction, a review UI for extracted data, and a 4-way entry point wizard (upload, paste, manual, chat-first).
+v1.2 transformed ASTN into a self-maintaining CRM where orgs track members, events, and engagement automatically. Features include org discovery with geography-based suggestions, lu.ma event integration, configurable notifications, attendance tracking with feedback, LLM engagement scoring with admin override, and custom program tracking.
 
 **Tech stack:** Convex + TanStack Start + React 19 + shadcn/ui + Claude Sonnet 4.5/Haiku 4.5
 
-**Codebase:** ~84,000 lines TypeScript, ~360 files
+**Codebase:** ~110,000 lines TypeScript, ~500 files
 
 ## Requirements
 
@@ -50,21 +33,19 @@ v1.1 added faster profile creation via PDF/text upload with LLM extraction, a re
 - ✓ Text paste for profile creation (any format) — v1.1
 - ✓ LLM extraction from uploaded content → auto-fill form fields — v1.1
 - ✓ Context-aware enrichment chat (knows what's populated, only asks about gaps) — v1.1
+- ✓ Org discovery with geography-based suggestions and invite links — v1.2
+- ✓ Lu.ma event integration with automatic sync and dashboard display — v1.2
+- ✓ Configurable event notifications with batching and org muting — v1.2
+- ✓ Post-event attendance tracking with one-tap confirmation and feedback — v1.2
+- ✓ LLM engagement scoring with explanations and admin override — v1.2
+- ✓ Full CRM dashboard with member profiles, history, and CSV export — v1.2
+- ✓ Custom program tracking with enrollment and attendance — v1.2
 
 ### Active
 
-- [ ] Org discovery — geography-based suggestions for nearby hubs
-- [ ] Org discovery — searchable list with online communities
-- [ ] Org discovery — invite links for direct org joining
-- [ ] Local events — orgs can create events with details
-- [ ] Local events — configurable notifications (frequency, channel, disable)
-- [ ] Event attendance — post-event "Did you attend?" notification
-- [ ] Event attendance — feedback form (immediate, dismiss, remind later)
-- [ ] Event attendance — tracked on member profiles
-- [ ] Org CRM — full member directory with profiles
-- [ ] Org CRM — engagement history per member
-- [ ] Engagement scoring — LLM-computed from activity
-- [ ] Engagement scoring — admin override capability
+<!-- No active requirements — ready for next milestone -->
+
+(None — run `/gsd:new-milestone` to define next goals)
 
 ### Out of Scope
 
@@ -79,13 +60,14 @@ v1.1 added faster profile creation via PDF/text upload with LLM extraction, a re
 
 ## Context
 
-**Current state:** v1.1 shipped 2026-01-19. Ready for BAISH pilot (50-100 profiles) with faster profile creation.
+**Current state:** v1.2 shipped 2026-01-19. Full CRM functionality with events and engagement scoring. Ready for BAISH pilot expansion.
 
 **Known issues:**
 - `@ts-nocheck` in batchActions.ts (Convex action type inference workaround)
 - OAuth flows require real browser testing
 - Aggregation requires 80K/Airtable API keys configured
-- test-upload.tsx route should be removed after development verification
+- Lu.ma API key required for event sync (per-org Lu.ma Plus subscription)
+- linkedEventIds auto-attendance not yet implemented (tracked as future work)
 
 **Launch plan:** Workshop-based onboarding where members create profiles (via upload, paste, or AI chat) and get immediate matches during the session.
 
@@ -122,6 +104,13 @@ v1.1 added faster profile creation via PDF/text upload with LLM extraction, a re
 | 4-way entry point wizard | Upload, paste, manual, chat-first options | ✓ Good — covers all user preferences |
 | Default acceptance in review UI | Users reject unwanted fields rather than accepting each | ✓ Good — reduced friction |
 | Fuzzy skill matching (0.7 threshold) | Suggest ASTN skills from resume content | ✓ Good — helpful suggestions |
+| Location discovery opt-in | Privacy-first approach to geography features | ✓ Good — users control visibility |
+| Lu.ma integration over native events | Leverage existing event platform, avoid re-inventing | ✓ Good — faster delivery, familiar UX |
+| Weekly digest as default notification | Prevent notification fatigue from day one | ✓ Good — users can opt into more |
+| Post-event prompt within 2-4 hours | Balance response rate vs memory accuracy | ✓ Good — research-backed timing |
+| Claude Haiku for engagement scoring | Cost-effective for batch daily classification | ✓ Good — ~$0.001 per member |
+| Engagement levels not percentages | Avoid false precision, reduce member anxiety | ✓ Good — admin-only, actionable labels |
+| Server-side pagination for CRM | Prevent performance explosion at scale | ✓ Good — handles 100+ members |
 
 ---
-*Last updated: 2026-01-19 after v1.2 milestone defined*
+*Last updated: 2026-01-19 after v1.2 milestone complete*

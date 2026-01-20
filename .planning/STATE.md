@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** v1.2 Milestone complete - audit and archive
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 16 of 16 (CRM Dashboard & Programs)
-Plan: 6 of 6 in current phase
-Status: Phase complete - milestone complete
-Last activity: 2026-01-19 - Completed phase 16 (CRM Dashboard & Programs)
+Phase: N/A (between milestones)
+Plan: N/A
+Status: Ready for next milestone
+Last activity: 2026-01-19 — v1.2 milestone complete and archived
 
-Progress: [████████████████████████████████████] 100% (54/54 plans: v1.0 + v1.1 + v1.2 complete)
+Progress: v1.0 + v1.1 + v1.2 complete (54 plans total)
 
 ## Milestone History
 
@@ -22,99 +22,20 @@ Progress: [███████████████████████
 - v1.1 Profile Input Speedup - 4 phases, 13 plans - shipped 2026-01-19
 - v1.2 Org CRM & Events - 6 phases, 20 plans - shipped 2026-01-19
 
+**Total:** 16 phases, 54 plans across 3 milestones
+
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 54 (v1.0: 21 + v1.1: 13 + v1.2: 20)
+- Total plans completed: 54
 - Average duration: ~5 min/plan
-- v1.1 execution: 4 phases in ~2 days
-- v1.2 execution: 6 phases in ~1 day (~90 min total execution)
-
-**By Phase (v1.1):**
-
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 07-file-upload | 4 | ~72min | ~18min |
-| 08-llm-extraction | 3 | ~33min | ~11min |
-| 09-review-apply-ui | 3 | ~22min | ~7min |
-| 10-wizard-integration | 3 | ~10min | ~3min |
-
-**By Phase (v1.2):**
-
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 11-org-discovery | 3 | ~12min | ~4min |
-| 12-event-management | 3 | ~11min | ~4min |
-| 13-event-notifications | 3 | ~19min | ~6min |
-| 14-attendance-tracking | 3 | ~11min | ~4min |
-| 15-engagement-scoring | 2 | ~11min | ~6min |
-| 16-crm-dashboard-programs | 6 | ~23min | ~4min |
+- v1.2 execution: 6 phases in ~7 hours
 
 ## Accumulated Context
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
-- [v1.2 Research]: Zero new npm dependencies - existing stack handles everything
-- [v1.2 Research]: Sequential build order (org discovery -> events -> attendance -> engagement -> CRM)
-- [v1.2 Research]: Notification fatigue is #1 threat - design with batching from day one
-- [11-01]: Location discovery is opt-in (locationDiscoverable defaults to false)
-- [11-01]: Simple city parsing from "City, Country" format; global orgs as fallback
-- [11-02]: CSS scroll-snap for carousel (simpler, native feel)
-- [11-02]: Immediate toggle feedback via toast for LocationPrivacyToggle
-- [11-03]: Leaflet via CDN avoids npm dependency; types via @types/leaflet
-- [11-03]: Map hidden on mobile for better UX on small screens
-- [12-01]: Lu.ma API key is per-calendar, implicitly identifies which calendar to fetch
-- [12-01]: Event sync window: 30 days past to 90 days future
-- [12-01]: Rate limiting: 200ms between pages, 1s between orgs, 60s retry on 429
-- [12-02]: Lu.ma embed uses ?embed=true query param for clean iframe display
-- [12-02]: Events button only shown when lumaCalendarUrl is configured
-- [12-02]: Admin dashboard shows 4-column grid with Events status card
-- [12-03]: Events grouped by org name on dashboard for clear organization
-- [12-03]: Max 5 events shown per org with overflow indicator
-- [12-03]: Date format: 'Fri, Jan 24 at 6:00 PM' using date-fns
-- [13-01]: Weekly digest as default event notification frequency
-- [13-01]: 1 day + 1 hour before as default reminders
-- [13-01]: Org muting stored as mutedOrgIds array
-- [13-02]: Daily digest targets 9 AM local time (offset from match alerts at 8 AM)
-- [13-02]: Weekly event digest runs Sunday 22:30 UTC (30 min after opportunity digest)
-- [13-02]: Rate limit of 5 notifications per hour per user for "all" frequency
-- [13-03]: Intersection Observer at 50% visibility for event view tracking
-- [13-03]: Scheduler-based reminders using ctx.scheduler.runAt for future notifications
-- [13-03]: scheduledReminders table tracks function IDs for cancellation
-- [14-01]: 10-minute cron with 10-20 minute detection window for ended events
-- [14-01]: 2-prompt max limit for attendance prompts (no follow-ups after prompt 2)
-- [14-01]: Default attendance privacy: showOnProfile=true, showToOtherOrgs=false
-- [14-02]: Soft nudge skip requires two clicks (first shows warning, second confirms)
-- [14-02]: AttendancePrompt renders inline in notification list (not click-to-navigate)
-- [14-03]: Profile-level privacy defaults stored in privacySettings.attendancePrivacyDefaults
-- [14-03]: Privacy updates can batch-update existing attendance records
-- [15-01]: Claude Haiku for cost-effective engagement classification
-- [15-01]: 100ms delay between member classifications for rate limiting
-- [15-01]: Override expiration checked during batch computation
-- [15-01]: User-facing text never shows "At Risk" - softer language used
-- [15-02]: Badge colors: green=Active, blue=Moderate, amber=At Risk, purple=New, gray=Inactive
-- [15-02]: Manual override indicated by (Manual) suffix on badge
-- [15-02]: Engagement data fetched at page level, distributed via Map for O(1) lookup
-- [16-01]: Time range options: 7d, 30d, 90d, all (default 30d)
-- [16-01]: Engagement labels use friendly names: Active instead of highly_engaged
-- [16-01]: Career distribution shows top 6 seeking values
-- [16-01]: joinedThisMonth field reused for time-range-filtered join count
-- [16-03]: Profile name always visible to admins for identification
-- [16-03]: Connections visibility level visible to org admins (org membership = connection)
-- [16-03]: Attendance history sorted by event date descending
-- [16-03]: Override history enriched with admin names for audit
-- [16-04]: Soft delete via archiving for programs (status: archived)
-- [16-04]: Auto-completion triggers when attendance count criteria met
-- [16-04]: Privacy: member emails not exposed in participant list
-- [16-05]: Profile name always visible to admins (needed for identification)
-- [16-05]: Eye/EyeOff icons indicate section visibility status
-- [16-05]: Engagement map passed to export for O(1) lookup per member
-- [16-06]: 5-column quick actions grid in admin dashboard (expanded from 4)
-- [16-06]: Attendance tracking inline with +/- buttons for quick updates
-- [16-06]: Status dropdown embedded in dropdown menu for compact UI
+Decisions logged in PROJECT.md Key Decisions table.
 
 ### Pending Todos
 
@@ -126,17 +47,16 @@ Recent decisions affecting current work:
 
 ### Blockers/Concerns
 
-- [Research]: Notification frequency defaults need user testing
-- [Research]: Engagement level thresholds may need per-org tuning
-- [Resolved 11-01]: Privacy consent UX for location - implemented as opt-in toggle
+- Notification frequency defaults need user testing
+- Engagement level thresholds may need per-org tuning
 
 ## Session Continuity
 
 Last session: 2026-01-19
-Stopped at: Completed phase 16 (CRM Dashboard & Programs)
+Stopped at: v1.2 milestone archived
 Resume file: None
-Next action: `/gsd:audit-milestone` (verify requirements, cross-phase integration, E2E flows)
+Next action: `/gsd:new-milestone` (define v1.3 or v2.0 goals)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-19 - Completed phase 16 (CRM Dashboard & Programs) and v1.2 milestone*
+*Last updated: 2026-01-19 — v1.2 milestone complete and archived*

@@ -1,5 +1,33 @@
 # Project Milestones: AI Safety Talent Network (ASTN)
 
+## v1.2 Org CRM & Events (Shipped: 2026-01-19)
+
+**Delivered:** Transform ASTN into a self-maintaining CRM where orgs track members, events, and engagement automatically.
+
+**Phases completed:** 11-16 (20 plans total)
+
+**Key accomplishments:**
+
+- Org discovery with geography-based suggestions, searchable directory with interactive Leaflet map, and invite links
+- Lu.ma event integration with automatic sync, org event pages, and dashboard event grouping
+- Configurable event notifications with in-app notification center, scheduler-based reminders, and digest emails with org muting
+- Post-event attendance tracking with one-tap confirmation, star ratings + feedback, and attendance history on profile
+- LLM engagement scoring via Claude Haiku with natural language explanations and admin override with audit trail
+- Full CRM dashboard with time-range stats, filterable member directory, privacy-controlled profiles, CSV export, and custom program tracking
+
+**Stats:**
+
+- 147 files created/modified
+- ~25,000 lines of TypeScript added
+- 6 phases, 20 plans
+- Same day execution (~7 hours from first to last commit)
+
+**Git range:** `feat(11-01)` → `fix: restructure member route`
+
+**What's next:** v1.3 or v2.0 based on BAISH pilot feedback — potential features include mobile responsiveness, advanced event check-in, or application tracking
+
+---
+
 ## v1.1 Profile Input Speedup (Shipped: 2026-01-19)
 
 **Delivered:** Faster profile creation via PDF/text upload with LLM extraction, review UI, and 4-way entry point wizard.
@@ -57,3 +85,4 @@
 ---
 
 *Milestones file created: 2026-01-18*
+*Updated: 2026-01-19 - Added v1.2 Org CRM & Events*
