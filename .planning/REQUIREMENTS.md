@@ -5,7 +5,7 @@
 
 ## v1.3 Requirements
 
-Requirements for visual overhaul. Each maps to roadmap phases.
+33 requirements for visual overhaul across 5 categories. Each maps to exactly one roadmap phase.
 
 ### Typography
 
@@ -82,47 +82,64 @@ Explicitly excluded. Documented to prevent scope creep.
 
 Which phases cover which requirements. Updated during roadmap creation.
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| TYPO-01 | Phase 17 | Pending |
-| TYPO-02 | Phase 17 | Pending |
-| TYPO-03 | Phase 17 | Pending |
-| TYPO-04 | Phase 17 | Pending |
-| TYPO-05 | Phase 17 | Pending |
-| TYPO-06 | Phase 18 | Pending |
-| ATMO-01 | Phase 18 | Pending |
-| ATMO-02 | Phase 18 | Pending |
-| ATMO-03 | Phase 17 | Pending |
-| ATMO-04 | Phase 18 | Pending |
-| ATMO-05 | Phase 18 | Pending |
-| ATMO-06 | Phase 18 | Pending |
-| MOTN-01 | Phase 19 | Pending |
-| MOTN-02 | Phase 19 | Pending |
-| MOTN-03 | Phase 19 | Pending |
-| MOTN-04 | Phase 19 | Pending |
-| MOTN-05 | Phase 19 | Pending |
-| MOTN-06 | Phase 17 | Pending |
-| COMP-01 | Phase 18 | Pending |
-| COMP-02 | Phase 20 | Pending |
-| COMP-03 | Phase 20 | Pending |
-| COMP-04 | Phase 20 | Pending |
-| COMP-05 | Phase 19 | Pending |
-| COMP-06 | Phase 18 | Pending |
-| PAGE-01 | Phase 18 | Pending |
-| PAGE-02 | Phase 18 | Pending |
-| PAGE-03 | Phase 18 | Pending |
-| PAGE-04 | Phase 18 | Pending |
-| PAGE-05 | Phase 18 | Pending |
-| PAGE-06 | Phase 18 | Pending |
-| PAGE-07 | Phase 18 | Pending |
-| PAGE-08 | Phase 18 | Pending |
-| PAGE-09 | Phase 18 | Pending |
+### Phase 17: Foundation & Tokens (7 requirements)
+| Requirement | Description | Status |
+|-------------|-------------|--------|
+| TYPO-01 | Custom display font (Plus Jakarta Sans Variable) | Pending |
+| TYPO-02 | Body font pairing configured | Pending |
+| TYPO-03 | Typographic scale with fluid type | Pending |
+| TYPO-04 | Font preloading in __root.tsx | Pending |
+| TYPO-05 | Optional serif accent font (Lora Variable) | Pending |
+| ATMO-03 | Extended warm neutral palette in design tokens | Pending |
+| MOTN-06 | Animation keyframes and easing in design tokens | Pending |
+
+### Phase 18: Core Visual Polish (17 requirements)
+| Requirement | Description | Status |
+|-------------|-------------|--------|
+| TYPO-06 | Typography applied consistently across pages | Pending |
+| ATMO-01 | Warm off-white backgrounds | Pending |
+| ATMO-02 | Coral-tinted shadows | Pending |
+| ATMO-04 | Gradient system extended to other pages | Pending |
+| ATMO-05 | Noise/grain texture overlay | Pending |
+| ATMO-06 | Atmospheric depth on all main pages | Pending |
+| COMP-01 | Consistent border-radius system | Pending |
+| COMP-06 | GradientBg reusable background component | Pending |
+| PAGE-01 | Home page atmosphere updated | Pending |
+| PAGE-02 | Profile view page visual hierarchy | Pending |
+| PAGE-03 | Profile edit page styling | Pending |
+| PAGE-04 | Matches page card presentation | Pending |
+| PAGE-05 | Opportunities listing with effects | Pending |
+| PAGE-06 | Opportunity detail page polish | Pending |
+| PAGE-07 | Admin dashboard visual consistency | Pending |
+| PAGE-08 | Login/auth flow polish maintained | Pending |
+| PAGE-09 | Organizations page with map polish | Pending |
+
+### Phase 19: Motion System (6 requirements)
+| Requirement | Description | Status |
+|-------------|-------------|--------|
+| MOTN-01 | Card hover feedback (lift + shadow) | Pending |
+| MOTN-02 | Smooth transitions with organic easing | Pending |
+| MOTN-03 | Staggered card entrance animations | Pending |
+| MOTN-04 | Page transitions between routes | Pending |
+| MOTN-05 | Button press "squish" feedback | Pending |
+| COMP-05 | AnimatedCard component with stagger | Pending |
+
+### Phase 20: Polish & Integration (3 requirements)
+| Requirement | Description | Status |
+|-------------|-------------|--------|
+| COMP-02 | Focus state styling (:focus-visible) | Pending |
+| COMP-03 | Dark mode color refinement | Pending |
+| COMP-04 | Empty state visual treatments | Pending |
 
 **Coverage:**
-- v1.3 requirements: 30 total
-- Mapped to phases: 30
-- Unmapped: 0 ✓
+- v1.3 requirements: 33 total
+- Phase 17: 7 requirements
+- Phase 18: 17 requirements
+- Phase 19: 6 requirements
+- Phase 20: 3 requirements
+- Mapped total: 33
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-19*
-*Last updated: 2026-01-19 after initial definition*
+*Last updated: 2026-01-19 - traceability updated after roadmap creation*
