@@ -16,14 +16,14 @@ import loraWoff2 from '@fontsource-variable/lora/files/lora-latin-wght-normal.wo
 import appCss from '~/styles/app.css?url'
 import { ThemeProvider } from '~/components/theme/theme-provider'
 
-// FOIT prevention script - runs before CSS to set dark class immediately
+// Theme flash prevention script - runs before CSS to apply theme class immediately
+// This prevents the flash of wrong theme before React hydrates
 const themeScript = `(function(){
   try {
     const theme = localStorage.getItem('astn-theme');
     const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (theme === 'dark' || (theme === 'system' && systemDark) || (!theme && systemDark)) {
-      document.documentElement.classList.add('dark');
-    }
+    const isDark = theme === 'dark' || (theme === 'system' && systemDark) || (!theme && systemDark);
+    document.documentElement.classList.add(isDark ? 'dark' : 'light');
   } catch (e) {}
 })()`
 

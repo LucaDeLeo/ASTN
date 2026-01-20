@@ -35,9 +35,6 @@ export function ThemeProvider({
   React.useEffect(() => {
     const root = document.documentElement;
 
-    // Remove existing theme classes
-    root.classList.remove("light", "dark");
-
     // Determine effective theme
     let effectiveTheme: "light" | "dark";
     if (theme === "system") {
@@ -48,8 +45,14 @@ export function ThemeProvider({
       effectiveTheme = theme;
     }
 
-    // Apply theme class
-    root.classList.add(effectiveTheme);
+    // Only modify classes if needed (prevents flash when inline script already applied class)
+    const hasCorrectClass = root.classList.contains(effectiveTheme);
+    const hasWrongClass = root.classList.contains(effectiveTheme === "dark" ? "light" : "dark");
+
+    if (!hasCorrectClass || hasWrongClass) {
+      root.classList.remove("light", "dark");
+      root.classList.add(effectiveTheme);
+    }
   }, [theme]);
 
   // Listen for system theme changes when in system mode
