@@ -1,5 +1,6 @@
 import { Compass, Sparkles, ThumbsUp } from "lucide-react";
 import { MatchCard } from "./MatchCard";
+import { AnimatedCard } from "~/components/animation/AnimatedCard";
 
 interface MatchTierSectionProps {
   tier: "great" | "good" | "exploring";
@@ -56,8 +57,10 @@ export function MatchTierSection({ tier, matches }: MatchTierSectionProps) {
       <p className="text-sm text-slate-500 mb-4">{meta.description}</p>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {matches.map((match) => (
-          <MatchCard key={match._id} match={match} />
+        {matches.map((match, index) => (
+          <AnimatedCard key={match._id} index={index}>
+            <MatchCard match={match} />
+          </AnimatedCard>
         ))}
       </div>
     </section>
