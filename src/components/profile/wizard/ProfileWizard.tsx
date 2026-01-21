@@ -157,32 +157,42 @@ export function ProfileWizard({ currentStep, onStepChange, fromExtraction, chatF
   };
 
   return (
-    <div className="flex gap-8">
+    <div className="flex flex-col md:flex-row md:gap-8">
+      {/* Progress indicator - rendered first, appears on top on mobile, side on desktop */}
       <WizardProgress currentStep={currentStep} onStepClick={onStepChange} />
 
-      <div className="flex-1 min-w-0">
-        <div className="bg-white rounded-lg border p-6">
+      {/* Form content */}
+      <div className="flex-1 md:min-w-0">
+        <div className="bg-white dark:bg-card rounded-lg border p-4 sm:p-6">
           {renderCurrentStep()}
 
           {/* Hide navigation on privacy step - it has its own Complete button */}
           {!isLastStep && (
-            <div className="flex items-center justify-between mt-8 pt-6 border-t">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-8 pt-6 border-t">
               <Button
                 variant="outline"
                 onClick={goToPreviousStep}
                 disabled={isFirstStep}
+                className="min-h-11 w-full sm:w-auto order-2 sm:order-1"
               >
                 <ChevronLeft className="size-4 mr-1" />
                 Previous
               </Button>
 
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" onClick={goToNextStep}>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 order-1 sm:order-2">
+                <Button
+                  variant="ghost"
+                  onClick={goToNextStep}
+                  className="min-h-11"
+                >
                   <SkipForward className="size-4 mr-1" />
                   Skip for now
                 </Button>
 
-                <Button onClick={goToNextStep}>
+                <Button
+                  onClick={goToNextStep}
+                  className="min-h-11"
+                >
                   Next
                   <ChevronRight className="size-4 ml-1" />
                 </Button>
