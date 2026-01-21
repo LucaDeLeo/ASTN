@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { MobileFilters } from "./mobile-filters";
 
 const ROLE_TYPES = [
   { value: "all", label: "All Roles" },
@@ -72,7 +73,21 @@ export function OpportunityFilters() {
   return (
     <div className="bg-white dark:bg-card border-b border-slate-200 dark:border-border sticky top-0 z-10">
       <div className="container mx-auto px-4 py-4">
-        <div className="flex flex-wrap items-center gap-3">
+        {/* Mobile filters */}
+        <div className="md:hidden">
+          <MobileFilters
+            roleType={roleType}
+            locationFilter={locationFilter}
+            searchTerm={searchTerm}
+            onRoleChange={(v) => updateFilter("role", v)}
+            onLocationChange={(v) => updateFilter("location", v)}
+            onSearchChange={(v) => updateFilter("q", v)}
+            onClearFilters={clearFilters}
+          />
+        </div>
+
+        {/* Desktop filters - existing layout */}
+        <div className="hidden md:flex flex-wrap items-center gap-3">
           {/* Search - Secondary per CONTEXT.md */}
           <div className="relative w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-muted-foreground" />
