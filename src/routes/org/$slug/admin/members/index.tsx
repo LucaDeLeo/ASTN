@@ -415,6 +415,218 @@ interface MemberRowProps {
   currentMembershipId: Id<"orgMemberships">;
 }
 
+function MemberCardMobile({
+  member,
+  engagement,
+  orgId,
+  slug,
+  currentMembershipId,
+}: MemberRowProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [overrideDialogOpen, setOverrideDialogOpen] = useState(false);
+
+  const removeMember = useMutation(api.orgs.admin.removeMember);
+  const promoteToAdmin = useMutation(api.orgs.admin.promoteToAdmin);
+  const demoteToMember = useMutation(api.orgs.admin.demoteToMember);
+
+  const isSelf = member.membership._id === currentMembershipId;
+  const isAdmin = member.membership.role === "admin";
+  const joinedDate = new Date(member.membership.joinedAt).toLocaleDateString(
+    "en-US",
+    { month: "short", day: "numeric", year: "numeric" }
+  );
+
+  const handlePromote = async () => {
+    setIsLoading(true);
+    try {
+      await promoteToAdmin({ orgId, membershipId: member.membership._id });
+    } catch (error) {
+      console.error("Failed to promote member:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDemote = async () => {
+    setIsLoading(true);
+    try {
+      await demoteToMember({ orgId, membershipId: member.membership._id });
+    } catch (error) {
+      console.error("Failed to demote member:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRemove = async () => {
+    if (
+      !confirm(
+        `Remove ${member.profile?.name || "this member"} from the organization?`
+      )
+    ) {
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await removeMember({ orgId, membershipId: member.membership._id });
+    } catch (error) {
+      console.error("Failed to remove member:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Get initials for avatar
+  const initials =
+    member.profile?.name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "?";
+
+  return (
+    <>
+      <div className="flex items-center gap-3 p-4 border-b last:border-b-0">
+        {/* Avatar */}
+        <Link
+          to="/org/$slug/admin/members/$userId"
+          params={{ slug, userId: member.membership.userId }}
+          className="shrink-0"
+        >
+          <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary">
+            {initials}
+          </div>
+        </Link>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <Link
+            to="/org/$slug/admin/members/$userId"
+            params={{ slug, userId: member.membership.userId }}
+          >
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-foreground truncate">
+                {member.profile?.name || "No name"}
+              </span>
+              {isAdmin && (
+                <Badge variant="secondary" className="shrink-0 text-xs">
+                  <Shield className="size-3 mr-0.5" />
+                  Admin
+                </Badge>
+              )}
+            </div>
+          </Link>
+          <div className="flex items-center gap-2 mt-0.5">
+            {/* Key stat: engagement */}
+            {engagement ? (
+              <EngagementBadge
+                level={engagement.level}
+                hasOverride={engagement.hasOverride}
+                adminExplanation={engagement.adminExplanation}
+                onClick={() => setOverrideDialogOpen(true)}
+              />
+            ) : (
+              <PendingEngagementBadge />
+            )}
+            <span className="text-xs text-muted-foreground">
+              Joined {joinedDate}
+            </span>
+          </div>
+        </div>
+
+        {/* Actions dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              disabled={isLoading}
+              className="min-h-11 min-w-11"
+            >
+              {isLoading ? (
+                <Spinner className="size-4" />
+              ) : (
+                <MoreHorizontal className="size-4" />
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem asChild>
+              <Link
+                to="/org/$slug/admin/members/$userId"
+                params={{ slug, userId: member.membership.userId }}
+              >
+                <User className="size-4 mr-2" />
+                View Details
+              </Link>
+            </DropdownMenuItem>
+            {engagement && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setOverrideDialogOpen(true)}>
+                  <Settings className="size-4 mr-2" />
+                  Override Engagement
+                </DropdownMenuItem>
+              </>
+            )}
+            <DropdownMenuSeparator />
+            {!isAdmin && (
+              <DropdownMenuItem onClick={handlePromote}>
+                <Shield className="size-4 mr-2" />
+                Promote to Admin
+              </DropdownMenuItem>
+            )}
+            {isAdmin && !isSelf && (
+              <DropdownMenuItem onClick={handleDemote}>
+                <ShieldOff className="size-4 mr-2" />
+                Demote to Member
+              </DropdownMenuItem>
+            )}
+            {isAdmin && isSelf && (
+              <DropdownMenuItem disabled>
+                <ShieldOff className="size-4 mr-2 opacity-50" />
+                Cannot demote self
+              </DropdownMenuItem>
+            )}
+            {!isSelf && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleRemove} className="text-red-600">
+                  <Trash2 className="size-4 mr-2" />
+                  Remove
+                </DropdownMenuItem>
+              </>
+            )}
+            {isSelf && (
+              <DropdownMenuItem disabled>
+                <Trash2 className="size-4 mr-2 opacity-50" />
+                Use &quot;Leave Org&quot; instead
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Override Dialog */}
+      {engagement && (
+        <OverrideDialog
+          open={overrideDialogOpen}
+          onOpenChange={setOverrideDialogOpen}
+          engagementId={engagement._id}
+          memberName={member.profile?.name || "Member"}
+          currentLevel={engagement.level}
+          currentExplanation={engagement.adminExplanation}
+          hasOverride={engagement.hasOverride}
+          overrideNotes={engagement.overrideNotes}
+          orgId={orgId}
+          userId={member.membership.userId}
+        />
+      )}
+    </>
+  );
+}
+
 function MemberRow({ member, engagement, orgId, slug, currentMembershipId }: MemberRowProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [overrideDialogOpen, setOverrideDialogOpen] = useState(false);
