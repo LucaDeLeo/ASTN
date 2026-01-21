@@ -502,3 +502,45 @@
     animation: none !important;
   }
 }
+
+/* ==========================================================================
+   TOUCH TARGET UTILITIES - WCAG 2.5.8 compliance (44px minimum)
+   ========================================================================== */
+
+/* Touch target utility class for mobile */
+@media (max-width: 767px) {
+  .touch-target {
+    min-height: 2.75rem; /* 44px */
+    min-width: 2.75rem;
+  }
+}
+
+/* Ensure icon buttons have proper touch targets on mobile */
+@media (max-width: 767px) {
+  [data-slot="button"][data-size="icon"],
+  [data-slot="button"][data-size="icon-sm"],
+  [data-slot="button"][data-size="icon-lg"] {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
+}
+
+/* ==========================================================================
+   RESPONSIVE LAYOUT TRANSITIONS - Smooth breakpoint changes
+   ========================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  .container,
+  [class*="flex-col"][class*="md:flex-row"],
+  [class*="md:flex-row"],
+  [class*="md:grid-cols"] {
+    transition:
+      grid-template-columns 200ms ease-out,
+      flex-direction 200ms ease-out,
+      gap 200ms ease-out;
+  }
+}
+
+/* Transition layout utility */
+.transition-layout {
+  transition: all 200ms var(--ease-gentle, ease-out);
+}
