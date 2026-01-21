@@ -14,7 +14,7 @@ v2.0 transforms ASTN into a mobile-first experience with native iOS and Android 
 
 ## Phases
 
-- [ ] **Phase 21: Responsive Foundation** - Mobile-first layouts, touch targets, form usability
+- [x] **Phase 21: Responsive Foundation** - Mobile-first layouts, touch targets, form usability ✓
 - [ ] **Phase 22: Mobile Navigation** - Bottom tab bar, safe areas, hamburger menu
 - [ ] **Phase 23: Touch Interactions** - Pull-to-refresh, tap feedback, swipe gestures
 - [ ] **Phase 24: Tauri Desktop Integration** - Project setup, SPA config, Convex connectivity
@@ -36,11 +36,11 @@ v2.0 transforms ASTN into a mobile-first experience with native iOS and Android 
 **Plans**: 5 plans
 
 Plans:
-- [ ] 21-01-PLAN.md - Responsive foundation utilities (Skeleton, useMediaQuery, ResponsiveSheet)
-- [ ] 21-02-PLAN.md - Opportunity views responsive (filters, skeletons)
-- [ ] 21-03-PLAN.md - Profile wizard responsive (step navigation, layout)
-- [ ] 21-04-PLAN.md - Admin tables responsive (card lists, filters)
-- [ ] 21-05-PLAN.md - Touch targets and final polish (audit, transitions)
+- [x] 21-01-PLAN.md - Responsive foundation utilities (Skeleton, useMediaQuery, ResponsiveSheet)
+- [x] 21-02-PLAN.md - Opportunity views responsive (filters, skeletons)
+- [x] 21-03-PLAN.md - Profile wizard responsive (step navigation, layout)
+- [x] 21-04-PLAN.md - Admin tables responsive (card lists, filters)
+- [x] 21-05-PLAN.md - Touch targets and final polish (audit, transitions)
 
 ### Phase 22: Mobile Navigation
 
@@ -98,7 +98,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 21. Responsive Foundation | v2.0 | 0/5 | Planning complete | - |
+| 21. Responsive Foundation | v2.0 | 5/5 | Complete | 2026-01-21 |
 | 22. Mobile Navigation | v2.0 | 0/TBD | Not started | - |
 | 23. Touch Interactions | v2.0 | 0/TBD | Not started | - |
 | 24. Tauri Desktop Integration | v2.0 | 0/TBD | Not started | - |
@@ -106,4 +106,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-01-20*
-*Last updated: 2026-01-21 - Phase 21 planning complete*
+*Last updated: 2026-01-21 - Phase 21 complete*
