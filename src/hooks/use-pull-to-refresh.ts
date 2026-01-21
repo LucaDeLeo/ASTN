@@ -1,5 +1,5 @@
 import { useDrag } from "@use-gesture/react";
-import { useState, useCallback, useRef } from "react";
+import { useCallback, useState } from "react";
 
 const THRESHOLD = 80; // Pixels to trigger refresh
 const MAX_PULL = 120; // Maximum visual pull distance
@@ -27,7 +27,6 @@ export function usePullToRefresh({
 }: UsePullToRefreshOptions): UsePullToRefreshReturn {
   const [pullDistance, setPullDistance] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const _containerRef = useRef<HTMLElement | null>(null);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -47,8 +46,10 @@ export function usePullToRefresh({
       }
 
       // Get the target element to check scroll position
-      const target = event?.target as HTMLElement;
-      const scrollContainer = target?.closest("[data-pull-to-refresh]");
+      const target = (event.target ?? null) as HTMLElement | null;
+      const scrollContainer = target?.closest(
+        "[data-pull-to-refresh]"
+      ) as HTMLElement | null;
       const scrollTop = scrollContainer?.scrollTop ?? 0;
 
       // Only allow pull when at top of scroll

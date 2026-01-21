@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { usePullToRefresh } from "~/hooks/use-pull-to-refresh";
 import { Spinner } from "~/components/ui/spinner";
 import { cn } from "~/lib/utils";
