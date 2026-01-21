@@ -52,7 +52,13 @@ Plans:
   2. User can access settings, admin, and logout via hamburger menu
   3. User sees active tab clearly indicated with animation
   4. App content respects safe areas on notched devices (no overlap with home indicator)
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 22-01-PLAN.md - PWA manifest and safe area CSS foundation
+- [ ] 22-02-PLAN.md - Bottom tab bar with 5 navigation tabs
+- [ ] 22-03-PLAN.md - Sheet component and hamburger menu
+- [ ] 22-04-PLAN.md - Mobile shell layout and route integration
 
 ### Phase 23: Touch Interactions
 
@@ -99,7 +105,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 21. Responsive Foundation | v2.0 | 5/5 | Complete | 2026-01-21 |
-| 22. Mobile Navigation | v2.0 | 0/TBD | Not started | - |
+| 22. Mobile Navigation | v2.0 | 0/4 | Not started | - |
 | 23. Touch Interactions | v2.0 | 0/TBD | Not started | - |
 | 24. Tauri Desktop Integration | v2.0 | 0/TBD | Not started | - |
 | 25. Tauri Mobile + Native Features | v2.0 | 0/TBD | Not started | - |
