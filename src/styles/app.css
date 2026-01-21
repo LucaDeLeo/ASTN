@@ -560,3 +560,37 @@
 .pb-safe-bottom {
   padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
 }
+
+/* ==========================================================================
+   TOUCH INTERACTION OPTIMIZATION - Native-feeling tap and gesture support
+   ========================================================================== */
+
+/* Remove 300ms tap delay globally - allows immediate response to touches */
+html {
+  touch-action: manipulation;
+}
+
+/* Suppress default browser tap highlight - we provide custom :active states */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Utility for pull-to-refresh containers - prevents browser refresh competing */
+.pull-to-refresh-container {
+  overscroll-behavior-y: contain;
+}
+
+/* Utility for horizontal swipe elements - preserve vertical scroll */
+.swipeable {
+  touch-action: pan-y;
+}
+
+/* Faster tap feedback transition - 100ms per TOUCH-02 requirement */
+.tap-feedback {
+  transition: transform 100ms ease-out, opacity 100ms ease-out;
+}
+
+.tap-feedback:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
