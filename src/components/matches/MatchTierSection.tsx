@@ -56,7 +56,7 @@ export function MatchTierSection({ tier, matches }: MatchTierSectionProps) {
       </div>
       <p className="text-sm text-slate-500 mb-4">{meta.description}</p>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {matches.map((match, index) => (
           <AnimatedCard key={match._id} index={index}>
             <MatchCard match={match} />

@@ -34,7 +34,7 @@ export function MatchCard({ match }: MatchCardProps) {
 
   return (
     <Card className="p-4 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-4 overflow-hidden">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
             <Badge className={tier.color}>
@@ -70,8 +70,8 @@ export function MatchCard({ match }: MatchCardProps) {
           {/* Explanation preview - first 2 strengths */}
           <ul className="mt-3 space-y-1 text-sm text-slate-600">
             {match.explanation.strengths.slice(0, 2).map((strength, i) => (
-              <li key={i} className="flex items-start gap-2">
-                <span className="text-emerald-500 mt-0.5">+</span>
+              <li key={i} className="flex items-start gap-2 min-w-0">
+                <span className="text-emerald-500 mt-0.5 shrink-0">+</span>
                 <span className="line-clamp-1">{strength}</span>
               </li>
             ))}
