@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { action, query } from "./_generated/server";
+import { action, mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { auth } from "./auth";
 import type { Id } from "./_generated/dataModel";
@@ -84,21 +84,37 @@ export const getMyMatches = query({
         m.opportunity !== null
     );
 
-    // Group by tier and sort by score within tier
+    // Filter out dismissed matches (keep active, saved, and undefined/null status)
+    const activeMatches = validMatches.filter((m) => m.status !== "dismissed");
+
+    // Group by tier and sort by score within tier (saved matches first)
     const grouped = {
-      great: validMatches
+      great: activeMatches
         .filter(m => m.tier === "great")
-        .sort((a, b) => b.score - a.score),
-      good: validMatches
+        .sort((a, b) => {
+          // Saved matches first
+          if (a.status === "saved" && b.status !== "saved") return -1;
+          if (b.status === "saved" && a.status !== "saved") return 1;
+          return b.score - a.score;
+        }),
+      good: activeMatches
         .filter(m => m.tier === "good")
-        .sort((a, b) => b.score - a.score),
-      exploring: validMatches
+        .sort((a, b) => {
+          if (a.status === "saved" && b.status !== "saved") return -1;
+          if (b.status === "saved" && a.status !== "saved") return 1;
+          return b.score - a.score;
+        }),
+      exploring: activeMatches
         .filter(m => m.tier === "exploring")
-        .sort((a, b) => b.score - a.score),
+        .sort((a, b) => {
+          if (a.status === "saved" && b.status !== "saved") return -1;
+          if (b.status === "saved" && a.status !== "saved") return 1;
+          return b.score - a.score;
+        }),
     };
 
-    // Count new matches for badge
-    const newMatchCount = validMatches.filter(m => m.isNew).length;
+    // Count new matches for badge (from active matches only)
+    const newMatchCount = activeMatches.filter(m => m.isNew).length;
 
     // Get staleness (oldest computation time)
     const computedAt = matches.length > 0
@@ -229,5 +245,57 @@ export const markMatchesViewed = action({
     );
 
     return result;
+  },
+});
+
+/**
+ * Dismiss a match - removes it from the user's match list
+ */
+export const dismissMatch = mutation({
+  args: { matchId: v.id("matches") },
+  handler: async (ctx, { matchId }) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const match = await ctx.db.get(matchId);
+    if (!match) throw new Error("Match not found");
+
+    // Verify ownership
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .unique();
+    if (!profile || match.profileId !== profile._id) {
+      throw new Error("Not authorized");
+    }
+
+    await ctx.db.patch(matchId, { status: "dismissed" });
+  },
+});
+
+/**
+ * Save a match - marks it as a favorite for easy access
+ */
+export const saveMatch = mutation({
+  args: { matchId: v.id("matches") },
+  handler: async (ctx, { matchId }) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const match = await ctx.db.get(matchId);
+    if (!match) throw new Error("Match not found");
+
+    // Verify ownership
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .unique();
+    if (!profile || match.profileId !== profile._id) {
+      throw new Error("Not authorized");
+    }
+
+    // Toggle: if already saved, unsave (set to active)
+    const newStatus = match.status === "saved" ? "active" : "saved";
+    await ctx.db.patch(matchId, { status: newStatus });
   },
 });

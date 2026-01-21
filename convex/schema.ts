@@ -277,6 +277,11 @@ export default defineSchema({
     ),
     score: v.number(), // 0-100 internal score for sorting within tier
 
+    // User-controlled status for swipe actions
+    status: v.optional(
+      v.union(v.literal("active"), v.literal("dismissed"), v.literal("saved"))
+    ),
+
     // Explanation (MATCH-02: bullet points with strengths + actionable gap)
     explanation: v.object({
       strengths: v.array(v.string()), // 2-4 bullet points on why this fits
