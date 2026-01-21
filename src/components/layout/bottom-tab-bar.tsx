@@ -39,11 +39,15 @@ export function BottomTabBar() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background tab-bar-safe"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background"
+      style={{
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        willChange: "transform",
+      }}
       role="navigation"
       aria-label="Main navigation"
     >
-      <div className="flex items-stretch h-[var(--tab-bar-height)]">
+      <div className="flex items-stretch h-16">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
