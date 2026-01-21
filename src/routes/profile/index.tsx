@@ -36,35 +36,8 @@ function ProfilePage() {
     </div>
   );
 
-  if (isMobile) {
-    return (
-      <>
-        <AuthLoading>
-          <GradientBg variant="subtle">
-            <AuthHeader />
-            {loadingContent}
-          </GradientBg>
-        </AuthLoading>
-        <Unauthenticated>
-          <GradientBg variant="subtle">
-            <AuthHeader />
-            <UnauthenticatedRedirect />
-          </GradientBg>
-        </Unauthenticated>
-        <Authenticated>
-          <MobileShell user={user}>
-            <GradientBg variant="subtle">
-              <ProfileContent />
-            </GradientBg>
-          </MobileShell>
-        </Authenticated>
-      </>
-    );
-  }
-
-  return (
-    <GradientBg variant="subtle">
-      <AuthHeader />
+  const pageContent = (
+    <>
       <AuthLoading>
         {loadingContent}
       </AuthLoading>
@@ -74,6 +47,23 @@ function ProfilePage() {
       <Authenticated>
         <ProfileContent />
       </Authenticated>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <MobileShell user={user}>
+        <GradientBg variant="subtle">
+          {pageContent}
+        </GradientBg>
+      </MobileShell>
+    );
+  }
+
+  return (
+    <GradientBg variant="subtle">
+      <AuthHeader />
+      {pageContent}
     </GradientBg>
   );
 }

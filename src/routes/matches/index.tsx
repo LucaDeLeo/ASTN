@@ -55,36 +55,8 @@ function MatchesPage() {
   const profile = useQuery(api.profiles.getOrCreateProfile);
   const user = profile ? { name: profile.name || "User" } : null;
 
-  // Loading and unauthenticated states use standard layout
-  if (isMobile) {
-    return (
-      <>
-        <AuthLoading>
-          <GradientBg variant="subtle">
-            <AuthHeader />
-            <LoadingState />
-          </GradientBg>
-        </AuthLoading>
-        <Unauthenticated>
-          <GradientBg variant="subtle">
-            <AuthHeader />
-            <UnauthenticatedRedirect />
-          </GradientBg>
-        </Unauthenticated>
-        <Authenticated>
-          <MobileShell user={user}>
-            <GradientBg variant="subtle">
-              <MatchesContent />
-            </GradientBg>
-          </MobileShell>
-        </Authenticated>
-      </>
-    );
-  }
-
-  return (
-    <GradientBg variant="subtle">
-      <AuthHeader />
+  const pageContent = (
+    <>
       <AuthLoading>
         <LoadingState />
       </AuthLoading>
@@ -94,6 +66,23 @@ function MatchesPage() {
       <Authenticated>
         <MatchesContent />
       </Authenticated>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <MobileShell user={user}>
+        <GradientBg variant="subtle">
+          {pageContent}
+        </GradientBg>
+      </MobileShell>
+    );
+  }
+
+  return (
+    <GradientBg variant="subtle">
+      <AuthHeader />
+      {pageContent}
     </GradientBg>
   );
 }
