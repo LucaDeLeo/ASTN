@@ -1,5 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { Compass, ExternalLink, MapPin, Sparkles, ThumbsUp } from "lucide-react";
+import {
+  Bookmark,
+  Compass,
+  ExternalLink,
+  MapPin,
+  Sparkles,
+  ThumbsUp,
+} from "lucide-react";
 import { Card } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 
@@ -20,6 +27,8 @@ interface MatchCardProps {
       roleType: string;
     };
   };
+  /** Whether this match is saved/bookmarked */
+  isSaved?: boolean;
 }
 
 const tierConfig = {
@@ -28,21 +37,33 @@ const tierConfig = {
   exploring: { label: "Worth exploring", color: "bg-amber-100 text-amber-800", icon: Compass },
 };
 
-export function MatchCard({ match }: MatchCardProps) {
+export function MatchCard({ match, isSaved }: MatchCardProps) {
   const tier = tierConfig[match.tier];
   const TierIcon = tier.icon;
 
   return (
-    <Card className="p-4 hover:shadow-md transition-shadow">
+    <Card className="p-4 transition-shadow hover:shadow-md">
       <div className="flex items-start justify-between gap-4 overflow-hidden">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-2">
+        <div className="min-w-0 flex-1">
+          <div className="mb-2 flex items-center gap-2">
             <Badge className={tier.color}>
-              <TierIcon className="size-3 mr-1" />
+              <TierIcon className="mr-1 size-3" />
               {tier.label}
             </Badge>
+            {isSaved && (
+              <Badge
+                variant="secondary"
+                className="bg-emerald-100 text-emerald-800"
+              >
+                <Bookmark className="mr-1 size-3 fill-current" />
+                Saved
+              </Badge>
+            )}
             {match.isNew && (
-              <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+              <Badge
+                variant="secondary"
+                className="bg-orange-100 text-orange-800"
+              >
                 New
               </Badge>
             )}
