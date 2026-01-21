@@ -544,3 +544,26 @@
 .transition-layout {
   transition: all 200ms var(--ease-gentle, ease-out);
 }
+
+/* ==========================================================================
+   SAFE AREA HANDLING - For mobile navigation on notched devices
+   ========================================================================== */
+:root {
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --tab-bar-height: 4rem;
+}
+
+/* Content padding for bottom tab bar */
+.pb-safe-bottom {
+  padding-bottom: calc(var(--tab-bar-height) + var(--safe-area-inset-bottom));
+}
+
+/* Tab bar container - extends to screen edge */
+.tab-bar-safe {
+  padding-bottom: var(--safe-area-inset-bottom);
+  padding-left: var(--safe-area-inset-left);
+  padding-right: var(--safe-area-inset-right);
+}
