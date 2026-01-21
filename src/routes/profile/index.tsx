@@ -92,16 +92,16 @@ function ProfileContent() {
     <main className="container mx-auto px-4 py-8">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
-        <div className="flex items-start justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-display font-semibold text-foreground">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-display font-semibold text-foreground break-words">
               {profile.name || "Your Profile"}
             </h1>
             {profile.headline && (
-              <p className="text-muted-foreground mt-1">{profile.headline}</p>
+              <p className="text-muted-foreground mt-1 break-words">{profile.headline}</p>
             )}
           </div>
-          <Button asChild>
+          <Button asChild className="w-full sm:w-auto shrink-0">
             <Link to="/profile/edit">
               <Edit className="size-4 mr-2" />
               Edit Profile

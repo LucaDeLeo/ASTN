@@ -54,8 +54,8 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header */}
-      <div className="bg-white rounded-sm border border-slate-200 p-6 mb-6">
-        <div className="flex gap-4">
+      <div className="bg-white rounded-sm border border-slate-200 p-4 sm:p-6 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4">
           {opportunity.organizationLogoUrl ? (
             <img
               src={opportunity.organizationLogoUrl}
@@ -68,33 +68,33 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
             </div>
           )}
 
-          <div className="flex-1">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-foreground font-mono">
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground font-mono break-words">
                   {opportunity.title}
                 </h1>
-                <p className="text-lg text-slate-600 mt-1">
+                <p className="text-base sm:text-lg text-slate-600 mt-1">
                   {opportunity.organization}
                 </p>
               </div>
-              <Badge className={`${roleColorClass} capitalize rounded-sm`}>
+              <Badge className={`${roleColorClass} capitalize rounded-sm shrink-0 self-start`}>
                 {opportunity.roleType}
               </Badge>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 mt-4 text-slate-600">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4 text-slate-600 text-sm sm:text-base">
               <span className="flex items-center gap-1.5">
-                <MapPin className="w-4 h-4" />
-                {opportunity.location}
+                <MapPin className="w-4 h-4 shrink-0" />
+                <span className="truncate max-w-[200px]">{opportunity.location}</span>
                 {opportunity.isRemote && (
-                  <Badge variant="outline" className="ml-1 rounded-sm">Remote</Badge>
+                  <Badge variant="outline" className="ml-1 rounded-sm shrink-0">Remote</Badge>
                 )}
               </span>
 
               {opportunity.experienceLevel && (
                 <span className="flex items-center gap-1.5">
-                  <Briefcase className="w-4 h-4" />
+                  <Briefcase className="w-4 h-4 shrink-0" />
                   {opportunity.experienceLevel.charAt(0).toUpperCase() +
                     opportunity.experienceLevel.slice(1)}{" "}
                   level
@@ -103,21 +103,21 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
 
               {opportunity.salaryRange && (
                 <span className="flex items-center gap-1.5">
-                  <Banknote className="w-4 h-4" />
+                  <Banknote className="w-4 h-4 shrink-0" />
                   {opportunity.salaryRange}
                 </span>
               )}
 
               {opportunity.deadline && (
                 <span className="flex items-center gap-1.5">
-                  <Clock className="w-4 h-4" />
+                  <Clock className="w-4 h-4 shrink-0" />
                   Deadline: {format(opportunity.deadline, "MMM d, yyyy")}
                 </span>
               )}
             </div>
 
             <div className="mt-6">
-              <Button asChild size="lg" className="rounded-sm">
+              <Button asChild size="lg" className="rounded-sm w-full sm:w-auto">
                 <a
                   href={opportunity.sourceUrl}
                   target="_blank"
@@ -164,16 +164,16 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
 
       {/* Source attribution (OPPS-06 freshness + source) */}
       <div className="text-sm text-slate-500 border-t border-slate-200 pt-4 mt-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
           <div className="flex items-center gap-1 font-mono">
-            <Calendar className="w-4 h-4" />
+            <Calendar className="w-4 h-4 shrink-0" />
             <span>
               Last verified:{" "}
               {formatDistanceToNow(opportunity.lastVerified, { addSuffix: true })}
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span>Source:</span>
             <a
               href={opportunity.sourceUrl}

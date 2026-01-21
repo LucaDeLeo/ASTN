@@ -188,9 +188,9 @@ function MatchesContent() {
     <main className="container mx-auto px-4 py-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-start justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-display font-semibold text-foreground">Your Matches</h1>
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-display font-semibold text-foreground">Your Matches</h1>
             <p className="text-muted-foreground mt-1">
               Opportunities matched to your profile and goals
             </p>
@@ -204,6 +204,7 @@ function MatchesContent() {
             variant="outline"
             onClick={handleCompute}
             disabled={isComputing}
+            className="w-full sm:w-auto shrink-0"
           >
             <RefreshCw className="size-4 mr-2" />
             Refresh Matches

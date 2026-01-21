@@ -110,10 +110,10 @@ function MatchDetailContent() {
         </Link>
 
         {/* Opportunity header */}
-        <Card className="p-6 mb-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
+        <Card className="p-4 sm:p-6 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
                 <Badge className={tier.color}>
                   <TierIcon className="size-3 mr-1" />
                   {tier.label}
@@ -123,31 +123,31 @@ function MatchDetailContent() {
                 )}
               </div>
 
-              <h1 className="text-2xl font-display font-semibold text-foreground">
+              <h1 className="text-xl sm:text-2xl font-display font-semibold text-foreground break-words">
                 {match.opportunity.title}
               </h1>
-              <p className="text-lg text-muted-foreground mt-1">
+              <p className="text-base sm:text-lg text-muted-foreground mt-1">
                 {match.opportunity.organization}
               </p>
 
-              <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-slate-500">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-3 text-sm text-slate-500">
                 <div className="flex items-center gap-1">
-                  <MapPin className="size-4" />
-                  {match.opportunity.location}
+                  <MapPin className="size-4 shrink-0" />
+                  <span className="truncate">{match.opportunity.location}</span>
                   {match.opportunity.isRemote && (
-                    <Badge variant="outline" className="ml-1">Remote</Badge>
+                    <Badge variant="outline" className="ml-1 shrink-0">Remote</Badge>
                   )}
                 </div>
                 {match.opportunity.deadline && (
                   <div className="flex items-center gap-1">
-                    <Calendar className="size-4" />
-                    Deadline: {new Date(match.opportunity.deadline).toLocaleDateString()}
+                    <Calendar className="size-4 shrink-0" />
+                    <span>Deadline: {new Date(match.opportunity.deadline).toLocaleDateString()}</span>
                   </div>
                 )}
               </div>
             </div>
 
-            <Button asChild>
+            <Button asChild className="w-full sm:w-auto shrink-0">
               <a
                 href={match.opportunity.sourceUrl}
                 target="_blank"

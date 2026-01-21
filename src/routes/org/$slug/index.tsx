@@ -86,24 +86,24 @@ function OrgHeader({ org }: OrgHeaderProps) {
   });
 
   return (
-    <Card className="p-6 mb-6">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-4">
+    <Card className="p-4 sm:p-6 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           {org.logoUrl ? (
             <img
               src={org.logoUrl}
               alt={org.name}
-              className="size-16 rounded-lg object-cover"
+              className="size-12 sm:size-16 rounded-lg object-cover shrink-0"
             />
           ) : (
-            <div className="size-16 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Building2 className="size-8 text-primary" />
+            <div className="size-12 sm:size-16 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Building2 className="size-6 sm:size-8 text-primary" />
             </div>
           )}
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{org.name}</h1>
-            <div className="flex items-center gap-2 mt-1 text-slate-500">
-              <Users className="size-4" />
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">{org.name}</h1>
+            <div className="flex items-center gap-2 mt-1 text-slate-500 text-sm">
+              <Users className="size-4 shrink-0" />
               <span>
                 {memberCount === undefined
                   ? "..."
@@ -113,7 +113,7 @@ function OrgHeader({ org }: OrgHeaderProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {org.lumaCalendarUrl && org.slug && (
             <Button variant="outline" size="sm" asChild>
               <Link to="/org/$slug/events" params={{ slug: org.slug }}>
