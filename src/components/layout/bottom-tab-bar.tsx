@@ -39,11 +39,8 @@ export function BottomTabBar() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background"
-      style={{
-        paddingBottom: "env(safe-area-inset-bottom, 0px)",
-        willChange: "transform",
-      }}
+      className="shrink-0 border-t bg-background"
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
       role="navigation"
       aria-label="Main navigation"
     >

@@ -11,10 +11,12 @@ interface MobileShellProps {
 
 export function MobileShell({ children, user }: MobileShellProps) {
   return (
-    <div className="min-h-screen">
+    <div className="fixed inset-0 flex flex-col">
       <MobileHeader user={user} />
-      <main className="pt-14 pb-safe-bottom">
-        {children}
+      <main className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="pb-safe-bottom">
+          {children}
+        </div>
       </main>
       <BottomTabBar />
     </div>
