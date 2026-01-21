@@ -81,40 +81,40 @@ Deferred to future releases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| RESP-01 | TBD | Pending |
-| RESP-02 | TBD | Pending |
-| RESP-03 | TBD | Pending |
-| RESP-04 | TBD | Pending |
-| RESP-05 | TBD | Pending |
-| RESP-06 | TBD | Pending |
-| RESP-07 | TBD | Pending |
-| NAV-01 | TBD | Pending |
-| NAV-02 | TBD | Pending |
-| NAV-03 | TBD | Pending |
-| NAV-04 | TBD | Pending |
-| NAV-05 | TBD | Pending |
-| TOUCH-01 | TBD | Pending |
-| TOUCH-02 | TBD | Pending |
-| TOUCH-03 | TBD | Pending |
-| TOUCH-04 | TBD | Pending |
-| TAURI-01 | TBD | Pending |
-| TAURI-02 | TBD | Pending |
-| TAURI-03 | TBD | Pending |
-| TAURI-04 | TBD | Pending |
-| TAURI-05 | TBD | Pending |
-| TAURI-06 | TBD | Pending |
-| TAURI-07 | TBD | Pending |
-| NATIVE-01 | TBD | Pending |
-| NATIVE-02 | TBD | Pending |
-| NATIVE-03 | TBD | Pending |
-| NATIVE-04 | TBD | Pending |
-| NATIVE-05 | TBD | Pending |
+| RESP-01 | Phase 21 | Pending |
+| RESP-02 | Phase 21 | Pending |
+| RESP-03 | Phase 21 | Pending |
+| RESP-04 | Phase 21 | Pending |
+| RESP-05 | Phase 21 | Pending |
+| RESP-06 | Phase 21 | Pending |
+| RESP-07 | Phase 21 | Pending |
+| NAV-01 | Phase 22 | Pending |
+| NAV-02 | Phase 22 | Pending |
+| NAV-03 | Phase 22 | Pending |
+| NAV-04 | Phase 22 | Pending |
+| NAV-05 | Phase 22 | Pending |
+| TOUCH-01 | Phase 23 | Pending |
+| TOUCH-02 | Phase 23 | Pending |
+| TOUCH-03 | Phase 23 | Pending |
+| TOUCH-04 | Phase 23 | Pending |
+| TAURI-01 | Phase 24 | Pending |
+| TAURI-02 | Phase 24 | Pending |
+| TAURI-03 | Phase 24 | Pending |
+| TAURI-04 | Phase 24 | Pending |
+| TAURI-05 | Phase 24 | Pending |
+| TAURI-06 | Phase 25 | Pending |
+| TAURI-07 | Phase 25 | Pending |
+| NATIVE-01 | Phase 25 | Pending |
+| NATIVE-02 | Phase 25 | Pending |
+| NATIVE-03 | Phase 25 | Pending |
+| NATIVE-04 | Phase 25 | Pending |
+| NATIVE-05 | Phase 25 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 26 total
-- Mapped to phases: 0
-- Unmapped: 26 (pending roadmap creation)
+- Mapped to phases: 26
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-20*
-*Last updated: 2026-01-20 after initial definition*
+*Last updated: 2026-01-20 - traceability mapped to phases 21-25*

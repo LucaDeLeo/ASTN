@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** Planning next milestone
+**Current focus:** Phase 21 - Responsive Foundation
 
 ## Current Position
 
-Phase: Ready for next milestone
-Plan: None
-Status: v1.3 archived, ready for `/gsd:new-milestone`
-Last activity: 2026-01-20 - v1.3 Visual Overhaul milestone archived
+Phase: 21 of 25 (Responsive Foundation)
+Plan: Ready to plan
+Status: Ready to plan
+Last activity: 2026-01-20 - v2.0 roadmap created
 
-Progress: v1.0 + v1.1 + v1.2 + v1.3 complete (67 plans total across 20 phases)
+Progress: v1.0 + v1.1 + v1.2 + v1.3 complete (67 plans), v2.0 starting
 
 ## Milestone History
 
@@ -39,14 +39,16 @@ Progress: v1.0 + v1.1 + v1.2 + v1.3 complete (67 plans total across 20 phases)
 
 - Notification frequency defaults need user testing
 - Engagement level thresholds may need per-org tuning
+- Tauri push notification plugin is community-maintained (needs early testing)
+- Convex OAuth flow in Tauri WebView needs prototype testing
 
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: v1.3 milestone archived
+Stopped at: v2.0 roadmap created
 Resume file: None
-Next action: `/gsd:new-milestone` to start next version
+Next action: `/gsd:plan-phase 21`
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-20 - v1.3 Visual Overhaul archived*
+*Last updated: 2026-01-20 - v2.0 roadmap created*
