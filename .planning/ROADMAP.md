@@ -33,7 +33,14 @@ v2.0 transforms ASTN into a mobile-first experience with native iOS and Android 
   3. User can complete profile forms on mobile with proper input types and labels above fields
   4. User can view opportunity tables and data-heavy views on narrow screens with adapted layout
   5. User sees skeleton loading states while lists and cards load
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 21-01-PLAN.md - Responsive foundation utilities (Skeleton, useMediaQuery, ResponsiveSheet)
+- [ ] 21-02-PLAN.md - Opportunity views responsive (filters, skeletons)
+- [ ] 21-03-PLAN.md - Profile wizard responsive (step navigation, layout)
+- [ ] 21-04-PLAN.md - Admin tables responsive (card lists, filters)
+- [ ] 21-05-PLAN.md - Touch targets and final polish (audit, transitions)
 
 ### Phase 22: Mobile Navigation
 
@@ -91,7 +98,7 @@ v2.0 transforms ASTN into a mobile-first experience with native iOS and Android 
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 21. Responsive Foundation | v2.0 | 0/TBD | Not started | - |
+| 21. Responsive Foundation | v2.0 | 0/5 | Planning complete | - |
 | 22. Mobile Navigation | v2.0 | 0/TBD | Not started | - |
 | 23. Touch Interactions | v2.0 | 0/TBD | Not started | - |
 | 24. Tauri Desktop Integration | v2.0 | 0/TBD | Not started | - |
@@ -99,4 +106,4 @@ v2.0 transforms ASTN into a mobile-first experience with native iOS and Android 
 
 ---
 *Roadmap created: 2026-01-20*
-*Last updated: 2026-01-20*
+*Last updated: 2026-01-21 - Phase 21 planning complete*
