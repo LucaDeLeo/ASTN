@@ -316,85 +316,138 @@ function OrgAdminMembers() {
               </p>
             </Card>
           ) : (
-            <Card className="overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b bg-slate-50">
-                      <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
-                        Name
-                      </th>
-                      <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
-                        Email
-                      </th>
-                      <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
-                        Role
-                      </th>
-                      <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
-                        Engagement
-                      </th>
-                      <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
-                        Directory
-                      </th>
-                      <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
-                        Joined
-                      </th>
-                      <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
-                        Profile
-                      </th>
-                      <th className="text-right text-sm font-medium text-slate-500 px-4 py-3">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {paginatedMembers.map((member) => (
-                      <MemberRow
-                        key={member.membership._id}
-                        member={member}
-                        engagement={engagementMap.get(member.membership.userId) || null}
-                        orgId={org._id}
-                        slug={slug}
-                        currentMembershipId={membership._id}
-                      />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {/* Pagination Controls */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between px-4 py-3 border-t">
-                  <div className="text-sm text-slate-500">
-                    Showing {(page - 1) * pageSize + 1} to{" "}
-                    {Math.min(page * pageSize, filteredMembers.length)} of{" "}
-                    {filteredMembers.length} members
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage((p) => p - 1)}
-                      disabled={page === 1}
-                    >
-                      <ChevronLeft className="size-4" />
-                      Previous
-                    </Button>
-                    <span className="text-sm text-slate-600">
-                      Page {page} of {totalPages}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage((p) => p + 1)}
-                      disabled={page === totalPages}
-                    >
-                      Next
-                      <ChevronRight className="size-4" />
-                    </Button>
-                  </div>
+            <>
+              {/* Mobile: Card list */}
+              <Card className="md:hidden">
+                <div className="divide-y">
+                  {paginatedMembers.map((member) => (
+                    <MemberCardMobile
+                      key={member.membership._id}
+                      member={member}
+                      engagement={
+                        engagementMap.get(member.membership.userId) || null
+                      }
+                      orgId={org._id}
+                      slug={slug}
+                      currentMembershipId={membership._id}
+                    />
+                  ))}
                 </div>
-              )}
-            </Card>
+                {/* Mobile pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between p-4 border-t">
+                    <span className="text-sm text-muted-foreground">
+                      {(page - 1) * pageSize + 1}-
+                      {Math.min(page * pageSize, filteredMembers.length)} of{" "}
+                      {filteredMembers.length}
+                    </span>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setPage((p) => p - 1)}
+                        disabled={page === 1}
+                        className="min-h-11 min-w-11"
+                      >
+                        <ChevronLeft className="size-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setPage((p) => p + 1)}
+                        disabled={page === totalPages}
+                        className="min-h-11 min-w-11"
+                      >
+                        <ChevronRight className="size-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </Card>
+
+              {/* Desktop: Full table */}
+              <Card className="hidden md:block overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b bg-slate-50">
+                        <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
+                          Name
+                        </th>
+                        <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
+                          Email
+                        </th>
+                        <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
+                          Role
+                        </th>
+                        <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
+                          Engagement
+                        </th>
+                        <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
+                          Directory
+                        </th>
+                        <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
+                          Joined
+                        </th>
+                        <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
+                          Profile
+                        </th>
+                        <th className="text-right text-sm font-medium text-slate-500 px-4 py-3">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {paginatedMembers.map((member) => (
+                        <MemberRow
+                          key={member.membership._id}
+                          member={member}
+                          engagement={
+                            engagementMap.get(member.membership.userId) || null
+                          }
+                          orgId={org._id}
+                          slug={slug}
+                          currentMembershipId={membership._id}
+                        />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {/* Desktop Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between px-4 py-3 border-t">
+                    <div className="text-sm text-slate-500">
+                      Showing {(page - 1) * pageSize + 1} to{" "}
+                      {Math.min(page * pageSize, filteredMembers.length)} of{" "}
+                      {filteredMembers.length} members
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage((p) => p - 1)}
+                        disabled={page === 1}
+                      >
+                        <ChevronLeft className="size-4" />
+                        Previous
+                      </Button>
+                      <span className="text-sm text-slate-600">
+                        Page {page} of {totalPages}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage((p) => p + 1)}
+                        disabled={page === totalPages}
+                      >
+                        Next
+                        <ChevronRight className="size-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </Card>
+            </>
           )}
         </div>
       </main>
