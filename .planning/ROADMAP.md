@@ -9,14 +9,14 @@ Transform ASTN from generic shadcn/ui (3.7/10) to a warm, memorable visual ident
 - v1.0 MVP - Phases 1-6, 21 plans - shipped 2026-01-18
 - v1.1 Profile Input Speedup - Phases 7-10, 13 plans - shipped 2026-01-19
 - v1.2 Org CRM & Events - Phases 11-16, 20 plans - shipped 2026-01-19
-- **v1.3 Visual Overhaul** - Phases 17-20 (in progress)
+- **v1.3 Visual Overhaul** - Phases 17-20, 8 plans - shipped 2026-01-20
 
 ## Phases
 
 - [x] **Phase 17: Foundation & Tokens** - Design tokens, font installation, CSS architecture
 - [x] **Phase 18: Core Visual Polish** - Warm backgrounds, shadows, typography across all pages
 - [x] **Phase 19: Motion System** - Animations, hover effects, page transitions
-- [ ] **Phase 20: Polish & Integration** - Dark mode, focus states, accessibility, performance
+- [x] **Phase 20: Polish & Integration** - Dark mode, focus states, accessibility, performance
 
 ## Phase Details
 
@@ -84,9 +84,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 20-01-PLAN.md — Theme system and coral-based dark mode palette
-- [ ] 20-02-PLAN.md — Focus states and enhanced empty component
-- [ ] 20-03-PLAN.md — Performance verification and visual checkpoint
+- [x] 20-01-PLAN.md — Theme system and coral-based dark mode palette
+- [x] 20-02-PLAN.md — Focus states and enhanced empty component
+- [x] 20-03-PLAN.md — Performance verification and visual checkpoint
 
 ## Progress
 
@@ -98,7 +98,7 @@ Phases execute in numeric order: 17 -> 18 -> 19 -> 20
 | 17. Foundation & Tokens | 2/2 | ✓ Complete | 2026-01-19 |
 | 18. Core Visual Polish | 5/5 | ✓ Complete | 2026-01-19 |
 | 19. Motion System | 3/3 | ✓ Complete | 2026-01-20 |
-| 20. Polish & Integration | 0/3 | Ready | - |
+| 20. Polish & Integration | 3/3 | ✓ Complete | 2026-01-20 |
 
 ---
 *Roadmap created: 2026-01-19*

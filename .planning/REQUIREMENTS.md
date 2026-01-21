@@ -9,51 +9,51 @@
 
 ### Typography
 
-- [ ] **TYPO-01**: Custom display font installed and loaded (Plus Jakarta Sans Variable)
-- [ ] **TYPO-02**: Body font pairing configured for readability
-- [ ] **TYPO-03**: Typographic scale defined with responsive sizing (fluid type)
-- [ ] **TYPO-04**: Font preloading infrastructure in __root.tsx
-- [ ] **TYPO-05**: Optional serif accent font for quotes/testimonials (Lora Variable)
-- [ ] **TYPO-06**: Typography applied consistently across all pages
+- [x] **TYPO-01**: Custom display font installed and loaded (Plus Jakarta Sans Variable)
+- [x] **TYPO-02**: Body font pairing configured for readability
+- [x] **TYPO-03**: Typographic scale defined with responsive sizing (fluid type)
+- [x] **TYPO-04**: Font preloading infrastructure in __root.tsx
+- [x] **TYPO-05**: Optional serif accent font for quotes/testimonials (Lora Variable)
+- [x] **TYPO-06**: Typography applied consistently across all pages
 
 ### Atmosphere
 
-- [ ] **ATMO-01**: Warm off-white backgrounds replace flat gray-50 throughout
-- [ ] **ATMO-02**: Coral-tinted shadows replace gray shadows
-- [ ] **ATMO-03**: Extended warm neutral palette defined in design tokens
-- [ ] **ATMO-04**: Gradient system extends login page treatment to other pages
-- [ ] **ATMO-05**: Noise/grain texture overlay (2-4% opacity) adds tactility
-- [ ] **ATMO-06**: Atmospheric depth applied to all main pages
+- [x] **ATMO-01**: Warm off-white backgrounds replace flat gray-50 throughout
+- [x] **ATMO-02**: Coral-tinted shadows replace gray shadows
+- [x] **ATMO-03**: Extended warm neutral palette defined in design tokens
+- [x] **ATMO-04**: Gradient system extends login page treatment to other pages
+- [x] **ATMO-05**: Noise/grain texture overlay (2-4% opacity) adds tactility
+- [x] **ATMO-06**: Atmospheric depth applied to all main pages
 
 ### Motion
 
-- [ ] **MOTN-01**: Card hover feedback (lift + shadow transition)
-- [ ] **MOTN-02**: Smooth transitions (150-300ms) with organic easing curves
-- [ ] **MOTN-03**: Staggered card entrance animations on list pages
-- [ ] **MOTN-04**: Page transitions between routes
-- [ ] **MOTN-05**: Button press "squish" feedback effect
-- [ ] **MOTN-06**: Animation keyframes and easing defined in design tokens
+- [x] **MOTN-01**: Card hover feedback (lift + shadow transition)
+- [x] **MOTN-02**: Smooth transitions (150-300ms) with organic easing curves
+- [x] **MOTN-03**: Staggered card entrance animations on list pages
+- [x] **MOTN-04**: Page transitions between routes
+- [x] **MOTN-05**: Button press "squish" feedback effect
+- [x] **MOTN-06**: Animation keyframes and easing defined in design tokens
 
 ### Components
 
-- [ ] **COMP-01**: Consistent border-radius system (12-16px base)
-- [ ] **COMP-02**: Focus state styling (:focus-visible) on all interactive elements
-- [ ] **COMP-03**: Dark mode color refinement (intentional coral, not inverted)
-- [ ] **COMP-04**: Empty state visual treatments with warmth
-- [ ] **COMP-05**: AnimatedCard component with stagger support
-- [ ] **COMP-06**: GradientBg reusable background component
+- [x] **COMP-01**: Consistent border-radius system (12-16px base)
+- [x] **COMP-02**: Focus state styling (:focus-visible) on all interactive elements
+- [x] **COMP-03**: Dark mode color refinement (intentional coral, not inverted)
+- [x] **COMP-04**: Empty state visual treatments with warmth
+- [x] **COMP-05**: AnimatedCard component with stagger support
+- [x] **COMP-06**: GradientBg reusable background component
 
 ### Pages
 
-- [ ] **PAGE-01**: Home page atmosphere and layout updated
-- [ ] **PAGE-02**: Profile view page visual hierarchy improved
-- [ ] **PAGE-03**: Profile edit page with consistent styling
-- [ ] **PAGE-04**: Matches page card presentation enhanced
-- [ ] **PAGE-05**: Opportunities listing with hover effects
-- [ ] **PAGE-06**: Opportunity detail page polish
-- [ ] **PAGE-07**: Admin dashboard visual consistency
-- [ ] **PAGE-08**: Login/auth flow polish maintained
-- [ ] **PAGE-09**: Organizations page with map integration polish
+- [x] **PAGE-01**: Home page atmosphere and layout updated
+- [x] **PAGE-02**: Profile view page visual hierarchy improved
+- [x] **PAGE-03**: Profile edit page with consistent styling
+- [x] **PAGE-04**: Matches page card presentation enhanced
+- [x] **PAGE-05**: Opportunities listing with hover effects
+- [x] **PAGE-06**: Opportunity detail page polish
+- [x] **PAGE-07**: Admin dashboard visual consistency
+- [x] **PAGE-08**: Login/auth flow polish maintained
+- [x] **PAGE-09**: Organizations page with map integration polish
 
 ## v2 Requirements
 
@@ -127,9 +127,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 ### Phase 20: Polish & Integration (3 requirements)
 | Requirement | Description | Status |
 |-------------|-------------|--------|
-| COMP-02 | Focus state styling (:focus-visible) | Pending |
-| COMP-03 | Dark mode color refinement | Pending |
-| COMP-04 | Empty state visual treatments | Pending |
+| COMP-02 | Focus state styling (:focus-visible) | Complete |
+| COMP-03 | Dark mode color refinement | Complete |
+| COMP-04 | Empty state visual treatments | Complete |
 
 **Coverage:**
 - v1.3 requirements: 33 total
@@ -142,4 +142,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-19*
-*Last updated: 2026-01-20 - Phase 18 & 19 requirements marked complete*
+*Last updated: 2026-01-20 - All v1.3 requirements complete (33/33)*
