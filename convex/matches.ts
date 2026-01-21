@@ -37,6 +37,7 @@ export const getMyMatches = query({
     if (!profile) {
       return {
         matches: { great: [], good: [], exploring: [] },
+        savedMatches: [],
         needsProfile: true
       };
     }
@@ -50,6 +51,7 @@ export const getMyMatches = query({
     if (matches.length === 0) {
       return {
         matches: { great: [], good: [], exploring: [] },
+        savedMatches: [],
         needsProfile: false,
         needsComputation: true,
         profileId: profile._id,
@@ -84,33 +86,27 @@ export const getMyMatches = query({
         m.opportunity !== null
     );
 
-    // Filter out dismissed matches (keep active, saved, and undefined/null status)
-    const activeMatches = validMatches.filter((m) => m.status !== "dismissed");
+    // Separate saved matches from active matches
+    const savedMatches = validMatches
+      .filter((m) => m.status === "saved")
+      .sort((a, b) => b.score - a.score);
 
-    // Group by tier and sort by score within tier (saved matches first)
+    // Filter to only active matches (exclude dismissed and saved)
+    const activeMatches = validMatches.filter(
+      (m) => m.status !== "dismissed" && m.status !== "saved"
+    );
+
+    // Group active matches by tier and sort by score
     const grouped = {
       great: activeMatches
         .filter(m => m.tier === "great")
-        .sort((a, b) => {
-          // Saved matches first
-          if (a.status === "saved" && b.status !== "saved") return -1;
-          if (b.status === "saved" && a.status !== "saved") return 1;
-          return b.score - a.score;
-        }),
+        .sort((a, b) => b.score - a.score),
       good: activeMatches
         .filter(m => m.tier === "good")
-        .sort((a, b) => {
-          if (a.status === "saved" && b.status !== "saved") return -1;
-          if (b.status === "saved" && a.status !== "saved") return 1;
-          return b.score - a.score;
-        }),
+        .sort((a, b) => b.score - a.score),
       exploring: activeMatches
         .filter(m => m.tier === "exploring")
-        .sort((a, b) => {
-          if (a.status === "saved" && b.status !== "saved") return -1;
-          if (b.status === "saved" && a.status !== "saved") return 1;
-          return b.score - a.score;
-        }),
+        .sort((a, b) => b.score - a.score),
     };
 
     // Count new matches for badge (from active matches only)
@@ -123,6 +119,7 @@ export const getMyMatches = query({
 
     return {
       matches: grouped,
+      savedMatches,
       newMatchCount,
       computedAt,
       needsProfile: false,

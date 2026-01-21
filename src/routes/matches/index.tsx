@@ -12,6 +12,7 @@ import { Card } from "~/components/ui/card";
 import { Spinner } from "~/components/ui/spinner";
 import { PullToRefresh } from "~/components/ui/pull-to-refresh";
 import { MatchTierSection } from "~/components/matches/MatchTierSection";
+import { SavedMatchesSection } from "~/components/matches/SavedMatchesSection";
 import { GrowthAreas } from "~/components/matches/GrowthAreas";
 
 // Aggregate recommendations from all matches into growth areas
@@ -204,8 +205,9 @@ function MatchesContent() {
     );
   }
 
-  const { matches, computedAt } = matchesData;
+  const { matches, savedMatches, computedAt } = matchesData;
   const hasMatches = matches.great.length + matches.good.length + matches.exploring.length > 0;
+  const hasSavedMatches = savedMatches && savedMatches.length > 0;
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -239,8 +241,8 @@ function MatchesContent() {
           enabled={!isComputing}
           className="min-h-[200px]"
         >
-          {/* No matches state */}
-          {!hasMatches && (
+          {/* No matches state (only show if no active AND no saved matches) */}
+          {!hasMatches && !hasSavedMatches && (
             <Card className="p-8 text-center">
               <div className="size-16 rounded-full bg-cream-100 flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="size-8 text-coral-400" />
@@ -260,6 +262,11 @@ function MatchesContent() {
                 </Button>
               </div>
             </Card>
+          )}
+
+          {/* Saved matches section (collapsed by default) */}
+          {hasSavedMatches && (
+            <SavedMatchesSection matches={savedMatches} />
           )}
 
           {/* Match sections by tier */}

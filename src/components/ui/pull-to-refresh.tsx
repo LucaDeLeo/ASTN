@@ -32,7 +32,7 @@ export function PullToRefresh({
       {...bind()}
       data-pull-to-refresh
       className={cn(
-        "relative overflow-y-auto overscroll-y-contain",
+        "relative",
         className
       )}
       style={{ touchAction: "pan-y" }}

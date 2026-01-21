@@ -1,5 +1,5 @@
 import { useDrag } from "@use-gesture/react";
-import { useState, type ReactNode } from "react";
+import { useState, useRef, type ReactNode } from "react";
 import { cn } from "~/lib/utils";
 import { useHaptic } from "~/hooks/use-haptic";
 import { Check, X } from "lucide-react";
@@ -28,6 +28,8 @@ export function SwipeableCard({
   const [isAnimatingOut, setIsAnimatingOut] = useState<"left" | "right" | null>(
     null
   );
+  const [isCollapsing, setIsCollapsing] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const haptic = useHaptic();
 
   const bind = useDrag(
@@ -47,16 +49,24 @@ export function SwipeableCard({
           setIsAnimatingOut(direction);
           haptic.tap();
 
-          // Animate out then trigger callback
+          // Animate out horizontally, then collapse height, then trigger callback
           setTimeout(() => {
-            if (direction === "left" && onSwipeLeft) {
-              onSwipeLeft();
-            } else if (direction === "right" && onSwipeRight) {
-              onSwipeRight();
-            }
-            setIsAnimatingOut(null);
-            setOffset(0);
-          }, 200);
+            // Start height collapse
+            setIsCollapsing(true);
+
+            // After height collapse completes, fire the callback
+            setTimeout(() => {
+              if (direction === "left" && onSwipeLeft) {
+                onSwipeLeft();
+              } else if (direction === "right" && onSwipeRight) {
+                onSwipeRight();
+              }
+              // Reset state (component will unmount anyway due to list update)
+              setIsAnimatingOut(null);
+              setIsCollapsing(false);
+              setOffset(0);
+            }, 200); // Height collapse duration
+          }, 200); // Horizontal swipe duration
         } else {
           setOffset(0);
         }
@@ -87,8 +97,23 @@ export function SwipeableCard({
       : 400
     : offset;
 
+  // Get the current height for collapse animation
+  const currentHeight = containerRef.current?.offsetHeight ?? "auto";
+
   return (
-    <div className={cn("relative overflow-hidden", className)}>
+    <div
+      ref={containerRef}
+      className={cn(
+        "relative overflow-hidden",
+        isCollapsing && "transition-all duration-200 ease-out",
+        className
+      )}
+      style={{
+        height: isCollapsing ? 0 : currentHeight,
+        marginBottom: isCollapsing ? 0 : undefined,
+        opacity: isCollapsing ? 0 : 1,
+      }}
+    >
       {/* Background action indicators */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-between px-6">
         {/* Dismiss indicator (left swipe) */}

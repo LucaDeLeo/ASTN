@@ -39,21 +39,15 @@ export function usePullToRefresh({
   }, [onRefresh]);
 
   const bind = useDrag(
-    ({ movement: [, my], last, cancel, event }) => {
+    ({ movement: [, my], last, cancel }) => {
       if (!enabled || isRefreshing) {
         cancel();
         return;
       }
 
-      // Get the target element to check scroll position
-      const target = (event.target ?? null) as HTMLElement | null;
-      const scrollContainer = target?.closest(
-        "[data-pull-to-refresh]"
-      ) as HTMLElement | null;
-      const scrollTop = scrollContainer?.scrollTop ?? 0;
-
-      // Only allow pull when at top of scroll
-      if (scrollTop > 0 && my > 0) {
+      // Only allow pull when page is scrolled to top
+      const scrollY = window.scrollY ?? 0;
+      if (scrollY > 0 && my > 0) {
         cancel();
         return;
       }
