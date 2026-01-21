@@ -1,5 +1,35 @@
 # Project Milestones: AI Safety Talent Network (ASTN)
 
+## v1.3 Visual Overhaul (Shipped: 2026-01-20)
+
+**Delivered:** Transform ASTN from generic shadcn/ui to a warm, memorable visual identity that says "AI safety is about people."
+
+**Phases completed:** 17-20 (13 plans total)
+
+**Key accomplishments:**
+
+- Design token system with Lora + Plus Jakarta Sans variable fonts, warm cream/coral OKLCH palette, fluid typography scale
+- Font preloading infrastructure eliminating FOIT/FOUT with woff2 preloads
+- Warm visual treatment with GradientBg, coral-tinted shadows, and atmospheric depth across all main pages
+- Motion system with AnimatedCard stagger, Card hover lift, Button press squish, and View Transitions for page navigation
+- Intentional coral-based dark mode with warm undertones and cookie-based SSR detection (no theme flash)
+- Accessibility polish with coral focus rings and Enhanced Empty component with warm SVG illustrations
+
+**Stats:**
+
+- 84 files created/modified
+- ~4,000 lines added/modified
+- 4 phases, 13 plans
+- 1 day execution (2026-01-19 → 2026-01-20)
+
+**Git range:** `e024186` → `77f502d`
+
+**Tech debt noted:** Some secondary pages (settings, attendance, org admin) still use cold backgrounds — tracked for future polish.
+
+**What's next:** BAISH pilot expansion, or v1.4 for additional polish based on user feedback
+
+---
+
 ## v1.2 Org CRM & Events (Shipped: 2026-01-19)
 
 **Delivered:** Transform ASTN into a self-maintaining CRM where orgs track members, events, and engagement automatically.
@@ -85,4 +115,4 @@
 ---
 
 *Milestones file created: 2026-01-18*
-*Updated: 2026-01-19 - Added v1.2 Org CRM & Events*
+*Updated: 2026-01-20 - Added v1.3 Visual Overhaul*

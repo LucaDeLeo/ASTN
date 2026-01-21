@@ -8,25 +8,19 @@ A career command center for AI safety talent. Individuals maintain living profil
 
 Individuals get enough value from smart matching + recommendations that they keep profiles fresh — this is the flywheel that makes everything else work.
 
-## Current Milestone: v1.3 Visual Overhaul
+## Current Milestone: Planning Next
 
-**Goal:** Transform ASTN from generic shadcn/ui to a warm, memorable, distinctly human visual identity that says "AI safety is about people."
-
-**Aesthetic direction:** Warm & Human — approachable, inviting, organic motion, soft gradients building on the coral palette.
-
-**Approach:** Design system foundations first (tokens, fonts, animations) → systematic rollout across all pages.
-
-**Target:** Take visual score from 3.7/10 to 8+/10.
+v1.3 Visual Overhaul shipped 2026-01-20. Ready to plan next milestone based on BAISH pilot feedback.
 
 ## Current State
 
-**Shipped:** v1.2 Org CRM & Events (2026-01-19)
+**Shipped:** v1.3 Visual Overhaul (2026-01-20)
 
-v1.2 transformed ASTN into a self-maintaining CRM where orgs track members, events, and engagement automatically. Features include org discovery with geography-based suggestions, lu.ma event integration, configurable notifications, attendance tracking with feedback, LLM engagement scoring with admin override, and custom program tracking.
+v1.3 transformed ASTN from generic shadcn/ui to a warm, memorable visual identity. Features include design token system (Lora + Plus Jakarta Sans fonts, OKLCH coral palette), motion system (AnimatedCard stagger, Card hover lift, Button squish, View Transitions), intentional coral-based dark mode, and accessibility polish (focus states, empty states).
 
 **Tech stack:** Convex + TanStack Start + React 19 + shadcn/ui + Claude Sonnet 4.5/Haiku 4.5
 
-**Codebase:** ~110,000 lines TypeScript, ~500 files
+**Codebase:** ~114,000 lines TypeScript, ~500 files
 
 ## Requirements
 
@@ -50,47 +44,16 @@ v1.2 transformed ASTN into a self-maintaining CRM where orgs track members, even
 - ✓ LLM engagement scoring with explanations and admin override — v1.2
 - ✓ Full CRM dashboard with member profiles, history, and CSV export — v1.2
 - ✓ Custom program tracking with enrollment and attendance — v1.2
+- ✓ Design token system (Lora + Plus Jakarta Sans fonts, OKLCH coral palette, fluid typography) — v1.3
+- ✓ Font preloading infrastructure (no FOIT/FOUT) — v1.3
+- ✓ Warm visual treatment (GradientBg, coral shadows, atmospheric depth) — v1.3
+- ✓ Motion system (AnimatedCard stagger, Card hover, Button squish, View Transitions) — v1.3
+- ✓ Intentional coral-based dark mode with SSR detection (no flash) — v1.3
+- ✓ Accessibility polish (focus states, Empty component variants) — v1.3
 
 ### Active
 
-<!-- v1.3 Visual Overhaul -->
-
-**Typography System**
-- [ ] Custom display font for headings (warm, friendly, distinctive)
-- [ ] Custom body font pairing (readable, approachable)
-- [ ] Typographic scale with responsive sizing
-- [ ] Font loading infrastructure
-
-**Motion System**
-- [ ] Entrance animations with staggered delays for card grids
-- [ ] Hover micro-interactions on cards and buttons
-- [ ] Page transitions between routes
-- [ ] Organic easing curves (gentle, human-feeling)
-
-**Background & Atmosphere**
-- [ ] Gradient system extending login page treatment
-- [ ] Subtle grain/noise texture overlays
-- [ ] Atmospheric depth on all main pages
-- [ ] Empty state visual treatments
-
-**Color Expansion**
-- [ ] Complementary accent colors building on coral
-- [ ] Extended neutral palette for depth
-- [ ] Dark mode refinement (if applicable)
-
-**Component Refinement**
-- [ ] Card hover effects with shadow transitions
-- [ ] Button press feedback and states
-- [ ] Input field styling consistency
-- [ ] Badge and tag visual polish
-
-**Page Updates**
-- [ ] Home page atmosphere and layout
-- [ ] Profile pages (view/edit) visual hierarchy
-- [ ] Matches page card presentation
-- [ ] Opportunities listing and detail
-- [ ] Admin dashboard visual consistency
-- [ ] Login/auth flow polish
+*No active requirements — ready for next milestone planning*
 
 ### Out of Scope
 
@@ -105,7 +68,7 @@ v1.2 transformed ASTN into a self-maintaining CRM where orgs track members, even
 
 ## Context
 
-**Current state:** v1.2 shipped 2026-01-19. Full CRM functionality with events and engagement scoring. Ready for BAISH pilot expansion.
+**Current state:** v1.3 shipped 2026-01-20. Warm visual identity with design tokens, motion system, and dark mode. Ready for BAISH pilot expansion.
 
 **Known issues:**
 - `@ts-nocheck` in batchActions.ts (Convex action type inference workaround)
@@ -113,6 +76,8 @@ v1.2 transformed ASTN into a self-maintaining CRM where orgs track members, even
 - Aggregation requires 80K/Airtable API keys configured
 - Lu.ma API key required for event sync (per-org Lu.ma Plus subscription)
 - linkedEventIds auto-attendance not yet implemented (tracked as future work)
+- Settings/attendance/org admin pages still use cold backgrounds (v1.3 coverage gap)
+- 35+ headings use font-bold instead of font-display (v1.3 coverage gap)
 
 **Launch plan:** Workshop-based onboarding where members create profiles (via upload, paste, or AI chat) and get immediate matches during the session.
 
@@ -156,6 +121,13 @@ v1.2 transformed ASTN into a self-maintaining CRM where orgs track members, even
 | Claude Haiku for engagement scoring | Cost-effective for batch daily classification | ✓ Good — ~$0.001 per member |
 | Engagement levels not percentages | Avoid false precision, reduce member anxiety | ✓ Good — admin-only, actionable labels |
 | Server-side pagination for CRM | Prevent performance explosion at scale | ✓ Good — handles 100+ members |
+| OKLCH color space for tokens | Perceptually uniform, consistent chroma across hues | ✓ Good — coral-500 and teal-500 equally vibrant |
+| Lora for headings, Plus Jakarta Sans for body | Split personality creates elegance + readability | ✓ Good — warm and approachable |
+| Spring easing with 1.56 overshoot | Organic motion without being distracting | ✓ Good — subtle bounce feels alive |
+| Stagger cap at 9 items (450ms) | Prevent excessive wait times on large lists | ✓ Good — max delay feels responsive |
+| Dark mode primary stays coral | Maintain brand identity across themes | ✓ Good — warm charcoal background |
+| Cookie-based SSR theme detection | Eliminate dark mode flash on page load | ✓ Good — no FOIT equivalent for themes |
+| View Transitions API for navigation | Native browser animation, works without JS | ✓ Good — 250ms crossfade |
 
 ---
-*Last updated: 2026-01-19 after v1.3 milestone started*
+*Last updated: 2026-01-20 after v1.3 milestone complete*
