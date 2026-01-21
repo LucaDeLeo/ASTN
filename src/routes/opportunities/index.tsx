@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { usePaginatedQuery, useQuery } from "convex/react";
+import { useCallback } from "react";
 import { api } from "../../../convex/_generated/api";
 import { AuthHeader } from "~/components/layout/auth-header";
 import { GradientBg } from "~/components/layout/GradientBg";
 import { MobileShell } from "~/components/layout/mobile-shell";
 import { useIsMobile } from "~/hooks/use-media-query";
+import { PullToRefresh } from "~/components/ui/pull-to-refresh";
 import { OpportunityFilters } from "~/components/opportunities/opportunity-filters";
 import { OpportunityList } from "~/components/opportunities/opportunity-list";
 
@@ -69,6 +71,12 @@ function OpportunitiesPage() {
   const { results, status, loadMore } = searchTerm ? searchPagination : listPagination;
   const isLoading = status === "LoadingFirstPage";
 
+  // Pull-to-refresh handler - Convex is real-time, so data is already fresh
+  // This provides visual feedback acknowledging the gesture
+  const handlePullRefresh = useCallback(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }, []);
+
   const pageContent = (
     <>
       <OpportunityFilters />
@@ -80,12 +88,17 @@ function OpportunitiesPage() {
             {status !== "Exhausted" && " (more available)"}
           </p>
         </div>
-        <OpportunityList
-          opportunities={results}
-          isLoading={isLoading}
-          status={status}
-          onLoadMore={() => loadMore(PAGE_SIZE)}
-        />
+        <PullToRefresh
+          onRefresh={handlePullRefresh}
+          className="min-h-[200px]"
+        >
+          <OpportunityList
+            opportunities={results}
+            isLoading={isLoading}
+            status={status}
+            onLoadMore={() => loadMore(PAGE_SIZE)}
+          />
+        </PullToRefresh>
       </main>
     </>
   );

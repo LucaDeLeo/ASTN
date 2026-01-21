@@ -10,6 +10,7 @@ import { useIsMobile } from "~/hooks/use-media-query";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Spinner } from "~/components/ui/spinner";
+import { PullToRefresh } from "~/components/ui/pull-to-refresh";
 import { MatchTierSection } from "~/components/matches/MatchTierSection";
 import { GrowthAreas } from "~/components/matches/GrowthAreas";
 
@@ -233,44 +234,50 @@ function MatchesContent() {
           </Button>
         </div>
 
-        {/* No matches state */}
-        {!hasMatches && (
-          <Card className="p-8 text-center">
-            <div className="size-16 rounded-full bg-cream-100 flex items-center justify-center mx-auto mb-4">
-              <Sparkles className="size-8 text-coral-400" />
-            </div>
-            <h2 className="text-xl font-display font-semibold text-foreground mb-2">
-              No matches yet
-            </h2>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              We couldn't find strong matches right now. Try completing more of your profile or check back when new opportunities are posted.
-            </p>
-            <div className="flex gap-3 justify-center">
-              <Button asChild variant="outline">
-                <Link to="/profile/edit">Improve Profile</Link>
-              </Button>
-              <Button asChild>
-                <Link to="/opportunities">Browse All Opportunities</Link>
-              </Button>
-            </div>
-          </Card>
-        )}
-
-        {/* Match sections by tier */}
-        {hasMatches && (
-          <>
-            <MatchTierSection tier="great" matches={matches.great} />
-            <MatchTierSection tier="good" matches={matches.good} />
-            <MatchTierSection tier="exploring" matches={matches.exploring} />
-
-            {/* Growth areas aggregated from recommendations */}
-            {growthAreas.length > 0 && (
-              <div className="mt-8">
-                <GrowthAreas areas={growthAreas} />
+        <PullToRefresh
+          onRefresh={handleCompute}
+          enabled={!isComputing}
+          className="min-h-[200px]"
+        >
+          {/* No matches state */}
+          {!hasMatches && (
+            <Card className="p-8 text-center">
+              <div className="size-16 rounded-full bg-cream-100 flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="size-8 text-coral-400" />
               </div>
-            )}
-          </>
-        )}
+              <h2 className="text-xl font-display font-semibold text-foreground mb-2">
+                No matches yet
+              </h2>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                We couldn't find strong matches right now. Try completing more of your profile or check back when new opportunities are posted.
+              </p>
+              <div className="flex gap-3 justify-center">
+                <Button asChild variant="outline">
+                  <Link to="/profile/edit">Improve Profile</Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/opportunities">Browse All Opportunities</Link>
+                </Button>
+              </div>
+            </Card>
+          )}
+
+          {/* Match sections by tier */}
+          {hasMatches && (
+            <>
+              <MatchTierSection tier="great" matches={matches.great} />
+              <MatchTierSection tier="good" matches={matches.good} />
+              <MatchTierSection tier="exploring" matches={matches.exploring} />
+
+              {/* Growth areas aggregated from recommendations */}
+              {growthAreas.length > 0 && (
+                <div className="mt-8">
+                  <GrowthAreas areas={growthAreas} />
+                </div>
+              )}
+            </>
+          )}
+        </PullToRefresh>
       </div>
     </main>
   );
