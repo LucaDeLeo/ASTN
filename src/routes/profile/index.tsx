@@ -14,6 +14,8 @@ import {
 import { api } from "../../../convex/_generated/api";
 import { AuthHeader } from "~/components/layout/auth-header";
 import { GradientBg } from "~/components/layout/GradientBg";
+import { MobileShell } from "~/components/layout/mobile-shell";
+import { useIsMobile } from "~/hooks/use-media-query";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
@@ -24,13 +26,47 @@ export const Route = createFileRoute("/profile/")({
 });
 
 function ProfilePage() {
+  const isMobile = useIsMobile();
+  const currentUser = useQuery(api.profiles.getOrCreateProfile);
+  const user = currentUser ? { name: currentUser.name || "User" } : null;
+
+  const loadingContent = (
+    <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">
+      <Spinner />
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <>
+        <AuthLoading>
+          <GradientBg variant="subtle">
+            <AuthHeader />
+            {loadingContent}
+          </GradientBg>
+        </AuthLoading>
+        <Unauthenticated>
+          <GradientBg variant="subtle">
+            <AuthHeader />
+            <UnauthenticatedRedirect />
+          </GradientBg>
+        </Unauthenticated>
+        <Authenticated>
+          <MobileShell user={user}>
+            <GradientBg variant="subtle">
+              <ProfileContent />
+            </GradientBg>
+          </MobileShell>
+        </Authenticated>
+      </>
+    );
+  }
+
   return (
     <GradientBg variant="subtle">
       <AuthHeader />
       <AuthLoading>
-        <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">
-          <Spinner />
-        </div>
+        {loadingContent}
       </AuthLoading>
       <Unauthenticated>
         <UnauthenticatedRedirect />

@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { usePaginatedQuery } from "convex/react";
+import { usePaginatedQuery, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { AuthHeader } from "~/components/layout/auth-header";
 import { GradientBg } from "~/components/layout/GradientBg";
+import { MobileShell } from "~/components/layout/mobile-shell";
+import { useIsMobile } from "~/hooks/use-media-query";
 import { OpportunityFilters } from "~/components/opportunities/opportunity-filters";
 import { OpportunityList } from "~/components/opportunities/opportunity-list";
 
@@ -28,6 +30,9 @@ const PAGE_SIZE = 20;
 
 function OpportunitiesPage() {
   const { role: roleType, location: locationFilter, q: searchTerm } = Route.useSearch();
+  const isMobile = useIsMobile();
+  const profile = useQuery(api.profiles.getOrCreateProfile);
+  const user = profile ? { name: profile.name || "User" } : null;
 
   // Determine which query to use based on filters
   const isRemote =
@@ -64,9 +69,8 @@ function OpportunitiesPage() {
   const { results, status, loadMore } = searchTerm ? searchPagination : listPagination;
   const isLoading = status === "LoadingFirstPage";
 
-  return (
-    <GradientBg variant="subtle">
-      <AuthHeader />
+  const pageContent = (
+    <>
       <OpportunityFilters />
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6">
@@ -83,6 +87,23 @@ function OpportunitiesPage() {
           onLoadMore={() => loadMore(PAGE_SIZE)}
         />
       </main>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <MobileShell user={user}>
+        <GradientBg variant="subtle">
+          {pageContent}
+        </GradientBg>
+      </MobileShell>
+    );
+  }
+
+  return (
+    <GradientBg variant="subtle">
+      <AuthHeader />
+      {pageContent}
     </GradientBg>
   );
 }

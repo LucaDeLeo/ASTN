@@ -5,8 +5,10 @@ import { api } from "../../convex/_generated/api";
 import { AnimatedCard } from "~/components/animation/AnimatedCard";
 import { AuthHeader } from "~/components/layout/auth-header";
 import { GradientBg } from "~/components/layout/GradientBg";
+import { MobileShell } from "~/components/layout/mobile-shell";
 import { EventCard } from "~/components/events/EventCard";
 import { OrgCarousel } from "~/components/org/OrgCarousel";
+import { useIsMobile } from "~/hooks/use-media-query";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Spinner } from "~/components/ui/spinner";
@@ -16,15 +18,52 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  const isMobile = useIsMobile();
+  const profile = useQuery(api.profiles.getOrCreateProfile);
+  const user = profile ? { name: profile.name || "User" } : null;
+
+  // Loading and unauthenticated states use standard layout
+  const loadingContent = (
+    <main className="container mx-auto px-4 py-16">
+      <div className="flex items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    </main>
+  );
+
+  // Authenticated mobile layout
+  if (isMobile) {
+    return (
+      <>
+        <AuthLoading>
+          <GradientBg variant="subtle">
+            <AuthHeader />
+            {loadingContent}
+          </GradientBg>
+        </AuthLoading>
+        <Unauthenticated>
+          <GradientBg variant="subtle">
+            <AuthHeader />
+            <LandingPage />
+          </GradientBg>
+        </Unauthenticated>
+        <Authenticated>
+          <MobileShell user={user}>
+            <GradientBg variant="subtle">
+              <Dashboard />
+            </GradientBg>
+          </MobileShell>
+        </Authenticated>
+      </>
+    );
+  }
+
+  // Desktop layout
   return (
     <GradientBg variant="subtle">
       <AuthHeader />
       <AuthLoading>
-        <main className="container mx-auto px-4 py-16">
-          <div className="flex items-center justify-center">
-            <Spinner size="lg" />
-          </div>
-        </main>
+        {loadingContent}
       </AuthLoading>
       <Unauthenticated>
         <LandingPage />

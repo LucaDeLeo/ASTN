@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "../../../convex/_generated/api";
 import { AuthHeader } from "~/components/layout/auth-header";
 import { GradientBg } from "~/components/layout/GradientBg";
+import { MobileShell } from "~/components/layout/mobile-shell";
+import { useIsMobile } from "~/hooks/use-media-query";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Spinner } from "~/components/ui/spinner";
@@ -49,6 +51,37 @@ export const Route = createFileRoute("/matches/")({
 });
 
 function MatchesPage() {
+  const isMobile = useIsMobile();
+  const profile = useQuery(api.profiles.getOrCreateProfile);
+  const user = profile ? { name: profile.name || "User" } : null;
+
+  // Loading and unauthenticated states use standard layout
+  if (isMobile) {
+    return (
+      <>
+        <AuthLoading>
+          <GradientBg variant="subtle">
+            <AuthHeader />
+            <LoadingState />
+          </GradientBg>
+        </AuthLoading>
+        <Unauthenticated>
+          <GradientBg variant="subtle">
+            <AuthHeader />
+            <UnauthenticatedRedirect />
+          </GradientBg>
+        </Unauthenticated>
+        <Authenticated>
+          <MobileShell user={user}>
+            <GradientBg variant="subtle">
+              <MatchesContent />
+            </GradientBg>
+          </MobileShell>
+        </Authenticated>
+      </>
+    );
+  }
+
   return (
     <GradientBg variant="subtle">
       <AuthHeader />
