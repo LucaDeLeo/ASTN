@@ -43,7 +43,7 @@ export function BottomTabBar() {
       role="navigation"
       aria-label="Main navigation"
     >
-      <div className="flex items-stretch">
+      <div className="flex items-stretch h-[var(--tab-bar-height)]">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
