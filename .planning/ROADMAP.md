@@ -70,7 +70,12 @@ Plans:
   2. User sees immediate visual feedback (<100ms) when tapping interactive elements
   3. User can swipe to perform common actions (dismiss, save)
   4. App provides haptic feedback on key interactions (native builds only)
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 23-01-PLAN.md - Touch foundation (CSS, @use-gesture, haptic hook)
+- [ ] 23-02-PLAN.md - Pull-to-refresh for matches and opportunities
+- [ ] 23-03-PLAN.md - Swipeable match cards with dismiss/save
 
 ### Phase 24: Tauri Desktop Integration
 
@@ -106,7 +111,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 21. Responsive Foundation | v2.0 | 5/5 | Complete | 2026-01-21 |
 | 22. Mobile Navigation | v2.0 | 4/4 | Complete | 2026-01-21 |
-| 23. Touch Interactions | v2.0 | 0/TBD | Not started | - |
+| 23. Touch Interactions | v2.0 | 0/3 | Not started | - |
 | 24. Tauri Desktop Integration | v2.0 | 0/TBD | Not started | - |
 | 25. Tauri Mobile + Native Features | v2.0 | 0/TBD | Not started | - |
 
