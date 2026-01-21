@@ -15,7 +15,7 @@ v2.0 transforms ASTN into a mobile-first experience with native iOS and Android 
 ## Phases
 
 - [x] **Phase 21: Responsive Foundation** - Mobile-first layouts, touch targets, form usability ✓
-- [ ] **Phase 22: Mobile Navigation** - Bottom tab bar, safe areas, hamburger menu
+- [x] **Phase 22: Mobile Navigation** - Bottom tab bar, safe areas, hamburger menu ✓
 - [ ] **Phase 23: Touch Interactions** - Pull-to-refresh, tap feedback, swipe gestures
 - [ ] **Phase 24: Tauri Desktop Integration** - Project setup, SPA config, Convex connectivity
 - [ ] **Phase 25: Tauri Mobile + Native Features** - iOS/Android builds, OAuth, push, offline, biometrics
@@ -55,10 +55,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 22-01-PLAN.md - PWA manifest and safe area CSS foundation
-- [ ] 22-02-PLAN.md - Bottom tab bar with 5 navigation tabs
-- [ ] 22-03-PLAN.md - Sheet component and hamburger menu
-- [ ] 22-04-PLAN.md - Mobile shell layout and route integration
+- [x] 22-01-PLAN.md - PWA manifest and safe area CSS foundation
+- [x] 22-02-PLAN.md - Bottom tab bar with 5 navigation tabs
+- [x] 22-03-PLAN.md - Sheet component and hamburger menu
+- [x] 22-04-PLAN.md - Mobile shell layout and route integration
 
 ### Phase 23: Touch Interactions
 
@@ -105,11 +105,11 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 21. Responsive Foundation | v2.0 | 5/5 | Complete | 2026-01-21 |
-| 22. Mobile Navigation | v2.0 | 0/4 | Not started | - |
+| 22. Mobile Navigation | v2.0 | 4/4 | Complete | 2026-01-21 |
 | 23. Touch Interactions | v2.0 | 0/TBD | Not started | - |
 | 24. Tauri Desktop Integration | v2.0 | 0/TBD | Not started | - |
 | 25. Tauri Mobile + Native Features | v2.0 | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-01-20*
-*Last updated: 2026-01-21 - Phase 21 complete*
+*Last updated: 2026-01-21 - Phase 22 complete*
