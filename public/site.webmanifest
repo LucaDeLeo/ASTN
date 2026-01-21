@@ -1,6 +1,7 @@
 {
-  "name": "",
-  "short_name": "",
+  "name": "AI Safety Talent Network",
+  "short_name": "ASTN",
+  "start_url": "/",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
