@@ -60,10 +60,10 @@ export function MatchCard({ match }: MatchCardProps) {
           </Link>
 
           <div className="flex items-center gap-2 mt-2 text-sm text-slate-500">
-            <MapPin className="size-3" />
-            <span>{match.opportunity.location}</span>
+            <MapPin className="size-3 shrink-0" />
+            <span className="truncate">{match.opportunity.location}</span>
             {match.opportunity.isRemote && (
-              <Badge variant="outline" className="text-xs">Remote</Badge>
+              <Badge variant="outline" className="text-xs shrink-0">Remote</Badge>
             )}
           </div>
 
