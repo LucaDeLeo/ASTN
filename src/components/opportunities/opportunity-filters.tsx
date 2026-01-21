@@ -1,8 +1,9 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { Search, X } from "lucide-react";
-import { Input } from "~/components/ui/input";
+import { MobileFilters } from "./mobile-filters";
 import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -10,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { MobileFilters } from "./mobile-filters";
 
 const ROLE_TYPES = [
   { value: "all", label: "All Roles" },

@@ -39,7 +39,7 @@ export function BasicInfoStep({
         <h2 className="text-xl font-semibold text-foreground">
           Basic Information
         </h2>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Tell us a bit about yourself. This helps others find and connect with
           you.
         </p>
@@ -81,7 +81,7 @@ export function BasicInfoStep({
             onBlur={() => saveField("location", location)}
             placeholder="e.g., San Francisco, CA"
           />
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             City and country/region helps with opportunity matching
           </p>
         </div>
@@ -96,7 +96,7 @@ export function BasicInfoStep({
             placeholder="A brief tagline about yourself, e.g., 'ML researcher focused on interpretability'"
             rows={2}
           />
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             A short summary that appears on your profile card
           </p>
         </div>
@@ -105,7 +105,7 @@ export function BasicInfoStep({
       {/* Save indicator */}
       <div className="h-6 flex items-center">
         {isSaving ? (
-          <span className="text-sm text-slate-500">Saving...</span>
+          <span className="text-sm text-muted-foreground">Saving...</span>
         ) : lastSaved ? (
           <span className="text-sm text-green-600 flex items-center gap-1">
             <Check className="size-3" />

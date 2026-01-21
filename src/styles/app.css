@@ -476,6 +476,17 @@
 }
 
 /* ==========================================================================
+   SCROLLBAR UTILITIES - Hide scrollbars for horizontal scroll areas
+   ========================================================================== */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ==========================================================================
    VIEW TRANSITIONS - Smooth crossfade between pages
    ========================================================================== */
 ::view-transition-old(root),
