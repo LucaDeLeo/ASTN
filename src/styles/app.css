@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 @import "tw-animate-css";
 @import "@fontsource-variable/plus-jakarta-sans";
-@import "@fontsource-variable/lora";
+@import "@fontsource-variable/space-grotesk";
 
 @custom-variant dark (&:is(.dark, .dark *));
 
@@ -28,9 +28,9 @@
   --radius-4xl: calc(var(--radius) + 16px);
 
   /* ==========================================================================
-     TYPOGRAPHY - Font families (Lora for headings, Plus Jakarta Sans for body)
+     TYPOGRAPHY - Font families (Space Grotesk for headings, Plus Jakarta Sans for body)
      ========================================================================== */
-  --font-display: "Lora Variable", Georgia, serif;
+  --font-display: "Space Grotesk Variable", system-ui, sans-serif;
   --font-body: "Plus Jakarta Sans Variable", system-ui, sans-serif;
 
   /* ==========================================================================
