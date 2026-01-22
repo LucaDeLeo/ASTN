@@ -16,7 +16,7 @@ v2.0 transforms ASTN into a mobile-first experience with native iOS and Android 
 
 - [x] **Phase 21: Responsive Foundation** - Mobile-first layouts, touch targets, form usability ✓
 - [x] **Phase 22: Mobile Navigation** - Bottom tab bar, safe areas, hamburger menu ✓
-- [ ] **Phase 23: Touch Interactions** - Pull-to-refresh, tap feedback, swipe gestures
+- [x] **Phase 23: Touch Interactions** - Pull-to-refresh, tap feedback, swipe gestures ✓
 - [ ] **Phase 25: Tauri Mobile + Native Features** - iOS/Android builds, OAuth, push, offline, biometrics
 - [x] **Phase 26: UX Polish** - Fix typography, color palette, empty states, and design consistency issues ✓
 
@@ -73,9 +73,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 23-01-PLAN.md - Touch foundation (CSS, @use-gesture, haptic hook)
-- [ ] 23-02-PLAN.md - Pull-to-refresh for matches and opportunities
-- [ ] 23-03-PLAN.md - Swipeable match cards with dismiss/save
+- [x] 23-01-PLAN.md - Touch foundation (CSS, @use-gesture, haptic hook) ✓
+- [x] 23-02-PLAN.md - Pull-to-refresh for matches and opportunities ✓
+- [x] 23-03-PLAN.md - Swipeable match cards with dismiss/save ✓
 
 ### Phase 25: Tauri Mobile + Native Features
 
@@ -90,7 +90,15 @@ Plans:
   5. User can browse previously viewed opportunities while offline
   6. User can unlock app with Face ID / Touch ID / fingerprint
   7. Auth tokens persist securely via Tauri store plugin
-**Plans**: TBD
+**Plans**: 6 plans
+
+Plans:
+- [ ] 25-01-PLAN.md - Tauri project initialization (CLI, plugins, SPA config, platform detection)
+- [ ] 25-02-PLAN.md - iOS build setup (init, permissions, simulator testing)
+- [ ] 25-03-PLAN.md - Android build setup (init, permissions, emulator testing)
+- [ ] 25-04-PLAN.md - OAuth deep link integration (custom scheme, browser handoff)
+- [ ] 25-05-PLAN.md - Secure storage + biometrics (token persistence, Face ID/Touch ID)
+- [ ] 25-06-PLAN.md - Push notifications + offline (FCM, IndexedDB cache)
 
 ### Phase 26: UX Polish
 
@@ -125,10 +133,10 @@ Based on comprehensive UX review identifying:
 |-------|-----------|----------------|--------|-----------|
 | 21. Responsive Foundation | v2.0 | 5/5 | Complete | 2026-01-21 |
 | 22. Mobile Navigation | v2.0 | 4/4 | Complete | 2026-01-21 |
-| 23. Touch Interactions | v2.0 | 0/3 | Not started | - |
-| 25. Tauri Mobile + Native Features | v2.0 | 0/TBD | Not started | - |
+| 23. Touch Interactions | v2.0 | 3/3 | Complete | 2026-01-22 |
+| 25. Tauri Mobile + Native Features | v2.0 | 0/6 | Not started | - |
 | 26. UX Polish | v2.0 | 4/4 | Complete | 2026-01-22 |
 
 ---
 *Roadmap created: 2026-01-20*
-*Last updated: 2026-01-22 - Completed Phase 26 (UX Polish)*
+*Last updated: 2026-01-22 - Phase 25 planned with 6 plans in 4 waves*
