@@ -60,11 +60,15 @@ export function OpportunityList({
   isLoading,
   status,
   onLoadMore,
+  hasFilters = false,
+  onClearFilters,
 }: {
   opportunities?: Array<Opportunity>;
   isLoading: boolean;
   status?: PaginationStatus;
   onLoadMore?: () => void;
+  hasFilters?: boolean;
+  onClearFilters?: () => void;
 }) {
   if (isLoading) {
     return (
@@ -77,15 +81,22 @@ export function OpportunityList({
   }
 
   if (!opportunities || opportunities.length === 0) {
-    return (
-      <Empty className="py-16">
-        <Empty.Icon />
-        <Empty.Title>No opportunities found</Empty.Title>
-        <Empty.Description>
-          Try adjusting your filters or check back later.
-        </Empty.Description>
-      </Empty>
-    );
+    if (hasFilters) {
+      return (
+        <Empty
+          variant="no-results"
+          className="py-16"
+          action={
+            onClearFilters && (
+              <Button variant="outline" onClick={onClearFilters}>
+                Clear Filters
+              </Button>
+            )
+          }
+        />
+      );
+    }
+    return <Empty variant="no-opportunities" className="py-16" />;
   }
 
   return (

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { convexQuery } from "@convex-dev/react-query";
 import { usePaginatedQuery, useQuery } from "convex/react";
@@ -65,6 +65,7 @@ export const Route = createFileRoute("/opportunities/")({
 
 function OpportunitiesPage() {
   const search = Route.useSearch();
+  const navigate = useNavigate();
   const { q: searchTerm } = search;
   const isMobile = useIsMobile();
   const profile = useQuery(api.profiles.getOrCreateProfile);
@@ -72,6 +73,14 @@ function OpportunitiesPage() {
 
   // Derive filter params consistently (same logic as loader)
   const params = getFilterParams(search);
+
+  // Check if any filters are active (for empty state context)
+  const hasFilters = !!(searchTerm || search.role || search.location);
+
+  // Clear all filters and navigate to base route
+  const handleClearFilters = useCallback(() => {
+    navigate({ to: "/opportunities", search: {} });
+  }, [navigate]);
 
   // For list mode: use preloaded data (enables view transitions)
   // This is synchronously available from the loader
@@ -129,6 +138,8 @@ function OpportunitiesPage() {
             isLoading={isLoading}
             status={status}
             onLoadMore={() => loadMore(SEARCH_PAGE_SIZE)}
+            hasFilters={hasFilters}
+            onClearFilters={handleClearFilters}
           />
         </PullToRefresh>
       </main>

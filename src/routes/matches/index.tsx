@@ -11,6 +11,7 @@ import { MobileShell } from "~/components/layout/mobile-shell";
 import { useIsMobile } from "~/hooks/use-media-query";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
+import { Empty } from "~/components/ui/empty";
 import { Spinner } from "~/components/ui/spinner";
 import { PullToRefresh } from "~/components/ui/pull-to-refresh";
 import { MatchTierSection } from "~/components/matches/MatchTierSection";
@@ -249,24 +250,21 @@ function MatchesContent() {
         >
           {/* No matches state (only show if no active AND no saved matches) */}
           {!hasMatches && !hasSavedMatches && (
-            <Card className="p-8 text-center">
-              <div className="size-16 rounded-full bg-cream-100 flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="size-8 text-coral-400" />
-              </div>
-              <h2 className="text-xl font-display font-semibold text-foreground mb-2">
-                No matches yet
-              </h2>
-              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                We couldn't find strong matches right now. Try completing more of your profile or check back when new opportunities are posted.
-              </p>
-              <div className="flex gap-3 justify-center">
-                <Button asChild variant="outline">
-                  <Link to="/profile/edit">Improve Profile</Link>
-                </Button>
-                <Button asChild>
-                  <Link to="/opportunities">Browse All Opportunities</Link>
-                </Button>
-              </div>
+            <Card className="p-8">
+              <Empty
+                variant="no-matches"
+                description="We couldn't find strong matches right now. Try completing more of your profile or check back when new opportunities are posted."
+                action={
+                  <div className="flex gap-3 justify-center">
+                    <Button asChild variant="outline">
+                      <Link to="/profile/edit">Improve Profile</Link>
+                    </Button>
+                    <Button asChild>
+                      <Link to="/opportunities">Browse All Opportunities</Link>
+                    </Button>
+                  </div>
+                }
+              />
             </Card>
           )}
 
