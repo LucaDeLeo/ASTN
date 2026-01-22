@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.tauri.app/config/2/capability",
+  "identifier": "default",
+  "description": "Default permissions for ASTN mobile app",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "deep-link:default",
+    "store:default",
+    "os:default",
+    "notification:default",
+    "biometric:allow-authenticate",
+    "biometric:allow-status"
+  ]
+}
