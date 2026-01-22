@@ -1,8 +1,8 @@
 name: astn
 options:
-  bundleIdPrefix: ai.astn.app
+  bundleIdPrefix: ai.astn.mobile
   deploymentTarget:
-    iOS: 16.0
+    iOS: 14.0
 fileGroups: [../../src]
 configs:
   debug: debug
@@ -11,7 +11,8 @@ settingGroups:
   app:
     base:
       PRODUCT_NAME: ASTN
-      PRODUCT_BUNDLE_IDENTIFIER: ai.astn.app
+      PRODUCT_BUNDLE_IDENTIFIER: ai.astn.mobile
+      DEVELOPMENT_TEAM: FB2HXC7FGF
 targetTemplates:
   app:
     type: application
