@@ -5,7 +5,7 @@ import { ConvexQueryClient } from '@convex-dev/react-query'
 import { ConvexAuthProvider } from '@convex-dev/auth/react'
 import { routeTree } from './routeTree.gen'
 import { isTauri } from '~/lib/platform'
-import { initDeepLinkAuth } from '~/lib/tauri/auth'
+import { initDeepLinkAuth, setConvexClient, exchangeOAuthCode } from '~/lib/tauri/auth'
 
 export function getRouter() {
   const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!
@@ -27,11 +27,32 @@ export function getRouter() {
 
   // Initialize deep link auth listener for Tauri mobile OAuth
   if (typeof window !== 'undefined' && isTauri()) {
+    // Set the Convex client for OAuth code exchange
+    setConvexClient(convexQueryClient.convexClient)
+
+    // Initialize deep link auth listener
     initDeepLinkAuth(async ({ code, state, provider }) => {
       console.log('OAuth callback received:', { code, state, provider })
-      // OAuth code exchange will be implemented in Task 3
-      // For now, just log the callback - the full implementation needs
-      // exchangeOAuthCode from convex/authTauri.ts
+
+      try {
+        // Exchange the code for tokens via Convex action
+        const result = await exchangeOAuthCode(code, state, provider)
+
+        if (result.success) {
+          // Navigate to profile or intended destination
+          console.log('OAuth login successful:', result.user.email)
+          // Note: This exchanges the code for user info, but doesn't create
+          // a Convex auth session. The checkpoint will test if this works
+          // with @convex-dev/auth or if we need custom session handling.
+          window.location.href = '/profile'
+        } else {
+          console.error('OAuth login failed:', result.error)
+          window.location.href = '/login?error=oauth_failed'
+        }
+      } catch (error) {
+        console.error('OAuth callback error:', error)
+        window.location.href = '/login?error=oauth_failed'
+      }
     })
   }
 

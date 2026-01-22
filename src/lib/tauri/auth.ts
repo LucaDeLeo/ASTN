@@ -2,6 +2,8 @@
 // Deep link OAuth handler for Tauri mobile apps
 
 import { isTauri } from '../platform'
+import { api } from '../../../convex/_generated/api'
+import type { ConvexReactClient } from 'convex/react'
 
 type AuthCallback = (params: {
   code: string
@@ -13,6 +15,17 @@ let authCallbackHandler: AuthCallback | null = null
 
 // Provider tracking - store which provider the OAuth flow was started with
 let pendingOAuthProvider: 'github' | 'google' | null = null
+
+// Convex client reference for OAuth code exchange
+let convexClient: ConvexReactClient | null = null
+
+/**
+ * Set the Convex client for OAuth code exchange
+ * Call this during app initialization
+ */
+export function setConvexClient(client: ConvexReactClient): void {
+  convexClient = client
+}
 
 /**
  * Initialize deep link listener for OAuth callbacks
@@ -119,5 +132,59 @@ export async function openOAuthInBrowser(url: string): Promise<void> {
     // Fallback: try window.open
     console.warn('Failed to open with Tauri shell, falling back to window.open:', error)
     window.open(url, '_blank')
+  }
+}
+
+/**
+ * OAuth code exchange result type
+ */
+export type OAuthExchangeResult =
+  | {
+      success: true
+      provider: 'github' | 'google'
+      accessToken: string
+      idToken?: string
+      user: {
+        id: string
+        email: string
+        name: string
+        image: string
+      }
+    }
+  | { success: false; error: string }
+
+/**
+ * Exchange OAuth code for user session via Convex
+ */
+export async function exchangeOAuthCode(
+  code: string,
+  _state: string,
+  provider: 'github' | 'google'
+): Promise<OAuthExchangeResult> {
+  if (!convexClient) {
+    return { success: false, error: 'Convex client not initialized' }
+  }
+
+  try {
+    const redirectUri = getOAuthRedirectUrl()
+
+    const result = await convexClient.action(api.authTauri.exchangeOAuthCode, {
+      code,
+      provider,
+      redirectUri,
+    })
+
+    // Store the OAuth result for use with @convex-dev/auth
+    // The signIn function from useAuthActions can accept OAuth tokens
+    console.log('OAuth exchange successful:', result.user.email)
+
+    // Return the result - the caller (router.tsx) will complete the sign-in
+    return { success: true, ...result }
+  } catch (error) {
+    console.error('OAuth code exchange failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }
   }
 }
