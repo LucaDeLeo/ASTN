@@ -25,7 +25,10 @@ export function AuthHeader() {
         <nav className="flex items-center gap-4">
           <Link
             to="/opportunities"
-            className="text-sm text-muted-foreground hover:text-foreground [&.active]:text-foreground [&.active]:font-medium"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors relative py-2"
+            activeProps={{
+              className: "text-sm text-foreground font-medium transition-colors relative py-2 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full"
+            }}
           >
             Opportunities
           </Link>
@@ -33,7 +36,10 @@ export function AuthHeader() {
           <Authenticated>
             <Link
               to="/matches"
-              className="text-sm text-muted-foreground hover:text-foreground [&.active]:text-foreground [&.active]:font-medium"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors relative py-2"
+              activeProps={{
+                className: "text-sm text-foreground font-medium transition-colors relative py-2 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full"
+              }}
             >
               Matches
             </Link>
