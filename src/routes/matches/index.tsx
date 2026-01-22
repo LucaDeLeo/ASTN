@@ -207,7 +207,7 @@ function MatchesContent() {
 
   const { matches, savedMatches, computedAt } = matchesData;
   const hasMatches = matches.great.length + matches.good.length + matches.exploring.length > 0;
-  const hasSavedMatches = savedMatches && savedMatches.length > 0;
+  const hasSavedMatches = savedMatches.length > 0;
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -264,10 +264,8 @@ function MatchesContent() {
             </Card>
           )}
 
-          {/* Saved matches section (collapsed by default) */}
-          {hasSavedMatches && (
-            <SavedMatchesSection matches={savedMatches} />
-          )}
+          {/* Saved matches section (animates in/out, collapsed by default) */}
+          <SavedMatchesSection matches={savedMatches} />
 
           {/* Match sections by tier */}
           {hasMatches && (

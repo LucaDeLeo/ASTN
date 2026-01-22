@@ -1,8 +1,9 @@
 import { useDrag } from "@use-gesture/react";
-import { useState, useRef, type ReactNode } from "react";
+import {  useEffect, useRef, useState } from "react";
+import { Check, X } from "lucide-react";
+import type {ReactNode} from "react";
 import { cn } from "~/lib/utils";
 import { useHaptic } from "~/hooks/use-haptic";
-import { Check, X } from "lucide-react";
 
 const SWIPE_THRESHOLD = 100; // Pixels to trigger action
 const SWIPE_VELOCITY = 0.5; // Min velocity to trigger
@@ -29,8 +30,16 @@ export function SwipeableCard({
     null
   );
   const [isCollapsing, setIsCollapsing] = useState(false);
+  const [measuredHeight, setMeasuredHeight] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const haptic = useHaptic();
+
+  // Measure height on mount for smooth collapse
+  useEffect(() => {
+    if (containerRef.current && measuredHeight === null) {
+      setMeasuredHeight(containerRef.current.offsetHeight);
+    }
+  }, [measuredHeight]);
 
   const bind = useDrag(
     ({ movement: [mx], velocity: [vx], last, cancel }) => {
@@ -71,9 +80,19 @@ export function SwipeableCard({
           setOffset(0);
         }
       } else {
-        // Apply some resistance at the edges
-        const resistance = Math.abs(mx) > SWIPE_THRESHOLD ? 0.5 : 1;
-        setOffset(mx * resistance);
+        // Smooth rubber-band resistance (no sudden jump at threshold)
+        // Use logarithmic curve for natural feel
+        const absMx = Math.abs(mx);
+        let visualOffset: number;
+        if (absMx <= SWIPE_THRESHOLD) {
+          visualOffset = mx;
+        } else {
+          // Past threshold: continue moving but with diminishing returns
+          const overThreshold = absMx - SWIPE_THRESHOLD;
+          const dampened = SWIPE_THRESHOLD + overThreshold * 0.3;
+          visualOffset = mx < 0 ? -dampened : dampened;
+        }
+        setOffset(visualOffset);
       }
     },
     {
@@ -97,21 +116,23 @@ export function SwipeableCard({
       : 400
     : offset;
 
-  // Get the current height for collapse animation
-  const currentHeight = containerRef.current?.offsetHeight ?? "auto";
-
   return (
     <div
       ref={containerRef}
       className={cn(
         "relative overflow-hidden",
-        isCollapsing && "transition-all duration-200 ease-out",
         className
       )}
       style={{
-        height: isCollapsing ? 0 : currentHeight,
+        height: isCollapsing ? 0 : measuredHeight ?? "auto",
+        marginTop: isCollapsing ? 0 : undefined,
         marginBottom: isCollapsing ? 0 : undefined,
+        paddingTop: isCollapsing ? 0 : undefined,
+        paddingBottom: isCollapsing ? 0 : undefined,
         opacity: isCollapsing ? 0 : 1,
+        transition: isCollapsing
+          ? "height 250ms ease-out, opacity 200ms ease-out, margin 250ms ease-out, padding 250ms ease-out"
+          : "none",
       }}
     >
       {/* Background action indicators */}

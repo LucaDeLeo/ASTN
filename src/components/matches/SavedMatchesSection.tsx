@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Bookmark, ChevronDown } from "lucide-react";
 import { MatchCard } from "./MatchCard";
+import type { Id } from "../../../convex/_generated/dataModel";
 import { AnimatedCard } from "~/components/animation/AnimatedCard";
 import { cn } from "~/lib/utils";
-import type { Id } from "../../../convex/_generated/dataModel";
 
 interface SavedMatchesSectionProps {
   matches: Array<{
@@ -25,11 +25,37 @@ interface SavedMatchesSectionProps {
 
 export function SavedMatchesSection({ matches }: SavedMatchesSectionProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isVisible, setIsVisible] = useState(matches.length > 0);
+  const sectionRef = useRef<HTMLElement>(null);
 
-  if (matches.length === 0) return null;
+  // Animate in/out when matches change
+  useEffect(() => {
+    if (matches.length > 0 && !isVisible) {
+      // Delay to allow CSS transition to work
+      requestAnimationFrame(() => {
+        setIsVisible(true);
+      });
+    } else if (matches.length === 0 && isVisible) {
+      setIsVisible(false);
+    }
+  }, [matches.length, isVisible]);
+
+  // Don't render if never had matches
+  if (matches.length === 0 && !isVisible) return null;
 
   return (
-    <section className="mb-8">
+    <section
+      ref={sectionRef}
+      className={cn(
+        "overflow-hidden transition-all duration-300 ease-out",
+        isVisible && matches.length > 0
+          ? "opacity-100 mb-8"
+          : "opacity-0 mb-0"
+      )}
+      style={{
+        maxHeight: isVisible && matches.length > 0 ? "1000px" : "0px",
+      }}
+    >
       {/* Collapsible header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
@@ -60,7 +86,7 @@ export function SavedMatchesSection({ matches }: SavedMatchesSectionProps) {
           "grid transition-all duration-300 ease-out",
           isExpanded
             ? "grid-rows-[1fr] opacity-100 mt-4"
-            : "grid-rows-[0fr] opacity-0"
+            : "grid-rows-[0fr] opacity-0 mt-0"
         )}
       >
         <div className="overflow-hidden">
