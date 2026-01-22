@@ -70,11 +70,9 @@ export function SwipeableCard({
               } else if (direction === "right" && onSwipeRight) {
                 onSwipeRight();
               }
-              // Reset state (component will unmount anyway due to list update)
-              setIsAnimatingOut(null);
-              setIsCollapsing(false);
-              setOffset(0);
-            }, 200); // Height collapse duration
+              // Don't reset state - component will unmount from list update
+              // Resetting causes a brief flash as React re-renders before unmount
+            }, 250); // Match height collapse duration
           }, 200); // Horizontal swipe duration
         } else {
           setOffset(0);
