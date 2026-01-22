@@ -6,7 +6,7 @@
 - ✅ **v1.1 Profile Input Speedup** - Phases 7-10 (shipped 2026-01-19)
 - ✅ **v1.2 Org CRM & Events** - Phases 11-16 (shipped 2026-01-19)
 - ✅ **v1.3 Visual Overhaul** - Phases 17-20 (shipped 2026-01-20)
-- 🚧 **v2.0 Mobile + Tauri** - Phases 21-25 (in progress)
+- 🚧 **v2.0 Mobile + Tauri** - Phases 21-26 (in progress)
 
 ## Overview
 
@@ -19,6 +19,7 @@ v2.0 transforms ASTN into a mobile-first experience with native iOS and Android 
 - [ ] **Phase 23: Touch Interactions** - Pull-to-refresh, tap feedback, swipe gestures
 - [ ] **Phase 24: Tauri Desktop Integration** - Project setup, SPA config, Convex connectivity
 - [ ] **Phase 25: Tauri Mobile + Native Features** - iOS/Android builds, OAuth, push, offline, biometrics
+- [ ] **Phase 26: UX Polish** - Fix typography, color palette, empty states, and design consistency issues
 
 ## Phase Details
 
@@ -105,6 +106,33 @@ Plans:
   7. Auth tokens persist securely via Tauri store plugin
 **Plans**: TBD
 
+### Phase 26: UX Polish
+
+**Goal**: Transform ASTN from functional but generic to memorable and distinctive, addressing all issues from UX review
+**Depends on**: Phase 25 (all functionality complete before visual polish)
+**Requirements**: Based on .planning/review/ux-review.md
+**Success Criteria** (what must be TRUE):
+  1. Typography uses distinctive display font for headings paired with refined body font
+  2. Color palette conveys AI Safety seriousness (not generic coral/cream)
+  3. Empty states are varied and contextually appropriate
+  4. Location strings formatted consistently, "Not Found" salary displays replaced
+  5. Match cards are fully clickable with clear tier indicators
+  6. Navigation shows clear active states
+  7. Dark mode has proper contrast adjustments
+**Plans**: 4 plans
+
+Plans:
+- [ ] 26-01-PLAN.md - High priority polish (location formatting, clickable cards, nav active states)
+- [ ] 26-02-PLAN.md - Typography system (Space Grotesk for headings)
+- [ ] 26-03-PLAN.md - Empty state variety (contextual variants)
+- [ ] 26-04-PLAN.md - Color palette + dark mode (navy/slate primary, contrast fixes)
+
+**Details:**
+Based on comprehensive UX review identifying:
+- **High Priority**: Location formatting, salary display, clickable cards, nav active states, empty state variety
+- **Medium Priority**: Typography system, color palette refinement, card standardization, dark mode contrast
+- **Lower Priority**: Logo/brand mark, custom empty state illustrations, home page redesign, org card enrichment
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -114,7 +142,8 @@ Plans:
 | 23. Touch Interactions | v2.0 | 0/3 | Not started | - |
 | 24. Tauri Desktop Integration | v2.0 | 0/TBD | Not started | - |
 | 25. Tauri Mobile + Native Features | v2.0 | 0/TBD | Not started | - |
+| 26. UX Polish | v2.0 | 0/4 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-20*
-*Last updated: 2026-01-21 - Phase 22 complete*
+*Last updated: 2026-01-22 - Added Phase 26 (UX Polish)*
