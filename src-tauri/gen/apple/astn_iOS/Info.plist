@@ -40,25 +40,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<!-- Biometric authentication -->
-	<key>NSFaceIDUsageDescription</key>
-	<string>Use Face ID to quickly unlock ASTN</string>
-	<!-- Push notifications -->
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>remote-notification</string>
-	</array>
-	<!-- Deep linking -->
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>astn</string>
-			</array>
-			<key>CFBundleURLName</key>
-			<string>ai.astn.app</string>
-		</dict>
-	</array>
 </dict>
 </plist>

@@ -16,6 +16,7 @@
 		4DF1EB615AAF3B18F8420CB5 /* libapp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 51D99A1FA1018E9F86995291 /* libapp.a */; };
 		4E051ADF9C6FE31E87816104 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E78A926A0F58691162357CBB /* QuartzCore.framework */; };
 		66B0C65222A6500200334EE2 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = A3A39BE5BBC442EC8DCF254F /* assets */; };
+		787E3980AD0E3B398E7EE330 /* libapp.a in Resources */ = {isa = PBXBuildFile; fileRef = CAB9494188E192D52D554A35 /* libapp.a */; };
 		82725C9E46D11FD84461EBD8 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 326C1E233074382447907953 /* main.mm */; };
 		BE904537F989EBAB22374110 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E2B5283F234105F35E748E79 /* Security.framework */; };
 		D5B74BC637152A8D93D4E394 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 03E2578C74E6D1CA20084B9A /* WebKit.framework */; };
@@ -35,6 +36,7 @@
 		A3A39BE5BBC442EC8DCF254F /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = SOURCE_ROOT; };
 		BE0F4D0B185DF00D323E8A68 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		C91C3CF86CA7271C7438A680 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		CAB9494188E192D52D554A35 /* libapp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libapp.a; sourceTree = "<group>"; };
 		E2B5283F234105F35E748E79 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		E78A926A0F58691162357CBB /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		F3C1C25806FD791D1CF2DC3E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -79,6 +81,7 @@
 		1BB55C84C6A1BEEA01F187C3 /* Externals */ = {
 			isa = PBXGroup;
 			children = (
+				A528DAFD85FD49CF7AE4C604 /* arm64 */,
 			);
 			path = Externals;
 			sourceTree = "<group>";
@@ -133,6 +136,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		7ED0A0646CCEF043299D342C /* debug */ = {
+			isa = PBXGroup;
+			children = (
+				CAB9494188E192D52D554A35 /* libapp.a */,
+			);
+			path = debug;
+			sourceTree = "<group>";
+		};
 		8C00C2BBD63617830548CF41 /* astn_iOS */ = {
 			isa = PBXGroup;
 			children = (
@@ -142,12 +153,27 @@
 			path = astn_iOS;
 			sourceTree = "<group>";
 		};
+		A528DAFD85FD49CF7AE4C604 /* arm64 */ = {
+			isa = PBXGroup;
+			children = (
+				7ED0A0646CCEF043299D342C /* debug */,
+			);
+			path = arm64;
+			sourceTree = "<group>";
+		};
 		B8E46F7360E54FBC93F905AC /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				F4395B7F2677F88F016B5B35 /* astn_iOS.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		"TEMP_5EF01AC5-651F-46DE-9F12-4BEC8DCA5BAC" /* x86_64 */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = x86_64;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -209,6 +235,7 @@
 				42261B5940F0FA30302BB742 /* Assets.xcassets in Resources */,
 				0A23F2D347A75D2668FCD1CF /* LaunchScreen.storyboard in Resources */,
 				66B0C65222A6500200334EE2 /* assets in Resources */,
+				787E3980AD0E3B398E7EE330 /* libapp.a in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -326,7 +353,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -388,7 +415,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;

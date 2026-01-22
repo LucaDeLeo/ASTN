@@ -8,8 +8,6 @@
     "deep-link:default",
     "store:default",
     "os:default",
-    "notification:default",
-    "biometric:allow-authenticate",
-    "biometric:allow-status"
+    "notification:default"
   ]
 }
