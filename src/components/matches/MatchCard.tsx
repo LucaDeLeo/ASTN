@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Card } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
+import { formatLocation } from "~/lib/formatLocation";
 
 const ACTIVE_MATCH_KEY = "view-transition-match-id";
 
@@ -144,7 +145,7 @@ export function MatchCard({ match, isSaved, onUnsave }: MatchCardProps) {
           {match.opportunity.title}
         </h3>
         <p className="text-sm text-slate-600">
-          {match.opportunity.organization} · {match.opportunity.location}
+          {match.opportunity.organization} · {formatLocation(match.opportunity.location)}
         </p>
       </Link>
 

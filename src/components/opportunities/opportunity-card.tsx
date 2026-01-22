@@ -4,6 +4,7 @@ import { formatDistanceToNow } from "date-fns";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent } from "~/components/ui/card";
+import { formatLocation } from "~/lib/formatLocation";
 
 const ACTIVE_OPPORTUNITY_KEY = "view-transition-opportunity-id";
 
@@ -110,7 +111,7 @@ export function OpportunityCard({
               <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5" />
-                  {opportunity.location}
+                  {formatLocation(opportunity.location)}
                   {opportunity.isRemote && (
                     <Badge variant="outline" className="ml-1 text-xs py-0 rounded-sm">
                       Remote

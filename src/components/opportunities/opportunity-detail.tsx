@@ -13,6 +13,7 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { formatLocation } from "~/lib/formatLocation";
 
 type Opportunity = {
   _id: Id<"opportunities">;
@@ -89,7 +90,7 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4 text-slate-600 text-sm sm:text-base">
               <span className="flex items-center gap-1.5">
                 <MapPin className="w-4 h-4 shrink-0" />
-                <span className="truncate max-w-[200px]">{opportunity.location}</span>
+                <span className="truncate max-w-[200px]">{formatLocation(opportunity.location)}</span>
                 {opportunity.isRemote && (
                   <Badge variant="outline" className="ml-1 rounded-sm shrink-0">Remote</Badge>
                 )}
