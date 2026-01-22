@@ -216,12 +216,12 @@
   --scale-hover: 1.02;
 
   /* ==========================================================================
-     WARM SHADOW TOKENS - Coral-tinted shadows for warmth
+     SHADOW TOKENS - Navy-tinted shadows for professional appearance
      ========================================================================== */
-  --shadow-warm-sm: 0 1px 2px oklch(0.70 0.04 30 / 0.06);
-  --shadow-warm: 0 4px 12px oklch(0.70 0.06 30 / 0.08);
-  --shadow-warm-md: 0 8px 24px oklch(0.70 0.08 30 / 0.12);
-  --shadow-warm-lg: 0 12px 40px oklch(0.70 0.08 30 / 0.15);
+  --shadow-warm-sm: 0 1px 2px oklch(0.30 0.02 250 / 0.06);
+  --shadow-warm: 0 4px 12px oklch(0.30 0.02 250 / 0.08);
+  --shadow-warm-md: 0 8px 24px oklch(0.30 0.02 250 / 0.12);
+  --shadow-warm-lg: 0 12px 40px oklch(0.30 0.02 250 / 0.15);
 
   /* ==========================================================================
      PRIMITIVE TOKENS - Raw values, not semantic
@@ -266,11 +266,11 @@
   --error-brick: oklch(0.55 0.18 25);     /* brick red */
 
   /* ==========================================================================
-     GRADIENT BACKGROUND TOKENS - Light mode
+     GRADIENT BACKGROUND TOKENS - Light mode (navy/slate hue)
      ========================================================================== */
-  --gradient-radial: radial-gradient(ellipse at center, oklch(0.99 0.01 90) 0%, oklch(0.97 0.02 30) 70%, oklch(0.95 0.04 30) 100%);
-  --gradient-linear: linear-gradient(135deg, oklch(0.99 0.01 90) 0%, oklch(0.97 0.02 30) 100%);
-  --gradient-subtle: linear-gradient(180deg, oklch(0.99 0.005 90) 0%, oklch(0.98 0.01 85) 100%);
+  --gradient-radial: radial-gradient(ellipse at center, oklch(0.98 0.005 250) 0%, oklch(0.96 0.01 250) 70%, oklch(0.94 0.015 250) 100%);
+  --gradient-linear: linear-gradient(135deg, oklch(0.98 0.005 250) 0%, oklch(0.96 0.01 250) 100%);
+  --gradient-subtle: linear-gradient(180deg, oklch(0.99 0.003 250) 0%, oklch(0.97 0.008 250) 100%);
   --gradient-noise-opacity: 0.03;
 
   /* ==========================================================================
@@ -379,10 +379,10 @@
   --shadow-warm-md: 0 8px 24px oklch(0 0 0 / 0.5), 0 0 24px oklch(0.70 0.08 30 / 0.10);
   --shadow-warm-lg: 0 12px 40px oklch(0 0 0 / 0.6), 0 0 32px oklch(0.70 0.08 30 / 0.12);
 
-  /* Dark mode gradient tokens - soft charcoal with subtle coral undertones */
-  --gradient-radial: radial-gradient(ellipse at center, oklch(0.22 0.008 30) 0%, oklch(0.18 0.006 30) 60%, oklch(0.16 0.005 30) 100%);
-  --gradient-linear: linear-gradient(135deg, oklch(0.20 0.008 30) 0%, oklch(0.16 0.005 30) 100%);
-  --gradient-subtle: linear-gradient(180deg, oklch(0.19 0.006 30) 0%, oklch(0.16 0.005 30) 100%);
+  /* Dark mode gradient tokens - soft charcoal with subtle navy undertones */
+  --gradient-radial: radial-gradient(ellipse at center, oklch(0.22 0.01 250) 0%, oklch(0.18 0.008 250) 60%, oklch(0.16 0.005 250) 100%);
+  --gradient-linear: linear-gradient(135deg, oklch(0.20 0.01 250) 0%, oklch(0.16 0.005 250) 100%);
+  --gradient-subtle: linear-gradient(180deg, oklch(0.19 0.008 250) 0%, oklch(0.16 0.005 250) 100%);
   --gradient-noise-opacity: 0.01;
 }
 
@@ -399,35 +399,35 @@
    GRADIENT BACKGROUND CLASSES - Respond to .dark class for SSR
    ========================================================================== */
 .gradient-bg-radial {
-  background: radial-gradient(ellipse at center, oklch(0.99 0.01 90) 0%, oklch(0.97 0.02 30) 70%, oklch(0.95 0.04 30) 100%);
-  background-image: radial-gradient(ellipse at center, oklch(0.99 0.01 90) 0%, oklch(0.97 0.02 30) 70%, oklch(0.95 0.04 30) 100%),
+  background: radial-gradient(ellipse at center, oklch(0.98 0.005 250) 0%, oklch(0.96 0.01 250) 70%, oklch(0.94 0.015 250) 100%);
+  background-image: radial-gradient(ellipse at center, oklch(0.98 0.005 250) 0%, oklch(0.96 0.01 250) 70%, oklch(0.94 0.015 250) 100%),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
 }
 .dark .gradient-bg-radial {
-  background: radial-gradient(ellipse at center, oklch(0.22 0.008 30) 0%, oklch(0.18 0.006 30) 60%, oklch(0.16 0.005 30) 100%);
-  background-image: radial-gradient(ellipse at center, oklch(0.22 0.008 30) 0%, oklch(0.18 0.006 30) 60%, oklch(0.16 0.005 30) 100%),
+  background: radial-gradient(ellipse at center, oklch(0.22 0.01 250) 0%, oklch(0.18 0.008 250) 60%, oklch(0.16 0.005 250) 100%);
+  background-image: radial-gradient(ellipse at center, oklch(0.22 0.01 250) 0%, oklch(0.18 0.008 250) 60%, oklch(0.16 0.005 250) 100%),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.01'/%3E%3C/svg%3E");
 }
 
 .gradient-bg-linear {
-  background: linear-gradient(135deg, oklch(0.99 0.01 90) 0%, oklch(0.97 0.02 30) 100%);
-  background-image: linear-gradient(135deg, oklch(0.99 0.01 90) 0%, oklch(0.97 0.02 30) 100%),
+  background: linear-gradient(135deg, oklch(0.98 0.005 250) 0%, oklch(0.96 0.01 250) 100%);
+  background-image: linear-gradient(135deg, oklch(0.98 0.005 250) 0%, oklch(0.96 0.01 250) 100%),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
 }
 .dark .gradient-bg-linear {
-  background: linear-gradient(135deg, oklch(0.20 0.008 30) 0%, oklch(0.16 0.005 30) 100%);
-  background-image: linear-gradient(135deg, oklch(0.20 0.008 30) 0%, oklch(0.16 0.005 30) 100%),
+  background: linear-gradient(135deg, oklch(0.20 0.01 250) 0%, oklch(0.16 0.005 250) 100%);
+  background-image: linear-gradient(135deg, oklch(0.20 0.01 250) 0%, oklch(0.16 0.005 250) 100%),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.01'/%3E%3C/svg%3E");
 }
 
 .gradient-bg-subtle {
-  background: linear-gradient(180deg, oklch(0.99 0.005 90) 0%, oklch(0.98 0.01 85) 100%);
-  background-image: linear-gradient(180deg, oklch(0.99 0.005 90) 0%, oklch(0.98 0.01 85) 100%),
+  background: linear-gradient(180deg, oklch(0.99 0.003 250) 0%, oklch(0.97 0.008 250) 100%);
+  background-image: linear-gradient(180deg, oklch(0.99 0.003 250) 0%, oklch(0.97 0.008 250) 100%),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
 }
 .dark .gradient-bg-subtle {
-  background: linear-gradient(180deg, oklch(0.19 0.006 30) 0%, oklch(0.16 0.005 30) 100%);
-  background-image: linear-gradient(180deg, oklch(0.19 0.006 30) 0%, oklch(0.16 0.005 30) 100%),
+  background: linear-gradient(180deg, oklch(0.19 0.008 250) 0%, oklch(0.16 0.005 250) 100%);
+  background-image: linear-gradient(180deg, oklch(0.19 0.008 250) 0%, oklch(0.16 0.005 250) 100%),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.01'/%3E%3C/svg%3E");
 }
 
