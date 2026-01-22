@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** Phase 26 - UX Polish (COMPLETE)
+**Current focus:** Phase 25 - Tauri Mobile + Native Features
 
 ## Current Position
 
-Phase: 23 of 26 (Touch Interactions)
-Plan: 0 of 3 complete
-Status: Not started
-Last activity: 2026-01-22 - Removed Phase 24 (desktop Tauri), continuing to Phase 23
+Phase: 25 of 26 (Tauri Mobile + Native Features)
+Plan: 1 of 6 complete
+Status: In progress
+Last activity: 2026-01-22 - Completed 25-01 (Tauri Project Initialization)
 
-Progress: v1.0 + v1.1 + v1.2 + v1.3 complete (67 plans), v2.0 phases 21-22, 26 complete (13 plans)
-[##############......] 70%
+Progress: v1.0 + v1.1 + v1.2 + v1.3 complete (67 plans), v2.0 phases 21-23, 26 complete (16 plans) + 25-01
+[#################...] 84%
 
 ## Milestone History
 
@@ -25,7 +25,7 @@ Progress: v1.0 + v1.1 + v1.2 + v1.3 complete (67 plans), v2.0 phases 21-22, 26 c
 - v1.3 Visual Overhaul - 4 phases (17-20), 13 plans - shipped 2026-01-20
 
 **Total:** 20 phases, 67 plans across 4 shipped milestones
-**In progress:** v2.0 Mobile + Tauri - 5 phases (21-23, 25-26), 13/~19 plans complete
+**In progress:** v2.0 Mobile + Tauri - 5 phases (21-23, 25-26), 17/~22 plans complete
 
 ## Pending Todos
 
@@ -42,7 +42,7 @@ Progress: v1.0 + v1.1 + v1.2 + v1.3 complete (67 plans), v2.0 phases 21-22, 26 c
 - Notification frequency defaults need user testing
 - Engagement level thresholds may need per-org tuning
 - Tauri push notification plugin is community-maintained (needs early testing)
-- Convex OAuth flow in Tauri WebView needs prototype testing
+- TanStack Start routes need SPA-compatible variants for full Tauri integration (planned for 25-04)
 
 ## Decisions Made (v2.0)
 
@@ -52,6 +52,9 @@ Progress: v1.0 + v1.1 + v1.2 + v1.3 complete (67 plans), v2.0 phases 21-22, 26 c
 | Coral as accent only | CTAs and highlights, not primary | 26 |
 | Semantic tokens over hardcoded colors | Theme consistency across light/dark modes | 26 |
 | Skip Tauri Desktop (Phase 24) | Focus is mobile only; desktop validation not needed | - |
+| ai.astn.app bundle identifier | Matches domain convention, ready for App Store | 25-01 |
+| astn:// deep link scheme | Simple scheme for OAuth callbacks | 25-01 |
+| Separate SPA entry for Tauri | TanStack Start SSR incompatible with WebView | 25-01 |
 
 ## Roadmap Evolution
 
@@ -62,10 +65,10 @@ Progress: v1.0 + v1.1 + v1.2 + v1.3 complete (67 plans), v2.0 phases 21-22, 26 c
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Scope change - removed Phase 24 (desktop Tauri)
+Stopped at: Completed 25-01-PLAN.md (Tauri Project Initialization)
 Resume file: None
-Next action: Plan Phase 23 (Touch Interactions)
+Next action: Execute 25-02 (iOS Build Setup) or 25-03 (Android Build Setup)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-22 - Removed Phase 24, continuing v2.0 with phases 23 + 25*
+*Last updated: 2026-01-22 - Completed 25-01 (Tauri Project Initialization)*
