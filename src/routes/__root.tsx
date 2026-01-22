@@ -12,7 +12,7 @@ import { Toaster } from 'sonner'
 
 // Font preloads for FOIT/FOUT prevention
 import plusJakartaWoff2 from '@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2?url'
-import loraWoff2 from '@fontsource-variable/lora/files/lora-latin-wght-normal.woff2?url'
+import spaceGroteskWoff2 from '@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2?url'
 import type { QueryClient } from '@tanstack/react-query'
 
 import appCss from '~/styles/app.css?url'
@@ -73,7 +73,7 @@ export const Route = createRootRouteWithContext<{
       },
       {
         rel: 'preload',
-        href: loraWoff2,
+        href: spaceGroteskWoff2,
         as: 'font',
         type: 'font/woff2',
         crossOrigin: 'anonymous',
