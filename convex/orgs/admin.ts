@@ -253,7 +253,6 @@ export const getAllMembersWithProfiles = query({
             profile.hasEnrichmentConversation === true,
             profile.privacySettings !== undefined &&
               typeof profile.privacySettings === "object" &&
-              profile.privacySettings !== null &&
               "defaultVisibility" in profile.privacySettings,
           ];
           completeness = Math.round(

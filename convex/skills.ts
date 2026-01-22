@@ -105,12 +105,12 @@ export const getTaxonomy = query({
 // Search skills by name (case-insensitive contains matching)
 export const searchSkills = query({
   args: { query: v.string() },
-  handler: async (ctx, { query }) => {
-    if (!query.trim()) {
+  handler: async (ctx, { query: searchQuery }) => {
+    if (!searchQuery.trim()) {
       return [];
     }
 
-    const lowerQuery = query.toLowerCase();
+    const lowerQuery = searchQuery.toLowerCase();
 
     // Get all skills and filter (search index would be better for large datasets)
     const skills = await ctx.db.query("skillsTaxonomy").collect();

@@ -88,12 +88,12 @@ export const search = query({
     const searchQuery = ctx.db
       .query("opportunities")
       .withSearchIndex("search_title", (q) => {
-        let search = q.search("title", args.searchTerm);
-        search = search.eq("status", "active");
-        if (args.roleType) search = search.eq("roleType", args.roleType);
+        let searchBuilder = q.search("title", args.searchTerm);
+        searchBuilder = searchBuilder.eq("status", "active");
+        if (args.roleType) searchBuilder = searchBuilder.eq("roleType", args.roleType);
         if (args.isRemote !== undefined)
-          search = search.eq("isRemote", args.isRemote);
-        return search;
+          searchBuilder = searchBuilder.eq("isRemote", args.isRemote);
+        return searchBuilder;
       });
 
     return await searchQuery.take(limit);

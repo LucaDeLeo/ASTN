@@ -1,11 +1,11 @@
 import { useState } from "react";
 import {
-  Upload,
-  ClipboardPaste,
-  PenLine,
-  MessageSquare,
   ChevronDown,
   ChevronUp,
+  ClipboardPaste,
+  MessageSquare,
+  PenLine,
+  Upload,
 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { Card } from "~/components/ui/card";
@@ -27,7 +27,7 @@ interface EntryOption {
   isPrimary?: boolean;
 }
 
-const ENTRY_OPTIONS: EntryOption[] = [
+const ENTRY_OPTIONS: Array<EntryOption> = [
   {
     id: "upload",
     icon: Upload,

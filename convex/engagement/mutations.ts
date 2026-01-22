@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { internalMutation, mutation } from "../_generated/server";
-import type { Id } from "../_generated/dataModel";
 import { auth } from "../auth";
+import type { Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 
 // Level validator for Convex

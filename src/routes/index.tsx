@@ -102,7 +102,7 @@ function Dashboard() {
       acc[orgName].push(event);
       return acc;
     },
-    {} as Record<string, typeof dashboardEvents.userOrgEvents>
+    {} as Record<string, typeof dashboardEvents.userOrgEvents | undefined>
   );
 
   return (
@@ -142,25 +142,28 @@ function Dashboard() {
           // Show events grouped by org
           <div className="space-y-6">
             {eventsByOrg &&
-              Object.entries(eventsByOrg).map(([orgName, events]) => (
-                <div key={orgName}>
-                  <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wide mb-3">
-                    {orgName} Events
-                  </h3>
-                  <div className="space-y-3">
-                    {events.slice(0, 5).map((event, index) => (
-                      <AnimatedCard key={event._id} index={index}>
-                        <EventCard event={event} />
-                      </AnimatedCard>
-                    ))}
-                    {events.length > 5 && (
-                      <p className="text-sm text-slate-500 pl-1">
-                        +{events.length - 5} more events
-                      </p>
-                    )}
+              Object.entries(eventsByOrg).map(([orgName, events]) => {
+                if (!events) return null;
+                return (
+                  <div key={orgName}>
+                    <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wide mb-3">
+                      {orgName} Events
+                    </h3>
+                    <div className="space-y-3">
+                      {events.slice(0, 5).map((event, index) => (
+                        <AnimatedCard key={event._id} index={index}>
+                          <EventCard event={event} />
+                        </AnimatedCard>
+                      ))}
+                      {events.length > 5 && (
+                        <p className="text-sm text-slate-500 pl-1">
+                          +{events.length - 5} more events
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
           </div>
         ) : dashboardEvents.otherOrgEvents.length > 0 ? (
           // No org events but other events exist

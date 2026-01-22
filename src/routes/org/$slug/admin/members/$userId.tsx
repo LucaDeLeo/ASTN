@@ -277,10 +277,10 @@ type ProfileData = {
     endDate?: string;
     current?: boolean;
   }> | null;
-  skills: string[] | null;
+  skills: Array<string> | null;
   careerGoals: string | null;
-  seeking: string[] | null;
-  aiSafetyInterests: string[] | null;
+  seeking: Array<string> | null;
+  aiSafetyInterests: Array<string> | null;
   enrichmentSummary: string | null;
 };
 
@@ -554,7 +554,7 @@ function EngagementCard({ history }: { history: EngagementHistoryData }) {
         </div>
 
         {/* Signals */}
-        {current.signals && Object.keys(current.signals).length > 0 && (
+        {Object.keys(current.signals).length > 0 && (
           <>
             <Separator />
             <div>

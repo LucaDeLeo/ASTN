@@ -29,7 +29,7 @@ function formatLevel(level: string): string {
 }
 
 export function OverrideHistory({ history }: OverrideHistoryProps) {
-  if (!history || history.length === 0) {
+  if (history.length === 0) {
     return (
       <div className="text-sm text-slate-500 italic py-4 text-center">
         No override history

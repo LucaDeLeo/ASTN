@@ -1,5 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { convexQuery } from "@convex-dev/react-query";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { AuthHeader } from "~/components/layout/auth-header";
@@ -8,30 +9,25 @@ import { OpportunityDetail } from "~/components/opportunities/opportunity-detail
 import { Button } from "~/components/ui/button";
 
 export const Route = createFileRoute("/opportunities/$id")({
+  loader: async ({ context, params }) => {
+    await context.queryClient.ensureQueryData(
+      convexQuery(api.opportunities.get, {
+        id: params.id as Id<"opportunities">,
+      })
+    );
+  },
   component: OpportunityPage,
 });
 
 function OpportunityPage() {
   const { id } = Route.useParams();
-  const opportunity = useQuery(api.opportunities.get, {
-    id: id as Id<"opportunities">,
-  });
 
-  if (opportunity === undefined) {
-    return (
-      <GradientBg variant="subtle">
-        <AuthHeader />
-        <main className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="animate-pulse space-y-4">
-              <div className="h-32 bg-cream-100 rounded-sm" />
-              <div className="h-64 bg-cream-100 rounded-sm" />
-            </div>
-          </div>
-        </main>
-      </GradientBg>
-    );
-  }
+  // Data is synchronously available - preloaded by route loader
+  const { data: opportunity } = useSuspenseQuery(
+    convexQuery(api.opportunities.get, {
+      id: id as Id<"opportunities">,
+    })
+  );
 
   if (opportunity === null) {
     return (

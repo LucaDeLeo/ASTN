@@ -493,7 +493,7 @@ export const updateLocationPrivacy = mutation({
       defaultVisibility: "private" as const,
     };
 
-    await ctx.db.patch(profile._id, {
+    await ctx.db.patch("profiles", profile._id, {
       privacySettings: {
         ...existingSettings,
         locationDiscoverable,
@@ -564,7 +564,7 @@ export const updateEventNotificationPreferences = mutation({
 
     if (!profile) throw new Error("Profile not found");
 
-    await ctx.db.patch(profile._id, {
+    await ctx.db.patch("profiles", profile._id, {
       eventNotificationPreferences: {
         frequency: args.frequency,
         reminderTiming: args.reminderTiming,

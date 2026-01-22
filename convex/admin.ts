@@ -54,9 +54,9 @@ export const updateOpportunity = mutation({
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
 
-    // Remove undefined values
+    // Remove undefined values (runtime filter for optional args)
     const cleanUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([_, v]) => v !== undefined)
+      Object.entries(updates as Record<string, unknown>).filter(([_, value]) => value !== undefined)
     );
 
     await ctx.db.patch("opportunities", id, {

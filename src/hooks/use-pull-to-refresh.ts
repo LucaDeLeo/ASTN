@@ -46,7 +46,7 @@ export function usePullToRefresh({
       }
 
       // Only allow pull when page is scrolled to top
-      const scrollY = window.scrollY ?? 0;
+      const scrollY = window.scrollY;
       if (scrollY > 0 && my > 0) {
         cancel();
         return;

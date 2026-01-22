@@ -16,10 +16,10 @@ export const sendAttendancePrompt = internalMutation({
     promptNumber: v.optional(v.number()),
   },
   handler: async (ctx, { eventId, userId, promptNumber = 1 }) => {
-    const event = await ctx.db.get(eventId);
+    const event = await ctx.db.get("events", eventId);
     if (!event) return; // Event deleted
 
-    const org = await ctx.db.get(event.orgId);
+    const org = await ctx.db.get("organizations", event.orgId);
 
     // Check if user already recorded attendance
     const existingAttendance = await ctx.db
@@ -55,7 +55,7 @@ export const sendAttendancePrompt = internalMutation({
       .first();
 
     if (scheduled) {
-      await ctx.db.delete(scheduled._id);
+      await ctx.db.delete("scheduledAttendancePrompts", scheduled._id);
     }
   },
 });

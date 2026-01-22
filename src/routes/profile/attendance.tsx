@@ -5,9 +5,9 @@ import {
   ArrowLeft,
   CalendarCheck,
   MapPin,
+  MessageSquare,
   Monitor,
   Star,
-  MessageSquare,
 } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
 import { AuthHeader } from "~/components/layout/auth-header";

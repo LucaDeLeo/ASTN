@@ -2,10 +2,10 @@ import { Compass, Sparkles, ThumbsUp } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { MatchCard } from "./MatchCard";
+import type { Id } from "../../../convex/_generated/dataModel";
 import { AnimatedCard } from "~/components/animation/AnimatedCard";
 import { SwipeableCard } from "~/components/gestures/swipeable-card";
 import { useIsMobile } from "~/hooks/use-media-query";
-import type { Id } from "../../../convex/_generated/dataModel";
 
 interface MatchTierSectionProps {
   tier: "great" | "good" | "exploring";
@@ -15,6 +15,7 @@ interface MatchTierSectionProps {
     isNew: boolean;
     status?: "active" | "dismissed" | "saved";
     explanation: { strengths: Array<string> };
+    probability?: { interviewChance: string; ranking: string };
     opportunity: {
       _id: string;
       title: string;
@@ -22,6 +23,7 @@ interface MatchTierSectionProps {
       location: string;
       isRemote: boolean;
       roleType: string;
+      deadline?: number;
     };
   }>;
 }
@@ -74,14 +76,15 @@ export function MatchTierSection({ tier, matches }: MatchTierSectionProps) {
 
           if (isMobile) {
             return (
-              <AnimatedCard key={match._id} index={index}>
-                <SwipeableCard
-                  onSwipeLeft={() => dismissMatch({ matchId: match._id })}
-                  onSwipeRight={() => saveMatch({ matchId: match._id })}
-                >
+              <SwipeableCard
+                key={match._id}
+                onSwipeLeft={() => dismissMatch({ matchId: match._id })}
+                onSwipeRight={() => saveMatch({ matchId: match._id })}
+              >
+                <AnimatedCard index={index}>
                   {card}
-                </SwipeableCard>
-              </AnimatedCard>
+                </AnimatedCard>
+              </SwipeableCard>
             );
           }
 

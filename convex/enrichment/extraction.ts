@@ -78,7 +78,7 @@ For career interests, focus on specific AI safety topics and research areas ment
 
     // Find the tool use block
     const toolUse = response.content.find((block) => block.type === "tool_use");
-    if (toolUse && toolUse.type === "tool_use") {
+    if (toolUse) {
       return toolUse.input as ExtractionResult;
     }
 

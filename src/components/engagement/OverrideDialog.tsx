@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
+import type {EngagementLevel} from "~/components/engagement/EngagementBadge";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -23,8 +24,8 @@ import {
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
 import {
-  EngagementBadge,
-  type EngagementLevel,
+  EngagementBadge
+  
 } from "~/components/engagement/EngagementBadge";
 import { OverrideHistory } from "~/components/engagement/OverrideHistory";
 
@@ -41,7 +42,7 @@ interface OverrideDialogProps {
   userId: string;
 }
 
-const levelOptions: { value: EngagementLevel; label: string }[] = [
+const levelOptions: Array<{ value: EngagementLevel; label: string }> = [
   { value: "highly_engaged", label: "Active" },
   { value: "moderate", label: "Moderate" },
   { value: "at_risk", label: "At Risk" },

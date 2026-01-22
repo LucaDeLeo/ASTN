@@ -1,12 +1,12 @@
 import * as React from "react"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogTrigger,
-  DialogClose,
 } from "~/components/ui/dialog"
 import { useIsMobile } from "~/hooks/use-media-query"
 import { cn } from "~/lib/utils"

@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from "react";
+import { useMutation } from "convex/react";
 import { Bookmark, ChevronDown } from "lucide-react";
+import { api } from "../../../convex/_generated/api";
 import { MatchCard } from "./MatchCard";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { AnimatedCard } from "~/components/animation/AnimatedCard";
 import { cn } from "~/lib/utils";
+
+const SAVED_SECTION_EXPANDED_KEY = "saved-matches-expanded";
 
 interface SavedMatchesSectionProps {
   matches: Array<{
@@ -12,6 +16,7 @@ interface SavedMatchesSectionProps {
     isNew: boolean;
     status?: "active" | "dismissed" | "saved";
     explanation: { strengths: Array<string> };
+    probability?: { interviewChance: string; ranking: string };
     opportunity: {
       _id: string;
       title: string;
@@ -19,14 +24,25 @@ interface SavedMatchesSectionProps {
       location: string;
       isRemote: boolean;
       roleType: string;
+      deadline?: number;
     };
   }>;
 }
 
 export function SavedMatchesSection({ matches }: SavedMatchesSectionProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  // Persist expanded state across navigation for view transitions
+  const [isExpanded, setIsExpanded] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return sessionStorage.getItem(SAVED_SECTION_EXPANDED_KEY) === "true";
+  });
   const [isVisible, setIsVisible] = useState(matches.length > 0);
   const sectionRef = useRef<HTMLElement>(null);
+  const toggleSaveMatch = useMutation(api.matches.saveMatch); // saveMatch toggles saved status
+
+  // Sync expanded state to sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem(SAVED_SECTION_EXPANDED_KEY, String(isExpanded));
+  }, [isExpanded]);
 
   // Animate in/out when matches change
   useEffect(() => {
@@ -73,6 +89,7 @@ export function SavedMatchesSection({ matches }: SavedMatchesSectionProps) {
           </span>
         </div>
         <ChevronDown
+          suppressHydrationWarning
           className={cn(
             "size-5 text-emerald-600 transition-transform duration-200",
             isExpanded && "rotate-180"
@@ -80,20 +97,24 @@ export function SavedMatchesSection({ matches }: SavedMatchesSectionProps) {
         />
       </button>
 
-      {/* Expandable content */}
+      {/* Expandable content - only animate grid-template-rows for smooth performance */}
       <div
+        suppressHydrationWarning
         className={cn(
-          "grid transition-all duration-300 ease-out",
-          isExpanded
-            ? "grid-rows-[1fr] opacity-100 mt-4"
-            : "grid-rows-[0fr] opacity-0 mt-0"
+          "grid mt-4 will-change-[grid-template-rows]",
+          "transition-[grid-template-rows] duration-200 ease-out",
+          isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
         )}
       >
         <div className="overflow-hidden">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 pb-1">
             {matches.map((match, index) => (
               <AnimatedCard key={match._id} index={index}>
-                <MatchCard match={match} isSaved />
+                <MatchCard
+                  match={match}
+                  isSaved
+                  onUnsave={() => toggleSaveMatch({ matchId: match._id })}
+                />
               </AnimatedCard>
             ))}
           </div>

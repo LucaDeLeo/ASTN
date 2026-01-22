@@ -21,7 +21,7 @@ export interface LumaEvent {
 }
 
 interface LumaListResponse {
-  entries: LumaEvent[];
+  entries: Array<LumaEvent>;
   has_more: boolean;
   next_cursor: string | null;
 }
@@ -37,8 +37,8 @@ interface LumaListResponse {
 export async function fetchLumaEvents(
   apiKey: string,
   options?: { after?: string; before?: string }
-): Promise<LumaEvent[]> {
-  const events: LumaEvent[] = [];
+): Promise<Array<LumaEvent>> {
+  const events: Array<LumaEvent> = [];
   let cursor: string | null = null;
 
   do {

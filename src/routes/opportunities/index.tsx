@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { convexQuery } from "@convex-dev/react-query";
 import { usePaginatedQuery, useQuery } from "convex/react";
 import { useCallback } from "react";
 import { api } from "../../../convex/_generated/api";
@@ -17,6 +19,24 @@ type OpportunitySearchParams = {
   q?: string;
 };
 
+// Larger limit for list mode to reduce need for pagination
+// This enables simpler data flow and better view transitions
+const LIST_LIMIT = 50;
+const SEARCH_PAGE_SIZE = 20;
+
+// Helper to derive filter params consistently between loader and component
+function getFilterParams(search: OpportunitySearchParams) {
+  return {
+    roleType: search.role && search.role !== "all" ? search.role : undefined,
+    isRemote:
+      search.location === "remote"
+        ? true
+        : search.location === "onsite"
+          ? false
+          : undefined,
+  };
+}
+
 export const Route = createFileRoute("/opportunities/")({
   validateSearch: (search: Record<string, unknown>): OpportunitySearchParams => {
     return {
@@ -25,51 +45,63 @@ export const Route = createFileRoute("/opportunities/")({
       q: search.q as string | undefined,
     };
   },
+  loader: async ({ context, location }) => {
+    const search = location.search as OpportunitySearchParams;
+    const params = getFilterParams(search);
+
+    // Preload opportunities for view transitions
+    // Only preload list query (not search) - search has different behavior
+    if (!search.q) {
+      await context.queryClient.ensureQueryData(
+        convexQuery(api.opportunities.list, {
+          ...params,
+          limit: LIST_LIMIT,
+        })
+      );
+    }
+  },
   component: OpportunitiesPage,
 });
 
-const PAGE_SIZE = 20;
-
 function OpportunitiesPage() {
-  const { role: roleType, location: locationFilter, q: searchTerm } = Route.useSearch();
+  const search = Route.useSearch();
+  const { q: searchTerm } = search;
   const isMobile = useIsMobile();
   const profile = useQuery(api.profiles.getOrCreateProfile);
   const user = profile ? { name: profile.name || "User" } : null;
 
-  // Determine which query to use based on filters
-  const isRemote =
-    locationFilter === "remote"
-      ? true
-      : locationFilter === "onsite"
-        ? false
-        : undefined;
+  // Derive filter params consistently (same logic as loader)
+  const params = getFilterParams(search);
 
-  // Use search query if there's a search term, otherwise use list query
+  // For list mode: use preloaded data (enables view transitions)
+  // This is synchronously available from the loader
+  const { data: opportunities } = useSuspenseQuery(
+    convexQuery(api.opportunities.list, {
+      ...params,
+      limit: LIST_LIMIT,
+    })
+  );
+
+  // Search mode uses separate paginated query (no view transitions expected during search)
   const searchPagination = usePaginatedQuery(
     api.opportunities.searchPaginated,
     searchTerm
       ? {
           searchTerm,
-          roleType: roleType && roleType !== "all" ? roleType : undefined,
-          isRemote,
+          roleType: params.roleType,
+          isRemote: params.isRemote,
         }
       : "skip",
-    { initialNumItems: PAGE_SIZE }
+    { initialNumItems: SEARCH_PAGE_SIZE }
   );
 
-  const listPagination = usePaginatedQuery(
-    api.opportunities.listPaginated,
-    !searchTerm
-      ? {
-          roleType: roleType && roleType !== "all" ? roleType : undefined,
-          isRemote,
-        }
-      : "skip",
-    { initialNumItems: PAGE_SIZE }
-  );
+  // Simple logic: search term present = use search, otherwise use preloaded list
+  const isSearchMode = !!searchTerm;
+  const results = isSearchMode ? searchPagination.results : opportunities;
+  const status = isSearchMode ? searchPagination.status : "Exhausted";
+  const loadMore = isSearchMode ? searchPagination.loadMore : () => {};
 
-  const { results, status, loadMore } = searchTerm ? searchPagination : listPagination;
-  const isLoading = status === "LoadingFirstPage";
+  const isLoading = isSearchMode && searchPagination.status === "LoadingFirstPage";
 
   // Pull-to-refresh handler - Convex is real-time, so data is already fresh
   // This provides visual feedback acknowledging the gesture
@@ -84,8 +116,8 @@ function OpportunitiesPage() {
         <div className="mb-6">
           <h1 className="text-2xl font-display font-semibold text-foreground">Opportunities</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {results.length} {results.length !== 1 ? "opportunities" : "opportunity"} loaded
-            {status !== "Exhausted" && " (more available)"}
+            {results.length} {results.length !== 1 ? "opportunities" : "opportunity"}
+            {isSearchMode && status !== "Exhausted" && " (more available)"}
           </p>
         </div>
         <PullToRefresh
@@ -96,7 +128,7 @@ function OpportunitiesPage() {
             opportunities={results}
             isLoading={isLoading}
             status={status}
-            onLoadMore={() => loadMore(PAGE_SIZE)}
+            onLoadMore={() => loadMore(SEARCH_PAGE_SIZE)}
           />
         </PullToRefresh>
       </main>

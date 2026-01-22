@@ -1,5 +1,7 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { AuthLoading, Authenticated, Unauthenticated, useAction, useQuery  } from "convex/react";
+import { AuthLoading, Authenticated, Unauthenticated, useAction, useQuery } from "convex/react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { convexQuery } from "@convex-dev/react-query";
 import { RefreshCw, Sparkles, User } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../../../convex/_generated/api";
@@ -15,24 +17,21 @@ import { MatchTierSection } from "~/components/matches/MatchTierSection";
 import { SavedMatchesSection } from "~/components/matches/SavedMatchesSection";
 import { GrowthAreas } from "~/components/matches/GrowthAreas";
 
-// Aggregate recommendations from all matches into growth areas
-function aggregateGrowthAreas(matches: {
-  great: Array<{ recommendations: Array<{ type: string; action: string }> }>;
-  good: Array<{ recommendations: Array<{ type: string; action: string }> }>;
-  exploring: Array<{ recommendations: Array<{ type: string; action: string }> }>;
-}) {
-  const allMatches = [...matches.great, ...matches.good, ...matches.exploring];
+// Aggregate recommendations into growth areas
+function aggregateGrowthAreas(recommendations: Array<{ type: string; action: string }> | undefined) {
+  if (!recommendations || !Array.isArray(recommendations)) {
+    return [];
+  }
+
   const byType: Record<string, Set<string>> = {
     skill: new Set(),
     experience: new Set(),
   };
 
-  for (const match of allMatches) {
-    for (const rec of match.recommendations) {
-      // Skip "specific" type as those are per-match, not general growth areas
-      if (rec.type === "skill" || rec.type === "experience") {
-        byType[rec.type].add(rec.action);
-      }
+  for (const rec of recommendations) {
+    // Skip "specific" type as those are per-match, not general growth areas
+    if (rec.type === "skill" || rec.type === "experience") {
+      byType[rec.type].add(rec.action);
     }
   }
 
@@ -49,6 +48,11 @@ function aggregateGrowthAreas(matches: {
 }
 
 export const Route = createFileRoute("/matches/")({
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(
+      convexQuery(api.matches.getMyMatches, {})
+    );
+  },
   component: MatchesPage,
 });
 
@@ -106,7 +110,10 @@ function UnauthenticatedRedirect() {
 }
 
 function MatchesContent() {
-  const matchesData = useQuery(api.matches.getMyMatches);
+  // Data is synchronously available - preloaded by route loader
+  const { data: matchesData } = useSuspenseQuery(
+    convexQuery(api.matches.getMyMatches, {})
+  );
   const triggerComputation = useAction(api.matches.triggerMatchComputation);
   const markViewed = useAction(api.matches.markMatchesViewed);
   const [isComputing, setIsComputing] = useState(false);
@@ -118,13 +125,6 @@ function MatchesContent() {
       markViewed().catch(console.error);
     }
   }, [matchesData?.needsComputation, matchesData?.needsProfile, markViewed]);
-
-  // Auto-trigger computation if needed
-  useEffect(() => {
-    if (matchesData?.needsComputation && !isComputing) {
-      handleCompute();
-    }
-  }, [matchesData?.needsComputation, isComputing]);
 
   const handleCompute = async () => {
     setIsComputing(true);
@@ -138,13 +138,19 @@ function MatchesContent() {
     }
   };
 
-  // Aggregate growth areas - must be called unconditionally (React hooks rule)
-  const growthAreas = useMemo(() => {
-    if (matchesData?.matches === undefined) return [];
-    return aggregateGrowthAreas(matchesData.matches);
-  }, [matchesData?.matches]);
+  // Auto-trigger computation if needed
+  useEffect(() => {
+    if (matchesData?.needsComputation && !isComputing) {
+      handleCompute();
+    }
+  }, [matchesData?.needsComputation, isComputing]);
 
-  if (matchesData === undefined || matchesData === null) {
+  // Aggregate growth areas from ALL matches (including dismissed) - React hooks rule
+  const growthAreas = useMemo(() => {
+    return aggregateGrowthAreas(matchesData?.allRecommendations);
+  }, [matchesData?.allRecommendations]);
+
+  if (matchesData === null) {
     return <LoadingState />;
   }
 
@@ -273,14 +279,14 @@ function MatchesContent() {
               <MatchTierSection tier="great" matches={matches.great} />
               <MatchTierSection tier="good" matches={matches.good} />
               <MatchTierSection tier="exploring" matches={matches.exploring} />
-
-              {/* Growth areas aggregated from recommendations */}
-              {growthAreas.length > 0 && (
-                <div className="mt-8">
-                  <GrowthAreas areas={growthAreas} />
-                </div>
-              )}
             </>
+          )}
+
+          {/* Growth areas - keep visible even when all matches dismissed */}
+          {growthAreas.length > 0 && (
+            <div className="mt-8">
+              <GrowthAreas areas={growthAreas} />
+            </div>
           )}
         </PullToRefresh>
       </div>

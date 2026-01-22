@@ -66,9 +66,9 @@ export const upsertOpportunities = internalMutation({
           )
           .collect();
 
-        const duplicate = sameOrg.find((existing) =>
+        const duplicate = sameOrg.find((existingOpp) =>
           isSimilarOpportunity(
-            { title: existing.title, organization: existing.organization },
+            { title: existingOpp.title, organization: existingOpp.organization },
             { title: opp.title, organization: opp.organization }
           )
         );

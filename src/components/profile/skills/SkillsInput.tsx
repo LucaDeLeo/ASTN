@@ -91,7 +91,7 @@ export function SkillsInput({
     if (highlightedIndex >= 0 && suggestionsRef.current) {
       const highlightedElement = suggestionsRef.current.children[
         highlightedIndex
-      ] as HTMLElement;
+      ] as HTMLElement | undefined;
       highlightedElement?.scrollIntoView({ block: "nearest" });
     }
   }, [highlightedIndex]);

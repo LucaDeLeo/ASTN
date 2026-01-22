@@ -8,7 +8,7 @@ interface TabConfig {
   exact: boolean;
 }
 
-const tabs: TabConfig[] = [
+const tabs: Array<TabConfig> = [
   { to: "/", label: "Home", icon: Home, exact: true },
   { to: "/opportunities", label: "Opportunities", icon: Briefcase, exact: false },
   { to: "/matches", label: "Matches", icon: Target, exact: false },

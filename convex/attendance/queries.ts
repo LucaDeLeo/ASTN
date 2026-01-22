@@ -21,8 +21,8 @@ export const getMyAttendanceHistory = query({
     // Enrich with event and org details
     const enriched = await Promise.all(
       attendance.map(async (record) => {
-        const event = await ctx.db.get(record.eventId);
-        const org = await ctx.db.get(record.orgId);
+        const event = await ctx.db.get("events", record.eventId);
+        const org = await ctx.db.get("organizations", record.orgId);
 
         // Only return records where event exists (handles deleted events)
         if (!event) return null;
@@ -74,10 +74,10 @@ export const getPendingPrompts = query({
       prompts.map(async (prompt) => {
         if (!prompt.eventId) return null;
 
-        const event = await ctx.db.get(prompt.eventId);
+        const event = await ctx.db.get("events", prompt.eventId);
         if (!event) return null;
 
-        const org = prompt.orgId ? await ctx.db.get(prompt.orgId) : null;
+        const org = prompt.orgId ? await ctx.db.get("organizations", prompt.orgId) : null;
 
         return {
           ...prompt,
@@ -158,8 +158,8 @@ export const getMyAttendanceSummary = query({
     // Enrich recent records with event and org details
     const recent = await Promise.all(
       recentRecords.map(async (record) => {
-        const event = await ctx.db.get(record.eventId);
-        const org = await ctx.db.get(record.orgId);
+        const event = await ctx.db.get("events", record.eventId);
+        const org = await ctx.db.get("organizations", record.orgId);
 
         if (!event) return null;
 

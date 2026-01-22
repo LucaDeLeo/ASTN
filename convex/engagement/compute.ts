@@ -4,15 +4,15 @@ import { v } from "convex/values";
 import Anthropic from "@anthropic-ai/sdk";
 import { internalAction } from "../_generated/server";
 import { internal } from "../_generated/api";
-import type { Id } from "../_generated/dataModel";
-import type { ActionCtx } from "../_generated/server";
 import {
+  DEFAULT_THRESHOLDS,
   ENGAGEMENT_SYSTEM_PROMPT,
   buildEngagementContext,
   classifyEngagementTool,
-  DEFAULT_THRESHOLDS,
 } from "./prompts";
-import type { EngagementSignals, EngagementResult } from "./prompts";
+import type { Id } from "../_generated/dataModel";
+import type { ActionCtx } from "../_generated/server";
+import type { EngagementResult, EngagementSignals } from "./prompts";
 
 const MODEL_VERSION = "claude-haiku-4-5-20251001";
 
@@ -124,7 +124,7 @@ export const computeMemberEngagement = internalAction({
 
     // Extract tool use result
     const toolUse = response.content.find((block) => block.type === "tool_use");
-    if (!toolUse || toolUse.type !== "tool_use") {
+    if (!toolUse) {
       throw new Error("No tool use in LLM response");
     }
 

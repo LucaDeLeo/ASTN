@@ -9,24 +9,23 @@ import { getRequest } from '@tanstack/react-start/server'
 import * as React from 'react'
 import { Toaster } from 'sonner'
 
-import type { QueryClient } from '@tanstack/react-query'
 
 // Font preloads for FOIT/FOUT prevention
 import plusJakartaWoff2 from '@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2?url'
 import loraWoff2 from '@fontsource-variable/lora/files/lora-latin-wght-normal.woff2?url'
+import type { QueryClient } from '@tanstack/react-query'
 
 import appCss from '~/styles/app.css?url'
 import { ThemeProvider } from '~/components/theme/theme-provider'
 
 // Server function to read theme from cookie for SSR
 const getThemeFromCookie = createServerFn({ method: 'GET' }).handler(
-  async () => {
+  () => {
     const request = getRequest()
-    if (!request) return 'system'
-
     const cookies = request.headers.get('cookie') || ''
     const match = cookies.match(/astn-theme=([^;]+)/)
-    return (match?.[1] as 'dark' | 'light' | 'system') || 'system'
+    if (!match) return 'system'
+    return match[1] as 'dark' | 'light' | 'system'
   }
 )
 
@@ -49,6 +48,10 @@ export const Route = createRootRouteWithContext<{
       },
       {
         name: 'apple-mobile-web-app-capable',
+        content: 'yes',
+      },
+      {
+        name: 'mobile-web-app-capable',
         content: 'yes',
       },
       {

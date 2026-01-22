@@ -1,5 +1,5 @@
-import { useTheme } from "~/components/theme/theme-provider";
 import { useEffect, useState } from "react";
+import { useTheme } from "~/components/theme/theme-provider";
 
 export function useDotGridStyle() {
   const { theme } = useTheme();

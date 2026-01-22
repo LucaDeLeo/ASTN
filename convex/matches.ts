@@ -117,9 +117,14 @@ export const getMyMatches = query({
       ? Math.min(...matches.map(m => m.computedAt))
       : null;
 
+    // Aggregate recommendations from ALL matches (including dismissed) for growth areas
+    // Growth areas represent overall development needs, not just active opportunities
+    const allRecommendations = validMatches.flatMap(m => m.recommendations);
+
     return {
       matches: grouped,
       savedMatches,
+      allRecommendations,
       newMatchCount,
       computedAt,
       needsProfile: false,
@@ -254,7 +259,7 @@ export const dismissMatch = mutation({
     const userId = await auth.getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    const match = await ctx.db.get(matchId);
+    const match = await ctx.db.get("matches", matchId);
     if (!match) throw new Error("Match not found");
 
     // Verify ownership
@@ -266,7 +271,7 @@ export const dismissMatch = mutation({
       throw new Error("Not authorized");
     }
 
-    await ctx.db.patch(matchId, { status: "dismissed" });
+    await ctx.db.patch("matches", matchId, { status: "dismissed" });
   },
 });
 
@@ -279,7 +284,7 @@ export const saveMatch = mutation({
     const userId = await auth.getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    const match = await ctx.db.get(matchId);
+    const match = await ctx.db.get("matches", matchId);
     if (!match) throw new Error("Match not found");
 
     // Verify ownership
@@ -293,6 +298,6 @@ export const saveMatch = mutation({
 
     // Toggle: if already saved, unsave (set to active)
     const newStatus = match.status === "saved" ? "active" : "saved";
-    await ctx.db.patch(matchId, { status: newStatus });
+    await ctx.db.patch("matches", matchId, { status: newStatus });
   },
 });

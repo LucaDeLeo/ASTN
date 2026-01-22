@@ -90,7 +90,7 @@ export function useEnrichment(profileId: Id<"profiles"> | null) {
       // Transform extraction result into items with status
       const items: Array<ExtractionItem> = [];
 
-      if (result.skills_mentioned && result.skills_mentioned.length > 0) {
+      if (result.skills_mentioned.length > 0) {
         items.push({
           field: "skills_mentioned",
           label: "Skills",
@@ -99,7 +99,7 @@ export function useEnrichment(profileId: Id<"profiles"> | null) {
         });
       }
 
-      if (result.career_interests && result.career_interests.length > 0) {
+      if (result.career_interests.length > 0) {
         items.push({
           field: "career_interests",
           label: "AI Safety Interests",

@@ -10,6 +10,7 @@ import { Building2, Eye, EyeOff, Link2Off, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 import { AuthHeader } from "~/components/layout/auth-header";
 import { Card } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
@@ -131,7 +132,7 @@ function SignInPrompt({ orgName }: { orgName: string }) {
 
 interface JoinFormProps {
   token: string;
-  orgId: import("../../../../convex/_generated/dataModel").Id<"organizations">;
+  orgId: Id<"organizations">;
   orgName: string;
   orgSlug?: string;
 }

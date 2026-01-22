@@ -1,8 +1,9 @@
 import { useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Calendar, BellOff } from "lucide-react";
+import { BellOff, Calendar } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Switch } from "~/components/ui/switch";
 import { Label } from "~/components/ui/label";
@@ -16,7 +17,6 @@ import {
 } from "~/components/ui/select";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
-import type { Id } from "../../../convex/_generated/dataModel";
 
 type Frequency = "all" | "daily" | "weekly" | "none";
 
@@ -50,7 +50,7 @@ export function EventNotificationPrefsForm() {
         setOneDayBefore(preferences.reminderTiming.oneDayBefore);
         setOneHourBefore(preferences.reminderTiming.oneHourBefore);
       }
-      setMutedOrgIds((preferences.mutedOrgIds ?? []) as Array<Id<"organizations">>);
+      setMutedOrgIds(preferences.mutedOrgIds as Array<Id<"organizations">>);
       setHasChanges(false);
     }
   }, [preferences]);

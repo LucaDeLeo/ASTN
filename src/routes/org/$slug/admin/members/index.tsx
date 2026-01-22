@@ -16,6 +16,7 @@ import { useMemo, useState } from "react";
 import { api } from "../../../../../../convex/_generated/api";
 import type { Doc, Id } from "../../../../../../convex/_generated/dataModel";
 import type { EngagementLevel } from "~/components/engagement/EngagementBadge";
+import type {MemberFiltersType} from "~/components/org/MemberFilters";
 import {
   EngagementBadge,
   PendingEngagementBadge,
@@ -24,8 +25,8 @@ import { OverrideDialog } from "~/components/engagement/OverrideDialog";
 import { AuthHeader } from "~/components/layout/auth-header";
 import { ExportButton } from "~/components/org/ExportButton";
 import {
-  MemberFilters,
-  type MemberFiltersType,
+  MemberFilters
+  
 } from "~/components/org/MemberFilters";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";

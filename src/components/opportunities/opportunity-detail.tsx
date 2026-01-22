@@ -71,7 +71,10 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
           <div className="flex-1 min-w-0">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
               <div className="min-w-0">
-                <h1 className="text-xl sm:text-2xl font-bold text-foreground font-mono break-words">
+                <h1
+                  style={{ viewTransitionName: "opportunity-title" }}
+                  className="text-xl sm:text-2xl font-bold text-foreground font-mono break-words"
+                >
                   {opportunity.title}
                 </h1>
                 <p className="text-base sm:text-lg text-slate-600 mt-1">
@@ -208,7 +211,7 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
       {/* Back link */}
       <div className="mt-8">
         <Button variant="outline" asChild className="rounded-sm">
-          <Link to="/opportunities">Back to all opportunities</Link>
+          <Link to="/opportunities" viewTransition>Back to all opportunities</Link>
         </Button>
       </div>
     </div>

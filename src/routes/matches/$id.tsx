@@ -1,5 +1,7 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { AuthLoading, Authenticated, Unauthenticated, useQuery  } from "convex/react";
+import { AuthLoading, Authenticated, Unauthenticated } from "convex/react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { convexQuery } from "@convex-dev/react-query";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -24,6 +26,13 @@ import { Spinner } from "~/components/ui/spinner";
 import { ProbabilityBadge } from "~/components/matches/ProbabilityBadge";
 
 export const Route = createFileRoute("/matches/$id")({
+  loader: async ({ context, params }) => {
+    await context.queryClient.ensureQueryData(
+      convexQuery(api.matches.getMatchById, {
+        matchId: params.id as Id<"matches">,
+      })
+    );
+  },
   component: MatchDetailPage,
 });
 
@@ -68,13 +77,13 @@ const tierConfig = {
 
 function MatchDetailContent() {
   const { id } = Route.useParams();
-  const match = useQuery(api.matches.getMatchById, {
-    matchId: id as Id<"matches">,
-  });
 
-  if (match === undefined) {
-    return <LoadingState />;
-  }
+  // Data is synchronously available - preloaded by route loader
+  const { data: match } = useSuspenseQuery(
+    convexQuery(api.matches.getMatchById, {
+      matchId: id as Id<"matches">,
+    })
+  );
 
   if (match === null) {
     return (
@@ -123,7 +132,10 @@ function MatchDetailContent() {
                 )}
               </div>
 
-              <h1 className="text-xl sm:text-2xl font-display font-semibold text-foreground break-words">
+              <h1
+                style={{ viewTransitionName: "match-title" }}
+                className="text-xl sm:text-2xl font-display font-semibold text-foreground break-words"
+              >
                 {match.opportunity.title}
               </h1>
               <p className="text-base sm:text-lg text-muted-foreground mt-1">
@@ -169,7 +181,11 @@ function MatchDetailContent() {
 
           <ul className="space-y-3">
             {match.explanation.strengths.map((strength, i) => (
-              <li key={i} className="flex items-start gap-3">
+              <li
+                key={i}
+                className="flex items-start gap-3"
+                style={i === 0 ? { viewTransitionName: "match-strength" } : undefined}
+              >
                 <span className="size-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm flex-shrink-0 mt-0.5">
                   +
                 </span>

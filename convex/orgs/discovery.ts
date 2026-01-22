@@ -40,8 +40,8 @@ export const getSuggestedOrgs = query({
       .collect();
     const joinedOrgIds = new Set(memberships.map((m) => m.orgId.toString()));
 
-    // If location discovery disabled or no location, return global orgs only
-    if (!profile?.privacySettings?.locationDiscoverable || !profile?.location) {
+    // If no profile, location discovery disabled, or no location, return global orgs only
+    if (!profile || !profile.privacySettings?.locationDiscoverable || !profile.location) {
       const globalOrgs = await ctx.db
         .query("organizations")
         .filter((q) => q.eq(q.field("isGlobal"), true))

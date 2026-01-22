@@ -5,6 +5,8 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent } from "~/components/ui/card";
 
+const ACTIVE_OPPORTUNITY_KEY = "view-transition-opportunity-id";
+
 type Opportunity = {
   _id: Id<"opportunities">;
   title: string;
@@ -35,8 +37,28 @@ export function OpportunityCard({
 }) {
   const roleColorClass = ROLE_TYPE_COLORS[opportunity.roleType] || ROLE_TYPE_COLORS.other;
 
+  // Check if this card should have view-transition-name (for back navigation)
+  const isActiveTransition =
+    typeof window !== "undefined" &&
+    sessionStorage.getItem(ACTIVE_OPPORTUNITY_KEY) === opportunity._id;
+
   return (
-    <Link to="/opportunities/$id" params={{ id: opportunity._id }}>
+    <Link
+      to="/opportunities/$id"
+      params={{ id: opportunity._id }}
+      viewTransition
+      onClick={(e) => {
+        // Clear existing view-transition-names to prevent duplicates, then set on clicked card
+        document.querySelectorAll<HTMLElement>("[style*='view-transition-name']").forEach((el) => {
+          el.style.viewTransitionName = "";
+        });
+
+        sessionStorage.setItem(ACTIVE_OPPORTUNITY_KEY, opportunity._id);
+
+        const h3 = e.currentTarget.querySelector("h3") as HTMLElement | null;
+        if (h3) h3.style.viewTransitionName = "opportunity-title";
+      }}
+    >
       <Card
         className="
           hover:shadow-lg transition-all duration-200 cursor-pointer
@@ -69,7 +91,11 @@ export function OpportunityCard({
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <h3 className="font-semibold text-foreground leading-tight font-mono tracking-tight">
+                  <h3
+                    suppressHydrationWarning
+                    style={isActiveTransition ? { viewTransitionName: "opportunity-title" } : undefined}
+                    className="font-semibold text-foreground leading-tight font-mono tracking-tight"
+                  >
                     {opportunity.title}
                   </h3>
                   <p className="text-sm text-muted-foreground mt-0.5">

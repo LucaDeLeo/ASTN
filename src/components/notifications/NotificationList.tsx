@@ -1,5 +1,5 @@
 import { formatDistanceToNow } from "date-fns";
-import { Bell, Calendar, RefreshCw, HelpCircle } from "lucide-react";
+import { Bell, Calendar, HelpCircle, RefreshCw } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";

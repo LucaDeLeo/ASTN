@@ -2,24 +2,25 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { ArrowLeft } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
+import { EntryPointSelector } from "./EntryPointSelector";
+import { PostApplySummary } from "./PostApplySummary";
+import { WizardStepIndicator } from "./WizardStepIndicator";
+import { EnrichmentStep } from "./steps/EnrichmentStep";
 import type { AppliedData } from "~/components/profile/extraction";
+import type {ExtractedData} from "~/components/profile/upload";
 import { ResumeExtractionReview } from "~/components/profile/extraction";
 import {
   DocumentUpload,
+  
   ExtractionError,
   ExtractionProgress,
   FilePreview,
   TextPasteZone,
   UploadProgress,
   useExtraction,
-  useFileUpload,
-  type ExtractedData,
+  useFileUpload
 } from "~/components/profile/upload";
 import { Button } from "~/components/ui/button";
-import { EntryPointSelector } from "./EntryPointSelector";
-import { PostApplySummary } from "./PostApplySummary";
-import { WizardStepIndicator } from "./WizardStepIndicator";
-import { EnrichmentStep } from "./steps/EnrichmentStep";
 
 type EntryPoint = "upload" | "paste" | "manual" | "chat";
 
@@ -136,7 +137,8 @@ export function ProfileCreationWizard({
       setShowTextPaste(true);
     } else if (entryPoint === "manual") {
       setWizardState({ step: "manual" });
-    } else if (entryPoint === "chat") {
+    } else {
+      // entryPoint === "chat"
       setWizardState({ step: "enrich", fromExtraction: false });
     }
   };

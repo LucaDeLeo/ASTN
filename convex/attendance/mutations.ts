@@ -1,7 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
-import { toZonedTime, fromZonedTime } from "date-fns-tz";
-import { setHours, setMinutes, addDays } from "date-fns";
+import { fromZonedTime, toZonedTime } from "date-fns-tz";
+import { addDays, setHours, setMinutes } from "date-fns";
 import { internal } from "../_generated/api";
 import { mutation } from "../_generated/server";
 
@@ -25,7 +25,7 @@ export const recordAttendance = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    const event = await ctx.db.get(eventId);
+    const event = await ctx.db.get("events", eventId);
     if (!event) throw new Error("Event not found");
 
     // Check retroactive window (14 days)
@@ -48,7 +48,7 @@ export const recordAttendance = mutation({
 
     if (existing) {
       // Update existing record
-      await ctx.db.patch(existing._id, {
+      await ctx.db.patch("attendance", existing._id, {
         status,
         respondedAt: now,
         updatedAt: now,
@@ -78,9 +78,9 @@ export const recordAttendance = mutation({
 
     // Mark the notification as read if provided
     if (notificationId) {
-      const notification = await ctx.db.get(notificationId);
+      const notification = await ctx.db.get("notifications", notificationId);
       if (notification && notification.userId === userId) {
-        await ctx.db.patch(notificationId, {
+        await ctx.db.patch("notifications", notificationId, {
           read: true,
           respondedAt: now,
         });
@@ -127,7 +127,7 @@ export const submitFeedback = mutation({
 
     const now = Date.now();
 
-    await ctx.db.patch(attendance._id, {
+    await ctx.db.patch("attendance", attendance._id, {
       feedbackRating: rating,
       feedbackText: text,
       feedbackSubmittedAt: now,
@@ -150,7 +150,7 @@ export const snoozeAttendancePrompt = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    const notification = await ctx.db.get(notificationId);
+    const notification = await ctx.db.get("notifications", notificationId);
     if (!notification || notification.userId !== userId) {
       throw new Error("Notification not found");
     }
@@ -163,7 +163,7 @@ export const snoozeAttendancePrompt = mutation({
     const currentPromptNumber = notification.promptNumber ?? 1;
     if (currentPromptNumber >= 2) {
       // Just mark as read, no more follow-ups
-      await ctx.db.patch(notificationId, { read: true });
+      await ctx.db.patch("notifications", notificationId, { read: true });
       return { snoozed: false, reason: "max_prompts_reached" };
     }
 
@@ -188,7 +188,7 @@ export const snoozeAttendancePrompt = mutation({
     const scheduledTime = fromZonedTime(nextMorning, timezone).getTime();
 
     // Mark current notification as read
-    await ctx.db.patch(notificationId, { read: true });
+    await ctx.db.patch("notifications", notificationId, { read: true });
 
     // Schedule follow-up prompt
     if (notification.eventId) {
@@ -236,7 +236,7 @@ export const updateAttendancePrivacy = mutation({
       defaultVisibility: "public" as const,
     };
 
-    await ctx.db.patch(profile._id, {
+    await ctx.db.patch("profiles", profile._id, {
       privacySettings: {
         ...existingPrivacySettings,
         attendancePrivacyDefaults: {
@@ -255,7 +255,7 @@ export const updateAttendancePrivacy = mutation({
         .collect();
 
       for (const record of existingRecords) {
-        await ctx.db.patch(record._id, {
+        await ctx.db.patch("attendance", record._id, {
           showOnProfile,
           showToOtherOrgs,
           updatedAt: now,

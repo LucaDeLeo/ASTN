@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { auth } from "../auth";
+import type { Id } from "../_generated/dataModel";
 
 // Get current user's membership for a given org
 export const getMembership = query({
@@ -79,7 +80,7 @@ export const joinOrg = mutation({
     }
 
     // If invite token provided, validate it
-    let inviteMembership: { _id: import("../_generated/dataModel").Id<"orgMemberships"> } | null = null;
+    let inviteMembership: { _id: Id<"orgMemberships"> } | null = null;
     if (inviteToken) {
       const invite = await ctx.db
         .query("orgInviteLinks")

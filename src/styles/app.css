@@ -503,6 +503,65 @@
   }
 }
 
+/* Match title morph transition - card title to detail page title */
+/* The group handles position/size morphing, old/new handle crossfade */
+::view-transition-group(match-title) {
+  animation-duration: 250ms;
+  animation-timing-function: ease-out;
+}
+
+::view-transition-old(match-title),
+::view-transition-new(match-title) {
+  /* Let the images fill the group box and crossfade naturally */
+  width: 100%;
+  height: 100%;
+  object-fit: none;
+  object-position: left center;
+}
+
+/* Reduce motion: instant transition */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(match-title),
+  ::view-transition-group(match-strength) {
+    animation-duration: 0ms;
+  }
+}
+
+/* Match strength morph transition */
+::view-transition-group(match-strength) {
+  animation-duration: 250ms;
+  animation-timing-function: ease-out;
+}
+
+::view-transition-old(match-strength),
+::view-transition-new(match-strength) {
+  width: 100%;
+  height: 100%;
+}
+
+/* Match detail title - view-transition-name is set via JS, not CSS */
+/* This avoids conflicts when both source and destination might be in DOM */
+
+/* Opportunity title morph transition - card title to detail page title */
+::view-transition-group(opportunity-title) {
+  animation-duration: 250ms;
+  animation-timing-function: ease-out;
+}
+
+::view-transition-old(opportunity-title),
+::view-transition-new(opportunity-title) {
+  width: 100%;
+  height: 100%;
+  object-fit: none;
+  object-position: left center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(opportunity-title) {
+    animation-duration: 0ms;
+  }
+}
+
 /* ==========================================================================
    TOUCH TARGET UTILITIES - WCAG 2.5.8 compliance (44px minimum)
    ========================================================================== */

@@ -14,7 +14,7 @@ interface StepConfig {
   number: number;
 }
 
-const ALL_STEPS: StepConfig[] = [
+const ALL_STEPS: Array<StepConfig> = [
   { id: "input", label: "Input", number: 1 },
   { id: "review", label: "Review", number: 2 },
   { id: "enrich", label: "Enrich", number: 3 },
@@ -23,7 +23,7 @@ const ALL_STEPS: StepConfig[] = [
 function getStepStatus(
   step: WizardStep,
   currentStep: WizardStep,
-  steps: StepConfig[]
+  steps: Array<StepConfig>
 ): "complete" | "current" | "future" {
   const currentIndex = steps.findIndex((s) => s.id === currentStep);
   const stepIndex = steps.findIndex((s) => s.id === step);

@@ -86,8 +86,7 @@ export function PrivacyStep({
   useEffect(() => {
     if (profile?.privacySettings) {
       setPrivacySettings({
-        defaultVisibility:
-          profile.privacySettings.defaultVisibility ?? "connections",
+        defaultVisibility: profile.privacySettings.defaultVisibility,
         sectionVisibility: profile.privacySettings.sectionVisibility ?? {},
         hiddenFromOrgs: profile.privacySettings.hiddenFromOrgs ?? [],
       });

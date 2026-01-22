@@ -3,7 +3,7 @@
 
 import { internalAction } from "../_generated/server";
 import { internal } from "../_generated/api";
-import { renderMatchAlert, renderWeeklyDigest, renderEventDigest } from "./templates";
+import { renderEventDigest, renderMatchAlert, renderWeeklyDigest } from "./templates";
 import type { Doc, Id } from "../_generated/dataModel";
 
 // Target hour for match alert emails (8 AM user local time)

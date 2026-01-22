@@ -30,7 +30,7 @@ interface EngagementExportData {
 interface ExportButtonProps {
   orgId: Id<"organizations">;
   orgSlug: string;
-  engagementData?: EngagementExportData[];
+  engagementData?: Array<EngagementExportData>;
 }
 
 export function ExportButton({ orgId, orgSlug, engagementData }: ExportButtonProps) {

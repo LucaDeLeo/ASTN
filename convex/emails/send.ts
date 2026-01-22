@@ -285,7 +285,7 @@ export const getUsersForDailyEventDigestBatch = internalQuery({
             timezone,
             profileId: profile._id,
             userName: profile.name || "there",
-            mutedOrgIds: profile.eventNotificationPreferences?.mutedOrgIds || [],
+            mutedOrgIds: profile.eventNotificationPreferences.mutedOrgIds || [],
           });
         }
       }
@@ -328,7 +328,7 @@ export const getUsersForWeeklyEventDigestBatch = internalQuery({
           email: user.email,
           profileId: profile._id,
           userName: profile.name || "there",
-          mutedOrgIds: profile.eventNotificationPreferences?.mutedOrgIds || [],
+          mutedOrgIds: profile.eventNotificationPreferences.mutedOrgIds || [],
         });
       }
     }
@@ -369,7 +369,7 @@ export const getUpcomingEventsForUser = internalQuery({
     }> = [];
 
     for (const orgId of orgIds) {
-      const org = await ctx.db.get(orgId);
+      const org = await ctx.db.get("organizations", orgId);
       if (!org) continue;
 
       const orgEvents = await ctx.db

@@ -106,7 +106,7 @@ export function buildEngagementContext(
   signals: EngagementSignals,
   thresholds: EngagementThresholds = DEFAULT_THRESHOLDS
 ): string {
-  const sections: string[] = [];
+  const sections: Array<string> = [];
 
   sections.push(`## Engagement Classification for ${orgName}\n`);
   sections.push(`### Member: ${memberName}\n`);

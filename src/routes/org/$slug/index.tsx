@@ -2,6 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { AuthLoading, Authenticated, useQuery } from "convex/react";
 import { Building2, Calendar, Settings, Users } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 import { AuthHeader } from "~/components/layout/auth-header";
 import { MemberDirectory } from "~/components/org/MemberDirectory";
 import { Card } from "~/components/ui/card";
@@ -72,7 +73,7 @@ function OrgDirectoryPage() {
 
 interface OrgHeaderProps {
   org: {
-    _id: import("../../../../convex/_generated/dataModel").Id<"organizations">;
+    _id: Id<"organizations">;
     name: string;
     slug?: string;
     logoUrl?: string;
@@ -137,7 +138,7 @@ function OrgHeader({ org }: OrgHeaderProps) {
 }
 
 interface MembershipStatusProps {
-  orgId: import("../../../../convex/_generated/dataModel").Id<"organizations">;
+  orgId: Id<"organizations">;
   orgSlug?: string;
 }
 

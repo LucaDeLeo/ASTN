@@ -191,14 +191,14 @@ export const listOrganizations = query({
 // Search organizations by name (for search mode)
 export const searchOrganizations = query({
   args: { query: v.string() },
-  handler: async (ctx, { query }) => {
-    if (!query.trim()) {
+  handler: async (ctx, { query: searchQuery }) => {
+    if (!searchQuery.trim()) {
       return [];
     }
 
     const results = await ctx.db
       .query("organizations")
-      .withSearchIndex("search_name", (q) => q.search("name", query))
+      .withSearchIndex("search_name", (q) => q.search("name", searchQuery))
       .take(10);
 
     return results;
@@ -318,7 +318,7 @@ export const bootstrapOrgAdmin = internalMutation({
     if (existing) {
       // Update to admin if not already
       if (existing.role !== "admin") {
-        await ctx.db.patch(existing._id, { role: "admin" });
+        await ctx.db.patch("orgMemberships", existing._id, { role: "admin" });
         return { action: "promoted", userId: user._id, orgId: org._id };
       }
       return { action: "already_admin", userId: user._id, orgId: org._id };

@@ -60,7 +60,7 @@ export const getDashboardEvents = query({
     // Create org map using string keys for reliable comparison
     const orgMap: Record<
       string,
-      { name: string; slug?: string; logoUrl?: string }
+      { name: string; slug?: string; logoUrl?: string } | undefined
     > = {};
     for (let i = 0; i < allEvents.length; i++) {
       const org = orgsData[i];
