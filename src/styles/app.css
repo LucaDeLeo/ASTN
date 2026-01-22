@@ -218,10 +218,10 @@
   /* ==========================================================================
      SHADOW TOKENS - Navy-tinted shadows for professional appearance
      ========================================================================== */
-  --shadow-warm-sm: 0 1px 2px oklch(0.30 0.02 250 / 0.06);
-  --shadow-warm: 0 4px 12px oklch(0.30 0.02 250 / 0.08);
-  --shadow-warm-md: 0 8px 24px oklch(0.30 0.02 250 / 0.12);
-  --shadow-warm-lg: 0 12px 40px oklch(0.30 0.02 250 / 0.15);
+  --shadow-warm-sm: 0 1px 2px oklch(0.30 0.02 240 / 0.06);
+  --shadow-warm: 0 4px 12px oklch(0.30 0.02 240 / 0.08);
+  --shadow-warm-md: 0 8px 24px oklch(0.30 0.02 240 / 0.12);
+  --shadow-warm-lg: 0 12px 40px oklch(0.30 0.02 240 / 0.15);
 
   /* ==========================================================================
      PRIMITIVE TOKENS - Raw values, not semantic
@@ -245,16 +245,16 @@
   --coral-800: oklch(0.40 0.10 30);
   --coral-900: oklch(0.30 0.08 30);
 
-  /* Navy/slate palette - professional, serious (primary hue = 250 in OKLCH) */
-  --navy-900: oklch(0.20 0.04 250);   /* Deepest navy - text on light bg */
-  --navy-800: oklch(0.25 0.04 250);   /* Primary buttons */
-  --navy-700: oklch(0.32 0.04 250);   /* Hover states */
-  --navy-600: oklch(0.40 0.03 250);   /* Secondary elements */
-  --slate-500: oklch(0.50 0.02 250);  /* Muted text */
-  --slate-400: oklch(0.60 0.02 250);  /* Borders, dividers */
-  --slate-300: oklch(0.70 0.01 250);  /* Light backgrounds */
-  --slate-200: oklch(0.85 0.01 250);  /* Subtle backgrounds */
-  --slate-100: oklch(0.95 0.005 250); /* Near-white */
+  /* Steel blue palette - professional but visible (hue = 240) */
+  --navy-900: oklch(0.25 0.06 240);   /* Deepest - text on light bg */
+  --navy-800: oklch(0.35 0.07 240);   /* Dark accents */
+  --navy-700: oklch(0.42 0.08 240);   /* Hover states */
+  --navy-600: oklch(0.48 0.08 240);   /* Secondary elements, focus rings */
+  --slate-500: oklch(0.55 0.06 240);  /* Muted text */
+  --slate-400: oklch(0.65 0.04 240);  /* Borders, dividers */
+  --slate-300: oklch(0.75 0.03 240);  /* Light backgrounds */
+  --slate-200: oklch(0.88 0.02 240);  /* Subtle backgrounds */
+  --slate-100: oklch(0.96 0.01 240);  /* Near-white */
 
   /* Complementary accent - muted teal for contrast moments */
   --teal-500: oklch(0.65 0.10 180);
@@ -266,11 +266,11 @@
   --error-brick: oklch(0.55 0.18 25);     /* brick red */
 
   /* ==========================================================================
-     GRADIENT BACKGROUND TOKENS - Light mode (navy/slate hue)
+     GRADIENT BACKGROUND TOKENS - Light mode (steel blue hue)
      ========================================================================== */
-  --gradient-radial: radial-gradient(ellipse at center, oklch(0.98 0.005 250) 0%, oklch(0.96 0.01 250) 70%, oklch(0.94 0.015 250) 100%);
-  --gradient-linear: linear-gradient(135deg, oklch(0.98 0.005 250) 0%, oklch(0.96 0.01 250) 100%);
-  --gradient-subtle: linear-gradient(180deg, oklch(0.99 0.003 250) 0%, oklch(0.97 0.008 250) 100%);
+  --gradient-radial: radial-gradient(ellipse at center, oklch(0.98 0.005 240) 0%, oklch(0.96 0.01 240) 70%, oklch(0.94 0.015 240) 100%);
+  --gradient-linear: linear-gradient(135deg, oklch(0.98 0.005 240) 0%, oklch(0.96 0.01 240) 100%);
+  --gradient-subtle: linear-gradient(180deg, oklch(0.99 0.003 240) 0%, oklch(0.97 0.008 240) 100%);
   --gradient-noise-opacity: 0.03;
 
   /* ==========================================================================
@@ -283,8 +283,8 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  /* Primary - Navy (professional, serious) */
-  --primary: var(--navy-800);
+  /* Primary - Coral (warm, inviting) */
+  --primary: var(--coral-500);
   --primary-foreground: oklch(0.98 0.01 90);  /* Warm white */
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -296,8 +296,8 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  /* Ring - navy for focus states */
-  --ring: var(--navy-700);
+  /* Ring - steel blue for focus states */
+  --ring: var(--navy-600);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -305,12 +305,12 @@
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: var(--navy-800);
+  --sidebar-primary: var(--coral-500);
   --sidebar-primary-foreground: oklch(0.98 0.01 90);
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: var(--navy-700);
+  --sidebar-ring: var(--navy-600);
 }
 
 .dark {
@@ -330,8 +330,8 @@
   --popover: oklch(0.22 0.005 30);
   --popover-foreground: oklch(0.93 0.01 90);
 
-  /* Primary in dark mode - lighter navy for visibility */
-  --primary: oklch(0.55 0.08 250);
+  /* Primary in dark mode - brighter coral for visibility */
+  --primary: oklch(0.75 0.18 30);
   --primary-foreground: oklch(0.16 0.005 30);
 
   /* Secondary - warm dark gray */
@@ -353,8 +353,8 @@
   --border: oklch(0.32 0.01 30);
   --input: oklch(0.26 0.01 30);
 
-  /* Ring - matches primary (navy) */
-  --ring: oklch(0.55 0.08 250);
+  /* Ring - steel blue for focus states */
+  --ring: oklch(0.58 0.10 240);
 
   /* Chart colors - warm-shifted */
   --chart-1: oklch(0.70 0.16 30);
@@ -366,12 +366,12 @@
   /* Sidebar - consistent with card */
   --sidebar: oklch(0.18 0.005 30);
   --sidebar-foreground: oklch(0.93 0.01 90);
-  --sidebar-primary: oklch(0.55 0.08 250);
+  --sidebar-primary: oklch(0.75 0.18 30);
   --sidebar-primary-foreground: oklch(0.16 0.005 30);
   --sidebar-accent: oklch(0.26 0.01 30);
   --sidebar-accent-foreground: oklch(0.93 0.01 90);
   --sidebar-border: oklch(0.32 0.01 30);
-  --sidebar-ring: oklch(0.55 0.08 250);
+  --sidebar-ring: oklch(0.58 0.10 240);
 
   /* Dark mode shadow tokens - subtle glow instead of drop shadow */
   --shadow-warm-sm: 0 1px 3px oklch(0 0 0 / 0.3), 0 0 8px oklch(0.70 0.08 30 / 0.05);
@@ -379,10 +379,10 @@
   --shadow-warm-md: 0 8px 24px oklch(0 0 0 / 0.5), 0 0 24px oklch(0.70 0.08 30 / 0.10);
   --shadow-warm-lg: 0 12px 40px oklch(0 0 0 / 0.6), 0 0 32px oklch(0.70 0.08 30 / 0.12);
 
-  /* Dark mode gradient tokens - soft charcoal with subtle navy undertones */
-  --gradient-radial: radial-gradient(ellipse at center, oklch(0.22 0.01 250) 0%, oklch(0.18 0.008 250) 60%, oklch(0.16 0.005 250) 100%);
-  --gradient-linear: linear-gradient(135deg, oklch(0.20 0.01 250) 0%, oklch(0.16 0.005 250) 100%);
-  --gradient-subtle: linear-gradient(180deg, oklch(0.19 0.008 250) 0%, oklch(0.16 0.005 250) 100%);
+  /* Dark mode gradient tokens - soft charcoal with subtle steel blue undertones */
+  --gradient-radial: radial-gradient(ellipse at center, oklch(0.22 0.01 240) 0%, oklch(0.18 0.008 240) 60%, oklch(0.16 0.005 240) 100%);
+  --gradient-linear: linear-gradient(135deg, oklch(0.20 0.01 240) 0%, oklch(0.16 0.005 240) 100%);
+  --gradient-subtle: linear-gradient(180deg, oklch(0.19 0.008 240) 0%, oklch(0.16 0.005 240) 100%);
   --gradient-noise-opacity: 0.01;
 }
 
@@ -399,35 +399,35 @@
    GRADIENT BACKGROUND CLASSES - Respond to .dark class for SSR
    ========================================================================== */
 .gradient-bg-radial {
-  background: radial-gradient(ellipse at center, oklch(0.98 0.005 250) 0%, oklch(0.96 0.01 250) 70%, oklch(0.94 0.015 250) 100%);
-  background-image: radial-gradient(ellipse at center, oklch(0.98 0.005 250) 0%, oklch(0.96 0.01 250) 70%, oklch(0.94 0.015 250) 100%),
+  background: radial-gradient(ellipse at center, oklch(0.98 0.005 240) 0%, oklch(0.96 0.01 240) 70%, oklch(0.94 0.015 240) 100%);
+  background-image: radial-gradient(ellipse at center, oklch(0.98 0.005 240) 0%, oklch(0.96 0.01 240) 70%, oklch(0.94 0.015 240) 100%),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
 }
 .dark .gradient-bg-radial {
-  background: radial-gradient(ellipse at center, oklch(0.22 0.01 250) 0%, oklch(0.18 0.008 250) 60%, oklch(0.16 0.005 250) 100%);
-  background-image: radial-gradient(ellipse at center, oklch(0.22 0.01 250) 0%, oklch(0.18 0.008 250) 60%, oklch(0.16 0.005 250) 100%),
+  background: radial-gradient(ellipse at center, oklch(0.22 0.01 240) 0%, oklch(0.18 0.008 240) 60%, oklch(0.16 0.005 240) 100%);
+  background-image: radial-gradient(ellipse at center, oklch(0.22 0.01 240) 0%, oklch(0.18 0.008 240) 60%, oklch(0.16 0.005 240) 100%),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.01'/%3E%3C/svg%3E");
 }
 
 .gradient-bg-linear {
-  background: linear-gradient(135deg, oklch(0.98 0.005 250) 0%, oklch(0.96 0.01 250) 100%);
-  background-image: linear-gradient(135deg, oklch(0.98 0.005 250) 0%, oklch(0.96 0.01 250) 100%),
+  background: linear-gradient(135deg, oklch(0.98 0.005 240) 0%, oklch(0.96 0.01 240) 100%);
+  background-image: linear-gradient(135deg, oklch(0.98 0.005 240) 0%, oklch(0.96 0.01 240) 100%),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
 }
 .dark .gradient-bg-linear {
-  background: linear-gradient(135deg, oklch(0.20 0.01 250) 0%, oklch(0.16 0.005 250) 100%);
-  background-image: linear-gradient(135deg, oklch(0.20 0.01 250) 0%, oklch(0.16 0.005 250) 100%),
+  background: linear-gradient(135deg, oklch(0.20 0.01 240) 0%, oklch(0.16 0.005 240) 100%);
+  background-image: linear-gradient(135deg, oklch(0.20 0.01 240) 0%, oklch(0.16 0.005 240) 100%),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.01'/%3E%3C/svg%3E");
 }
 
 .gradient-bg-subtle {
-  background: linear-gradient(180deg, oklch(0.99 0.003 250) 0%, oklch(0.97 0.008 250) 100%);
-  background-image: linear-gradient(180deg, oklch(0.99 0.003 250) 0%, oklch(0.97 0.008 250) 100%),
+  background: linear-gradient(180deg, oklch(0.99 0.003 240) 0%, oklch(0.97 0.008 240) 100%);
+  background-image: linear-gradient(180deg, oklch(0.99 0.003 240) 0%, oklch(0.97 0.008 240) 100%),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
 }
 .dark .gradient-bg-subtle {
-  background: linear-gradient(180deg, oklch(0.19 0.008 250) 0%, oklch(0.16 0.005 250) 100%);
-  background-image: linear-gradient(180deg, oklch(0.19 0.008 250) 0%, oklch(0.16 0.005 250) 100%),
+  background: linear-gradient(180deg, oklch(0.19 0.008 240) 0%, oklch(0.16 0.005 240) 100%);
+  background-image: linear-gradient(180deg, oklch(0.19 0.008 240) 0%, oklch(0.16 0.005 240) 100%),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.01'/%3E%3C/svg%3E");
 }
 

@@ -4,6 +4,23 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { cn } from "~/lib/utils";
 
+/**
+ * Simple markdown renderer for chat messages.
+ * Handles **bold** and *italic* formatting.
+ */
+function renderMarkdown(text: string): React.ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={i}>{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith("*") && part.endsWith("*")) {
+      return <em key={i}>{part.slice(1, -1)}</em>;
+    }
+    return part;
+  });
+}
+
 interface Message {
   _id: string;
   role: "user" | "assistant";
@@ -70,7 +87,7 @@ export function EnrichmentChat({
             <h3 className="text-lg font-medium text-foreground mb-2">
               Start a conversation
             </h3>
-            <p className="text-slate-500 text-sm max-w-sm">
+            <p className="text-muted-foreground text-sm max-w-sm">
               Tell me about your background and interests in AI safety. I will help
               you articulate your experience and goals for your profile.
             </p>
@@ -90,10 +107,14 @@ export function EnrichmentChat({
                   "max-w-[80%] rounded-2xl px-4 py-2.5",
                   message.role === "user"
                     ? "bg-primary text-primary-foreground rounded-br-md"
-                    : "bg-slate-100 text-foreground rounded-bl-md"
+                    : "bg-muted text-foreground rounded-bl-md"
                 )}
               >
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                <p className="text-sm whitespace-pre-wrap">
+                  {message.role === "assistant"
+                    ? renderMarkdown(message.content)
+                    : message.content}
+                </p>
               </div>
             </div>
           ))
@@ -102,15 +123,15 @@ export function EnrichmentChat({
         {/* Typing indicator */}
         {isLoading && (
           <div className="flex justify-start animate-in fade-in duration-200">
-            <div className="bg-slate-100 rounded-2xl rounded-bl-md px-4 py-3">
+            <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
               <div className="flex gap-1">
-                <span className="size-2 bg-slate-400 rounded-full animate-bounce" />
+                <span className="size-2 bg-muted-foreground/50 rounded-full animate-bounce" />
                 <span
-                  className="size-2 bg-slate-400 rounded-full animate-bounce"
+                  className="size-2 bg-muted-foreground/50 rounded-full animate-bounce"
                   style={{ animationDelay: "0.1s" }}
                 />
                 <span
-                  className="size-2 bg-slate-400 rounded-full animate-bounce"
+                  className="size-2 bg-muted-foreground/50 rounded-full animate-bounce"
                   style={{ animationDelay: "0.2s" }}
                 />
               </div>
@@ -124,7 +145,7 @@ export function EnrichmentChat({
       {/* Input area */}
       <form
         onSubmit={handleSubmit}
-        className="border-t p-4 flex gap-2 bg-slate-50"
+        className="border-t p-4 flex gap-2 bg-muted/50"
       >
         <Input
           ref={inputRef}
