@@ -119,7 +119,7 @@ export function OpportunityCard({
                   )}
                 </span>
 
-                {opportunity.salaryRange && (
+                {opportunity.salaryRange && opportunity.salaryRange !== "Not Found" && (
                   <span className="flex items-center gap-1">
                     <Banknote className="w-3.5 h-3.5" />
                     {opportunity.salaryRange}

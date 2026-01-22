@@ -105,7 +105,7 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
                 </span>
               )}
 
-              {opportunity.salaryRange && (
+              {opportunity.salaryRange && opportunity.salaryRange !== "Not Found" && (
                 <span className="flex items-center gap-1.5">
                   <Banknote className="w-4 h-4 shrink-0" />
                   {opportunity.salaryRange}
