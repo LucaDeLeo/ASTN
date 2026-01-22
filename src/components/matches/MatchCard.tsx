@@ -147,7 +147,7 @@ export function MatchCard({ match, isSaved, onUnsave }: MatchCardProps) {
           >
             {match.opportunity.title}
           </h3>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted-foreground">
             {match.opportunity.organization} · {formatLocation(match.opportunity.location)}
           </p>
         </div>
@@ -158,7 +158,7 @@ export function MatchCard({ match, isSaved, onUnsave }: MatchCardProps) {
             suppressHydrationWarning
             data-morph="strength"
             style={isActiveTransition ? { viewTransitionName: "match-strength" } : undefined}
-            className="mt-3 text-sm text-slate-600"
+            className="mt-3 text-sm text-muted-foreground"
           >
             <span className="text-emerald-500">+</span> {match.explanation.strengths[0]}
           </p>
@@ -166,7 +166,7 @@ export function MatchCard({ match, isSaved, onUnsave }: MatchCardProps) {
 
         {/* Row 4: Probability + Deadline */}
         {(match.probability || match.opportunity.deadline) && (
-          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
             {match.probability && (
               <span className="font-medium text-primary">
                 {match.probability.ranking} · {match.probability.interviewChance}

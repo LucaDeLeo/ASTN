@@ -42,11 +42,11 @@ const SOURCE_NAMES: Record<string, string> = {
 };
 
 const ROLE_TYPE_COLORS: Record<string, string> = {
-  research: "bg-purple-100 text-purple-800",
-  engineering: "bg-blue-100 text-blue-800",
-  operations: "bg-green-100 text-green-800",
-  policy: "bg-amber-100 text-amber-800",
-  other: "bg-slate-100 text-slate-800",
+  research: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+  engineering: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+  operations: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+  policy: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
+  other: "bg-muted text-muted-foreground",
 };
 
 export function OpportunityDetail({ opportunity }: { opportunity: Opportunity }) {
@@ -55,17 +55,17 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header */}
-      <div className="bg-white rounded-sm border border-slate-200 p-4 sm:p-6 mb-6">
+      <div className="bg-card rounded-sm border border-border p-4 sm:p-6 mb-6">
         <div className="flex flex-col sm:flex-row gap-4">
           {opportunity.organizationLogoUrl ? (
             <img
               src={opportunity.organizationLogoUrl}
               alt={`${opportunity.organization} logo`}
-              className="w-16 h-16 rounded-sm object-contain bg-slate-50 flex-shrink-0"
+              className="w-16 h-16 rounded-sm object-contain bg-muted flex-shrink-0"
             />
           ) : (
-            <div className="w-16 h-16 rounded-sm bg-slate-100 flex items-center justify-center flex-shrink-0">
-              <Building2 className="w-8 h-8 text-slate-400" />
+            <div className="w-16 h-16 rounded-sm bg-muted flex items-center justify-center flex-shrink-0">
+              <Building2 className="w-8 h-8 text-muted-foreground" />
             </div>
           )}
 
@@ -78,7 +78,7 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
                 >
                   {opportunity.title}
                 </h1>
-                <p className="text-base sm:text-lg text-slate-600 mt-1">
+                <p className="text-base sm:text-lg text-muted-foreground mt-1">
                   {opportunity.organization}
                 </p>
               </div>
@@ -87,7 +87,7 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
               </Badge>
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4 text-slate-600 text-sm sm:text-base">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4 text-muted-foreground text-sm sm:text-base">
               <span className="flex items-center gap-1.5">
                 <MapPin className="w-4 h-4 shrink-0" />
                 <span className="truncate max-w-[200px]">{formatLocation(opportunity.location)}</span>
@@ -142,7 +142,7 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
           <CardTitle>About This Role</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="prose prose-slate max-w-none">
+          <div className="prose prose-neutral dark:prose-invert max-w-none">
             {opportunity.description.split("\n").map((paragraph, i) => (
               <p key={i}>{paragraph}</p>
             ))}
@@ -157,7 +157,7 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
             <CardTitle>Requirements</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="list-disc list-inside space-y-2 text-slate-700">
+            <ul className="list-disc list-inside space-y-2 text-foreground">
               {opportunity.requirements.map((req, i) => (
                 <li key={i}>{req}</li>
               ))}
@@ -167,7 +167,7 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
       )}
 
       {/* Source attribution (OPPS-06 freshness + source) */}
-      <div className="text-sm text-slate-500 border-t border-slate-200 pt-4 mt-6">
+      <div className="text-sm text-muted-foreground border-t border-border pt-4 mt-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
           <div className="flex items-center gap-1 font-mono">
             <Calendar className="w-4 h-4 shrink-0" />
@@ -183,14 +183,14 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
               href={opportunity.sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:underline"
+              className="text-primary hover:underline"
             >
               {SOURCE_NAMES[opportunity.source] || opportunity.source}
             </a>
 
             {opportunity.alternateSources && opportunity.alternateSources.length > 0 && (
               <>
-                <span className="text-slate-400">|</span>
+                <span className="text-muted-foreground/50">|</span>
                 <span>Also on:</span>
                 {opportunity.alternateSources.map((alt, i) => (
                   <a
@@ -198,7 +198,7 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
                     href={alt.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
+                    className="text-primary hover:underline"
                   >
                     {SOURCE_NAMES[alt.source] || alt.source}
                   </a>
