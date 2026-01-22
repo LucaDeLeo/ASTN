@@ -4,6 +4,8 @@ import { routerWithQueryClient } from '@tanstack/react-router-with-query'
 import { ConvexQueryClient } from '@convex-dev/react-query'
 import { ConvexAuthProvider } from '@convex-dev/auth/react'
 import { routeTree } from './routeTree.gen'
+import { isTauri } from '~/lib/platform'
+import { initDeepLinkAuth } from '~/lib/tauri/auth'
 
 export function getRouter() {
   const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!
@@ -22,6 +24,16 @@ export function getRouter() {
     },
   })
   convexQueryClient.connect(queryClient)
+
+  // Initialize deep link auth listener for Tauri mobile OAuth
+  if (typeof window !== 'undefined' && isTauri()) {
+    initDeepLinkAuth(async ({ code, state, provider }) => {
+      console.log('OAuth callback received:', { code, state, provider })
+      // OAuth code exchange will be implemented in Task 3
+      // For now, just log the callback - the full implementation needs
+      // exchangeOAuthCode from convex/authTauri.ts
+    })
+  }
 
   const router = routerWithQueryClient(
     createRouter({

@@ -1,5 +1,11 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { Button } from "~/components/ui/button";
+import { isTauri } from "~/lib/platform";
+import {
+  setPendingOAuthProvider,
+  openOAuthInBrowser,
+  getOAuthRedirectUrl,
+} from "~/lib/tauri/auth";
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -23,11 +29,45 @@ function GitHubIcon({ className }: { className?: string }) {
 export function OAuthButtons() {
   const { signIn } = useAuthActions();
 
+  const handleGoogleSignIn = async () => {
+    if (isTauri()) {
+      setPendingOAuthProvider("google");
+      const redirectUri = encodeURIComponent(getOAuthRedirectUrl());
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+      if (!clientId) {
+        console.error("VITE_GOOGLE_CLIENT_ID not set");
+        return;
+      }
+      const state = crypto.randomUUID();
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&state=${state}&scope=openid%20email%20profile`;
+      await openOAuthInBrowser(authUrl);
+    } else {
+      await signIn("google");
+    }
+  };
+
+  const handleGitHubSignIn = async () => {
+    if (isTauri()) {
+      setPendingOAuthProvider("github");
+      const redirectUri = encodeURIComponent(getOAuthRedirectUrl());
+      const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
+      if (!clientId) {
+        console.error("VITE_GITHUB_CLIENT_ID not set");
+        return;
+      }
+      const state = crypto.randomUUID();
+      const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=read:user,user:email`;
+      await openOAuthInBrowser(authUrl);
+    } else {
+      await signIn("github");
+    }
+  };
+
   return (
     <div className="flex flex-col gap-3">
       <Button
         variant="outline"
-        onClick={() => signIn("google")}
+        onClick={handleGoogleSignIn}
         className="w-full h-11 text-base font-medium"
       >
         <GoogleIcon className="mr-2 h-5 w-5" />
@@ -35,7 +75,7 @@ export function OAuthButtons() {
       </Button>
       <Button
         variant="outline"
-        onClick={() => signIn("github")}
+        onClick={handleGitHubSignIn}
         className="w-full h-11 text-base font-medium"
       >
         <GitHubIcon className="mr-2 h-5 w-5" />
