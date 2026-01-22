@@ -97,6 +97,7 @@ v1.3 transformed ASTN from generic shadcn/ui to a warm, memorable visual identit
 - Tauri 2.0 supports iOS and Android via native webview wrappers
 - Goal is app store presence (TestFlight for iOS, Play Store beta for Android)
 - Responsive web comes first, Tauri wraps the working web app
+- Desktop Tauri skipped — focus is mobile only
 
 **Launch plan:** Workshop-based onboarding where members create profiles (via upload, paste, or AI chat) and get immediate matches during the session.
 

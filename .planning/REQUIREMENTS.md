@@ -38,7 +38,6 @@ Requirements for mobile-first responsive web + Tauri native apps.
 - [ ] **TAURI-02**: SPA build configuration (vite.config.tauri.ts with prerendering)
 - [ ] **TAURI-03**: Platform detection utilities (isTauri, getPlatform)
 - [ ] **TAURI-04**: Convex connectivity works in Tauri WebView
-- [ ] **TAURI-05**: Desktop Tauri build works (validation before mobile)
 - [ ] **TAURI-06**: iOS build runs in simulator
 - [ ] **TAURI-07**: Android build runs in emulator
 
@@ -72,7 +71,7 @@ Deferred to future releases.
 | Feature | Reason |
 |---------|--------|
 | App store submission | Separate milestone after v2.0 validation |
-| Desktop Tauri distribution | Focus is mobile; desktop is validation step only |
+| Desktop Tauri builds | Focus is mobile only; desktop not needed |
 | Swipe-to-save opportunity browsing | v2.1+ polish feature |
 | Widgets | v2.1+ after core mobile experience validated |
 | Background sync | Complex offline strategy; defer until offline browsing validated |
@@ -97,11 +96,10 @@ Deferred to future releases.
 | TOUCH-02 | Phase 23 | Pending |
 | TOUCH-03 | Phase 23 | Pending |
 | TOUCH-04 | Phase 23 | Pending |
-| TAURI-01 | Phase 24 | Pending |
-| TAURI-02 | Phase 24 | Pending |
-| TAURI-03 | Phase 24 | Pending |
-| TAURI-04 | Phase 24 | Pending |
-| TAURI-05 | Phase 24 | Pending |
+| TAURI-01 | Phase 25 | Pending |
+| TAURI-02 | Phase 25 | Pending |
+| TAURI-03 | Phase 25 | Pending |
+| TAURI-04 | Phase 25 | Pending |
 | TAURI-06 | Phase 25 | Pending |
 | TAURI-07 | Phase 25 | Pending |
 | NATIVE-01 | Phase 25 | Pending |
@@ -111,10 +109,10 @@ Deferred to future releases.
 | NATIVE-05 | Phase 25 | Pending |
 
 **Coverage:**
-- v2.0 requirements: 26 total
-- Mapped to phases: 26
+- v2.0 requirements: 25 total
+- Mapped to phases: 25
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-20*
-*Last updated: 2026-01-20 - traceability mapped to phases 21-25*
+*Last updated: 2026-01-22 - removed Phase 24 (desktop), TAURI-01-04 moved to Phase 25*
