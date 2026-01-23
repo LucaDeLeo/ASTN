@@ -47,17 +47,22 @@ export function OAuthButtons() {
   };
 
   const handleGitHubSignIn = async () => {
+    console.log("[OAuth] GitHub button clicked, isTauri:", isTauri());
     if (isTauri()) {
       setPendingOAuthProvider("github");
       const redirectUri = encodeURIComponent(getOAuthRedirectUrl());
-      const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
+      // Use mobile-specific OAuth app with astn:// callback
+      const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID_MOBILE;
+      console.log("[OAuth] Mobile client ID:", clientId ? "set" : "NOT SET");
       if (!clientId) {
-        console.error("VITE_GITHUB_CLIENT_ID not set");
+        console.error("VITE_GITHUB_CLIENT_ID_MOBILE not set");
         return;
       }
       const state = crypto.randomUUID();
       const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=read:user,user:email`;
+      console.log("[OAuth] Opening URL:", authUrl);
       await openOAuthInBrowser(authUrl);
+      console.log("[OAuth] openOAuthInBrowser completed");
     } else {
       await signIn("github");
     }

@@ -31,11 +31,19 @@ export const exchangeOAuthCode = action({
 });
 
 async function exchangeGitHubCode(code: string, redirectUri: string) {
-  const clientId = process.env.AUTH_GITHUB_ID;
-  const clientSecret = process.env.AUTH_GITHUB_SECRET;
+  // Use mobile-specific OAuth app for Tauri deep links
+  const isMobile = redirectUri.startsWith("astn://");
+  const clientId = isMobile
+    ? process.env.AUTH_GITHUB_ID_MOBILE
+    : process.env.AUTH_GITHUB_ID;
+  const clientSecret = isMobile
+    ? process.env.AUTH_GITHUB_SECRET_MOBILE
+    : process.env.AUTH_GITHUB_SECRET;
 
   if (!clientId || !clientSecret) {
-    throw new Error("GitHub OAuth credentials not configured");
+    throw new Error(
+      `GitHub OAuth credentials not configured for ${isMobile ? "mobile" : "web"}`
+    );
   }
 
   const response = await fetch("https://github.com/login/oauth/access_token", {

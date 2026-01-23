@@ -125,12 +125,13 @@ export async function openOAuthInBrowser(url: string): Promise<void> {
   }
 
   try {
-    // Use Tauri shell to open in system browser
-    const { open } = await import('@tauri-apps/plugin-shell')
-    await open(url)
+    // Use Tauri opener plugin - works on iOS/Android to open URLs in system browser
+    const { openUrl } = await import('@tauri-apps/plugin-opener')
+    await openUrl(url)
+    console.log('[OAuth] Opened URL with opener plugin')
   } catch (error) {
+    console.error('[OAuth] Failed to open with opener plugin:', error)
     // Fallback: try window.open
-    console.warn('Failed to open with Tauri shell, falling back to window.open:', error)
     window.open(url, '_blank')
   }
 }

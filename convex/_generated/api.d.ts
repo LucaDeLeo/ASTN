@@ -18,6 +18,7 @@ import type * as attendance_mutations from "../attendance/mutations.js";
 import type * as attendance_queries from "../attendance/queries.js";
 import type * as attendance_scheduler from "../attendance/scheduler.js";
 import type * as auth from "../auth.js";
+import type * as authTauri from "../authTauri.js";
 import type * as crons from "../crons.js";
 import type * as emails_batchActions from "../emails/batchActions.js";
 import type * as emails_send from "../emails/send.js";
@@ -80,6 +81,7 @@ declare const fullApi: ApiFromModules<{
   "attendance/queries": typeof attendance_queries;
   "attendance/scheduler": typeof attendance_scheduler;
   auth: typeof auth;
+  authTauri: typeof authTauri;
   crons: typeof crons;
   "emails/batchActions": typeof emails_batchActions;
   "emails/send": typeof emails_send;
