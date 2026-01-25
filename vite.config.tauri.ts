@@ -21,7 +21,7 @@ export default defineConfig({
     outDir: 'dist',
     // SPA: single index.html handles all routes
     rollupOptions: {
-      input: 'index.html',
+      input: 'src-tauri/index.html',
     },
   },
   // Required for Tauri to resolve paths correctly
