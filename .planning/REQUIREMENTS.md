@@ -1,118 +1,141 @@
-# Requirements: v2.0 Mobile + Tauri
+# Requirements: v1.4 Hardening
 
-**Defined:** 2026-01-20
+**Defined:** 2026-01-31
 **Core Value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
 
-## v2.0 Requirements
+## v1.4 Requirements
 
-Requirements for mobile-first responsive web + Tauri native apps.
+Requirements for security hardening, bug fixes, and code quality improvements identified in the comprehensive codebase review.
 
-### Responsive Layout
+### Authentication & Authorization
 
-- [ ] **RESP-01**: All routes display correctly on mobile viewports (no horizontal scroll)
-- [ ] **RESP-02**: Touch targets are minimum 44x44px on all interactive elements
-- [ ] **RESP-03**: Forms are mobile-usable (labels above inputs, appropriate keyboards)
-- [ ] **RESP-04**: Typography remains readable across breakpoints (fluid scale already in place)
-- [ ] **RESP-05**: Tables and data-heavy views adapt to narrow screens
-- [ ] **RESP-06**: Skeleton loading states for list views and cards
-- [ ] **RESP-07**: Smooth layout transitions when resizing/rotating
+- [ ] **AUTH-01**: Enrichment sendMessage action requires authenticated user who owns the profile
+- [ ] **AUTH-02**: Enrichment getMessagesPublic query requires authenticated user who owns the profile
+- [ ] **AUTH-03**: Enrichment extractFromConversation action requires authenticated user who owns the profile
+- [ ] **AUTH-04**: OAuth exchangeOAuthCode validates redirectUri against an allowlist of permitted origins
+- [ ] **AUTH-05**: getCompleteness query requires authentication (or deprecate in favor of getMyCompleteness)
+- [ ] **AUTH-06**: Shared requireAuth helper standardizes authentication checks across all endpoints
 
-### Mobile Navigation
+### OAuth Security
 
-- [ ] **NAV-01**: Bottom tab bar with 5 destinations (Home, Opportunities, Matches, Events, Profile)
-- [ ] **NAV-02**: Safe area handling for notches and home indicators
-- [ ] **NAV-03**: Secondary navigation via hamburger menu (settings, admin, logout)
-- [ ] **NAV-04**: Active tab state clearly visible with animation
-- [ ] **NAV-05**: Haptic feedback on tab selection (native builds only)
+- [ ] **OAUTH-01**: Tauri mobile OAuth flow implements PKCE (S256 code_challenge)
+- [ ] **OAUTH-02**: OAuth state parameter is validated on callback (stored in Tauri Store, not memory)
+- [ ] **OAUTH-03**: OAuth access tokens are not returned to the client (handled server-side only)
+- [ ] **OAUTH-04**: Console.log statements removed from OAuth flow in production
 
-### Touch Interactions
+### LLM Safety
 
-- [ ] **TOUCH-01**: Pull-to-refresh on opportunity and match list views
-- [ ] **TOUCH-02**: Tap feedback within 100ms on all interactive elements
-- [ ] **TOUCH-03**: Swipe gestures for common actions (e.g., dismiss, save)
-- [ ] **TOUCH-04**: Haptic feedback on key interactions (native builds only)
+- [ ] **LLM-01**: Profile data in LLM prompts is wrapped in XML delimiters separating data from instructions
+- [ ] **LLM-02**: Input length limits enforced on profile fields sent to LLM calls
+- [ ] **LLM-03**: LLM tool_use responses validated at runtime with Zod schemas (matching, engagement, extraction)
+- [ ] **LLM-04**: Zod schemas use permissive mode (.passthrough(), .optional()) to avoid silent match failures
 
-### Tauri Integration
+### Bug Fixes
 
-- [ ] **TAURI-01**: Tauri project initialized with iOS and Android targets
-- [ ] **TAURI-02**: SPA build configuration (vite.config.tauri.ts with prerendering)
-- [ ] **TAURI-03**: Platform detection utilities (isTauri, getPlatform)
-- [ ] **TAURI-04**: Convex connectivity works in Tauri WebView
-- [ ] **TAURI-06**: iOS build runs in simulator
-- [ ] **TAURI-07**: Android build runs in emulator
+- [ ] **BUG-01**: Growth areas aggregated (not overwritten) across matching batches
+- [ ] **BUG-02**: Date conversion uses Date.UTC() instead of new Date() in profiles.ts
+- [ ] **BUG-03**: Navigation calls wrapped in useEffect in redirect components (profile, matches, settings)
+- [ ] **BUG-04**: Engagement override expiration checked in query handlers (not just daily compute)
 
-### Native Features
+### Performance
 
-- [ ] **NATIVE-01**: Deep link OAuth handling for GitHub/Google login
-- [ ] **NATIVE-02**: Push notifications for new "great" tier matches
-- [ ] **NATIVE-03**: Offline browsing of previously viewed opportunities
-- [ ] **NATIVE-04**: Biometric authentication for quick app access
-- [ ] **NATIVE-05**: Secure token storage via Tauri store plugin
+- [ ] **PERF-01**: N+1 query in programs.ts resolved (batch participant counts)
+- [ ] **PERF-02**: N+1 query in attendance/queries.ts resolved (batch event/org lookups)
+- [ ] **PERF-03**: N+1 query in emails/send.ts resolved (batch user lookups)
+- [ ] **PERF-04**: Rate limiting added between matching batch API calls
 
-## v2.1+ Requirements
+### Code Quality
+
+- [ ] **QUAL-01**: CI pipeline via GitHub Actions (lint + typecheck + build on push/PR)
+- [ ] **QUAL-02**: Pre-commit hooks via husky + lint-staged (lint + format on commit)
+- [ ] **QUAL-03**: Dual lockfile resolved (remove package-lock.json, keep bun.lock)
+- [ ] **QUAL-04**: .env.example documenting all required environment variables
+- [ ] **QUAL-05**: test-upload.tsx route removed
+- [ ] **QUAL-06**: Dead code removed (_STEP_LABELS in ProfileWizard)
+- [ ] **QUAL-07**: Browser alert() replaced with toast notification in admin form
+- [ ] **QUAL-08**: Error handling standardized (toast for user-facing, structured logging for server-side)
+- [ ] **QUAL-09**: Timezone validation uses IANA database check (not just "/" presence)
+
+### Accessibility
+
+- [ ] **A11Y-01**: Interactive org div converted to button with keyboard support and ARIA role
+- [ ] **A11Y-02**: Form validation errors linked to inputs via aria-describedby
+- [ ] **A11Y-03**: Client-side password validation with inline feedback before submission
+- [ ] **A11Y-04**: Drag state indication uses icon/text in addition to color
+
+### Visual Polish
+
+- [ ] **VIS-01**: GradientBg applied to settings, attendance, and org admin pages
+- [ ] **VIS-02**: 35+ headings updated from font-bold to font-display
+
+## v1.5+ Requirements
 
 Deferred to future releases.
 
-### App Store Submission
+### Extended Hardening
 
-- **STORE-01**: TestFlight release (iOS)
-- **STORE-02**: Play Store beta release (Android)
-- **STORE-03**: App store screenshots and metadata
-- **STORE-04**: Privacy policy compliance
-
-### Additional Native Features
-
-- **NATIVE-06**: Badge count on app icon for unread matches
-- **NATIVE-07**: Background sync for offline changes
-- **NATIVE-08**: Event check-in via NFC/QR
+- **QUAL-10**: Rate limiting on public-facing endpoints (convex-helpers rateLimit)
+- **QUAL-11**: Row-level security via convex-helpers for sensitive tables
+- **QUAL-12**: Anthropic client reuse within batch loops (engagement compute)
+- **QUAL-13**: Full profile context caching for enrichment chat (avoid resending per message)
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| App store submission | Separate milestone after v2.0 validation |
-| Desktop Tauri builds | Focus is mobile only; desktop not needed |
-| Swipe-to-save opportunity browsing | v2.1+ polish feature |
-| Widgets | v2.1+ after core mobile experience validated |
-| Background sync | Complex offline strategy; defer until offline browsing validated |
+| Tauri-specific fixes (7.1-7.5) | Deferred with mobile native work |
+| Tauri mobile native features | Separate milestone |
+| Auth middleware migration (customQuery/customMutation everywhere) | v1.5 — adopt for new endpoints, don't rewrite existing |
+| Vector search / embeddings | Not needed per project constraints |
+| Full prompt injection filtering | XML delimiters + length limits sufficient; content filtering is an anti-feature per research |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| RESP-01 | Phase 21 | Pending |
-| RESP-02 | Phase 21 | Pending |
-| RESP-03 | Phase 21 | Pending |
-| RESP-04 | Phase 21 | Pending |
-| RESP-05 | Phase 21 | Pending |
-| RESP-06 | Phase 21 | Pending |
-| RESP-07 | Phase 21 | Pending |
-| NAV-01 | Phase 22 | Pending |
-| NAV-02 | Phase 22 | Pending |
-| NAV-03 | Phase 22 | Pending |
-| NAV-04 | Phase 22 | Pending |
-| NAV-05 | Phase 22 | Pending |
-| TOUCH-01 | Phase 23 | Pending |
-| TOUCH-02 | Phase 23 | Pending |
-| TOUCH-03 | Phase 23 | Pending |
-| TOUCH-04 | Phase 23 | Pending |
-| TAURI-01 | Phase 25 | Pending |
-| TAURI-02 | Phase 25 | Pending |
-| TAURI-03 | Phase 25 | Pending |
-| TAURI-04 | Phase 25 | Pending |
-| TAURI-06 | Phase 25 | Pending |
-| TAURI-07 | Phase 25 | Pending |
-| NATIVE-01 | Phase 25 | Pending |
-| NATIVE-02 | Phase 25 | Pending |
-| NATIVE-03 | Phase 25 | Pending |
-| NATIVE-04 | Phase 25 | Pending |
-| NATIVE-05 | Phase 25 | Pending |
+| AUTH-01 | TBD | Pending |
+| AUTH-02 | TBD | Pending |
+| AUTH-03 | TBD | Pending |
+| AUTH-04 | TBD | Pending |
+| AUTH-05 | TBD | Pending |
+| AUTH-06 | TBD | Pending |
+| OAUTH-01 | TBD | Pending |
+| OAUTH-02 | TBD | Pending |
+| OAUTH-03 | TBD | Pending |
+| OAUTH-04 | TBD | Pending |
+| LLM-01 | TBD | Pending |
+| LLM-02 | TBD | Pending |
+| LLM-03 | TBD | Pending |
+| LLM-04 | TBD | Pending |
+| BUG-01 | TBD | Pending |
+| BUG-02 | TBD | Pending |
+| BUG-03 | TBD | Pending |
+| BUG-04 | TBD | Pending |
+| PERF-01 | TBD | Pending |
+| PERF-02 | TBD | Pending |
+| PERF-03 | TBD | Pending |
+| PERF-04 | TBD | Pending |
+| QUAL-01 | TBD | Pending |
+| QUAL-02 | TBD | Pending |
+| QUAL-03 | TBD | Pending |
+| QUAL-04 | TBD | Pending |
+| QUAL-05 | TBD | Pending |
+| QUAL-06 | TBD | Pending |
+| QUAL-07 | TBD | Pending |
+| QUAL-08 | TBD | Pending |
+| QUAL-09 | TBD | Pending |
+| A11Y-01 | TBD | Pending |
+| A11Y-02 | TBD | Pending |
+| A11Y-03 | TBD | Pending |
+| A11Y-04 | TBD | Pending |
+| VIS-01 | TBD | Pending |
+| VIS-02 | TBD | Pending |
 
 **Coverage:**
-- v2.0 requirements: 25 total
-- Mapped to phases: 25
-- Unmapped: 0
+- v1.4 requirements: 37 total
+- Mapped to phases: 0 (pending roadmap)
+- Unmapped: 37
 
 ---
-*Requirements defined: 2026-01-20*
-*Last updated: 2026-01-22 - removed Phase 24 (desktop), TAURI-01-04 moved to Phase 25*
+*Requirements defined: 2026-01-31*
+*Last updated: 2026-01-31 after initial definition*
