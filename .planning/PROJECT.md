@@ -8,16 +8,21 @@ A career command center for AI safety talent. Individuals maintain living profil
 
 Individuals get enough value from smart matching + recommendations that they keep profiles fresh — this is the flywheel that makes everything else work.
 
-## Current Milestone: v2.0 Mobile + Tauri
+## Current Milestone: v1.4 Hardening
 
-**Goal:** Transform ASTN into a mobile-first experience with native iOS and Android apps via Tauri, fixing all responsive layout issues and adding app-like navigation.
+**Goal:** Fix all security vulnerabilities, bugs, performance issues, and code quality gaps identified in the comprehensive codebase review, plus complete v1.3 coverage gaps and pending cleanup tasks.
 
-**Target features:**
-- Comprehensive responsive fixes across entire app
-- Bottom tab bar navigation (Home, Opportunities, Matches, Events, Profile)
-- Native-ish feel with smooth mobile interactions
-- Tauri wrapper for iOS and Android
-- Ship to app stores (TestFlight, Play Store beta)
+**Target fixes:**
+- Critical auth gaps (public enrichment endpoints, OAuth action exposure)
+- OAuth security (state validation, PKCE, token handling)
+- Prompt injection defenses for LLM calls
+- Bug fixes (growth area aggregation, date conversion, navigation anti-patterns)
+- Performance improvements (N+1 queries, rate limiting)
+- Code quality (runtime LLM response validation, error handling consistency)
+- Accessibility fixes (keyboard support, ARIA, form validation)
+- Developer experience (CI pipeline, .env.example, pre-commit hooks, dual lockfile cleanup)
+- v1.3 coverage gaps (GradientBg on remaining pages, font-display headings)
+- Cleanup (test route removal, console.log removal, dead code)
 
 ## Current State
 
@@ -25,7 +30,7 @@ Individuals get enough value from smart matching + recommendations that they kee
 
 v1.3 transformed ASTN from generic shadcn/ui to a warm, memorable visual identity. Features include design token system (Lora + Plus Jakarta Sans fonts, OKLCH coral palette), motion system (AnimatedCard stagger, Card hover lift, Button squish, View Transitions), intentional coral-based dark mode, and accessibility polish (focus states, empty states).
 
-**Tech stack:** Convex + TanStack Start + React 19 + shadcn/ui + Claude Sonnet 4.5/Haiku 4.5 + Tauri (v2.0)
+**Tech stack:** Convex + TanStack Start + React 19 + shadcn/ui + Claude Sonnet 4.5/Haiku 4.5
 
 **Codebase:** ~114,000 lines TypeScript, ~500 files
 
@@ -60,12 +65,19 @@ v1.3 transformed ASTN from generic shadcn/ui to a warm, memorable visual identit
 
 ### Active
 
-- [ ] Responsive layout fixes across all member-facing pages
-- [ ] Bottom tab bar navigation for mobile (Home, Opportunities, Matches, Events, Profile)
-- [ ] Mobile-optimized touch interactions and gestures
-- [ ] Tauri project setup for iOS and Android
-- [ ] Native mobile app builds (TestFlight, Play Store beta)
-- [ ] Basic responsive admin pages (usable, not polished)
+- [ ] Fix critical auth gaps on enrichment endpoints and OAuth action
+- [ ] Implement OAuth state validation and PKCE for mobile flow
+- [ ] Add prompt injection defenses for LLM calls
+- [ ] Fix growth area aggregation bug in matching compute
+- [ ] Fix date conversion to use UTC in profile timestamps
+- [ ] Add runtime validation for LLM tool responses
+- [ ] Fix N+1 query patterns in programs, attendance, and email
+- [ ] Wrap navigation calls in useEffect for redirect components
+- [ ] Add keyboard/ARIA accessibility to interactive elements
+- [ ] Add CI pipeline, .env.example, and pre-commit hooks
+- [ ] Apply GradientBg to remaining pages and fix font-display headings
+- [ ] Remove test-upload route, console.logs, and dead code
+- [ ] Clean up dual lockfile (remove package-lock.json)
 
 ### Out of Scope
 
@@ -77,27 +89,26 @@ v1.3 transformed ASTN from generic shadcn/ui to a warm, memorable visual identit
 - "Insist" escalation (multi-channel nudges) — v2+
 - Cross-org discovery — v2+
 - Sophisticated career pathing with milestones — v2+
+- Mobile Tauri native app — deferred, separate milestone
+- Tauri-specific fixes (7.1-7.5 from review) — deferred with mobile work
 
 ## Context
 
-**Current state:** v1.3 shipped 2026-01-20. Warm visual identity with design tokens, motion system, and dark mode. Mobile experience is currently broken with layout bugs across the app.
+**Current state:** v1.3 shipped 2026-01-20. Comprehensive codebase review (2026-01-31) identified 3 critical, 2 high, 12 medium, and 16 low issues. Security and bug fixes are the priority before any new feature work.
 
-**Known issues:**
+**Known issues (from codebase review):**
+- 3 critical auth gaps: public enrichment endpoints, public OAuth code exchange
+- Missing OAuth state validation and PKCE in mobile flow
+- Prompt injection risk via unsanitized profile data in LLM prompts
+- Growth areas overwritten instead of aggregated in matching
+- Date conversion uses local timezone instead of UTC
+- N+1 query patterns in programs, attendance, and email batch processing
+- Navigation called during render (not in useEffect)
+- No runtime validation on LLM tool responses
+- v1.3 coverage gaps: GradientBg on settings/attendance/org pages, 35+ headings need font-display
 - `@ts-nocheck` in batchActions.ts (Convex action type inference workaround)
-- OAuth flows require real browser testing
 - Aggregation requires 80K/Airtable API keys configured
 - Lu.ma API key required for event sync (per-org Lu.ma Plus subscription)
-- linkedEventIds auto-attendance not yet implemented (tracked as future work)
-- Settings/attendance/org admin pages still use cold backgrounds (v1.3 coverage gap)
-- 35+ headings use font-bold instead of font-display (v1.3 coverage gap)
-- Mobile layout bugs and responsive issues across entire app (v2.0 focus)
-
-**v2.0 context:**
-- BAISH workshop onboarding may happen on phones — mobile must work
-- Tauri 2.0 supports iOS and Android via native webview wrappers
-- Goal is app store presence (TestFlight for iOS, Play Store beta for Android)
-- Responsive web comes first, Tauri wraps the working web app
-- Desktop Tauri skipped — focus is mobile only
 
 **Launch plan:** Workshop-based onboarding where members create profiles (via upload, paste, or AI chat) and get immediate matches during the session.
 
@@ -150,4 +161,4 @@ v1.3 transformed ASTN from generic shadcn/ui to a warm, memorable visual identit
 | View Transitions API for navigation | Native browser animation, works without JS | ✓ Good — 250ms crossfade |
 
 ---
-*Last updated: 2026-01-20 after v2.0 milestone start*
+*Last updated: 2026-01-31 after v1.4 Hardening milestone start*
