@@ -36,18 +36,12 @@ Previous milestones are documented in `.planning/MILESTONES.md`. Phases 1-23 and
 **Goal**: All endpoints require proper authentication, OAuth flow is secure against CSRF and token theft, and LLM calls are defended against prompt injection with validated outputs
 **Depends on**: Nothing (first phase of v1.4; no dependency on deferred Phase 25)
 **Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05, AUTH-06, OAUTH-01, OAUTH-02, OAUTH-03, OAUTH-04, LLM-01, LLM-02, LLM-03, LLM-04
-**Success Criteria** (what must be TRUE):
-  1. Unauthenticated user calling enrichment endpoints (sendMessage, getMessagesPublic, extractFromConversation) receives an auth error, not data or LLM responses
-  2. User completing OAuth login on Tauri mobile has their flow protected by PKCE (S256 code_challenge) and state parameter validated on callback
-  3. OAuth access tokens are never exposed to the client -- exchangeOAuthCode validates redirectUri against an allowlist and handles tokens server-side only
-  4. Profile data sent to LLM prompts is wrapped in XML delimiters separating user content from system instructions, and input length limits reject oversized fields before the API call
-  5. LLM tool_use responses (matching, engagement, extraction) are validated at runtime with Zod schemas using permissive mode, with validation failures logged (not silently swallowed)
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 27-01: Authentication hardening (requireAuth helper, ownership checks on enrichment endpoints, getCompleteness auth)
-- [ ] 27-02: OAuth security (PKCE for Tauri mobile, state validation, redirectUri allowlist, token handling, console.log cleanup)
-- [ ] 27-03: LLM safety (XML delimiters for prompt separation, input length limits, Zod runtime validation for tool_use responses)
+- [ ] 27-01-PLAN.md -- Authentication hardening (requireAuth helper, ownership checks on enrichment endpoints, getCompleteness deprecation, admin.ts CRUD auth, listAll admin gate)
+- [ ] 27-02-PLAN.md -- OAuth security (PKCE for Tauri mobile, state validation, redirectUri allowlist, Tauri Store persistence, console.log cleanup)
+- [ ] 27-03-PLAN.md -- LLM safety (XML delimiters for prompt separation, input length limits, Zod runtime validation for tool_use responses in shadow mode)
 
 #### Phase 28: Quality Gates & Bug Fixes
 **Goal**: CI pipeline and pre-commit hooks catch regressions automatically, all known bugs are fixed, and error handling is consistent across the codebase
@@ -63,7 +57,7 @@ Plans:
 
 Plans:
 - [ ] 28-01: CI pipeline and developer experience (GitHub Actions workflow, husky + lint-staged, .env.example, dual lockfile cleanup)
-- [ ] 28-02: Bug fixes (growth area aggregation, Date.UTC conversion, navigation useEffect wrapping, engagement override expiration)
+- [ ] 28-02: Bug fixes (growth area aggregation, Date.UTC conversion, navigation useEffect wrapping, engagement override expiration, org membership first-member race condition)
 - [ ] 28-03: Code quality cleanup (test route removal, dead code, alert-to-toast, error handling standardization, timezone IANA validation)
 
 #### Phase 29: Performance, Accessibility & Polish
@@ -79,7 +73,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 29-01: N+1 query resolution and rate limiting (programs, attendance, email batch queries, matching API rate limits)
+- [ ] 29-01: N+1 query resolution and rate limiting (programs, attendance, email batch queries, matching API rate limits, events query pagination)
 - [ ] 29-02: Accessibility hardening (org card keyboard/ARIA, form aria-describedby, password inline validation, drag state non-color indication)
 - [ ] 29-03: Visual coverage (GradientBg on remaining pages, font-display headings)
 
@@ -89,10 +83,10 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 27. Critical Security | v1.4 | 0/3 | Not started | - |
+| 27. Critical Security | v1.4 | 0/3 | Planned | - |
 | 28. Quality Gates & Bug Fixes | v1.4 | 0/3 | Not started | - |
 | 29. Performance, Accessibility & Polish | v1.4 | 0/3 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-20*
-*Last updated: 2026-01-31 -- v1.4 Hardening phases 27-29 added*
+*Last updated: 2026-01-31 -- Phase 27 planned (3 plans, 2 waves)*
