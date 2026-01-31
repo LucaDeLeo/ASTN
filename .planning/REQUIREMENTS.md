@@ -85,7 +85,7 @@ Deferred to future releases.
 |---------|--------|
 | Tauri-specific fixes (7.1-7.5) | Deferred with mobile native work |
 | Tauri mobile native features | Separate milestone |
-| Auth middleware migration (customQuery/customMutation everywhere) | v1.5 — adopt for new endpoints, don't rewrite existing |
+| Auth middleware migration (customQuery/customMutation everywhere) | v1.5 -- adopt for new endpoints, don't rewrite existing |
 | Vector search / embeddings | Not needed per project constraints |
 | Full prompt injection filtering | XML delimiters + length limits sufficient; content filtering is an anti-feature per research |
 
@@ -93,49 +93,49 @@ Deferred to future releases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | TBD | Pending |
-| AUTH-02 | TBD | Pending |
-| AUTH-03 | TBD | Pending |
-| AUTH-04 | TBD | Pending |
-| AUTH-05 | TBD | Pending |
-| AUTH-06 | TBD | Pending |
-| OAUTH-01 | TBD | Pending |
-| OAUTH-02 | TBD | Pending |
-| OAUTH-03 | TBD | Pending |
-| OAUTH-04 | TBD | Pending |
-| LLM-01 | TBD | Pending |
-| LLM-02 | TBD | Pending |
-| LLM-03 | TBD | Pending |
-| LLM-04 | TBD | Pending |
-| BUG-01 | TBD | Pending |
-| BUG-02 | TBD | Pending |
-| BUG-03 | TBD | Pending |
-| BUG-04 | TBD | Pending |
-| PERF-01 | TBD | Pending |
-| PERF-02 | TBD | Pending |
-| PERF-03 | TBD | Pending |
-| PERF-04 | TBD | Pending |
-| QUAL-01 | TBD | Pending |
-| QUAL-02 | TBD | Pending |
-| QUAL-03 | TBD | Pending |
-| QUAL-04 | TBD | Pending |
-| QUAL-05 | TBD | Pending |
-| QUAL-06 | TBD | Pending |
-| QUAL-07 | TBD | Pending |
-| QUAL-08 | TBD | Pending |
-| QUAL-09 | TBD | Pending |
-| A11Y-01 | TBD | Pending |
-| A11Y-02 | TBD | Pending |
-| A11Y-03 | TBD | Pending |
-| A11Y-04 | TBD | Pending |
-| VIS-01 | TBD | Pending |
-| VIS-02 | TBD | Pending |
+| AUTH-01 | Phase 27 | Pending |
+| AUTH-02 | Phase 27 | Pending |
+| AUTH-03 | Phase 27 | Pending |
+| AUTH-04 | Phase 27 | Pending |
+| AUTH-05 | Phase 27 | Pending |
+| AUTH-06 | Phase 27 | Pending |
+| OAUTH-01 | Phase 27 | Pending |
+| OAUTH-02 | Phase 27 | Pending |
+| OAUTH-03 | Phase 27 | Pending |
+| OAUTH-04 | Phase 27 | Pending |
+| LLM-01 | Phase 27 | Pending |
+| LLM-02 | Phase 27 | Pending |
+| LLM-03 | Phase 27 | Pending |
+| LLM-04 | Phase 27 | Pending |
+| BUG-01 | Phase 28 | Pending |
+| BUG-02 | Phase 28 | Pending |
+| BUG-03 | Phase 28 | Pending |
+| BUG-04 | Phase 28 | Pending |
+| QUAL-01 | Phase 28 | Pending |
+| QUAL-02 | Phase 28 | Pending |
+| QUAL-03 | Phase 28 | Pending |
+| QUAL-04 | Phase 28 | Pending |
+| QUAL-05 | Phase 28 | Pending |
+| QUAL-06 | Phase 28 | Pending |
+| QUAL-07 | Phase 28 | Pending |
+| QUAL-08 | Phase 28 | Pending |
+| QUAL-09 | Phase 28 | Pending |
+| PERF-01 | Phase 29 | Pending |
+| PERF-02 | Phase 29 | Pending |
+| PERF-03 | Phase 29 | Pending |
+| PERF-04 | Phase 29 | Pending |
+| A11Y-01 | Phase 29 | Pending |
+| A11Y-02 | Phase 29 | Pending |
+| A11Y-03 | Phase 29 | Pending |
+| A11Y-04 | Phase 29 | Pending |
+| VIS-01 | Phase 29 | Pending |
+| VIS-02 | Phase 29 | Pending |
 
 **Coverage:**
 - v1.4 requirements: 37 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 37
+- Mapped to phases: 37
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-31*
-*Last updated: 2026-01-31 after initial definition*
+*Last updated: 2026-01-31 -- traceability updated with phase mappings*

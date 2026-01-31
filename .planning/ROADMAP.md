@@ -1,4 +1,4 @@
-# Roadmap: ASTN v2.0 Mobile + Tauri
+# Roadmap: ASTN
 
 ## Milestones
 
@@ -6,137 +6,93 @@
 - ✅ **v1.1 Profile Input Speedup** - Phases 7-10 (shipped 2026-01-19)
 - ✅ **v1.2 Org CRM & Events** - Phases 11-16 (shipped 2026-01-19)
 - ✅ **v1.3 Visual Overhaul** - Phases 17-20 (shipped 2026-01-20)
-- 🚧 **v2.0 Mobile + Tauri** - Phases 21-23, 25-26 (in progress)
+- ⏸️ **v2.0 Mobile + Tauri** - Phases 21-23, 26 complete; Phase 25 deferred
+- 🚧 **v1.4 Hardening** - Phases 27-29 (in progress)
 
 ## Overview
 
-v2.0 transforms ASTN into a mobile-first experience with native iOS and Android apps. The approach is sequential: first making the web app fully responsive, then wrapping it with Tauri for app store distribution. Responsive web foundation ensures mobile works in browsers before adding native complexity. Native features (push notifications, offline, biometrics) justify app store presence beyond a simple webview wrapper.
+v1.4 closes all security vulnerabilities, bugs, and code quality gaps identified in the comprehensive codebase review before the BAISH pilot. The approach is strict: critical security fixes first (unauthenticated endpoints, OAuth gaps, LLM safety), then quality gates and bug fixes (CI pipeline, pre-commit hooks, correctness issues), then performance and polish (N+1 queries, accessibility, visual coverage gaps). Each phase delivers independently verifiable improvements and the ordering prevents regressions -- CI from Phase 28 catches issues introduced in Phase 29.
 
 ## Phases
 
-- [x] **Phase 21: Responsive Foundation** - Mobile-first layouts, touch targets, form usability ✓
-- [x] **Phase 22: Mobile Navigation** - Bottom tab bar, safe areas, hamburger menu ✓
-- [x] **Phase 23: Touch Interactions** - Pull-to-refresh, tap feedback, swipe gestures ✓
-- [ ] **Phase 25: Tauri Mobile + Native Features** - iOS/Android builds, OAuth, push, offline, biometrics
-- [x] **Phase 26: UX Polish** - Fix typography, color palette, empty states, and design consistency issues ✓
+- [ ] **Phase 27: Critical Security** - Close exploitable auth gaps, harden OAuth flow, defend LLM calls
+- [ ] **Phase 28: Quality Gates & Bug Fixes** - CI pipeline, pre-commit hooks, correctness fixes, error handling
+- [ ] **Phase 29: Performance, Accessibility & Polish** - N+1 query resolution, ARIA/keyboard support, visual coverage
 
 ## Phase Details
 
-### Phase 21: Responsive Foundation
+<details>
+<summary>v1.0 through v2.0 (Phases 1-26) -- see MILESTONES.md</summary>
 
-**Goal**: All routes display correctly on mobile viewports with proper touch targets and form usability
-**Depends on**: Nothing (first phase of v2.0)
-**Requirements**: RESP-01, RESP-02, RESP-03, RESP-04, RESP-05, RESP-06, RESP-07
+Previous milestones are documented in `.planning/MILESTONES.md`. Phases 1-23 and 26 are complete. Phase 25 (Tauri native) is deferred.
+
+</details>
+
+### v1.4 Hardening (In Progress)
+
+**Milestone Goal:** Fix all security vulnerabilities, bugs, performance issues, and code quality gaps from the codebase review before the BAISH pilot launch.
+
+#### Phase 27: Critical Security
+**Goal**: All endpoints require proper authentication, OAuth flow is secure against CSRF and token theft, and LLM calls are defended against prompt injection with validated outputs
+**Depends on**: Nothing (first phase of v1.4; no dependency on deferred Phase 25)
+**Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05, AUTH-06, OAUTH-01, OAUTH-02, OAUTH-03, OAUTH-04, LLM-01, LLM-02, LLM-03, LLM-04
 **Success Criteria** (what must be TRUE):
-  1. User can browse all routes on 375px viewport without horizontal scrolling
-  2. User can tap all interactive elements with thumb (44x44px minimum targets)
-  3. User can complete profile forms on mobile with proper input types and labels above fields
-  4. User can view opportunity tables and data-heavy views on narrow screens with adapted layout
-  5. User sees skeleton loading states while lists and cards load
-**Plans**: 5 plans
+  1. Unauthenticated user calling enrichment endpoints (sendMessage, getMessagesPublic, extractFromConversation) receives an auth error, not data or LLM responses
+  2. User completing OAuth login on Tauri mobile has their flow protected by PKCE (S256 code_challenge) and state parameter validated on callback
+  3. OAuth access tokens are never exposed to the client -- exchangeOAuthCode validates redirectUri against an allowlist and handles tokens server-side only
+  4. Profile data sent to LLM prompts is wrapped in XML delimiters separating user content from system instructions, and input length limits reject oversized fields before the API call
+  5. LLM tool_use responses (matching, engagement, extraction) are validated at runtime with Zod schemas using permissive mode, with validation failures logged (not silently swallowed)
+**Plans**: TBD
 
 Plans:
-- [x] 21-01-PLAN.md - Responsive foundation utilities (Skeleton, useMediaQuery, ResponsiveSheet)
-- [x] 21-02-PLAN.md - Opportunity views responsive (filters, skeletons)
-- [x] 21-03-PLAN.md - Profile wizard responsive (step navigation, layout)
-- [x] 21-04-PLAN.md - Admin tables responsive (card lists, filters)
-- [x] 21-05-PLAN.md - Touch targets and final polish (audit, transitions)
+- [ ] 27-01: Authentication hardening (requireAuth helper, ownership checks on enrichment endpoints, getCompleteness auth)
+- [ ] 27-02: OAuth security (PKCE for Tauri mobile, state validation, redirectUri allowlist, token handling, console.log cleanup)
+- [ ] 27-03: LLM safety (XML delimiters for prompt separation, input length limits, Zod runtime validation for tool_use responses)
 
-### Phase 22: Mobile Navigation
-
-**Goal**: Users navigate the app via mobile-native patterns (bottom tabs, hamburger menu)
-**Depends on**: Phase 21 (responsive layouts exist)
-**Requirements**: NAV-01, NAV-02, NAV-03, NAV-04, NAV-05
+#### Phase 28: Quality Gates & Bug Fixes
+**Goal**: CI pipeline and pre-commit hooks catch regressions automatically, all known bugs are fixed, and error handling is consistent across the codebase
+**Depends on**: Phase 27 (security fixes must land before establishing quality gates that validate them)
+**Requirements**: QUAL-01, QUAL-02, QUAL-03, QUAL-04, QUAL-05, QUAL-06, QUAL-07, QUAL-08, QUAL-09, BUG-01, BUG-02, BUG-03, BUG-04
 **Success Criteria** (what must be TRUE):
-  1. User can switch between 5 primary destinations via persistent bottom tab bar
-  2. User can access settings, admin, and logout via hamburger menu
-  3. User sees active tab clearly indicated with animation
-  4. App content respects safe areas on notched devices (no overlap with home indicator)
-**Plans**: 4 plans
+  1. Every push and PR triggers GitHub Actions CI that runs lint, typecheck, and build -- failures block merge
+  2. Every git commit runs lint-staged via husky pre-commit hook, catching formatting and lint issues before they reach CI
+  3. Growth areas from multi-batch matching runs are aggregated (not overwritten) -- user sees all growth areas across all matched opportunities
+  4. Navigation-during-render warnings are eliminated -- redirect components use useEffect for router.navigate calls
+  5. Error messages shown to users are toast notifications (not browser alert() dialogs), and server-side errors use structured logging (not console.log)
+**Plans**: TBD
 
 Plans:
-- [x] 22-01-PLAN.md - PWA manifest and safe area CSS foundation
-- [x] 22-02-PLAN.md - Bottom tab bar with 5 navigation tabs
-- [x] 22-03-PLAN.md - Sheet component and hamburger menu
-- [x] 22-04-PLAN.md - Mobile shell layout and route integration
+- [ ] 28-01: CI pipeline and developer experience (GitHub Actions workflow, husky + lint-staged, .env.example, dual lockfile cleanup)
+- [ ] 28-02: Bug fixes (growth area aggregation, Date.UTC conversion, navigation useEffect wrapping, engagement override expiration)
+- [ ] 28-03: Code quality cleanup (test route removal, dead code, alert-to-toast, error handling standardization, timezone IANA validation)
 
-### Phase 23: Touch Interactions
-
-**Goal**: Touch interactions feel native and responsive
-**Depends on**: Phase 22 (navigation system exists)
-**Requirements**: TOUCH-01, TOUCH-02, TOUCH-03, TOUCH-04
+#### Phase 29: Performance, Accessibility & Polish
+**Goal**: Database queries are efficient at scale, interactive elements are keyboard-accessible with proper ARIA attributes, and v1.3 visual treatment covers all remaining pages
+**Depends on**: Phase 28 (CI catches regressions from performance and UI changes)
+**Requirements**: PERF-01, PERF-02, PERF-03, PERF-04, A11Y-01, A11Y-02, A11Y-03, A11Y-04, VIS-01, VIS-02
 **Success Criteria** (what must be TRUE):
-  1. User can pull-to-refresh on opportunity and match list views
-  2. User sees immediate visual feedback (<100ms) when tapping interactive elements
-  3. User can swipe to perform common actions (dismiss, save)
-  4. App provides haptic feedback on key interactions (native builds only)
-**Plans**: 3 plans
+  1. Programs, attendance, and email batch queries use batched lookups instead of per-item queries -- no N+1 patterns remain in hot paths
+  2. Matching batch API calls include rate limiting to avoid hitting Anthropic rate limits during large compute runs
+  3. User can navigate all interactive elements (org cards, drag handles, form fields) via keyboard with visible focus indicators and correct ARIA roles
+  4. Form validation errors are programmatically linked to their inputs via aria-describedby, and password validation shows inline feedback before form submission
+  5. GradientBg warm background appears on settings, attendance, and org admin pages, and all 35+ headings use font-display class instead of font-bold
+**Plans**: TBD
 
 Plans:
-- [x] 23-01-PLAN.md - Touch foundation (CSS, @use-gesture, haptic hook) ✓
-- [x] 23-02-PLAN.md - Pull-to-refresh for matches and opportunities ✓
-- [x] 23-03-PLAN.md - Swipeable match cards with dismiss/save ✓
-
-### Phase 25: Tauri Mobile + Native Features
-
-**Goal**: iOS and Android apps run with native features that justify app store presence
-**Depends on**: Phase 23 (touch interactions complete)
-**Requirements**: TAURI-01, TAURI-02, TAURI-03, TAURI-04, TAURI-06, TAURI-07, NATIVE-01, NATIVE-02, NATIVE-03, NATIVE-04, NATIVE-05
-**Success Criteria** (what must be TRUE):
-  1. User can install and run app on iOS simulator
-  2. User can install and run app on Android emulator
-  3. User can complete GitHub/Google OAuth login via deep link handling
-  4. User receives push notification when matched with "great" tier opportunity
-  5. User can browse previously viewed opportunities while offline
-  6. User can unlock app with Face ID / Touch ID / fingerprint
-  7. Auth tokens persist securely via Tauri store plugin
-**Plans**: 6 plans
-
-Plans:
-- [ ] 25-01-PLAN.md - Tauri project initialization (CLI, plugins, SPA config, platform detection)
-- [ ] 25-02-PLAN.md - iOS build setup (init, permissions, simulator testing)
-- [ ] 25-03-PLAN.md - Android build setup (init, permissions, emulator testing)
-- [ ] 25-04-PLAN.md - OAuth deep link integration (custom scheme, browser handoff)
-- [ ] 25-05-PLAN.md - Secure storage + biometrics (token persistence, Face ID/Touch ID)
-- [ ] 25-06-PLAN.md - Push notifications + offline (FCM, IndexedDB cache)
-
-### Phase 26: UX Polish
-
-**Goal**: Transform ASTN from functional but generic to memorable and distinctive, addressing all issues from UX review
-**Depends on**: Phase 25 (all functionality complete before visual polish)
-**Requirements**: Based on .planning/review/ux-review.md
-**Success Criteria** (what must be TRUE):
-  1. Typography uses distinctive display font for headings paired with refined body font
-  2. Color palette conveys AI Safety seriousness (not generic coral/cream)
-  3. Empty states are varied and contextually appropriate
-  4. Location strings formatted consistently, "Not Found" salary displays replaced
-  5. Match cards are fully clickable with clear tier indicators
-  6. Navigation shows clear active states
-  7. Dark mode has proper contrast adjustments
-**Plans**: 4 plans
-
-Plans:
-- [x] 26-01-PLAN.md - High priority polish (location formatting, clickable cards, nav active states)
-- [x] 26-02-PLAN.md - Typography system (Space Grotesk for headings)
-- [x] 26-03-PLAN.md - Empty state variety (contextual variants)
-- [x] 26-04-PLAN.md - Color palette + dark mode (navy/slate primary, contrast fixes)
-
-**Details:**
-Based on comprehensive UX review identifying:
-- **High Priority**: Location formatting, salary display, clickable cards, nav active states, empty state variety
-- **Medium Priority**: Typography system, color palette refinement, card standardization, dark mode contrast
-- **Lower Priority**: Logo/brand mark, custom empty state illustrations, home page redesign, org card enrichment
+- [ ] 29-01: N+1 query resolution and rate limiting (programs, attendance, email batch queries, matching API rate limits)
+- [ ] 29-02: Accessibility hardening (org card keyboard/ARIA, form aria-describedby, password inline validation, drag state non-color indication)
+- [ ] 29-03: Visual coverage (GradientBg on remaining pages, font-display headings)
 
 ## Progress
 
+**Execution Order:** Phase 27 -> Phase 28 -> Phase 29
+
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 21. Responsive Foundation | v2.0 | 5/5 | Complete | 2026-01-21 |
-| 22. Mobile Navigation | v2.0 | 4/4 | Complete | 2026-01-21 |
-| 23. Touch Interactions | v2.0 | 3/3 | Complete | 2026-01-22 |
-| 25. Tauri Mobile + Native Features | v2.0 | 0/6 | Not started | - |
-| 26. UX Polish | v2.0 | 4/4 | Complete | 2026-01-22 |
+| 27. Critical Security | v1.4 | 0/3 | Not started | - |
+| 28. Quality Gates & Bug Fixes | v1.4 | 0/3 | Not started | - |
+| 29. Performance, Accessibility & Polish | v1.4 | 0/3 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-20*
-*Last updated: 2026-01-22 - Phase 25 planned with 6 plans in 4 waves*
+*Last updated: 2026-01-31 -- v1.4 Hardening phases 27-29 added*
