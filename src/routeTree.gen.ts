@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TestUploadRouteImport } from './routes/test-upload'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SettingsRouteRouteImport } from './routes/settings/route'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
@@ -37,11 +36,6 @@ import { Route as OrgSlugAdminMembersIndexRouteImport } from './routes/org/$slug
 import { Route as OrgSlugAdminProgramsProgramIdRouteImport } from './routes/org/$slug/admin/programs/$programId'
 import { Route as OrgSlugAdminMembersUserIdRouteImport } from './routes/org/$slug/admin/members/$userId'
 
-const TestUploadRoute = TestUploadRouteImport.update({
-  id: '/test-upload',
-  path: '/test-upload',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -183,7 +177,6 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteRouteWithChildren
   '/settings': typeof SettingsRouteRouteWithChildren
   '/login': typeof LoginRoute
-  '/test-upload': typeof TestUploadRoute
   '/matches/$id': typeof MatchesIdRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/profile/attendance': typeof ProfileAttendanceRoute
@@ -210,7 +203,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/test-upload': typeof TestUploadRoute
   '/matches/$id': typeof MatchesIdRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/profile/attendance': typeof ProfileAttendanceRoute
@@ -240,7 +232,6 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteRouteWithChildren
   '/settings': typeof SettingsRouteRouteWithChildren
   '/login': typeof LoginRoute
-  '/test-upload': typeof TestUploadRoute
   '/matches/$id': typeof MatchesIdRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/profile/attendance': typeof ProfileAttendanceRoute
@@ -271,7 +262,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/settings'
     | '/login'
-    | '/test-upload'
     | '/matches/$id'
     | '/opportunities/$id'
     | '/profile/attendance'
@@ -298,7 +288,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
-    | '/test-upload'
     | '/matches/$id'
     | '/opportunities/$id'
     | '/profile/attendance'
@@ -327,7 +316,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/settings'
     | '/login'
-    | '/test-upload'
     | '/matches/$id'
     | '/opportunities/$id'
     | '/profile/attendance'
@@ -357,7 +345,6 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   SettingsRouteRoute: typeof SettingsRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
-  TestUploadRoute: typeof TestUploadRoute
   MatchesIdRoute: typeof MatchesIdRoute
   OpportunitiesIdRoute: typeof OpportunitiesIdRoute
   ProfileAttendanceRoute: typeof ProfileAttendanceRoute
@@ -379,13 +366,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/test-upload': {
-      id: '/test-upload'
-      path: '/test-upload'
-      fullPath: '/test-upload'
-      preLoaderRoute: typeof TestUploadRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -606,7 +586,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRouteRoute: AdminRouteRouteWithChildren,
   SettingsRouteRoute: SettingsRouteRouteWithChildren,
   LoginRoute: LoginRoute,
-  TestUploadRoute: TestUploadRoute,
   MatchesIdRoute: MatchesIdRoute,
   OpportunitiesIdRoute: OpportunitiesIdRoute,
   ProfileAttendanceRoute: ProfileAttendanceRoute,
@@ -628,12 +607,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

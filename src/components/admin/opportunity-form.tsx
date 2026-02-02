@@ -1,103 +1,108 @@
-import { useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { useMutation } from "@tanstack/react-query";
-import { useConvexMutation } from "@convex-dev/react-query";
-import { api } from "../../../convex/_generated/api";
-import type { Id } from "../../../convex/_generated/dataModel";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Textarea } from "~/components/ui/textarea";
-import { Checkbox } from "~/components/ui/checkbox";
+import { useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
+import { useMutation } from '@tanstack/react-query'
+import { useConvexMutation } from '@convex-dev/react-query'
+import { toast } from 'sonner'
+import { api } from '../../../convex/_generated/api'
+import type { Id } from '../../../convex/_generated/dataModel'
+import { Button } from '~/components/ui/button'
+import { Input } from '~/components/ui/input'
+import { Label } from '~/components/ui/label'
+import { Textarea } from '~/components/ui/textarea'
+import { Checkbox } from '~/components/ui/checkbox'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select";
+} from '~/components/ui/select'
 
 const ROLE_TYPES = [
-  { value: "research", label: "Research" },
-  { value: "engineering", label: "Engineering" },
-  { value: "operations", label: "Operations" },
-  { value: "policy", label: "Policy" },
-  { value: "other", label: "Other" },
-];
+  { value: 'research', label: 'Research' },
+  { value: 'engineering', label: 'Engineering' },
+  { value: 'operations', label: 'Operations' },
+  { value: 'policy', label: 'Policy' },
+  { value: 'other', label: 'Other' },
+]
 
 const EXPERIENCE_LEVELS = [
-  { value: "entry", label: "Entry Level" },
-  { value: "mid", label: "Mid Level" },
-  { value: "senior", label: "Senior" },
-  { value: "lead", label: "Lead / Principal" },
-];
+  { value: 'entry', label: 'Entry Level' },
+  { value: 'mid', label: 'Mid Level' },
+  { value: 'senior', label: 'Senior' },
+  { value: 'lead', label: 'Lead / Principal' },
+]
 
 type OpportunityData = {
-  _id?: Id<"opportunities">;
-  title: string;
-  organization: string;
-  organizationLogoUrl?: string;
-  location: string;
-  isRemote: boolean;
-  roleType: string;
-  experienceLevel?: string;
-  description: string;
-  requirements?: Array<string>;
-  salaryRange?: string;
-  deadline?: number;
-  sourceUrl: string;
-};
+  _id?: Id<'opportunities'>
+  title: string
+  organization: string
+  organizationLogoUrl?: string
+  location: string
+  isRemote: boolean
+  roleType: string
+  experienceLevel?: string
+  description: string
+  requirements?: Array<string>
+  salaryRange?: string
+  deadline?: number
+  sourceUrl: string
+}
 
 export function OpportunityForm({
   initialData,
   mode,
 }: {
-  initialData?: OpportunityData;
-  mode: "create" | "edit";
+  initialData?: OpportunityData
+  mode: 'create' | 'edit'
 }) {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const createMutationFn = useConvexMutation(api.admin.createOpportunity);
-  const { mutateAsync: createOpportunity, isPending: isCreating } = useMutation({
-    mutationFn: createMutationFn,
-  });
+  const createMutationFn = useConvexMutation(api.admin.createOpportunity)
+  const { mutateAsync: createOpportunity, isPending: isCreating } = useMutation(
+    {
+      mutationFn: createMutationFn,
+    },
+  )
 
-  const updateMutationFn = useConvexMutation(api.admin.updateOpportunity);
-  const { mutateAsync: updateOpportunity, isPending: isUpdating } = useMutation({
-    mutationFn: updateMutationFn,
-  });
+  const updateMutationFn = useConvexMutation(api.admin.updateOpportunity)
+  const { mutateAsync: updateOpportunity, isPending: isUpdating } = useMutation(
+    {
+      mutationFn: updateMutationFn,
+    },
+  )
 
   const [formData, setFormData] = useState({
-    title: initialData?.title || "",
-    organization: initialData?.organization || "",
-    organizationLogoUrl: initialData?.organizationLogoUrl || "",
-    location: initialData?.location || "",
+    title: initialData?.title || '',
+    organization: initialData?.organization || '',
+    organizationLogoUrl: initialData?.organizationLogoUrl || '',
+    location: initialData?.location || '',
     isRemote: initialData?.isRemote || false,
-    roleType: initialData?.roleType || "research",
-    experienceLevel: initialData?.experienceLevel || "",
-    description: initialData?.description || "",
-    requirementsText: initialData?.requirements?.join("\n") || "",
-    salaryRange: initialData?.salaryRange || "",
+    roleType: initialData?.roleType || 'research',
+    experienceLevel: initialData?.experienceLevel || '',
+    description: initialData?.description || '',
+    requirementsText: initialData?.requirements?.join('\n') || '',
+    salaryRange: initialData?.salaryRange || '',
     deadlineStr: initialData?.deadline
-      ? new Date(initialData.deadline).toISOString().split("T")[0]
-      : "",
-    sourceUrl: initialData?.sourceUrl || "",
-  });
+      ? new Date(initialData.deadline).toISOString().split('T')[0]
+      : '',
+    sourceUrl: initialData?.sourceUrl || '',
+  })
 
-  const isSubmitting = isCreating || isUpdating;
+  const isSubmitting = isCreating || isUpdating
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     try {
       const requirements = formData.requirementsText
-        .split("\n")
+        .split('\n')
         .map((r) => r.trim())
-        .filter(Boolean);
+        .filter(Boolean)
 
       const deadline = formData.deadlineStr
         ? new Date(formData.deadlineStr).getTime()
-        : undefined;
+        : undefined
 
       const data = {
         title: formData.title,
@@ -112,20 +117,20 @@ export function OpportunityForm({
         salaryRange: formData.salaryRange || undefined,
         deadline,
         sourceUrl: formData.sourceUrl,
-      };
-
-      if (mode === "create") {
-        await createOpportunity(data);
-      } else if (initialData?._id) {
-        await updateOpportunity({ id: initialData._id, ...data });
       }
 
-      navigate({ to: "/admin/opportunities" });
+      if (mode === 'create') {
+        await createOpportunity(data)
+      } else if (initialData?._id) {
+        await updateOpportunity({ id: initialData._id, ...data })
+      }
+
+      navigate({ to: '/admin/opportunities' })
     } catch (error) {
-      console.error("Error saving opportunity:", error);
-      alert("Failed to save opportunity");
+      console.error('Error saving opportunity:', error)
+      toast.error('Failed to save opportunity', { duration: Infinity })
     }
-  };
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
@@ -256,7 +261,9 @@ export function OpportunityForm({
           onChange={(e) =>
             setFormData({ ...formData, requirementsText: e.target.value })
           }
-          placeholder={"PhD in ML or equivalent\n3+ years experience\nStrong communication skills"}
+          placeholder={
+            'PhD in ML or equivalent\n3+ years experience\nStrong communication skills'
+          }
           rows={4}
         />
       </div>
@@ -303,19 +310,19 @@ export function OpportunityForm({
       <div className="flex gap-4">
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting
-            ? "Saving..."
-            : mode === "create"
-              ? "Create Opportunity"
-              : "Save Changes"}
+            ? 'Saving...'
+            : mode === 'create'
+              ? 'Create Opportunity'
+              : 'Save Changes'}
         </Button>
         <Button
           type="button"
           variant="outline"
-          onClick={() => navigate({ to: "/admin/opportunities" })}
+          onClick={() => navigate({ to: '/admin/opportunities' })}
         >
           Cancel
         </Button>
       </div>
     </form>
-  );
+  )
 }
