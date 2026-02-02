@@ -1,87 +1,80 @@
-import { useEffect } from "react";
-import { useMutation, useQuery } from "convex/react";
-import { ChevronLeft, ChevronRight, SkipForward } from "lucide-react";
-import { api } from "../../../../convex/_generated/api";
-import { WizardProgress } from "./WizardProgress";
-import { BasicInfoStep } from "./steps/BasicInfoStep";
-import { EducationStep } from "./steps/EducationStep";
-import { WorkHistoryStep } from "./steps/WorkHistoryStep";
-import { GoalsStep } from "./steps/GoalsStep";
-import { SkillsStep } from "./steps/SkillsStep";
-import { EnrichmentStep } from "./steps/EnrichmentStep";
-import { PrivacyStep } from "./steps/PrivacyStep";
-import { useAutoSave } from "./hooks/useAutoSave";
-import { Spinner } from "~/components/ui/spinner";
-import { Button } from "~/components/ui/button";
+import { useEffect } from 'react'
+import { useMutation, useQuery } from 'convex/react'
+import { ChevronLeft, ChevronRight, SkipForward } from 'lucide-react'
+import { api } from '../../../../convex/_generated/api'
+import { WizardProgress } from './WizardProgress'
+import { BasicInfoStep } from './steps/BasicInfoStep'
+import { EducationStep } from './steps/EducationStep'
+import { WorkHistoryStep } from './steps/WorkHistoryStep'
+import { GoalsStep } from './steps/GoalsStep'
+import { SkillsStep } from './steps/SkillsStep'
+import { EnrichmentStep } from './steps/EnrichmentStep'
+import { PrivacyStep } from './steps/PrivacyStep'
+import { useAutoSave } from './hooks/useAutoSave'
+import { Spinner } from '~/components/ui/spinner'
+import { Button } from '~/components/ui/button'
 
 type StepId =
-  | "basic"
-  | "education"
-  | "work"
-  | "goals"
-  | "skills"
-  | "enrichment"
-  | "privacy";
+  | 'basic'
+  | 'education'
+  | 'work'
+  | 'goals'
+  | 'skills'
+  | 'enrichment'
+  | 'privacy'
 
 interface ProfileWizardProps {
-  currentStep: StepId;
-  onStepChange: (step: StepId) => void;
-  fromExtraction?: boolean;
-  chatFirst?: boolean;
+  currentStep: StepId
+  onStepChange: (step: StepId) => void
+  fromExtraction?: boolean
+  chatFirst?: boolean
 }
 
 const STEPS: Array<StepId> = [
-  "basic",
-  "education",
-  "work",
-  "goals",
-  "skills",
-  "enrichment",
-  "privacy",
-];
+  'basic',
+  'education',
+  'work',
+  'goals',
+  'skills',
+  'enrichment',
+  'privacy',
+]
 
-// Step labels for reference (used in step navigation)
-const _STEP_LABELS: Record<StepId, string> = {
-  basic: "Basic Information",
-  education: "Education",
-  work: "Work History",
-  goals: "Career Goals",
-  skills: "Skills",
-  enrichment: "Profile Enrichment",
-  privacy: "Privacy Settings",
-};
-void _STEP_LABELS; // Mark as intentionally unused for now
-
-export function ProfileWizard({ currentStep, onStepChange, fromExtraction, chatFirst }: ProfileWizardProps) {
-  const profile = useQuery(api.profiles.getOrCreateProfile);
-  const createProfile = useMutation(api.profiles.create);
+export function ProfileWizard({
+  currentStep,
+  onStepChange,
+  fromExtraction,
+  chatFirst,
+}: ProfileWizardProps) {
+  const profile = useQuery(api.profiles.getOrCreateProfile)
+  const createProfile = useMutation(api.profiles.create)
 
   // Create profile if it doesn't exist
   useEffect(() => {
     if (profile === null) {
-      createProfile();
+      createProfile()
     }
-  }, [profile, createProfile]);
+  }, [profile, createProfile])
 
   const { saveField, saveFieldImmediate, isSaving, lastSaved } = useAutoSave(
-    profile?._id ?? null
-  );
+    profile?._id ?? null,
+  )
 
-  const currentIndex = STEPS.indexOf(currentStep);
-  const isFirstStep = currentIndex === 0;
-  const isLastStep = currentIndex === STEPS.length - 1;
+  const currentIndex = STEPS.indexOf(currentStep)
+  const isFirstStep = currentIndex === 0
+  const isLastStep = currentIndex === STEPS.length - 1
 
   const goToNextStep = () => {
     if (!isLastStep) {
-      onStepChange(STEPS[currentIndex + 1]);
+      onStepChange(STEPS[currentIndex + 1])
     }
-  };
+  }
 
   const goToPreviousStep = () => {
     if (!isFirstStep) {
-      onStepChange(STEPS[currentIndex - 1]);
+      onStepChange(STEPS[currentIndex - 1])
     }
-  };
+  }
 
   // Loading state
   if (profile === undefined) {
@@ -89,12 +82,12 @@ export function ProfileWizard({ currentStep, onStepChange, fromExtraction, chatF
       <div className="flex items-center justify-center min-h-[400px]">
         <Spinner />
       </div>
-    );
+    )
   }
 
   const renderCurrentStep = () => {
     switch (currentStep) {
-      case "basic":
+      case 'basic':
         return (
           <BasicInfoStep
             profile={profile}
@@ -102,8 +95,8 @@ export function ProfileWizard({ currentStep, onStepChange, fromExtraction, chatF
             isSaving={isSaving}
             lastSaved={lastSaved}
           />
-        );
-      case "education":
+        )
+      case 'education':
         return (
           <EducationStep
             profile={profile}
@@ -111,8 +104,8 @@ export function ProfileWizard({ currentStep, onStepChange, fromExtraction, chatF
             isSaving={isSaving}
             lastSaved={lastSaved}
           />
-        );
-      case "work":
+        )
+      case 'work':
         return (
           <WorkHistoryStep
             profile={profile}
@@ -120,8 +113,8 @@ export function ProfileWizard({ currentStep, onStepChange, fromExtraction, chatF
             isSaving={isSaving}
             lastSaved={lastSaved}
           />
-        );
-      case "goals":
+        )
+      case 'goals':
         return (
           <GoalsStep
             profile={profile}
@@ -130,8 +123,8 @@ export function ProfileWizard({ currentStep, onStepChange, fromExtraction, chatF
             isSaving={isSaving}
             lastSaved={lastSaved}
           />
-        );
-      case "skills":
+        )
+      case 'skills':
         return (
           <SkillsStep
             profile={profile}
@@ -139,10 +132,16 @@ export function ProfileWizard({ currentStep, onStepChange, fromExtraction, chatF
             isSaving={isSaving}
             lastSaved={lastSaved}
           />
-        );
-      case "enrichment":
-        return <EnrichmentStep profile={profile} fromExtraction={fromExtraction} chatFirst={chatFirst} />;
-      case "privacy":
+        )
+      case 'enrichment':
+        return (
+          <EnrichmentStep
+            profile={profile}
+            fromExtraction={fromExtraction}
+            chatFirst={chatFirst}
+          />
+        )
+      case 'privacy':
         return (
           <PrivacyStep
             profile={profile}
@@ -150,11 +149,11 @@ export function ProfileWizard({ currentStep, onStepChange, fromExtraction, chatF
             isSaving={isSaving}
             lastSaved={lastSaved}
           />
-        );
+        )
       default:
-        return null;
+        return null
     }
-  };
+  }
 
   return (
     <div className="flex flex-col md:flex-row md:gap-8">
@@ -189,10 +188,7 @@ export function ProfileWizard({ currentStep, onStepChange, fromExtraction, chatF
                   Skip for now
                 </Button>
 
-                <Button
-                  onClick={goToNextStep}
-                  className="min-h-11"
-                >
+                <Button onClick={goToNextStep} className="min-h-11">
                   Next
                   <ChevronRight className="size-4 ml-1" />
                 </Button>
@@ -202,5 +198,5 @@ export function ProfileWizard({ currentStep, onStepChange, fromExtraction, chatF
         </div>
       </div>
     </div>
-  );
+  )
 }
