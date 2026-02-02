@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
 import { query } from "./_generated/server";
+import { auth } from "./auth";
 
 // List active opportunities with optional filters
 export const list = query({
@@ -128,6 +129,16 @@ export const listAll = query({
     includeArchived: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
+    // Admin auth check (returns [] for unauthenticated/non-admin)
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return [];
+    const adminMembership = await ctx.db
+      .query("orgMemberships")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("role"), "admin"))
+      .first();
+    if (!adminMembership) return [];
+
     if (args.includeArchived) {
       return await ctx.db.query("opportunities").collect();
     }

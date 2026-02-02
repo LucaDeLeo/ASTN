@@ -185,12 +185,16 @@ export const updateField = mutation({
   },
 });
 
-// Get completeness status for profile
+/** @deprecated Use getMyCompleteness instead. This endpoint will be removed. */
 export const getCompleteness = query({
   args: { profileId: v.id("profiles") },
   handler: async (ctx, { profileId }) => {
+    // Auth + ownership check (returns null for unauthenticated/unauthorized)
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return null;
+
     const profile = await ctx.db.get("profiles", profileId);
-    if (!profile) {
+    if (!profile || profile.userId !== userId) {
       return null;
     }
 

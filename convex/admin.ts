@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "./_generated/server";
+import { requireAnyOrgAdmin } from "./lib/auth";
 
 // Create a new opportunity (manual entry)
 export const createOpportunity = mutation({
@@ -18,6 +19,8 @@ export const createOpportunity = mutation({
     sourceUrl: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireAnyOrgAdmin(ctx);
+
     const now = Date.now();
     const sourceId = `manual-${crypto.randomUUID()}`;
 
@@ -52,6 +55,8 @@ export const updateOpportunity = mutation({
     status: v.optional(v.union(v.literal("active"), v.literal("archived"))),
   },
   handler: async (ctx, args) => {
+    await requireAnyOrgAdmin(ctx);
+
     const { id, ...updates } = args;
 
     // Remove undefined values (runtime filter for optional args)
@@ -72,6 +77,7 @@ export const updateOpportunity = mutation({
 export const deleteOpportunity = mutation({
   args: { id: v.id("opportunities") },
   handler: async (ctx, args) => {
+    await requireAnyOrgAdmin(ctx);
     await ctx.db.delete("opportunities", args.id);
   },
 });
@@ -80,6 +86,7 @@ export const deleteOpportunity = mutation({
 export const archiveOpportunity = mutation({
   args: { id: v.id("opportunities") },
   handler: async (ctx, args) => {
+    await requireAnyOrgAdmin(ctx);
     await ctx.db.patch("opportunities", args.id, {
       status: "archived",
       updatedAt: Date.now(),
