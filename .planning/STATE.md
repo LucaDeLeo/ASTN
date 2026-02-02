@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-31)
 
 ## Current Position
 
-Phase: 27 of 29 (Critical Security) -- COMPLETE
-Plan: 3 of 3 in phase 27 (all complete)
-Status: Phase 27 complete, ready for Phase 28
-Last activity: 2026-02-02 — Completed 27-03-PLAN.md (LLM output validation and prompt injection defense)
+Phase: 28 of 29 (Quality Gates & Bug Fixes)
+Plan: 2 of 3 in phase 28
+Status: In progress
+Last activity: 2026-02-02 — Completed 28-02-PLAN.md (backend + frontend bug fixes)
 
-Progress: [███░░░░░░░] 33% of v1.4 (3/9 plans)
+Progress: [█████░░░░░] 56% of v1.4 (5/9 plans)
 
 ## Milestone History
 
@@ -29,8 +29,9 @@ Progress: [███░░░░░░░] 33% of v1.4 (3/9 plans)
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 86
-- v1.4 plans completed: 3
+
+- Total plans completed: 88
+- v1.4 plans completed: 5
 - Total execution time: ~20 hours (across all milestones)
 
 ## Pending Todos
@@ -47,30 +48,34 @@ Progress: [███░░░░░░░] 33% of v1.4 (3/9 plans)
 
 ## Decisions Made (v1.4)
 
-| Decision | Rationale | Phase |
-|----------|-----------|-------|
-| Defer Tauri/mobile native work | Focus on hardening before new platform work | - |
-| Skip Tauri-specific fixes (7.1-7.5) | Only relevant when mobile work resumes | - |
-| Security first, then CI, then polish | Exploitable vulns must close before anything else | 27-29 |
-| 3 phases for 37 requirements | Natural clustering by risk level and dependency | 27-29 |
-| requireAnyOrgAdmin for legacy admin endpoints | No orgId in frontend admin routes; verify any-org admin | 27-01 |
-| Queries return empty/null for unauthorized | Graceful degradation matches frontend fallback patterns | 27-01 |
-| Deprecate getCompleteness rather than remove | No frontend callers but safer to keep with auth gate | 27-01 |
-| Web Crypto API for PKCE (no new deps) | crypto.getRandomValues + crypto.subtle.digest available in browser and Tauri | 27-02 |
-| Tauri Store replaces module-level variables | Module vars lost on app kill; Store persists to disk | 27-02 |
-| Token exposure deferred to post-pilot | Per CONTEXT.md; focus on PKCE + allowlist first | 27-02 |
-| Shadow mode for Zod LLM validation | Log failures but never block operations; test against real outputs first | 27-03 |
-| Permissive schemas with .passthrough() | Allow extra fields and optional omissions to avoid false positives | 27-03 |
-| XML delimiter pattern for all LLM prompts | Structural separation of user data from system instructions | 27-03 |
-| Generic error messages for input limits | "Content too long to process" rather than revealing specific limits | 27-03 |
+| Decision                                                                   | Rationale                                                                    | Phase |
+| -------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ----- |
+| Defer Tauri/mobile native work                                             | Focus on hardening before new platform work                                  | -     |
+| Skip Tauri-specific fixes (7.1-7.5)                                        | Only relevant when mobile work resumes                                       | -     |
+| Security first, then CI, then polish                                       | Exploitable vulns must close before anything else                            | 27-29 |
+| 3 phases for 37 requirements                                               | Natural clustering by risk level and dependency                              | 27-29 |
+| requireAnyOrgAdmin for legacy admin endpoints                              | No orgId in frontend admin routes; verify any-org admin                      | 27-01 |
+| Queries return empty/null for unauthorized                                 | Graceful degradation matches frontend fallback patterns                      | 27-01 |
+| Deprecate getCompleteness rather than remove                               | No frontend callers but safer to keep with auth gate                         | 27-01 |
+| Web Crypto API for PKCE (no new deps)                                      | crypto.getRandomValues + crypto.subtle.digest available in browser and Tauri | 27-02 |
+| Tauri Store replaces module-level variables                                | Module vars lost on app kill; Store persists to disk                         | 27-02 |
+| Token exposure deferred to post-pilot                                      | Per CONTEXT.md; focus on PKCE + allowlist first                              | 27-02 |
+| Shadow mode for Zod LLM validation                                         | Log failures but never block operations; test against real outputs first     | 27-03 |
+| Permissive schemas with .passthrough()                                     | Allow extra fields and optional omissions to avoid false positives           | 27-03 |
+| XML delimiter pattern for all LLM prompts                                  | Structural separation of user data from system instructions                  | 27-03 |
+| Generic error messages for input limits                                    | "Content too long to process" rather than revealing specific limits          | 27-03 |
+| Deduplicate growth areas by normalized theme, rank by frequency, cap at 10 | Prevents unbounded growth while preserving most-mentioned items              | 28-02 |
+| getEffectiveLevel with Date.now() in queries                               | Real-time expiration checking instead of relying on batch compute            | 28-02 |
+| hasOverride also checks expiration                                         | UI should not show override indicators for expired overrides                 | 28-02 |
 
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Completed 27-03-PLAN.md (LLM output validation and prompt injection defense)
+Stopped at: Completed 28-02-PLAN.md (backend + frontend bug fixes)
 Resume file: None
-Next action: Begin Phase 28 (Important Security)
+Next action: Execute 28-03-PLAN.md
 
 ---
-*State initialized: 2026-01-17*
-*Last updated: 2026-02-02 — Completed 27-03 (LLM validation + prompt injection defense) -- Phase 27 complete*
+
+_State initialized: 2026-01-17_
+_Last updated: 2026-02-02 — Completed 28-02 (backend + frontend bug fixes)_
