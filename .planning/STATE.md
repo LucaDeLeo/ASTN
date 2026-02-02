@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-31)
 ## Current Position
 
 Phase: 28 of 29 (Quality Gates & Bug Fixes)
-Plan: 2 of 3 in phase 28
+Plan: 2 of 3 in phase 28 (28-01 and 28-02 complete)
 Status: In progress
-Last activity: 2026-02-02 — Completed 28-02-PLAN.md (backend + frontend bug fixes)
+Last activity: 2026-02-02 — Completed 28-01-PLAN.md (CI pipeline and developer experience)
 
-Progress: [█████░░░░░] 56% of v1.4 (5/9 plans)
+Progress: [██████░░░░] 67% of v1.4 (6/9 plans)
 
 ## Milestone History
 
@@ -30,8 +30,8 @@ Progress: [█████░░░░░] 56% of v1.4 (5/9 plans)
 
 **Velocity:**
 
-- Total plans completed: 88
-- v1.4 plans completed: 5
+- Total plans completed: 89
+- v1.4 plans completed: 6
 - Total execution time: ~20 hours (across all milestones)
 
 ## Pending Todos
@@ -67,15 +67,18 @@ Progress: [█████░░░░░] 56% of v1.4 (5/9 plans)
 | Deduplicate growth areas by normalized theme, rank by frequency, cap at 10 | Prevents unbounded growth while preserving most-mentioned items              | 28-02 |
 | getEffectiveLevel with Date.now() in queries                               | Real-time expiration checking instead of relying on batch compute            | 28-02 |
 | hasOverride also checks expiration                                         | UI should not show override indicators for expired overrides                 | 28-02 |
+| Remove --ext flag from eslint (flat config v9+)                            | Deprecated in eslint v9+; file patterns in eslint.config.mjs                | 28-01 |
+| Full typecheck in pre-commit hook                                          | TypeScript needs full project context; partial check misses cross-file errors| 28-01 |
+| Delete package-lock.json, standardize on bun.lock                          | Single lockfile avoids confusion; bun is the project package manager        | 28-01 |
 
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Completed 28-02-PLAN.md (backend + frontend bug fixes)
+Stopped at: Completed 28-01-PLAN.md (CI pipeline and developer experience)
 Resume file: None
-Next action: Execute 28-03-PLAN.md
+Next action: Execute 28-03-PLAN.md (final plan in phase 28)
 
 ---
 
 _State initialized: 2026-01-17_
-_Last updated: 2026-02-02 — Completed 28-02 (backend + frontend bug fixes)_
+_Last updated: 2026-02-02 — Completed 28-01 (CI pipeline and developer experience)_
