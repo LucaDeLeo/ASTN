@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-31)
 ## Current Position
 
 Phase: 27 of 29 (Critical Security)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-02-02 — Completed 27-01-PLAN.md (Auth hardening)
+Last activity: 2026-02-02 — Completed 27-02-PLAN.md (OAuth hardening with PKCE)
 
-Progress: [█░░░░░░░░░] 11% of v1.4 (1/9 plans)
+Progress: [██░░░░░░░░] 22% of v1.4 (2/9 plans)
 
 ## Milestone History
 
@@ -29,8 +29,8 @@ Progress: [█░░░░░░░░░] 11% of v1.4 (1/9 plans)
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 84
-- v1.4 plans completed: 1
+- Total plans completed: 85
+- v1.4 plans completed: 2
 - Total execution time: ~20 hours (across all milestones)
 
 ## Pending Todos
@@ -43,7 +43,6 @@ Progress: [█░░░░░░░░░] 11% of v1.4 (1/9 plans)
 ## Blockers/Concerns
 
 - Zod validation schemas must be tested against real LLM outputs before enforcing (shadow mode first)
-- Tauri Store persistence for PKCE code_verifier needs iOS cold-start testing
 - Auth migration must not break existing authenticated sessions (graceful errors, not exceptions)
 
 ## Decisions Made (v1.4)
@@ -57,14 +56,17 @@ Progress: [█░░░░░░░░░] 11% of v1.4 (1/9 plans)
 | requireAnyOrgAdmin for legacy admin endpoints | No orgId in frontend admin routes; verify any-org admin | 27-01 |
 | Queries return empty/null for unauthorized | Graceful degradation matches frontend fallback patterns | 27-01 |
 | Deprecate getCompleteness rather than remove | No frontend callers but safer to keep with auth gate | 27-01 |
+| Web Crypto API for PKCE (no new deps) | crypto.getRandomValues + crypto.subtle.digest available in browser and Tauri | 27-02 |
+| Tauri Store replaces module-level variables | Module vars lost on app kill; Store persists to disk | 27-02 |
+| Token exposure deferred to post-pilot | Per CONTEXT.md; focus on PKCE + allowlist first | 27-02 |
 
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Completed 27-01-PLAN.md (Auth hardening)
+Stopped at: Completed 27-02-PLAN.md (OAuth hardening with PKCE)
 Resume file: None
-Next action: Execute 27-02-PLAN.md (LLM output validation)
+Next action: Execute 27-03-PLAN.md (LLM output validation and prompt injection defense)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-02-02 — Completed 27-01 (Auth hardening)*
+*Last updated: 2026-02-02 — Completed 27-02 (OAuth hardening with PKCE)*
