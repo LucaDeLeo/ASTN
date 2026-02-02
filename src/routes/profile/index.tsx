@@ -1,7 +1,11 @@
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { AuthLoading, Authenticated, Unauthenticated, useQuery  } from "convex/react";
-import { format } from "date-fns";
-import { useEffect } from "react";
+import { Link, createFileRoute } from '@tanstack/react-router'
+import {
+  AuthLoading,
+  Authenticated,
+  Unauthenticated,
+  useQuery,
+} from 'convex/react'
+import { format } from 'date-fns'
 import {
   Briefcase,
   CalendarCheck,
@@ -11,37 +15,36 @@ import {
   MapPin,
   Target,
   User,
-} from "lucide-react";
-import { api } from "../../../convex/_generated/api";
-import { AuthHeader } from "~/components/layout/auth-header";
-import { GradientBg } from "~/components/layout/GradientBg";
-import { MobileShell } from "~/components/layout/mobile-shell";
-import { useIsMobile } from "~/hooks/use-media-query";
-import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
-import { Spinner } from "~/components/ui/spinner";
+} from 'lucide-react'
+import { api } from '../../../convex/_generated/api'
+import { UnauthenticatedRedirect } from '~/components/auth/unauthenticated-redirect'
+import { AuthHeader } from '~/components/layout/auth-header'
+import { GradientBg } from '~/components/layout/GradientBg'
+import { MobileShell } from '~/components/layout/mobile-shell'
+import { useIsMobile } from '~/hooks/use-media-query'
+import { Button } from '~/components/ui/button'
+import { Card } from '~/components/ui/card'
+import { Badge } from '~/components/ui/badge'
+import { Spinner } from '~/components/ui/spinner'
 
-export const Route = createFileRoute("/profile/")({
+export const Route = createFileRoute('/profile/')({
   component: ProfilePage,
-});
+})
 
 function ProfilePage() {
-  const isMobile = useIsMobile();
-  const currentUser = useQuery(api.profiles.getOrCreateProfile);
-  const user = currentUser ? { name: currentUser.name || "User" } : null;
+  const isMobile = useIsMobile()
+  const currentUser = useQuery(api.profiles.getOrCreateProfile)
+  const user = currentUser ? { name: currentUser.name || 'User' } : null
 
   const loadingContent = (
     <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">
       <Spinner />
     </div>
-  );
+  )
 
   const pageContent = (
     <>
-      <AuthLoading>
-        {loadingContent}
-      </AuthLoading>
+      <AuthLoading>{loadingContent}</AuthLoading>
       <Unauthenticated>
         <UnauthenticatedRedirect />
       </Unauthenticated>
@@ -49,16 +52,14 @@ function ProfilePage() {
         <ProfileContent />
       </Authenticated>
     </>
-  );
+  )
 
   if (isMobile) {
     return (
       <MobileShell user={user}>
-        <GradientBg variant="subtle">
-          {pageContent}
-        </GradientBg>
+        <GradientBg variant="subtle">{pageContent}</GradientBg>
       </MobileShell>
-    );
+    )
   }
 
   return (
@@ -66,32 +67,22 @@ function ProfilePage() {
       <AuthHeader />
       {pageContent}
     </GradientBg>
-  );
-}
-
-function UnauthenticatedRedirect() {
-  const navigate = useNavigate();
-  useEffect(() => {
-    navigate({ to: "/login" });
-  }, [navigate]);
-  return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">
-      <Spinner />
-    </div>
-  );
+  )
 }
 
 function ProfileContent() {
-  const profile = useQuery(api.profiles.getOrCreateProfile);
-  const completeness = useQuery(api.profiles.getMyCompleteness);
-  const attendanceSummary = useQuery(api.attendance.queries.getMyAttendanceSummary);
+  const profile = useQuery(api.profiles.getOrCreateProfile)
+  const completeness = useQuery(api.profiles.getMyCompleteness)
+  const attendanceSummary = useQuery(
+    api.attendance.queries.getMyAttendanceSummary,
+  )
 
   if (profile === undefined || completeness === undefined) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">
         <Spinner />
       </div>
-    );
+    )
   }
 
   // No profile yet - prompt to create
@@ -114,7 +105,7 @@ function ProfileContent() {
           </Button>
         </Card>
       </main>
-    );
+    )
   }
 
   return (
@@ -124,10 +115,12 @@ function ProfileContent() {
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
           <div className="min-w-0">
             <h1 className="text-xl sm:text-2xl font-display font-semibold text-foreground break-words">
-              {profile.name || "Your Profile"}
+              {profile.name || 'Your Profile'}
             </h1>
             {profile.headline && (
-              <p className="text-muted-foreground mt-1 break-words">{profile.headline}</p>
+              <p className="text-muted-foreground mt-1 break-words">
+                {profile.headline}
+              </p>
             )}
           </div>
           <Button asChild className="w-full sm:w-auto shrink-0">
@@ -196,7 +189,9 @@ function ProfileContent() {
           <Card className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <GraduationCap className="size-5 text-coral-400" />
-              <h2 className="text-lg font-display font-semibold text-foreground">Education</h2>
+              <h2 className="text-lg font-display font-semibold text-foreground">
+                Education
+              </h2>
             </div>
             {profile.education && profile.education.length > 0 ? (
               <div className="space-y-4">
@@ -204,13 +199,13 @@ function ProfileContent() {
                   <div key={index} className="border-l-2 border-slate-200 pl-4">
                     <p className="font-medium text-foreground">
                       {edu.degree && `${edu.degree} in `}
-                      {edu.field || "Unknown Field"}
+                      {edu.field || 'Unknown Field'}
                     </p>
                     <p className="text-slate-600">{edu.institution}</p>
                     <p className="text-sm text-slate-500">
                       {edu.startYear && edu.startYear}
-                      {edu.startYear && (edu.endYear || edu.current) && " - "}
-                      {edu.current ? "Present" : edu.endYear}
+                      {edu.startYear && (edu.endYear || edu.current) && ' - '}
+                      {edu.current ? 'Present' : edu.endYear}
                     </p>
                   </div>
                 ))}
@@ -236,22 +231,22 @@ function ProfileContent() {
                     <p className="text-slate-600">{work.organization}</p>
                     {work.startDate && (
                       <p className="text-sm text-slate-500">
-                        {new Date(work.startDate).toLocaleDateString("en-US", {
-                          month: "short",
-                          year: "numeric",
+                        {new Date(work.startDate).toLocaleDateString('en-US', {
+                          month: 'short',
+                          year: 'numeric',
                         })}
-                        {" - "}
+                        {' - '}
                         {work.current
-                          ? "Present"
+                          ? 'Present'
                           : work.endDate
                             ? new Date(work.endDate).toLocaleDateString(
-                                "en-US",
+                                'en-US',
                                 {
-                                  month: "short",
-                                  year: "numeric",
-                                }
+                                  month: 'short',
+                                  year: 'numeric',
+                                },
                               )
-                            : ""}
+                            : ''}
                       </p>
                     )}
                     {work.description && (
@@ -336,7 +331,7 @@ function ProfileContent() {
               <div className="space-y-4">
                 <p className="text-slate-600">
                   {attendanceSummary.attended} event
-                  {attendanceSummary.attended !== 1 ? "s" : ""} attended
+                  {attendanceSummary.attended !== 1 ? 's' : ''} attended
                 </p>
 
                 {attendanceSummary.recent.length > 0 && (
@@ -351,8 +346,8 @@ function ProfileContent() {
                             {record.event.title}
                           </p>
                           <p className="text-xs text-slate-500">
-                            {record.org?.name} &middot;{" "}
-                            {format(record.event.startAt, "MMM d, yyyy")}
+                            {record.org?.name} &middot;{' '}
+                            {format(record.event.startAt, 'MMM d, yyyy')}
                           </p>
                         </div>
                         <AttendanceStatusBadge status={record.status} />
@@ -374,38 +369,38 @@ function ProfileContent() {
         </div>
       </div>
     </main>
-  );
+  )
 }
 
 function AttendanceStatusBadge({
   status,
 }: {
-  status: "attended" | "partial" | "not_attended" | "unknown";
+  status: 'attended' | 'partial' | 'not_attended' | 'unknown'
 }) {
   switch (status) {
-    case "attended":
+    case 'attended':
       return (
         <Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-xs">
           Attended
         </Badge>
-      );
-    case "partial":
+      )
+    case 'partial':
       return (
         <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 text-xs">
           Partial
         </Badge>
-      );
-    case "not_attended":
+      )
+    case 'not_attended':
       return (
         <Badge variant="secondary" className="text-slate-500 text-xs">
           No
         </Badge>
-      );
-    case "unknown":
+      )
+    case 'unknown':
       return (
         <Badge variant="outline" className="text-slate-400 text-xs">
           Unknown
         </Badge>
-      );
+      )
   }
 }

@@ -1,11 +1,6 @@
-import {
-  Link,
-  Outlet,
-  createFileRoute,
-  useNavigate,
-} from '@tanstack/react-router'
-import { useEffect } from 'react'
+import { Link, Outlet, createFileRoute } from '@tanstack/react-router'
 import { AuthLoading, Authenticated, Unauthenticated } from 'convex/react'
+import { UnauthenticatedRedirect } from '~/components/auth/unauthenticated-redirect'
 import { Button } from '~/components/ui/button'
 import { Spinner } from '~/components/ui/spinner'
 import { useDotGridStyle } from '~/hooks/use-dot-grid-style'
@@ -23,7 +18,7 @@ function AdminLayout() {
         </div>
       </AuthLoading>
       <Unauthenticated>
-        <UnauthenticatedRedirect />
+        <UnauthenticatedRedirect fullScreen />
       </Unauthenticated>
       <Authenticated>
         <AdminContent />
@@ -66,18 +61,6 @@ function AdminContent() {
       <main className="container mx-auto px-4 py-8">
         <Outlet />
       </main>
-    </div>
-  )
-}
-
-function UnauthenticatedRedirect() {
-  const navigate = useNavigate()
-  useEffect(() => {
-    navigate({ to: '/login' })
-  }, [navigate])
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <Spinner />
     </div>
   )
 }

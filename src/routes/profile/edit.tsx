@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useEffect } from 'react'
 import { z } from 'zod'
 import { AuthLoading, Authenticated, Unauthenticated } from 'convex/react'
+import { UnauthenticatedRedirect } from '~/components/auth/unauthenticated-redirect'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { GradientBg } from '~/components/layout/GradientBg'
 import { ProfileCreationWizard } from '~/components/profile/wizard/ProfileCreationWizard'
@@ -46,18 +46,6 @@ function ProfileEditPage() {
         <AuthenticatedContent />
       </Authenticated>
     </GradientBg>
-  )
-}
-
-function UnauthenticatedRedirect() {
-  const navigate = useNavigate()
-  useEffect(() => {
-    navigate({ to: '/login' })
-  }, [navigate])
-  return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">
-      <Spinner />
-    </div>
   )
 }
 

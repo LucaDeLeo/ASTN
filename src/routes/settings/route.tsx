@@ -1,5 +1,4 @@
-import { Outlet, createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useEffect } from 'react'
+import { Outlet, createFileRoute } from '@tanstack/react-router'
 import {
   AuthLoading,
   Authenticated,
@@ -7,6 +6,7 @@ import {
   useQuery,
 } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
+import { UnauthenticatedRedirect } from '~/components/auth/unauthenticated-redirect'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { MobileShell } from '~/components/layout/mobile-shell'
 import { useIsMobile } from '~/hooks/use-media-query'
@@ -57,18 +57,6 @@ function SettingsLayout() {
       <Authenticated>
         <Outlet />
       </Authenticated>
-    </div>
-  )
-}
-
-function UnauthenticatedRedirect() {
-  const navigate = useNavigate()
-  useEffect(() => {
-    navigate({ to: '/login' })
-  }, [navigate])
-  return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">
-      <Spinner />
     </div>
   )
 }

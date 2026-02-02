@@ -1,4 +1,4 @@
-import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import {
   AuthLoading,
   Authenticated,
@@ -6,7 +6,6 @@ import {
   useQuery,
 } from 'convex/react'
 import { format } from 'date-fns'
-import { useEffect } from 'react'
 import {
   ArrowLeft,
   CalendarCheck,
@@ -16,6 +15,7 @@ import {
   Star,
 } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
+import { UnauthenticatedRedirect } from '~/components/auth/unauthenticated-redirect'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
@@ -41,18 +41,6 @@ function AttendanceHistoryPage() {
       <Authenticated>
         <AttendanceContent />
       </Authenticated>
-    </div>
-  )
-}
-
-function UnauthenticatedRedirect() {
-  const navigate = useNavigate()
-  useEffect(() => {
-    navigate({ to: '/login' })
-  }, [navigate])
-  return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">
-      <Spinner />
     </div>
   )
 }

@@ -136,9 +136,7 @@ export const computeMatchesForProfile = internalAction({
       for (const match of batchResult.matches) {
         const oppId = match.opportunityId as Id<'opportunities'>
         // Verify the opportunity exists in our batch
-        const validOpp = batch.find(
-          (o: (typeof batch)[number]) => o._id === oppId,
-        )
+        const validOpp = batch.find((o) => o._id === oppId)
         if (validOpp) {
           allMatches.push({
             ...match,
