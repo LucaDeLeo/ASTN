@@ -239,6 +239,16 @@ export const getNotificationPreferences = query({
   },
 });
 
+// Validate IANA timezone string using Intl.DateTimeFormat
+function isValidIANATimezone(tz: string): boolean {
+  try {
+    Intl.DateTimeFormat(undefined, { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // Update notification preferences for current user
 export const updateNotificationPreferences = mutation({
   args: {
@@ -252,8 +262,8 @@ export const updateNotificationPreferences = mutation({
       throw new Error("Not authenticated");
     }
 
-    // Basic IANA timezone validation (contains "/")
-    if (!timezone.includes("/")) {
+    // Validate IANA timezone using Intl.DateTimeFormat
+    if (!isValidIANATimezone(timezone)) {
       throw new Error("Invalid timezone format. Expected IANA timezone (e.g., America/New_York)");
     }
 
@@ -345,7 +355,7 @@ function convertDateString(dateStr?: string): number | undefined {
   const year = parseInt(parts[0], 10);
   const month = parseInt(parts[1], 10);
   if (isNaN(year) || isNaN(month)) return undefined;
-  return new Date(year, month - 1, 1).getTime();
+  return Date.UTC(year, month - 1, 1);
 }
 
 // Apply extracted profile data from resume/CV
