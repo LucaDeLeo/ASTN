@@ -5,7 +5,7 @@ import { ConvexQueryClient } from '@convex-dev/react-query'
 import { ConvexAuthProvider } from '@convex-dev/auth/react'
 import { routeTree } from './routeTree.gen'
 import { isTauri } from '~/lib/platform'
-import { initDeepLinkAuth, setConvexClient, exchangeOAuthCode } from '~/lib/tauri/auth'
+import { exchangeOAuthCode, initDeepLinkAuth, setConvexClient } from '~/lib/tauri/auth'
 
 export function getRouter() {
   const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!

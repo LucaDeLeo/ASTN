@@ -10,10 +10,10 @@ import {
   buildEngagementContext,
   classifyEngagementTool,
 } from "./prompts";
+import { engagementResultSchema } from "./validation";
 import type { Id } from "../_generated/dataModel";
 import type { ActionCtx } from "../_generated/server";
 import type { EngagementResult, EngagementSignals } from "./prompts";
-import { engagementResultSchema } from "./validation";
 
 const MODEL_VERSION = "claude-haiku-4-5-20251001";
 

@@ -1,6 +1,7 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AuthLoading, Authenticated, Unauthenticated, useQuery  } from "convex/react";
 import { format } from "date-fns";
+import { useEffect } from "react";
 import {
   Briefcase,
   CalendarCheck,
@@ -70,7 +71,9 @@ function ProfilePage() {
 
 function UnauthenticatedRedirect() {
   const navigate = useNavigate();
-  navigate({ to: "/login" });
+  useEffect(() => {
+    navigate({ to: "/login" });
+  }, [navigate]);
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">
       <Spinner />
