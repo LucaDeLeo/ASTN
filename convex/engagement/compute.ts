@@ -1,65 +1,68 @@
-"use node";
+'use node'
 
-import { v } from "convex/values";
-import Anthropic from "@anthropic-ai/sdk";
-import { internalAction } from "../_generated/server";
-import { internal } from "../_generated/api";
+import { v } from 'convex/values'
+import Anthropic from '@anthropic-ai/sdk'
+import { internalAction } from '../_generated/server'
+import { internal } from '../_generated/api'
+import { log } from '../lib/logging'
 import {
   DEFAULT_THRESHOLDS,
   ENGAGEMENT_SYSTEM_PROMPT,
   buildEngagementContext,
   classifyEngagementTool,
-} from "./prompts";
-import { engagementResultSchema } from "./validation";
-import type { Id } from "../_generated/dataModel";
-import type { ActionCtx } from "../_generated/server";
-import type { EngagementResult, EngagementSignals } from "./prompts";
+} from './prompts'
+import { engagementResultSchema } from './validation'
+import type { Id } from '../_generated/dataModel'
+import type { ActionCtx } from '../_generated/server'
+import type { EngagementResult, EngagementSignals } from './prompts'
 
-const MODEL_VERSION = "claude-haiku-4-5-20251001";
+const MODEL_VERSION = 'claude-haiku-4-5-20251001'
 
 // Helper: Gather engagement signals for a member
 async function getEngagementSignals(
   ctx: ActionCtx,
   userId: string,
-  orgId: Id<"organizations">,
+  orgId: Id<'organizations'>,
   joinedAt: number,
-  profileUpdatedAt?: number
+  profileUpdatedAt?: number,
 ): Promise<EngagementSignals> {
-  const now = Date.now();
-  const ninetyDaysAgo = now - 90 * 24 * 60 * 60 * 1000;
+  const now = Date.now()
+  const ninetyDaysAgo = now - 90 * 24 * 60 * 60 * 1000
 
   // Get attendance records for this user in this org
   // We need to query attendance table via internal query
   const attendanceData = await ctx.runQuery(
     internal.engagement.queries.getAttendanceForEngagement,
-    { userId, orgId }
-  );
+    { userId, orgId },
+  )
 
   // Count attended/partial in last 90 days
   const attended90d = attendanceData.filter(
     (a: { status: string; respondedAt?: number; createdAt: number }) =>
-      (a.status === "attended" || a.status === "partial") &&
-      (a.respondedAt ?? a.createdAt) >= ninetyDaysAgo
-  ).length;
+      (a.status === 'attended' || a.status === 'partial') &&
+      (a.respondedAt ?? a.createdAt) >= ninetyDaysAgo,
+  ).length
 
   // Find last attendance
   const attendedRecords = attendanceData.filter(
-    (a: { status: string }) => a.status === "attended" || a.status === "partial"
-  );
-  const lastAttendance = attendedRecords.length > 0
-    ? Math.max(
-        ...attendedRecords.map(
-          (a: { respondedAt?: number; createdAt: number }) =>
-            a.respondedAt ?? a.createdAt
+    (a: { status: string }) =>
+      a.status === 'attended' || a.status === 'partial',
+  )
+  const lastAttendance =
+    attendedRecords.length > 0
+      ? Math.max(
+          ...attendedRecords.map(
+            (a: { respondedAt?: number; createdAt: number }) =>
+              a.respondedAt ?? a.createdAt,
+          ),
         )
-      )
-    : undefined;
+      : undefined
 
   // Get event views count (proxy for RSVPs) in last 90 days
   const eventViewsCount = await ctx.runQuery(
     internal.engagement.queries.getEventViewsCount,
-    { userId, orgId, since: ninetyDaysAgo }
-  );
+    { userId, orgId, since: ninetyDaysAgo },
+  )
 
   return {
     eventsAttended90d: attended90d,
@@ -67,12 +70,12 @@ async function getEngagementSignals(
     rsvpCount90d: eventViewsCount,
     profileUpdatedAt,
     joinedAt,
-  };
+  }
 }
 
 // Small delay to avoid rate limiting
 function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 /**
@@ -81,14 +84,15 @@ function delay(ms: number): Promise<void> {
 export const computeMemberEngagement = internalAction({
   args: {
     userId: v.string(),
-    orgId: v.id("organizations"),
+    orgId: v.id('organizations'),
     orgName: v.string(),
     memberName: v.string(),
     joinedAt: v.number(),
     profileUpdatedAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const { userId, orgId, orgName, memberName, joinedAt, profileUpdatedAt } = args;
+    const { userId, orgId, orgName, memberName, joinedAt, profileUpdatedAt } =
+      args
 
     // Gather signals
     const signals = await getEngagementSignals(
@@ -96,90 +100,94 @@ export const computeMemberEngagement = internalAction({
       userId,
       orgId,
       joinedAt,
-      profileUpdatedAt
-    );
+      profileUpdatedAt,
+    )
 
     // Build context
     const context = buildEngagementContext(
       orgName,
       memberName,
       signals,
-      DEFAULT_THRESHOLDS
-    );
+      DEFAULT_THRESHOLDS,
+    )
 
     // Call Claude with forced tool_choice
-    const anthropic = new Anthropic();
+    const anthropic = new Anthropic()
     const response = await anthropic.messages.create({
       model: MODEL_VERSION,
       max_tokens: 500,
       tools: [classifyEngagementTool],
-      tool_choice: { type: "tool", name: "classify_engagement" },
+      tool_choice: { type: 'tool', name: 'classify_engagement' },
       system: ENGAGEMENT_SYSTEM_PROMPT,
       messages: [
         {
-          role: "user",
+          role: 'user',
           content: `${context}\n\nClassify this member's engagement level and provide explanations.`,
         },
       ],
-    });
+    })
 
     // Extract tool use result
-    const toolUse = response.content.find((block) => block.type === "tool_use");
+    const toolUse = response.content.find((block) => block.type === 'tool_use')
     if (!toolUse) {
-      throw new Error("No tool use in LLM response");
+      throw new Error('No tool use in LLM response')
     }
 
-    const parseResult = engagementResultSchema.safeParse(toolUse.input);
+    const parseResult = engagementResultSchema.safeParse(toolUse.input)
     if (!parseResult.success) {
-      console.error(
-        "[LLM_VALIDATION_FAIL] engagement",
-        args.memberName,
-        JSON.stringify(parseResult.error.issues)
-      );
+      log('error', 'LLM validation failed for engagement', {
+        member: args.memberName,
+        issues: parseResult.error.issues,
+      })
     }
-    const result = (parseResult.success ? parseResult.data : toolUse.input) as EngagementResult;
+    const result = (
+      parseResult.success ? parseResult.data : toolUse.input
+    ) as EngagementResult
 
     return {
       level: result.level,
       adminExplanation: result.adminExplanation,
       userExplanation: result.userExplanation,
       signals,
-    };
+    }
   },
-});
+})
 
 /**
  * Compute engagement for all members in an org
  */
 export const computeOrgEngagement = internalAction({
-  args: { orgId: v.id("organizations") },
+  args: { orgId: v.id('organizations') },
   handler: async (ctx, { orgId }) => {
     // Get org details
     const org = await ctx.runQuery(internal.engagement.queries.getOrgById, {
       orgId,
-    });
+    })
     if (!org) {
-      console.log(`Org ${orgId} not found, skipping`);
-      return { processed: 0 };
+      log('warn', 'Org not found, skipping', { orgId })
+      return { processed: 0 }
     }
 
     // Get members needing computation
     const members = await ctx.runQuery(
       internal.engagement.queries.getOrgMembersForEngagement,
-      { orgId, onlyStale: true }
-    );
+      { orgId, onlyStale: true },
+    )
 
-    console.log(`Processing ${members.length} members for org ${org.name}`);
+    log('info', 'Processing members for org engagement', {
+      orgName: org.name,
+      memberCount: members.length,
+    })
 
-    let processed = 0;
-    const now = Date.now();
+    let processed = 0
+    const now = Date.now()
 
     for (const member of members) {
       // Check if member has unexpired override
       const existingEngagement = await ctx.runQuery(
         internal.engagement.queries.getMemberEngagementInternal,
-        { userId: member.userId, orgId }
-      );
+        { userId: member.userId, orgId },
+      )
 
       if (existingEngagement?.override) {
         // Check if override has expired
@@ -190,15 +198,15 @@ export const computeOrgEngagement = internalAction({
           // Clear expired override
           await ctx.runMutation(
             internal.engagement.mutations.clearExpiredOverride,
-            { engagementId: existingEngagement._id }
-          );
+            { engagementId: existingEngagement._id },
+          )
           // Continue to recompute
         } else {
           // Override is still active, skip recomputation
-          console.log(
-            `Skipping ${member.profileName} - has active override`
-          );
-          continue;
+          log('info', 'Skipping member with active override', {
+            member: member.profileName,
+          })
+          continue
         }
       }
 
@@ -213,8 +221,8 @@ export const computeOrgEngagement = internalAction({
             memberName: member.profileName,
             joinedAt: member.joinedAt,
             profileUpdatedAt: member.profileUpdatedAt,
-          }
-        );
+          },
+        )
 
         // Save result
         await ctx.runMutation(
@@ -227,27 +235,28 @@ export const computeOrgEngagement = internalAction({
             userExplanation: result.userExplanation,
             signals: result.signals,
             modelVersion: MODEL_VERSION,
-          }
-        );
+          },
+        )
 
-        processed++;
-        console.log(
-          `Classified ${member.profileName} as ${result.level}`
-        );
+        processed++
+        log('info', 'Classified member engagement', {
+          member: member.profileName,
+          level: result.level,
+        })
       } catch (error) {
-        console.error(
-          `Error computing engagement for ${member.profileName}:`,
-          error
-        );
+        log('error', 'Error computing engagement for member', {
+          member: member.profileName,
+          error: String(error),
+        })
       }
 
       // Rate limiting: 100ms between calls
-      await delay(100);
+      await delay(100)
     }
 
-    return { processed };
+    return { processed }
   },
-});
+})
 
 /**
  * Run engagement batch for all orgs
@@ -255,31 +264,34 @@ export const computeOrgEngagement = internalAction({
  */
 export const runEngagementBatch = internalAction({
   args: {},
-  handler: async (ctx): Promise<{ totalProcessed: number; orgCount: number }> => {
-    console.log("Starting daily engagement batch computation");
+  handler: async (
+    ctx,
+  ): Promise<{ totalProcessed: number; orgCount: number }> => {
+    log('info', 'Starting daily engagement batch computation')
 
     // Get all active orgs
-    const orgs: Array<{ _id: Id<"organizations">; name: string }> =
-      await ctx.runQuery(internal.engagement.queries.getActiveOrgs);
-    console.log(`Found ${orgs.length} active orgs`);
+    const orgs: Array<{ _id: Id<'organizations'>; name: string }> =
+      await ctx.runQuery(internal.engagement.queries.getActiveOrgs)
+    log('info', 'Found active orgs for engagement', { orgCount: orgs.length })
 
-    let totalProcessed = 0;
+    let totalProcessed = 0
 
     for (const org of orgs) {
       const result: { processed: number } = await ctx.runAction(
         internal.engagement.compute.computeOrgEngagement,
-        { orgId: org._id }
-      );
-      totalProcessed += result.processed;
+        { orgId: org._id },
+      )
+      totalProcessed += result.processed
 
       // Small delay between orgs
-      await delay(500);
+      await delay(500)
     }
 
-    console.log(
-      `Engagement batch complete. Processed ${totalProcessed} members across ${orgs.length} orgs`
-    );
+    log('info', 'Engagement batch complete', {
+      totalProcessed,
+      orgCount: orgs.length,
+    })
 
-    return { totalProcessed, orgCount: orgs.length };
+    return { totalProcessed, orgCount: orgs.length }
   },
-});
+})
