@@ -15,10 +15,10 @@ Make the existing app efficient at database scale, keyboard/screen-reader access
 
 ### N+1 resolution strategy
 
-- Query batching approach (single query vs two-pass) is Claude's discretion based on Convex-idiomatic patterns
-- Anthropic API rate limiting during matching: queue and retry with exponential backoff — all matches must eventually complete, no partial runs
+- Default to two-pass pattern: collect all IDs up front → batch `ctx.db.get()` with `Promise.all` → build a Map for O(1) lookup. Replace `.filter()` on user IDs with `ctx.db.get()` (cast `userId as Id<"users">` — schema uses `v.string()` but values are valid user IDs). Claude's discretion on single-query vs two-pass per specific case, but two-pass is the default.
+- Anthropic API rate limiting during matching: queue and retry with exponential backoff — all matches must eventually complete, no partial runs. Must use **chained scheduled actions** (`ctx.scheduler.runAfter()`) instead of a single long-running action loop — Convex actions have a 10-minute timeout and backoff retries can stack up. Each batch saves progress via mutation before scheduling the next.
 - Events query pagination: simple limit + "Load more" button (not cursor-based infinite scroll — pilot scale doesn't need it)
-- Add basic slow-query logging alongside the N+1 fixes (use the structured logging from Phase 28)
+- Add performance logging alongside the N+1 fixes: log **read counts per query execution** and **action wall-clock time** (not query latency — Convex queries are reactive/cached). Use the structured logging utility from Phase 28 (convex/lib/logging.ts).
 
 ### Keyboard navigation scope
 
@@ -43,7 +43,7 @@ Make the existing app efficient at database scale, keyboard/screen-reader access
 
 ### Claude's Discretion
 
-- N+1 resolution approach (single query vs two-pass batching) — whatever is Convex-idiomatic
+- N+1 resolution approach — two-pass is the default, but Claude may use single-query where it's simpler (e.g., `Promise.all` with `ctx.db.get()` for small known sets)
 - Drag-and-drop keyboard alternative (arrow keys vs up/down buttons)
 - Font-display heading granularity (which heading levels get it)
 - GradientBg injection pattern (per-page opt-in vs route-level wrapper)
@@ -54,9 +54,9 @@ Make the existing app efficient at database scale, keyboard/screen-reader access
 ## Specific Ideas
 
 - Password checklist should show each rule with a visual check/X indicator, updating in real-time as the user types
-- Rate limiting for Anthropic API should guarantee completion — queue everything, retry with backoff, never leave a matching run half-done
+- Rate limiting for Anthropic API should guarantee completion — queue everything, retry with backoff, never leave a matching run half-done. Use chained scheduled actions so each batch is its own action invocation (avoids 10-min timeout).
 - "Load more" for events is sufficient at pilot scale (50-100 profiles)
-- Slow-query logging should use the structured logging utility built in Phase 28 (convex/lib/logging.ts)
+- Performance logging should track read counts and action duration, not query latency. Use structured logging from Phase 28 (convex/lib/logging.ts).
 
 </specifics>
 
