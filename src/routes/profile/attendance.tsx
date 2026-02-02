@@ -1,6 +1,12 @@
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { AuthLoading, Authenticated, Unauthenticated, useQuery } from "convex/react";
-import { format } from "date-fns";
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
+import {
+  AuthLoading,
+  Authenticated,
+  Unauthenticated,
+  useQuery,
+} from 'convex/react'
+import { format } from 'date-fns'
+import { useEffect } from 'react'
 import {
   ArrowLeft,
   CalendarCheck,
@@ -8,17 +14,17 @@ import {
   MessageSquare,
   Monitor,
   Star,
-} from "lucide-react";
-import { api } from "../../../convex/_generated/api";
-import { AuthHeader } from "~/components/layout/auth-header";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
-import { Spinner } from "~/components/ui/spinner";
+} from 'lucide-react'
+import { api } from '../../../convex/_generated/api'
+import { AuthHeader } from '~/components/layout/auth-header'
+import { Badge } from '~/components/ui/badge'
+import { Button } from '~/components/ui/button'
+import { Card } from '~/components/ui/card'
+import { Spinner } from '~/components/ui/spinner'
 
-export const Route = createFileRoute("/profile/attendance")({
+export const Route = createFileRoute('/profile/attendance')({
   component: AttendanceHistoryPage,
-});
+})
 
 function AttendanceHistoryPage() {
   return (
@@ -36,30 +42,32 @@ function AttendanceHistoryPage() {
         <AttendanceContent />
       </Authenticated>
     </div>
-  );
+  )
 }
 
 function UnauthenticatedRedirect() {
-  const navigate = useNavigate();
-  navigate({ to: "/login" });
+  const navigate = useNavigate()
+  useEffect(() => {
+    navigate({ to: '/login' })
+  }, [navigate])
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">
       <Spinner />
     </div>
-  );
+  )
 }
 
 function AttendanceContent() {
   const attendance = useQuery(api.attendance.queries.getMyAttendanceHistory, {
     limit: 50,
-  });
+  })
 
   if (attendance === undefined) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">
         <Spinner />
       </div>
-    );
+    )
   }
 
   return (
@@ -110,11 +118,8 @@ function AttendanceContent() {
         {attendance.length > 0 && (
           <div className="mt-8 text-center text-sm text-slate-500">
             <p>
-              Your attendance visibility is controlled in{" "}
-              <Link
-                to="/settings"
-                className="text-primary hover:underline"
-              >
+              Your attendance visibility is controlled in{' '}
+              <Link to="/settings" className="text-primary hover:underline">
                 Settings
               </Link>
               . The hosting organization always sees attendance at their events.
@@ -123,12 +128,14 @@ function AttendanceContent() {
         )}
       </div>
     </main>
-  );
+  )
 }
 
 type AttendanceRecord = NonNullable<
-  ReturnType<typeof useQuery<typeof api.attendance.queries.getMyAttendanceHistory>>
->[number];
+  ReturnType<
+    typeof useQuery<typeof api.attendance.queries.getMyAttendanceHistory>
+  >
+>[number]
 
 function AttendanceCard({ record }: { record: AttendanceRecord }) {
   return (
@@ -145,7 +152,7 @@ function AttendanceCard({ record }: { record: AttendanceRecord }) {
 
           {/* Event details */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-slate-600">
-            <span>{format(record.event.startAt, "EEE, MMM d, yyyy")}</span>
+            <span>{format(record.event.startAt, 'EEE, MMM d, yyyy')}</span>
             <span className="flex items-center gap-1">
               {record.event.isVirtual ? (
                 <>
@@ -155,7 +162,7 @@ function AttendanceCard({ record }: { record: AttendanceRecord }) {
               ) : (
                 <>
                   <MapPin className="size-3.5" />
-                  {record.event.location || "In person"}
+                  {record.event.location || 'In person'}
                 </>
               )}
             </span>
@@ -171,8 +178,8 @@ function AttendanceCard({ record }: { record: AttendanceRecord }) {
                       key={star}
                       className={`size-4 ${
                         star <= record.feedbackRating!
-                          ? "fill-amber-400 text-amber-400"
-                          : "text-slate-200"
+                          ? 'fill-amber-400 text-amber-400'
+                          : 'text-slate-200'
                       }`}
                     />
                   ))}
@@ -194,38 +201,38 @@ function AttendanceCard({ record }: { record: AttendanceRecord }) {
         <StatusBadge status={record.status} />
       </div>
     </Card>
-  );
+  )
 }
 
 function StatusBadge({
   status,
 }: {
-  status: "attended" | "partial" | "not_attended" | "unknown";
+  status: 'attended' | 'partial' | 'not_attended' | 'unknown'
 }) {
   switch (status) {
-    case "attended":
+    case 'attended':
       return (
         <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
           Attended
         </Badge>
-      );
-    case "partial":
+      )
+    case 'partial':
       return (
         <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">
           Partial
         </Badge>
-      );
-    case "not_attended":
+      )
+    case 'not_attended':
       return (
         <Badge variant="secondary" className="text-slate-500">
           Did not attend
         </Badge>
-      );
-    case "unknown":
+      )
+    case 'unknown':
       return (
         <Badge variant="outline" className="text-slate-400">
           Unknown
         </Badge>
-      );
+      )
   }
 }
