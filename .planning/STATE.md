@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-31)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** Phase 27 — Critical Security (v1.4 Hardening)
+**Current focus:** Phase 28 — Important Security (v1.4 Hardening)
 
 ## Current Position
 
-Phase: 27 of 29 (Critical Security)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-02-02 — Completed 27-02-PLAN.md (OAuth hardening with PKCE)
+Phase: 27 of 29 (Critical Security) -- COMPLETE
+Plan: 3 of 3 in phase 27 (all complete)
+Status: Phase 27 complete, ready for Phase 28
+Last activity: 2026-02-02 — Completed 27-03-PLAN.md (LLM output validation and prompt injection defense)
 
-Progress: [██░░░░░░░░] 22% of v1.4 (2/9 plans)
+Progress: [███░░░░░░░] 33% of v1.4 (3/9 plans)
 
 ## Milestone History
 
@@ -29,8 +29,8 @@ Progress: [██░░░░░░░░] 22% of v1.4 (2/9 plans)
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 85
-- v1.4 plans completed: 2
+- Total plans completed: 86
+- v1.4 plans completed: 3
 - Total execution time: ~20 hours (across all milestones)
 
 ## Pending Todos
@@ -59,14 +59,18 @@ Progress: [██░░░░░░░░] 22% of v1.4 (2/9 plans)
 | Web Crypto API for PKCE (no new deps) | crypto.getRandomValues + crypto.subtle.digest available in browser and Tauri | 27-02 |
 | Tauri Store replaces module-level variables | Module vars lost on app kill; Store persists to disk | 27-02 |
 | Token exposure deferred to post-pilot | Per CONTEXT.md; focus on PKCE + allowlist first | 27-02 |
+| Shadow mode for Zod LLM validation | Log failures but never block operations; test against real outputs first | 27-03 |
+| Permissive schemas with .passthrough() | Allow extra fields and optional omissions to avoid false positives | 27-03 |
+| XML delimiter pattern for all LLM prompts | Structural separation of user data from system instructions | 27-03 |
+| Generic error messages for input limits | "Content too long to process" rather than revealing specific limits | 27-03 |
 
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Completed 27-02-PLAN.md (OAuth hardening with PKCE)
+Stopped at: Completed 27-03-PLAN.md (LLM output validation and prompt injection defense)
 Resume file: None
-Next action: Execute 27-03-PLAN.md (LLM output validation and prompt injection defense)
+Next action: Begin Phase 28 (Important Security)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-02-02 — Completed 27-02 (OAuth hardening with PKCE)*
+*Last updated: 2026-02-02 — Completed 27-03 (LLM validation + prompt injection defense) -- Phase 27 complete*
