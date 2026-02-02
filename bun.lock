@@ -57,6 +57,7 @@
         "sonner": "^2.0.7",
         "string-similarity-js": "^2.1.4",
         "tailwind-merge": "^3.4.0",
+        "zod": "^3.25",
       },
       "devDependencies": {
         "@convex-dev/eslint-plugin": "^1.1.1",
