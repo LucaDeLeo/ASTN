@@ -5,6 +5,18 @@ import { auth } from "../auth";
 import type { Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
 
+// Get the effective engagement level, checking override expiration.
+// If an override exists but has expired, falls back to the computed level.
+function getEffectiveLevel(engagement: { level: string; override?: { level: string; expiresAt?: number; notes?: string } }): string {
+  if (engagement.override) {
+    if (engagement.override.expiresAt && engagement.override.expiresAt < Date.now()) {
+      return engagement.level;
+    }
+    return engagement.override.level;
+  }
+  return engagement.level;
+}
+
 /**
  * Get all organizations with at least one member
  * Used by engagement batch job to iterate through orgs
@@ -106,13 +118,13 @@ export const getMemberEngagement = query({
 
     if (!engagement) return null;
 
-    // For users, return the effective level (override or computed)
+    // For users, return the effective level (override or computed, checking expiration)
     // and the user-friendly explanation
     return {
-      level: engagement.override?.level || engagement.level,
+      level: getEffectiveLevel(engagement),
       explanation: engagement.userExplanation,
       computedAt: engagement.computedAt,
-      hasOverride: !!engagement.override,
+      hasOverride: !!engagement.override && !(engagement.override.expiresAt && engagement.override.expiresAt < Date.now()),
     };
   },
 });
@@ -163,10 +175,10 @@ export const getOrgEngagementForAdmin = query({
     return engagementRecords.map((e) => ({
       _id: e._id,
       userId: e.userId,
-      level: e.override?.level || e.level,
+      level: getEffectiveLevel(e),
       computedLevel: e.level,
       adminExplanation: e.adminExplanation,
-      hasOverride: !!e.override,
+      hasOverride: !!e.override && !(e.override.expiresAt && e.override.expiresAt < Date.now()),
       overrideNotes: e.override?.notes,
     }));
   },
@@ -200,7 +212,7 @@ export const getMemberEngagementForAdmin = query({
 
     return {
       ...engagement,
-      effectiveLevel: engagement.override?.level || engagement.level,
+      effectiveLevel: getEffectiveLevel(engagement),
       overrideHistory,
     };
   },
