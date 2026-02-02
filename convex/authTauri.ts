@@ -6,31 +6,55 @@ import { action } from "./_generated/server";
 import { v } from "convex/values";
 
 /**
+ * Allowed redirect URIs for OAuth code exchange.
+ * Prevents open redirect attacks by rejecting any URI not in this list.
+ */
+const ALLOWED_REDIRECT_URIS = [
+  "astn://auth/callback", // Tauri mobile deep link
+  // Web callback URLs added via env var for flexibility
+];
+
+/**
  * Exchange OAuth authorization code for tokens (Tauri mobile flow)
  *
  * This handles the code exchange that @convex-dev/auth normally does
  * internally for web flows. For Tauri deep links, we need to do it manually.
+ *
+ * // TODO: Post-pilot - stop returning raw tokens to client, handle session server-side
  */
 export const exchangeOAuthCode = action({
   args: {
     code: v.string(),
     provider: v.union(v.literal("github"), v.literal("google")),
     redirectUri: v.string(),
+    codeVerifier: v.optional(v.string()),
   },
   handler: async (_ctx, args) => {
-    const { code, provider, redirectUri } = args;
+    const { code, provider, redirectUri, codeVerifier } = args;
+
+    // Validate redirectUri against allowlist
+    const webRedirectUri = process.env.AUTH_REDIRECT_URI_WEB;
+    const allowedUris = [...ALLOWED_REDIRECT_URIS];
+    if (webRedirectUri) allowedUris.push(webRedirectUri);
+    if (!allowedUris.includes(redirectUri)) {
+      throw new Error("Invalid redirect URI");
+    }
 
     if (provider === "github") {
-      return exchangeGitHubCode(code, redirectUri);
+      return exchangeGitHubCode(code, redirectUri, codeVerifier);
     } else if (provider === "google") {
-      return exchangeGoogleCode(code, redirectUri);
+      return exchangeGoogleCode(code, redirectUri, codeVerifier);
     }
 
     throw new Error(`Unsupported provider: ${provider}`);
   },
 });
 
-async function exchangeGitHubCode(code: string, redirectUri: string) {
+async function exchangeGitHubCode(
+  code: string,
+  redirectUri: string,
+  codeVerifier?: string
+) {
   // Use mobile-specific OAuth app for Tauri deep links
   const isMobile = redirectUri.startsWith("astn://");
   const clientId = isMobile
@@ -46,18 +70,23 @@ async function exchangeGitHubCode(code: string, redirectUri: string) {
     );
   }
 
+  const body: Record<string, string> = {
+    client_id: clientId,
+    client_secret: clientSecret,
+    code,
+    redirect_uri: redirectUri,
+  };
+  if (codeVerifier) {
+    body.code_verifier = codeVerifier;
+  }
+
   const response = await fetch("https://github.com/login/oauth/access_token", {
     method: "POST",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      client_id: clientId,
-      client_secret: clientSecret,
-      code,
-      redirect_uri: redirectUri,
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
@@ -115,7 +144,11 @@ async function exchangeGitHubCode(code: string, redirectUri: string) {
   };
 }
 
-async function exchangeGoogleCode(code: string, redirectUri: string) {
+async function exchangeGoogleCode(
+  code: string,
+  redirectUri: string,
+  codeVerifier?: string
+) {
   const clientId = process.env.AUTH_GOOGLE_ID;
   const clientSecret = process.env.AUTH_GOOGLE_SECRET;
 
@@ -123,18 +156,23 @@ async function exchangeGoogleCode(code: string, redirectUri: string) {
     throw new Error("Google OAuth credentials not configured");
   }
 
+  const params: Record<string, string> = {
+    client_id: clientId,
+    client_secret: clientSecret,
+    code,
+    redirect_uri: redirectUri,
+    grant_type: "authorization_code",
+  };
+  if (codeVerifier) {
+    params.code_verifier = codeVerifier;
+  }
+
   const response = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
     },
-    body: new URLSearchParams({
-      client_id: clientId,
-      client_secret: clientSecret,
-      code,
-      redirect_uri: redirectUri,
-      grant_type: "authorization_code",
-    }),
+    body: new URLSearchParams(params),
   });
 
   if (!response.ok) {
