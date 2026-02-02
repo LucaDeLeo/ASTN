@@ -1,20 +1,90 @@
 // src/lib/tauri/auth.ts
 // Deep link OAuth handler for Tauri mobile apps
+// With PKCE (S256), state validation, and persistent Tauri Store
 
 import { isTauri } from '../platform'
 import { api } from '../../../convex/_generated/api'
 import type { ConvexReactClient } from 'convex/react'
 
+// ── PKCE Helpers (Web Crypto API, no external deps) ──────────────────────
+
+function base64UrlEncode(bytes: Uint8Array): string {
+  const base64 = btoa(String.fromCharCode(...bytes))
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+export function generateCodeVerifier(): string {
+  const array = new Uint8Array(32)
+  crypto.getRandomValues(array)
+  return base64UrlEncode(array)
+}
+
+export async function generateCodeChallenge(verifier: string): Promise<string> {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(verifier)
+  const hash = await crypto.subtle.digest('SHA-256', data)
+  return base64UrlEncode(new Uint8Array(hash))
+}
+
+// ── PKCE Tauri Store Persistence ─────────────────────────────────────────
+
+interface PKCEData {
+  codeVerifier: string
+  state: string
+  provider: 'github' | 'google'
+  timestamp: number
+}
+
+const PKCE_TTL_MS = 5 * 60 * 1000 // 5 minutes
+
+export async function storePKCEData(
+  data: Omit<PKCEData, 'timestamp'>
+): Promise<void> {
+  const { Store } = await import('@tauri-apps/plugin-store')
+  const store = await Store.load('oauth.json')
+  await store.set('pkce', { ...data, timestamp: Date.now() })
+  await store.save()
+}
+
+export async function getPKCEData(): Promise<PKCEData | null> {
+  try {
+    const { Store } = await import('@tauri-apps/plugin-store')
+    const store = await Store.load('oauth.json')
+    const data = await store.get<PKCEData>('pkce')
+    if (!data) return null
+    // Expire after TTL
+    if (Date.now() - data.timestamp > PKCE_TTL_MS) {
+      await store.delete('pkce')
+      await store.save()
+      return null
+    }
+    return data
+  } catch {
+    return null
+  }
+}
+
+export async function clearPKCEData(): Promise<void> {
+  try {
+    const { Store } = await import('@tauri-apps/plugin-store')
+    const store = await Store.load('oauth.json')
+    await store.delete('pkce')
+    await store.save()
+  } catch {
+    // Ignore cleanup errors
+  }
+}
+
+// ── Auth Callback Types ──────────────────────────────────────────────────
+
 type AuthCallback = (params: {
   code: string
   state: string
   provider: 'github' | 'google'
+  codeVerifier?: string
 }) => void
 
 let authCallbackHandler: AuthCallback | null = null
-
-// Provider tracking - store which provider the OAuth flow was started with
-let pendingOAuthProvider: 'github' | 'google' | null = null
 
 // Convex client reference for OAuth code exchange
 let convexClient: ConvexReactClient | null = null
@@ -42,13 +112,13 @@ export async function initDeepLinkAuth(onCallback: AuthCallback): Promise<void> 
     // Check if app was launched via deep link (cold start)
     const startUrls = await getCurrent()
     if (startUrls && startUrls.length > 0) {
-      handleDeepLinkUrl(startUrls[0])
+      await handleDeepLinkUrl(startUrls[0])
     }
 
     // Listen for deep links while app is running (warm start)
-    await onOpenUrl((urls) => {
+    await onOpenUrl(async (urls) => {
       if (urls.length > 0) {
-        handleDeepLinkUrl(urls[0])
+        await handleDeepLinkUrl(urls[0])
       }
     })
   } catch (error) {
@@ -57,9 +127,9 @@ export async function initDeepLinkAuth(onCallback: AuthCallback): Promise<void> 
 }
 
 /**
- * Parse deep link URL and trigger auth callback
+ * Parse deep link URL, validate state from PKCE store, and trigger auth callback
  */
-function handleDeepLinkUrl(url: string): void {
+async function handleDeepLinkUrl(url: string): Promise<void> {
   if (!authCallbackHandler) {
     console.warn('Deep link received but no auth callback registered')
     return
@@ -70,7 +140,6 @@ function handleDeepLinkUrl(url: string): void {
 
     // Expected format: astn://auth/callback?code=xxx&state=xxx
     if (parsed.hostname !== 'auth' || parsed.pathname !== '/callback') {
-      console.log('Deep link not an auth callback:', url)
       return
     }
 
@@ -82,22 +151,31 @@ function handleDeepLinkUrl(url: string): void {
       return
     }
 
-    // Determine provider from tracked pending OAuth provider
-    const provider = determineProvider()
+    // Retrieve PKCE data from Tauri Store (persistent across app kill)
+    const storedData = await getPKCEData()
+    if (!storedData) {
+      console.error('No PKCE data found (expired or missing)')
+      return
+    }
 
-    authCallbackHandler({ code, state, provider })
+    // Validate state parameter to prevent CSRF
+    if (storedData.state !== state) {
+      console.error('OAuth state mismatch')
+      return
+    }
+
+    authCallbackHandler({
+      code,
+      state,
+      provider: storedData.provider,
+      codeVerifier: storedData.codeVerifier,
+    })
+
+    // Clean up PKCE data after successful callback dispatch
+    await clearPKCEData()
   } catch (error) {
     console.error('Failed to parse auth deep link:', error)
   }
-}
-
-export function setPendingOAuthProvider(provider: 'github' | 'google'): void {
-  pendingOAuthProvider = provider
-}
-
-function determineProvider(): 'github' | 'google' {
-  // Return the tracked provider, defaulting to github
-  return pendingOAuthProvider || 'github'
 }
 
 /**
@@ -128,7 +206,6 @@ export async function openOAuthInBrowser(url: string): Promise<void> {
     // Use Tauri opener plugin - works on iOS/Android to open URLs in system browser
     const { openUrl } = await import('@tauri-apps/plugin-opener')
     await openUrl(url)
-    console.log('[OAuth] Opened URL with opener plugin')
   } catch (error) {
     console.error('[OAuth] Failed to open with opener plugin:', error)
     // Fallback: try window.open
@@ -160,7 +237,8 @@ export type OAuthExchangeResult =
 export async function exchangeOAuthCode(
   code: string,
   _state: string,
-  provider: 'github' | 'google'
+  provider: 'github' | 'google',
+  codeVerifier?: string
 ): Promise<OAuthExchangeResult> {
   if (!convexClient) {
     return { success: false, error: 'Convex client not initialized' }
@@ -173,11 +251,8 @@ export async function exchangeOAuthCode(
       code,
       provider,
       redirectUri,
+      codeVerifier,
     })
-
-    // Store the OAuth result for use with @convex-dev/auth
-    // The signIn function from useAuthActions can accept OAuth tokens
-    console.log('OAuth exchange successful:', result.user.email)
 
     // Return the result - the caller (router.tsx) will complete the sign-in
     return { success: true, ...result }

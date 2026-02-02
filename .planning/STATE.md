@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-31)
 ## Current Position
 
 Phase: 27 of 29 (Critical Security)
-Plan: 0 of 3 in current phase
-Status: Ready to plan
-Last activity: 2026-01-31 — v1.4 roadmap created (phases 27-29)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-02-02 — Completed 27-01-PLAN.md (Auth hardening)
 
-Progress: [░░░░░░░░░░] 0% of v1.4 (0/9 plans)
+Progress: [█░░░░░░░░░] 11% of v1.4 (1/9 plans)
 
 ## Milestone History
 
@@ -29,8 +29,8 @@ Progress: [░░░░░░░░░░] 0% of v1.4 (0/9 plans)
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 83
-- v1.4 plans completed: 0
+- Total plans completed: 84
+- v1.4 plans completed: 1
 - Total execution time: ~20 hours (across all milestones)
 
 ## Pending Todos
@@ -54,14 +54,17 @@ Progress: [░░░░░░░░░░] 0% of v1.4 (0/9 plans)
 | Skip Tauri-specific fixes (7.1-7.5) | Only relevant when mobile work resumes | - |
 | Security first, then CI, then polish | Exploitable vulns must close before anything else | 27-29 |
 | 3 phases for 37 requirements | Natural clustering by risk level and dependency | 27-29 |
+| requireAnyOrgAdmin for legacy admin endpoints | No orgId in frontend admin routes; verify any-org admin | 27-01 |
+| Queries return empty/null for unauthorized | Graceful degradation matches frontend fallback patterns | 27-01 |
+| Deprecate getCompleteness rather than remove | No frontend callers but safer to keep with auth gate | 27-01 |
 
 ## Session Continuity
 
-Last session: 2026-01-31
-Stopped at: v1.4 roadmap created with 3 phases (27-29), 9 plans
+Last session: 2026-02-02
+Stopped at: Completed 27-01-PLAN.md (Auth hardening)
 Resume file: None
-Next action: Plan Phase 27 (Critical Security)
+Next action: Execute 27-02-PLAN.md (LLM output validation)
 
 ---
 *State initialized: 2026-01-17*
-*Last updated: 2026-01-31 — v1.4 roadmap created*
+*Last updated: 2026-02-02 — Completed 27-01 (Auth hardening)*

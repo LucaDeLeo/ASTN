@@ -2,7 +2,9 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { Button } from "~/components/ui/button";
 import { isTauri } from "~/lib/platform";
 import {
-  setPendingOAuthProvider,
+  generateCodeVerifier,
+  generateCodeChallenge,
+  storePKCEData,
   openOAuthInBrowser,
   getOAuthRedirectUrl,
 } from "~/lib/tauri/auth";
@@ -31,15 +33,22 @@ export function OAuthButtons() {
 
   const handleGoogleSignIn = async () => {
     if (isTauri()) {
-      setPendingOAuthProvider("google");
       const redirectUri = encodeURIComponent(getOAuthRedirectUrl());
       const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
       if (!clientId) {
         console.error("VITE_GOOGLE_CLIENT_ID not set");
         return;
       }
+
+      // Generate PKCE challenge and state
+      const codeVerifier = generateCodeVerifier();
+      const codeChallenge = await generateCodeChallenge(codeVerifier);
       const state = crypto.randomUUID();
-      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&state=${state}&scope=openid%20email%20profile`;
+
+      // Persist to Tauri Store (survives app kill)
+      await storePKCEData({ codeVerifier, state, provider: "google" });
+
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&state=${state}&scope=openid%20email%20profile&code_challenge=${codeChallenge}&code_challenge_method=S256`;
       await openOAuthInBrowser(authUrl);
     } else {
       await signIn("google");
@@ -47,22 +56,25 @@ export function OAuthButtons() {
   };
 
   const handleGitHubSignIn = async () => {
-    console.log("[OAuth] GitHub button clicked, isTauri:", isTauri());
     if (isTauri()) {
-      setPendingOAuthProvider("github");
       const redirectUri = encodeURIComponent(getOAuthRedirectUrl());
       // Use mobile-specific OAuth app with astn:// callback
       const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID_MOBILE;
-      console.log("[OAuth] Mobile client ID:", clientId ? "set" : "NOT SET");
       if (!clientId) {
         console.error("VITE_GITHUB_CLIENT_ID_MOBILE not set");
         return;
       }
+
+      // Generate PKCE challenge and state
+      const codeVerifier = generateCodeVerifier();
+      const codeChallenge = await generateCodeChallenge(codeVerifier);
       const state = crypto.randomUUID();
-      const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=read:user,user:email`;
-      console.log("[OAuth] Opening URL:", authUrl);
+
+      // Persist to Tauri Store (survives app kill)
+      await storePKCEData({ codeVerifier, state, provider: "github" });
+
+      const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=read:user,user:email&code_challenge=${codeChallenge}&code_challenge_method=S256`;
       await openOAuthInBrowser(authUrl);
-      console.log("[OAuth] openOAuthInBrowser completed");
     } else {
       await signIn("github");
     }

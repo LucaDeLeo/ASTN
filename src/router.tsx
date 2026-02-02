@@ -31,16 +31,14 @@ export function getRouter() {
     setConvexClient(convexQueryClient.convexClient)
 
     // Initialize deep link auth listener
-    initDeepLinkAuth(async ({ code, state, provider }) => {
-      console.log('OAuth callback received:', { code, state, provider })
-
+    // The callback now receives codeVerifier from PKCE store via handleDeepLinkUrl
+    initDeepLinkAuth(async ({ code, state, provider, codeVerifier }) => {
       try {
-        // Exchange the code for tokens via Convex action
-        const result = await exchangeOAuthCode(code, state, provider)
+        // Exchange the code for tokens via Convex action, passing codeVerifier for PKCE
+        const result = await exchangeOAuthCode(code, state, provider, codeVerifier)
 
         if (result.success) {
           // Navigate to profile or intended destination
-          console.log('OAuth login successful:', result.user.email)
           // Note: This exchanges the code for user info, but doesn't create
           // a Convex auth session. The checkpoint will test if this works
           // with @convex-dev/auth or if we need custom session handling.
