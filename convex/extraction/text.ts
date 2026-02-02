@@ -7,6 +7,8 @@ import { internal } from "../_generated/api";
 import { matchSkillsToTaxonomy } from "./skills";
 import { EXTRACTION_SYSTEM_PROMPT, extractProfileTool } from "./prompts";
 import type { ExtractionResult } from "./prompts";
+import { documentExtractionResultSchema } from "./validation";
+import { FIELD_LIMITS } from "../lib/limits";
 
 const MODEL_VERSION = "claude-haiku-4-5-20251001";
 const MAX_RETRIES = 3;
@@ -17,6 +19,11 @@ export const extractFromText = action({
     profileId: v.optional(v.id("profiles")), // Optional: link to profile for context
   },
   handler: async (ctx, { text }) => {
+    // Input length limit
+    if (text.length > FIELD_LIMITS.documentText) {
+      throw new Error("Content too long to process");
+    }
+
     // 1. Extract with retry
     const extractedData = await extractWithRetry(text);
 
@@ -52,7 +59,7 @@ async function extractWithRetry(text: string): Promise<ExtractionResult> {
         messages: [
           {
             role: "user",
-            content: `Extract the profile information from this resume/CV text:\n\n${text}`,
+            content: `Extract the profile information from this resume/CV:\n\n<document_content>\n${text}\n</document_content>`,
           },
         ],
       });
@@ -62,7 +69,15 @@ async function extractWithRetry(text: string): Promise<ExtractionResult> {
         throw new Error("No tool use in Claude response");
       }
 
-      return (toolUse as { type: "tool_use"; input: unknown }).input as ExtractionResult;
+      const rawInput = (toolUse as { type: "tool_use"; input: unknown }).input;
+      const parseResult = documentExtractionResultSchema.safeParse(rawInput);
+      if (!parseResult.success) {
+        console.error(
+          "[LLM_VALIDATION_FAIL] text extraction",
+          JSON.stringify(parseResult.error.issues)
+        );
+      }
+      return (parseResult.success ? parseResult.data : rawInput) as ExtractionResult;
     } catch (error) {
       lastError = error as Error;
       if (attempt < MAX_RETRIES - 1) {

@@ -12,6 +12,7 @@ import {
   matchOpportunitiesTool
 } from "./prompts";
 import type {MatchingResult} from "./prompts";
+import { matchResultSchema } from "./validation";
 import type { Id } from "../_generated/dataModel";
 
 const MODEL_VERSION = "claude-haiku-4-5-20251001";
@@ -67,7 +68,7 @@ export const computeMatchesForProfile = internalAction({
         system: MATCHING_SYSTEM_PROMPT,
         messages: [{
           role: "user",
-          content: `${profileContext}\n\n---\n\n${opportunitiesContext}\n\nScore all opportunities for this candidate. Include only opportunities with tier great, good, or exploring - skip any that have no reasonable fit.`
+          content: `${profileContext}\n\n${opportunitiesContext}\n\nScore all opportunities for this candidate. Include only opportunities with tier great, good, or exploring - skip any that have no reasonable fit.`
         }]
       });
 
@@ -78,9 +79,16 @@ export const computeMatchesForProfile = internalAction({
         continue;
       }
 
-      const batchResult = toolUse.input as MatchingResult;
+      const parseResult = matchResultSchema.safeParse(toolUse.input);
+      if (!parseResult.success) {
+        console.error(
+          "[LLM_VALIDATION_FAIL] matching batch", i,
+          JSON.stringify(parseResult.error.issues)
+        );
+      }
+      const batchResult = (parseResult.success ? parseResult.data : toolUse.input) as MatchingResult;
 
-      // Validate response structure
+      // Validate response structure (fallback check)
       if (!Array.isArray(batchResult.matches)) {
         console.error("Invalid tool response - missing or invalid matches array for batch", i);
         continue;

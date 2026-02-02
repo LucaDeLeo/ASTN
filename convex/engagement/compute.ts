@@ -13,6 +13,7 @@ import {
 import type { Id } from "../_generated/dataModel";
 import type { ActionCtx } from "../_generated/server";
 import type { EngagementResult, EngagementSignals } from "./prompts";
+import { engagementResultSchema } from "./validation";
 
 const MODEL_VERSION = "claude-haiku-4-5-20251001";
 
@@ -128,7 +129,15 @@ export const computeMemberEngagement = internalAction({
       throw new Error("No tool use in LLM response");
     }
 
-    const result = toolUse.input as EngagementResult;
+    const parseResult = engagementResultSchema.safeParse(toolUse.input);
+    if (!parseResult.success) {
+      console.error(
+        "[LLM_VALIDATION_FAIL] engagement",
+        args.memberName,
+        JSON.stringify(parseResult.error.issues)
+      );
+    }
+    const result = (parseResult.success ? parseResult.data : toolUse.input) as EngagementResult;
 
     return {
       level: result.level,
