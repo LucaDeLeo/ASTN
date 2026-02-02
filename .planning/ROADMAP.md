@@ -53,12 +53,12 @@ Plans:
   3. Growth areas from multi-batch matching runs are aggregated (not overwritten) -- user sees all growth areas across all matched opportunities
   4. Navigation-during-render warnings are eliminated -- redirect components use useEffect for router.navigate calls
   5. Error messages shown to users are toast notifications (not browser alert() dialogs), and server-side errors use structured logging (not console.log)
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 28-01: CI pipeline and developer experience (GitHub Actions workflow, husky + lint-staged, .env.example, dual lockfile cleanup)
-- [ ] 28-02: Bug fixes (growth area aggregation, Date.UTC conversion, navigation useEffect wrapping, engagement override expiration, org membership first-member race condition)
-- [ ] 28-03: Code quality cleanup (test route removal, dead code, alert-to-toast, error handling standardization, timezone IANA validation)
+- [ ] 28-01-PLAN.md -- CI pipeline and developer experience (GitHub Actions workflow, husky + lint-staged, .env.example, dual lockfile cleanup)
+- [ ] 28-02-PLAN.md -- Bug fixes and data correctness (growth area aggregation, Date.UTC conversion, navigation useEffect wrapping, engagement override expiration, IANA timezone validation)
+- [ ] 28-03-PLAN.md -- Code quality cleanup (test route removal, dead code, alert-to-toast, structured logging standardization)
 
 #### Phase 29: Performance, Accessibility & Polish
 **Goal**: Database queries are efficient at scale, interactive elements are keyboard-accessible with proper ARIA attributes, and v1.3 visual treatment covers all remaining pages
