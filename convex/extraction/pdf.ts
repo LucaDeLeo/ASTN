@@ -6,8 +6,8 @@ import { action } from "../_generated/server";
 import { internal } from "../_generated/api";
 import { matchSkillsToTaxonomy } from "./skills";
 import { EXTRACTION_SYSTEM_PROMPT, extractProfileTool } from "./prompts";
-import type { ExtractionResult } from "./prompts";
 import { documentExtractionResultSchema } from "./validation";
+import type { ExtractionResult } from "./prompts";
 
 const MODEL_VERSION = "claude-haiku-4-5-20251001";
 const MAX_RETRIES = 3;

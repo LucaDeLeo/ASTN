@@ -2,8 +2,8 @@
 // convex/authTauri.ts
 // OAuth code exchange for Tauri mobile deep links
 
-import { action } from "./_generated/server";
 import { v } from "convex/values";
+import { action } from "./_generated/server";
 
 /**
  * Allowed redirect URIs for OAuth code exchange.
@@ -42,11 +42,9 @@ export const exchangeOAuthCode = action({
 
     if (provider === "github") {
       return exchangeGitHubCode(code, redirectUri, codeVerifier);
-    } else if (provider === "google") {
-      return exchangeGoogleCode(code, redirectUri, codeVerifier);
     }
 
-    throw new Error(`Unsupported provider: ${provider}`);
+    return exchangeGoogleCode(code, redirectUri, codeVerifier);
   },
 });
 

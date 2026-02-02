@@ -2,11 +2,11 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { Button } from "~/components/ui/button";
 import { isTauri } from "~/lib/platform";
 import {
-  generateCodeVerifier,
   generateCodeChallenge,
-  storePKCEData,
-  openOAuthInBrowser,
+  generateCodeVerifier,
   getOAuthRedirectUrl,
+  openOAuthInBrowser,
+  storePKCEData,
 } from "~/lib/tauri/auth";
 
 function GoogleIcon({ className }: { className?: string }) {

@@ -1,5 +1,5 @@
 import { auth } from "../auth";
-import type { QueryCtx, MutationCtx, ActionCtx } from "../_generated/server";
+import type { ActionCtx, MutationCtx, QueryCtx } from "../_generated/server";
 
 /**
  * Require the current user to be authenticated.

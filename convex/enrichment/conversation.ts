@@ -82,29 +82,29 @@ export const sendMessage = action({
 
     // Build context string from profile
     const contextParts: Array<string> = [];
-    if (profile?.name) contextParts.push(`Name: ${profile.name}`);
-    if (profile?.location) contextParts.push(`Location: ${profile.location}`);
-    if (profile?.headline) contextParts.push(`Headline: ${profile.headline}`);
-    if (profile?.skills && profile.skills.length > 0) {
+    if (profile.name) contextParts.push(`Name: ${profile.name}`);
+    if (profile.location) contextParts.push(`Location: ${profile.location}`);
+    if (profile.headline) contextParts.push(`Headline: ${profile.headline}`);
+    if (profile.skills && profile.skills.length > 0) {
       contextParts.push(`Skills: ${profile.skills.join(", ")}`);
     }
-    if (profile?.careerGoals) {
+    if (profile.careerGoals) {
       contextParts.push(`Career Goals: ${profile.careerGoals}`);
     }
-    if (profile?.aiSafetyInterests && profile.aiSafetyInterests.length > 0) {
+    if (profile.aiSafetyInterests && profile.aiSafetyInterests.length > 0) {
       contextParts.push(
         `AI Safety Interests: ${profile.aiSafetyInterests.join(", ")}`
       );
     }
     // Include work history summary
-    if (profile?.workHistory && profile.workHistory.length > 0) {
+    if (profile.workHistory && profile.workHistory.length > 0) {
       const workSummary = profile.workHistory
         .map((w: { title: string; organization: string }) => `${w.title} at ${w.organization}`)
         .join("; ");
       contextParts.push(`Work History: ${workSummary}`);
     }
     // Include education summary
-    if (profile?.education && profile.education.length > 0) {
+    if (profile.education && profile.education.length > 0) {
       const eduSummary = profile.education
         .map((e: { degree?: string; field?: string; institution: string }) =>
           e.degree ? `${e.degree}${e.field ? ` in ${e.field}` : ""} at ${e.institution}` : e.institution
