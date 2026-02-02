@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery, query } from "../_generated/server";
+import { auth } from "../auth";
 
 // Get messages for a profile (internal query)
 export const getMessages = internalQuery({
@@ -16,6 +17,12 @@ export const getMessages = internalQuery({
 export const getMessagesPublic = query({
   args: { profileId: v.id("profiles") },
   handler: async (ctx, { profileId }) => {
+    // Auth + ownership check (returns [] for unauthenticated/unauthorized)
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return [];
+    const profile = await ctx.db.get("profiles", profileId);
+    if (!profile || profile.userId !== userId) return [];
+
     return await ctx.db
       .query("enrichmentMessages")
       .withIndex("by_profile", (q) => q.eq("profileId", profileId))

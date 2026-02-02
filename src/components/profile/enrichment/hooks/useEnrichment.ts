@@ -85,7 +85,7 @@ export function useEnrichment(profileId: Id<"profiles"> | null) {
         content: m.content,
       }));
 
-      const result = await extractAction({ messages: conversationMessages });
+      const result = await extractAction({ profileId: profileId!, messages: conversationMessages });
 
       // Transform extraction result into items with status
       const items: Array<ExtractionItem> = [];

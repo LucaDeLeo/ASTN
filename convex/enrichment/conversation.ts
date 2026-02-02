@@ -4,6 +4,7 @@ import { v } from "convex/values";
 import Anthropic from "@anthropic-ai/sdk";
 import { action } from "../_generated/server";
 import { internal } from "../_generated/api";
+import { requireAuth } from "../lib/auth";
 
 // Career coach system prompt
 const CAREER_COACH_PROMPT = `You are a friendly career coach helping someone build their AI safety career profile.
@@ -52,6 +53,9 @@ export const sendMessage = action({
     ctx,
     { profileId, message }
   ): Promise<{ message: string; shouldExtract: boolean }> => {
+    // Auth check
+    const userId = await requireAuth(ctx);
+
     // Get existing conversation (from queries.ts)
     const messages: Array<EnrichmentMessage> = await ctx.runQuery(
       internal.enrichment.queries.getMessages,
@@ -63,6 +67,11 @@ export const sendMessage = action({
       internal.enrichment.queries.getProfileInternal,
       { profileId }
     );
+
+    // Ownership check
+    if (!profile || profile.userId !== userId) {
+      throw new Error("Not authorized");
+    }
 
     // Build context string from profile
     const contextParts: Array<string> = [];

@@ -41,6 +41,7 @@ import type * as extraction_queries from "../extraction/queries.js";
 import type * as extraction_skills from "../extraction/skills.js";
 import type * as extraction_text from "../extraction/text.js";
 import type * as http from "../http.js";
+import type * as lib_auth from "../lib/auth.js";
 import type * as matches from "../matches.js";
 import type * as matching_compute from "../matching/compute.js";
 import type * as matching_mutations from "../matching/mutations.js";
@@ -104,6 +105,7 @@ declare const fullApi: ApiFromModules<{
   "extraction/skills": typeof extraction_skills;
   "extraction/text": typeof extraction_text;
   http: typeof http;
+  "lib/auth": typeof lib_auth;
   matches: typeof matches;
   "matching/compute": typeof matching_compute;
   "matching/mutations": typeof matching_mutations;

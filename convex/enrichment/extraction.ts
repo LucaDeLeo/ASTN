@@ -3,6 +3,8 @@
 import { v } from "convex/values";
 import Anthropic from "@anthropic-ai/sdk";
 import { action } from "../_generated/server";
+import { internal } from "../_generated/api";
+import { requireAuth } from "../lib/auth";
 
 // Tool definition for profile extraction
 const profileExtractionTool: Anthropic.Tool = {
@@ -51,6 +53,7 @@ export interface ExtractionResult {
 // Extract structured data from conversation
 export const extractFromConversation = action({
   args: {
+    profileId: v.id("profiles"),
     messages: v.array(
       v.object({
         role: v.union(v.literal("user"), v.literal("assistant")),
@@ -58,7 +61,17 @@ export const extractFromConversation = action({
       })
     ),
   },
-  handler: async (_, { messages }): Promise<ExtractionResult> => {
+  handler: async (ctx, { profileId, messages }): Promise<ExtractionResult> => {
+    // Auth + ownership check
+    const userId = await requireAuth(ctx);
+    const profile = await ctx.runQuery(
+      internal.enrichment.queries.getProfileInternal,
+      { profileId }
+    );
+    if (!profile || profile.userId !== userId) {
+      throw new Error("Not authorized");
+    }
+
     const anthropic = new Anthropic();
 
     const response = await anthropic.messages.create({
