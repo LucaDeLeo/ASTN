@@ -9,26 +9,26 @@ Requirements for security hardening, bug fixes, and code quality improvements id
 
 ### Authentication & Authorization
 
-- [ ] **AUTH-01**: Enrichment sendMessage action requires authenticated user who owns the profile
-- [ ] **AUTH-02**: Enrichment getMessagesPublic query requires authenticated user who owns the profile
-- [ ] **AUTH-03**: Enrichment extractFromConversation action requires authenticated user who owns the profile
-- [ ] **AUTH-04**: OAuth exchangeOAuthCode validates redirectUri against an allowlist of permitted origins
-- [ ] **AUTH-05**: getCompleteness query requires authentication (or deprecate in favor of getMyCompleteness)
-- [ ] **AUTH-06**: Shared requireAuth helper standardizes authentication checks across all endpoints
+- [x] **AUTH-01**: Enrichment sendMessage action requires authenticated user who owns the profile
+- [x] **AUTH-02**: Enrichment getMessagesPublic query requires authenticated user who owns the profile
+- [x] **AUTH-03**: Enrichment extractFromConversation action requires authenticated user who owns the profile
+- [x] **AUTH-04**: OAuth exchangeOAuthCode validates redirectUri against an allowlist of permitted origins
+- [x] **AUTH-05**: getCompleteness query requires authentication (or deprecate in favor of getMyCompleteness)
+- [x] **AUTH-06**: Shared requireAuth helper standardizes authentication checks across all endpoints
 
 ### OAuth Security
 
-- [ ] **OAUTH-01**: Tauri mobile OAuth flow implements PKCE (S256 code_challenge)
-- [ ] **OAUTH-02**: OAuth state parameter is validated on callback (stored in Tauri Store, not memory)
-- [ ] **OAUTH-03**: OAuth access tokens are not returned to the client (handled server-side only)
-- [ ] **OAUTH-04**: Console.log statements removed from OAuth flow in production
+- [x] **OAUTH-01**: Tauri mobile OAuth flow implements PKCE (S256 code_challenge)
+- [x] **OAUTH-02**: OAuth state parameter is validated on callback (stored in Tauri Store, not memory)
+- [~] **OAUTH-03**: OAuth access tokens are not returned to the client (handled server-side only) -- *deferred to post-pilot per CONTEXT.md*
+- [x] **OAUTH-04**: Console.log statements removed from OAuth flow in production
 
 ### LLM Safety
 
-- [ ] **LLM-01**: Profile data in LLM prompts is wrapped in XML delimiters separating data from instructions
-- [ ] **LLM-02**: Input length limits enforced on profile fields sent to LLM calls
-- [ ] **LLM-03**: LLM tool_use responses validated at runtime with Zod schemas (matching, engagement, extraction)
-- [ ] **LLM-04**: Zod schemas use permissive mode (.passthrough(), .optional()) to avoid silent match failures
+- [x] **LLM-01**: Profile data in LLM prompts is wrapped in XML delimiters separating data from instructions
+- [x] **LLM-02**: Input length limits enforced on profile fields sent to LLM calls
+- [x] **LLM-03**: LLM tool_use responses validated at runtime with Zod schemas (matching, engagement, extraction)
+- [x] **LLM-04**: Zod schemas use permissive mode (.passthrough(), .optional()) to avoid silent match failures
 
 ### Bug Fixes
 
@@ -93,20 +93,20 @@ Deferred to future releases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase 27 | Pending |
-| AUTH-02 | Phase 27 | Pending |
-| AUTH-03 | Phase 27 | Pending |
-| AUTH-04 | Phase 27 | Pending |
-| AUTH-05 | Phase 27 | Pending |
-| AUTH-06 | Phase 27 | Pending |
-| OAUTH-01 | Phase 27 | Pending |
-| OAUTH-02 | Phase 27 | Pending |
-| OAUTH-03 | Phase 27 | Pending |
-| OAUTH-04 | Phase 27 | Pending |
-| LLM-01 | Phase 27 | Pending |
-| LLM-02 | Phase 27 | Pending |
-| LLM-03 | Phase 27 | Pending |
-| LLM-04 | Phase 27 | Pending |
+| AUTH-01 | Phase 27 | Complete |
+| AUTH-02 | Phase 27 | Complete |
+| AUTH-03 | Phase 27 | Complete |
+| AUTH-04 | Phase 27 | Complete |
+| AUTH-05 | Phase 27 | Complete |
+| AUTH-06 | Phase 27 | Complete |
+| OAUTH-01 | Phase 27 | Complete |
+| OAUTH-02 | Phase 27 | Complete |
+| OAUTH-03 | Phase 27 | Deferred (post-pilot) |
+| OAUTH-04 | Phase 27 | Complete |
+| LLM-01 | Phase 27 | Complete |
+| LLM-02 | Phase 27 | Complete |
+| LLM-03 | Phase 27 | Complete |
+| LLM-04 | Phase 27 | Complete |
 | BUG-01 | Phase 28 | Pending |
 | BUG-02 | Phase 28 | Pending |
 | BUG-03 | Phase 28 | Pending |
@@ -138,4 +138,4 @@ Deferred to future releases.
 
 ---
 *Requirements defined: 2026-01-31*
-*Last updated: 2026-01-31 -- traceability updated with phase mappings*
+*Last updated: 2026-02-02 -- Phase 27 requirements marked Complete (13/14; OAUTH-03 deferred)*

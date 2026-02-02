@@ -15,7 +15,7 @@ v1.4 closes all security vulnerabilities, bugs, and code quality gaps identified
 
 ## Phases
 
-- [ ] **Phase 27: Critical Security** - Close exploitable auth gaps, harden OAuth flow, defend LLM calls
+- [x] **Phase 27: Critical Security** - Close exploitable auth gaps, harden OAuth flow, defend LLM calls
 - [ ] **Phase 28: Quality Gates & Bug Fixes** - CI pipeline, pre-commit hooks, correctness fixes, error handling
 - [ ] **Phase 29: Performance, Accessibility & Polish** - N+1 query resolution, ARIA/keyboard support, visual coverage
 
@@ -39,9 +39,9 @@ Previous milestones are documented in `.planning/MILESTONES.md`. Phases 1-23 and
 **Plans:** 3 plans
 
 Plans:
-- [ ] 27-01-PLAN.md -- Authentication hardening (requireAuth helper, ownership checks on enrichment endpoints, getCompleteness deprecation, admin.ts CRUD auth, listAll admin gate)
-- [ ] 27-02-PLAN.md -- OAuth security (PKCE for Tauri mobile, state validation, redirectUri allowlist, Tauri Store persistence, console.log cleanup)
-- [ ] 27-03-PLAN.md -- LLM safety (XML delimiters for prompt separation, input length limits, Zod runtime validation for tool_use responses in shadow mode)
+- [x] 27-01-PLAN.md -- Authentication hardening (requireAuth helper, ownership checks on enrichment endpoints, getCompleteness deprecation, admin.ts CRUD auth, listAll admin gate)
+- [x] 27-02-PLAN.md -- OAuth security (PKCE for Tauri mobile, state validation, redirectUri allowlist, Tauri Store persistence, console.log cleanup)
+- [x] 27-03-PLAN.md -- LLM safety (XML delimiters for prompt separation, input length limits, Zod runtime validation for tool_use responses in shadow mode)
 
 #### Phase 28: Quality Gates & Bug Fixes
 **Goal**: CI pipeline and pre-commit hooks catch regressions automatically, all known bugs are fixed, and error handling is consistent across the codebase
@@ -83,10 +83,10 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 27. Critical Security | v1.4 | 0/3 | Planned | - |
+| 27. Critical Security | v1.4 | 3/3 | ✓ Complete | 2026-02-02 |
 | 28. Quality Gates & Bug Fixes | v1.4 | 0/3 | Not started | - |
 | 29. Performance, Accessibility & Polish | v1.4 | 0/3 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-20*
-*Last updated: 2026-01-31 -- Phase 27 planned (3 plans, 2 waves)*
+*Last updated: 2026-02-02 -- Phase 27 complete (3/3 plans, verified 34/34 must-haves)*
