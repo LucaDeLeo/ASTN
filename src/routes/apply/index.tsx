@@ -112,6 +112,7 @@ function ApplicationForm() {
   const navigate = useNavigate()
   const submitApplication = useMutation(api.orgApplications.submit)
   const profile = useQuery(api.profiles.getOrCreateProfile)
+  const myEmail = useQuery(api.orgApplications.getMyEmail)
 
   const [orgName, setOrgName] = useState('')
   const [description, setDescription] = useState('')
@@ -122,17 +123,23 @@ function ApplicationForm() {
   const [applicantName, setApplicantName] = useState('')
   const [applicantEmail, setApplicantEmail] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [prefilled, setPrefilled] = useState(false)
+  const [prefilledName, setPrefilledName] = useState(false)
+  const [prefilledEmail, setPrefilledEmail] = useState(false)
 
-  // Pre-fill from profile when it loads
-  if (profile && !prefilled) {
+  // Pre-fill name from profile when it loads
+  if (profile && !prefilledName) {
     if (profile.name && !applicantName) {
       setApplicantName(profile.name)
     }
-    if (profile.email && !applicantEmail) {
-      setApplicantEmail(profile.email)
+    setPrefilledName(true)
+  }
+
+  // Pre-fill email from auth identity when it loads
+  if (myEmail && !prefilledEmail) {
+    if (!applicantEmail) {
+      setApplicantEmail(myEmail)
     }
-    setPrefilled(true)
+    setPrefilledEmail(true)
   }
 
   const isValid =
