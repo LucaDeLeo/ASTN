@@ -4,19 +4,11 @@ import { internal } from "./_generated/api";
 import { auth } from "./auth";
 import type { Id } from "./_generated/dataModel";
 
-// Type for match computation result
+// Type for match computation result (chained scheduled action architecture)
 interface MatchComputationResult {
-  matchCount: number;
+  matchCount?: number;
   message?: string;
-  tiers?: {
-    great: number;
-    good: number;
-    exploring: number;
-  };
-  growthAreas?: Array<{
-    theme: string;
-    items: Array<string>;
-  }>;
+  totalBatches?: number;
 }
 
 // Get all matches for current user, grouped by tier

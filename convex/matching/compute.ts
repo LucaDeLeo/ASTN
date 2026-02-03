@@ -17,40 +17,30 @@ import type { Id } from '../_generated/dataModel'
 
 const MODEL_VERSION = 'claude-haiku-4-5-20251001'
 const BATCH_SIZE = 15 // Process up to 15 opportunities per LLM call
+const MAX_RETRIES = 10
+const RATE_LIMIT_DELAY_MS = 1000
 
-// Deduplicate growth areas accumulated across multiple matching batches.
-// Groups by normalized theme, deduplicates items within each theme,
-// ranks items by frequency, and caps at 10 items per theme.
-function deduplicateGrowthAreas(
-  areas: Array<{ theme: string; items: Array<string> }>,
-): Array<{ theme: string; items: Array<string> }> {
-  const themeMap = new Map<string, Map<string, number>>()
-  for (const area of areas) {
-    const normalizedTheme = area.theme.toLowerCase().trim()
-    if (!themeMap.has(normalizedTheme)) {
-      themeMap.set(normalizedTheme, new Map())
-    }
-    const itemMap = themeMap.get(normalizedTheme)!
-    for (const item of area.items) {
-      const normalizedItem = item.toLowerCase().trim()
-      itemMap.set(normalizedItem, (itemMap.get(normalizedItem) || 0) + 1)
-    }
+// Check if an error is a rate limit error (HTTP 429 or message contains "rate")
+function isRateLimitError(error: unknown): boolean {
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase()
+    if (message.includes('rate') || message.includes('429')) return true
   }
-
-  return Array.from(themeMap.entries()).map(([theme, items]) => ({
-    theme: theme.charAt(0).toUpperCase() + theme.slice(1),
-    items: Array.from(items.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10)
-      .map(([item]) => item.charAt(0).toUpperCase() + item.slice(1)),
-  }))
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    (error as { status: number }).status === 429
+  ) {
+    return true
+  }
+  return false
 }
 
-// Main compute action - scores all opportunities for a profile
+// Entry point: starts the chained matching process for a profile
 export const computeMatchesForProfile = internalAction({
   args: { profileId: v.id('profiles') },
   handler: async (ctx, { profileId }) => {
-    // 1. Get profile with all fields
     const profile = await ctx.runQuery(
       internal.matching.queries.getFullProfile,
       { profileId },
@@ -59,15 +49,13 @@ export const computeMatchesForProfile = internalAction({
       throw new Error('Profile not found')
     }
 
-    // 2. Get candidate opportunities (excluding hidden orgs, expired)
     const hiddenOrgs = profile.privacySettings?.hiddenFromOrgs || []
     const opportunities = await ctx.runQuery(
       internal.matching.queries.getCandidateOpportunities,
-      { hiddenOrgs, limit: 50 }, // Cap at 50 for pilot
+      { hiddenOrgs, limit: 50 },
     )
 
     if (opportunities.length === 0) {
-      // No opportunities to match - clear existing matches
       await ctx.runMutation(
         internal.matching.mutations.clearMatchesForProfile,
         { profileId },
@@ -75,18 +63,111 @@ export const computeMatchesForProfile = internalAction({
       return { matchCount: 0, message: 'No active opportunities to match' }
     }
 
-    // 3. Build context
-    const profileContext = buildProfileContext(profile)
+    const existingMatches = await ctx.runQuery(
+      internal.matching.queries.getExistingMatches,
+      { profileId },
+    )
+    const previousOppIds = existingMatches.map(
+      (m: { opportunityId: string }) => m.opportunityId,
+    )
 
-    // 4. Process in batches if needed
-    const allMatches: MatchingResult['matches'] = []
-    const aggregatedGrowthAreas: MatchingResult['growthAreas'] = []
+    const totalBatches = Math.ceil(opportunities.length / BATCH_SIZE)
+    const runTimestamp = Date.now()
 
-    for (let i = 0; i < opportunities.length; i += BATCH_SIZE) {
-      const batch = opportunities.slice(i, i + BATCH_SIZE)
+    log('info', 'computeMatchesForProfile: starting chained matching', {
+      profileId,
+      opportunityCount: opportunities.length,
+      totalBatches,
+      runTimestamp,
+    })
+
+    await ctx.scheduler.runAfter(
+      0,
+      internal.matching.compute.processMatchBatch,
+      {
+        profileId,
+        batchIndex: 0,
+        totalBatches,
+        retryCount: 0,
+        previousOppIds,
+        accumulatedGrowthAreas: [],
+        runTimestamp,
+      },
+    )
+
+    return { message: 'Matching started', totalBatches }
+  },
+})
+
+// Process a single batch of opportunities - called as a chained scheduled action
+export const processMatchBatch = internalAction({
+  args: {
+    profileId: v.id('profiles'),
+    batchIndex: v.number(),
+    totalBatches: v.number(),
+    retryCount: v.number(),
+    previousOppIds: v.array(v.string()),
+    accumulatedGrowthAreas: v.array(
+      v.object({
+        theme: v.string(),
+        items: v.array(v.string()),
+      }),
+    ),
+    runTimestamp: v.number(),
+  },
+  handler: async (
+    ctx,
+    {
+      profileId,
+      batchIndex,
+      totalBatches,
+      retryCount,
+      previousOppIds,
+      accumulatedGrowthAreas,
+      runTimestamp,
+    },
+  ) => {
+    const startTime = Date.now()
+
+    const profile = await ctx.runQuery(
+      internal.matching.queries.getFullProfile,
+      { profileId },
+    )
+    if (!profile) {
+      log('error', 'processMatchBatch: profile not found', {
+        profileId,
+        batchIndex,
+      })
+      return
+    }
+
+    const hiddenOrgs = profile.privacySettings?.hiddenFromOrgs || []
+    const opportunities = await ctx.runQuery(
+      internal.matching.queries.getCandidateOpportunities,
+      { hiddenOrgs, limit: 50 },
+    )
+
+    const batch = opportunities.slice(
+      batchIndex * BATCH_SIZE,
+      (batchIndex + 1) * BATCH_SIZE,
+    )
+
+    if (batch.length === 0) {
+      log('warn', 'processMatchBatch: empty batch, skipping', {
+        batchIndex,
+        totalBatches,
+      })
+      return
+    }
+
+    const isLastBatch = batchIndex + 1 >= totalBatches
+    const batchMatches: MatchingResult['matches'] = []
+    let batchGrowthAreas: MatchingResult['growthAreas'] = []
+
+    try {
+      const profileContext = buildProfileContext(profile)
       const opportunitiesContext = buildOpportunitiesContext(batch)
 
-      // 5. Call Claude with forced tool_choice
       const anthropic = new Anthropic()
       const response = await anthropic.messages.create({
         model: MODEL_VERSION,
@@ -102,63 +183,115 @@ export const computeMatchesForProfile = internalAction({
         ],
       })
 
-      // 6. Extract tool use result
       const toolUse = response.content.find(
         (block) => block.type === 'tool_use',
       )
       if (!toolUse) {
-        log('error', 'No tool use in response for batch', { batchIndex: i })
-        continue
-      }
-
-      const parseResult = matchResultSchema.safeParse(toolUse.input)
-      if (!parseResult.success) {
-        log('error', 'LLM validation failed for matching batch', {
-          batchIndex: i,
-          issues: parseResult.error.issues,
+        log('error', 'processMatchBatch: no tool use in response', {
+          batchIndex,
         })
-      }
-      const batchResult = (
-        parseResult.success ? parseResult.data : toolUse.input
-      ) as MatchingResult
-
-      // Validate response structure (fallback check)
-      if (!Array.isArray(batchResult.matches)) {
-        log(
-          'error',
-          'Invalid tool response - missing or invalid matches array',
-          { batchIndex: i },
-        )
-        continue
-      }
-
-      // Map opportunityId strings back to actual Ids
-      for (const match of batchResult.matches) {
-        const oppId = match.opportunityId as Id<'opportunities'>
-        // Verify the opportunity exists in our batch
-        const validOpp = batch.find((o) => o._id === oppId)
-        if (validOpp) {
-          allMatches.push({
-            ...match,
-            opportunityId: oppId,
+      } else {
+        const parseResult = matchResultSchema.safeParse(toolUse.input)
+        if (!parseResult.success) {
+          log('error', 'processMatchBatch: LLM validation failed', {
+            batchIndex,
+            issues: parseResult.error.issues,
           })
         }
+        const batchResult = (
+          parseResult.success ? parseResult.data : toolUse.input
+        ) as MatchingResult
+
+        if (!Array.isArray(batchResult.matches)) {
+          log('error', 'processMatchBatch: invalid matches array', {
+            batchIndex,
+          })
+        } else {
+          for (const match of batchResult.matches) {
+            const oppId = match.opportunityId as Id<'opportunities'>
+            const validOpp = batch.some(
+              (o: { _id: string }) => o._id === oppId,
+            )
+            if (validOpp) {
+              batchMatches.push({
+                ...match,
+                opportunityId: oppId,
+              })
+            }
+          }
+        }
+
+        if (
+          Array.isArray(batchResult.growthAreas) &&
+          batchResult.growthAreas.length > 0
+        ) {
+          batchGrowthAreas = batchResult.growthAreas
+        }
+      }
+    } catch (error: unknown) {
+      if (isRateLimitError(error) && retryCount < MAX_RETRIES) {
+        const delay = Math.min(
+          RATE_LIMIT_DELAY_MS * Math.pow(2, retryCount),
+          60000,
+        )
+        log('warn', 'processMatchBatch: rate limited, retrying', {
+          batchIndex,
+          retryCount: retryCount + 1,
+          delayMs: delay,
+        })
+        await ctx.scheduler.runAfter(
+          delay,
+          internal.matching.compute.processMatchBatch,
+          {
+            profileId,
+            batchIndex,
+            totalBatches,
+            retryCount: retryCount + 1,
+            previousOppIds,
+            accumulatedGrowthAreas,
+            runTimestamp,
+          },
+        )
+        return
       }
 
-      // Accumulate growth areas from all batches (deduplicated later)
-      if (
-        Array.isArray(batchResult.growthAreas) &&
-        batchResult.growthAreas.length > 0
-      ) {
-        aggregatedGrowthAreas.push(...batchResult.growthAreas)
+      if (retryCount === 0) {
+        log('warn', 'processMatchBatch: error, retrying once', {
+          batchIndex,
+          error: error instanceof Error ? error.message : String(error),
+        })
+        await ctx.scheduler.runAfter(
+          RATE_LIMIT_DELAY_MS,
+          internal.matching.compute.processMatchBatch,
+          {
+            profileId,
+            batchIndex,
+            totalBatches,
+            retryCount: 1,
+            previousOppIds,
+            accumulatedGrowthAreas,
+            runTimestamp,
+          },
+        )
+        return
       }
+
+      log('error', 'processMatchBatch: skipping batch after retry failure', {
+        batchIndex,
+        error: error instanceof Error ? error.message : String(error),
+      })
     }
 
-    // 7. Save all matches
-    if (allMatches.length > 0) {
-      await ctx.runMutation(internal.matching.mutations.saveMatches, {
+    if (batchMatches.length > 0 || isLastBatch) {
+      const newAccumulatedGrowthAreas = [
+        ...accumulatedGrowthAreas,
+        ...batchGrowthAreas,
+      ]
+
+      await ctx.runMutation(internal.matching.mutations.saveBatchResults, {
         profileId,
-        matches: allMatches.map((m) => ({
+        batchIndex,
+        matches: batchMatches.map((m) => ({
           opportunityId: m.opportunityId as Id<'opportunities'>,
           tier: m.tier,
           score: m.score,
@@ -170,22 +303,57 @@ export const computeMatchesForProfile = internalAction({
           recommendations: m.recommendations,
         })),
         modelVersion: MODEL_VERSION,
+        isLastBatch,
+        previousOppIds,
+        accumulatedGrowthAreas: newAccumulatedGrowthAreas,
+        runTimestamp,
       })
-    }
 
-    // Deduplicate growth areas accumulated across all batches
-    const deduplicatedGrowthAreas = deduplicateGrowthAreas(
-      aggregatedGrowthAreas,
-    )
+      const durationMs = Date.now() - startTime
+      log('info', 'processMatchBatch', {
+        batchIndex,
+        totalBatches,
+        durationMs,
+        matchCount: batchMatches.length,
+        isLastBatch,
+      })
 
-    return {
-      matchCount: allMatches.length,
-      tiers: {
-        great: allMatches.filter((m) => m.tier === 'great').length,
-        good: allMatches.filter((m) => m.tier === 'good').length,
-        exploring: allMatches.filter((m) => m.tier === 'exploring').length,
-      },
-      growthAreas: deduplicatedGrowthAreas,
+      if (!isLastBatch) {
+        await ctx.scheduler.runAfter(
+          RATE_LIMIT_DELAY_MS,
+          internal.matching.compute.processMatchBatch,
+          {
+            profileId,
+            batchIndex: batchIndex + 1,
+            totalBatches,
+            retryCount: 0,
+            previousOppIds,
+            accumulatedGrowthAreas: newAccumulatedGrowthAreas,
+            runTimestamp,
+          },
+        )
+      }
+    } else {
+      const durationMs = Date.now() - startTime
+      log('info', 'processMatchBatch: no matches in batch', {
+        batchIndex,
+        totalBatches,
+        durationMs,
+      })
+
+      await ctx.scheduler.runAfter(
+        RATE_LIMIT_DELAY_MS,
+        internal.matching.compute.processMatchBatch,
+        {
+          profileId,
+          batchIndex: batchIndex + 1,
+          totalBatches,
+          retryCount: 0,
+          previousOppIds,
+          accumulatedGrowthAreas,
+          runTimestamp,
+        },
+      )
     }
   },
 })
