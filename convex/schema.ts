@@ -396,6 +396,48 @@ export default defineSchema({
     .index('by_org_start', ['orgId', 'startAt'])
     .index('by_luma_id', ['lumaEventId']),
 
+  // Platform admins (super-admins who can approve/reject org applications)
+  platformAdmins: defineTable({
+    userId: v.string(),
+    addedAt: v.number(),
+    addedBy: v.optional(v.string()), // userId of who added them, null for seed
+  }).index('by_user', ['userId']),
+
+  // Org applications (organizations applying to join the platform)
+  orgApplications: defineTable({
+    // Applicant info
+    applicantUserId: v.string(),
+    applicantName: v.string(),
+    applicantEmail: v.string(),
+
+    // Org info from application
+    orgName: v.string(),
+    description: v.string(),
+    city: v.string(),
+    country: v.string(),
+    website: v.optional(v.string()),
+    reasonForJoining: v.string(),
+
+    // Status machine: pending -> approved | rejected | withdrawn
+    status: v.union(
+      v.literal('pending'),
+      v.literal('approved'),
+      v.literal('rejected'),
+      v.literal('withdrawn'),
+    ),
+    rejectionReason: v.optional(v.string()),
+
+    // Review tracking
+    reviewedBy: v.optional(v.string()), // platform admin userId
+    reviewedAt: v.optional(v.number()),
+
+    // Metadata
+    createdAt: v.number(),
+  })
+    .index('by_applicant', ['applicantUserId'])
+    .index('by_status', ['status'])
+    .index('by_orgName', ['orgName']),
+
   // In-app notifications (bell icon notification center)
   notifications: defineTable({
     userId: v.string(),
@@ -404,9 +446,12 @@ export default defineSchema({
       v.literal('event_reminder'),
       v.literal('event_updated'),
       v.literal('attendance_prompt'),
+      v.literal('org_application_approved'),
+      v.literal('org_application_rejected'),
     ),
     eventId: v.optional(v.id('events')),
     orgId: v.optional(v.id('organizations')),
+    applicationId: v.optional(v.id('orgApplications')),
     title: v.string(),
     body: v.string(),
     actionUrl: v.optional(v.string()),
