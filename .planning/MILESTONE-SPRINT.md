@@ -1,10 +1,10 @@
 ---
-started: "2026-02-03T03:39:43Z"
+started: '2026-02-03T03:39:43Z'
 milestone: v1.5
-milestone_name: "v1.5 Org Onboarding & Co-working"
+milestone_name: 'v1.5 Org Onboarding & Co-working'
 mode: yolo
-phase_range: "30-34"
-current_phase: 31
+phase_range: '30-34'
+current_phase: 32
 phases_remaining: [30 31 32 33 34]
 status: running
 auto_complete: false
@@ -14,25 +14,27 @@ auto_complete: false
 
 ## Progress
 
-| Phase | Status | Duration | Codex | Notes |
-|-------|--------|----------|-------|-------|
-| 30 | complete | 29m 15s | OK |  |
-| 31 | pending | - | - | - |
-| 32 | pending | - | - | - |
-| 33 | pending | - | - | - |
-| 34 | pending | - | - | - |
+| Phase | Status   | Duration | Codex | Notes |
+| ----- | -------- | -------- | ----- | ----- |
+| 30    | complete | 29m 15s  | OK    |       |
+| 31    | complete | 26m 19s  | OK    |       |
+| 32    | pending  | -        | -     | -     |
+| 33    | pending  | -        | -     | -     |
+| 34    | pending  | -        | -     | -     |
 
 ## Validation History
 
 | Phase | Step | Result | Notes |
-|-------|------|--------|-------|
+| ----- | ---- | ------ | ----- |
 
 ## Auto-Discuss Log
 
 | Phase | Rounds | Flagged | Resolution |
+| 32 | 3 | see CONTEXT.md | auto |
 | 31 | 3 | see CONTEXT.md | auto |
 | 30 | 3 | see CONTEXT.md | auto |
 |-------|--------|---------|------------|
 
 ---
-*Started: 2026-02-03T03:39:43Z*
+
+_Started: 2026-02-03T03:39:43Z_
