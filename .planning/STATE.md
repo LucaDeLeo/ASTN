@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** v1.5 Org Onboarding & Co-working -- Phase 32 complete
+**Current focus:** v1.5 Org Onboarding & Co-working -- Phase 33 in progress
 
 ## Current Position
 
-Phase: 32 of 34 (Member Booking + Consent + Attendee View)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-02-03 -- Completed 32-02-PLAN.md (Member Booking UI + Attendee View)
+Phase: 33 of 34 (Guest Access + Visit Applications)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-02-03 -- Completed 33-01-PLAN.md (Guest Backend Schema + Mutations)
 
-Progress: [████████████░░░░░░░░] 60% (phase 32 complete)
+Progress: [████████████░░░░░░░░] 62% (33-01 complete)
 
 ## Milestone History
 
@@ -41,13 +41,16 @@ Progress: [████████████░░░░░░░░] 60% (ph
 | Consent required for booking                                   | 32-01 | consentToProfileSharing must be true to create booking |
 | Profile subset for attendees: name, headline, skills only      | 32-01 | Minimal PII exposure for attendee visibility           |
 | react-day-picker v9 with custom DayButton                      | 32-02 | Availability indicators via green/yellow/red dots      |
+| Inline guest profile creation in mutations                     | 33-01 | Convex runMutation cannot call internal mutations      |
+| Guest profiles preserved after member conversion               | 33-01 | Audit trail for visit history                          |
+| requireSpaceAdmin helper for space-level admin checks          | 33-01 | Consistent auth pattern for space operations           |
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 96
-- Total execution time: ~20.9 hours (across all milestones)
+- Total plans completed: 97
+- Total execution time: ~21.0 hours (across all milestones)
 
 ## Pending Todos
 
@@ -64,11 +67,11 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Phase 32 complete and verified (14/14 must-haves)
+Stopped at: Completed 33-01-PLAN.md (Guest Backend Schema + Mutations)
 Resume file: None
-Next action: `/gsd:plan-phase 33` to plan Guest Access + Visit Applications
+Next action: Execute 33-02-PLAN.md (Guest UI)
 
 ---
 
 _State initialized: 2026-01-17_
-_Last updated: 2026-02-03 -- 32-02 complete, phase 32 complete_
+_Last updated: 2026-02-03 -- 33-01 complete_
