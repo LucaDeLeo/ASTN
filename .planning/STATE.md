@@ -2,19 +2,17 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-01-31)
+See: .planning/PROJECT.md (updated 2026-02-02)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** Phase 29 — Final phase (v1.4 Hardening)
+**Current focus:** No active milestone
 
 ## Current Position
 
-Phase: 29 of 29 (Performance, Accessibility & Polish)
-Plan: 3 of 3 in phase 29 (all complete)
-Status: Phase 29 complete -- v1.4 COMPLETE
-Last activity: 2026-02-02 — Completed 29-03-PLAN.md (GradientBg + font-display visual consistency)
-
-Progress: [██████████] 100% of v1.4 (9/9 plans)
+Phase: None active
+Plan: None active
+Status: v1.4 Hardening shipped and archived
+Last activity: 2026-02-02 -- v1.4 milestone completed
 
 ## Milestone History
 
@@ -32,7 +30,6 @@ Progress: [██████████] 100% of v1.4 (9/9 plans)
 **Velocity:**
 
 - Total plans completed: 92
-- v1.4 plans completed: 9
 - Total execution time: ~20.5 hours (across all milestones)
 
 ## Pending Todos
@@ -44,50 +41,16 @@ Progress: [██████████] 100% of v1.4 (9/9 plans)
 
 ## Blockers/Concerns
 
-- Zod validation schemas must be tested against real LLM outputs before enforcing (shadow mode first)
-- Auth migration must not break existing authenticated sessions (graceful errors, not exceptions)
-
-## Decisions Made (v1.4)
-
-| Decision                                                                   | Rationale                                                                     | Phase |
-| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----- |
-| Defer Tauri/mobile native work                                             | Focus on hardening before new platform work                                   | -     |
-| Skip Tauri-specific fixes (7.1-7.5)                                        | Only relevant when mobile work resumes                                        | -     |
-| Security first, then CI, then polish                                       | Exploitable vulns must close before anything else                             | 27-29 |
-| 3 phases for 37 requirements                                               | Natural clustering by risk level and dependency                               | 27-29 |
-| requireAnyOrgAdmin for legacy admin endpoints                              | No orgId in frontend admin routes; verify any-org admin                       | 27-01 |
-| Queries return empty/null for unauthorized                                 | Graceful degradation matches frontend fallback patterns                       | 27-01 |
-| Deprecate getCompleteness rather than remove                               | No frontend callers but safer to keep with auth gate                          | 27-01 |
-| Web Crypto API for PKCE (no new deps)                                      | crypto.getRandomValues + crypto.subtle.digest available in browser and Tauri  | 27-02 |
-| Tauri Store replaces module-level variables                                | Module vars lost on app kill; Store persists to disk                          | 27-02 |
-| Token exposure deferred to post-pilot                                      | Per CONTEXT.md; focus on PKCE + allowlist first                               | 27-02 |
-| Shadow mode for Zod LLM validation                                         | Log failures but never block operations; test against real outputs first      | 27-03 |
-| Permissive schemas with .passthrough()                                     | Allow extra fields and optional omissions to avoid false positives            | 27-03 |
-| XML delimiter pattern for all LLM prompts                                  | Structural separation of user data from system instructions                   | 27-03 |
-| Generic error messages for input limits                                    | "Content too long to process" rather than revealing specific limits           | 27-03 |
-| Deduplicate growth areas by normalized theme, rank by frequency, cap at 10 | Prevents unbounded growth while preserving most-mentioned items               | 28-02 |
-| getEffectiveLevel with Date.now() in queries                               | Real-time expiration checking instead of relying on batch compute             | 28-02 |
-| hasOverride also checks expiration                                         | UI should not show override indicators for expired overrides                  | 28-02 |
-| Remove --ext flag from eslint (flat config v9+)                            | Deprecated in eslint v9+; file patterns in eslint.config.mjs                  | 28-01 |
-| Full typecheck in pre-commit hook                                          | TypeScript needs full project context; partial check misses cross-file errors | 28-01 |
-| Delete package-lock.json, standardize on bun.lock                          | Single lockfile avoids confusion; bun is the project package manager          | 28-01 |
-| JSON structured logging via convex/lib/logging.ts                          | Machine-parseable logs for Convex dashboard and log aggregation               | 28-03 |
-| Error toasts persist with duration: Infinity                               | Users must see failures; auto-dismiss would hide errors                       | 28-03 |
-| Logging utility is pure module (no "use node")                             | Works in both Node actions and Convex mutations without restrictions          | 28-03 |
-| Admin pages keep dotGridStyle                                              | Intentional admin-specific visual differentiation from user pages             | 29-03 |
-| Login page uses GradientBg component                                       | Centralizes gradient definition instead of inline CSS                         | 29-03 |
-| Remove font-mono from opportunity title h1                                 | Conflicted with font-display; Space Grotesk is the v1.3 heading standard      | 29-03 |
-| useId renamed to formId in EventNotificationPrefsForm                      | no-shadow ESLint rule conflicts with existing id parameter in filter callback | 29-02 |
-| Filter components excluded from aria-describedby                           | No validation errors; deferred per research recommendation                    | 29-02 |
+None -- ready for pilot launch.
 
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Phase 29 complete — verified 16/16 must-haves
+Stopped at: v1.4 milestone archived
 Resume file: None
-Next action: v1.4 milestone complete — audit or archive
+Next action: `/gsd:new-milestone` to start next milestone, or pilot launch prep
 
 ---
 
 _State initialized: 2026-01-17_
-_Last updated: 2026-02-02 — Phase 29 verified (16/16 must-haves, all 3 plans complete)_
+_Last updated: 2026-02-02 -- v1.4 Hardening shipped and archived_

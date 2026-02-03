@@ -6,116 +6,88 @@ A career command center for AI safety talent. Individuals maintain living profil
 
 ## Core Value
 
-Individuals get enough value from smart matching + recommendations that they keep profiles fresh — this is the flywheel that makes everything else work.
-
-## Current Milestone: v1.4 Hardening
-
-**Goal:** Fix all security vulnerabilities, bugs, performance issues, and code quality gaps identified in the comprehensive codebase review, plus complete v1.3 coverage gaps and pending cleanup tasks.
-
-**Target fixes:**
-- Critical auth gaps (public enrichment endpoints, OAuth action exposure)
-- OAuth security (state validation, PKCE, token handling)
-- Prompt injection defenses for LLM calls
-- Bug fixes (growth area aggregation, date conversion, navigation anti-patterns)
-- Performance improvements (N+1 queries, rate limiting)
-- Code quality (runtime LLM response validation, error handling consistency)
-- Accessibility fixes (keyboard support, ARIA, form validation)
-- Developer experience (CI pipeline, .env.example, pre-commit hooks, dual lockfile cleanup)
-- v1.3 coverage gaps (GradientBg on remaining pages, font-display headings)
-- Cleanup (test route removal, console.log removal, dead code)
+Individuals get enough value from smart matching + recommendations that they keep profiles fresh -- this is the flywheel that makes everything else work.
 
 ## Current State
 
-**Shipped:** v1.3 Visual Overhaul (2026-01-20)
+**Shipped:** v1.4 Hardening (2026-02-02)
 
-v1.3 transformed ASTN from generic shadcn/ui to a warm, memorable visual identity. Features include design token system (Lora + Plus Jakarta Sans fonts, OKLCH coral palette), motion system (AnimatedCard stagger, Card hover lift, Button squish, View Transitions), intentional coral-based dark mode, and accessibility polish (focus states, empty states).
+v1.4 closed all security vulnerabilities, bugs, performance issues, and code quality gaps from the comprehensive codebase review. Authentication hardened across all endpoints, OAuth secured with PKCE S256, LLM calls defended against prompt injection, CI pipeline and pre-commit hooks established, all known bugs fixed, N+1 queries eliminated, accessibility improved (WCAG 2.1 forms), and visual polish completed.
+
+**No active milestone.** Run `/gsd:new-milestone` to start the next one.
 
 **Tech stack:** Convex + TanStack Start + React 19 + shadcn/ui + Claude Sonnet 4.5/Haiku 4.5
 
-**Codebase:** ~114,000 lines TypeScript, ~500 files
+**Codebase:** ~118,000 lines TypeScript, ~500 files
 
 ## Requirements
 
 ### Validated
 
-- ✓ Rich profile creation via form + LLM conversation — v1.0
-- ✓ Smart opportunity matching with explanations ("here's why this fits you") — v1.0
-- ✓ LLM-estimated acceptance probability for each match — v1.0
-- ✓ Personalized recommendations ("do these 3 things to improve your fit") — v1.0
-- ✓ Org dashboard for BAISH to view their members (basic CRM) — v1.0
-- ✓ Automated opportunity aggregation from 80k job board and aisafety.com — v1.0
-- ✓ Email digests for matches — v1.0
-- ✓ PDF/document upload for profile creation (CV, LinkedIn export) — v1.1
-- ✓ Text paste for profile creation (any format) — v1.1
-- ✓ LLM extraction from uploaded content → auto-fill form fields — v1.1
-- ✓ Context-aware enrichment chat (knows what's populated, only asks about gaps) — v1.1
-- ✓ Org discovery with geography-based suggestions and invite links — v1.2
-- ✓ Lu.ma event integration with automatic sync and dashboard display — v1.2
-- ✓ Configurable event notifications with batching and org muting — v1.2
-- ✓ Post-event attendance tracking with one-tap confirmation and feedback — v1.2
-- ✓ LLM engagement scoring with explanations and admin override — v1.2
-- ✓ Full CRM dashboard with member profiles, history, and CSV export — v1.2
-- ✓ Custom program tracking with enrollment and attendance — v1.2
-- ✓ Design token system (Lora + Plus Jakarta Sans fonts, OKLCH coral palette, fluid typography) — v1.3
-- ✓ Font preloading infrastructure (no FOIT/FOUT) — v1.3
-- ✓ Warm visual treatment (GradientBg, coral shadows, atmospheric depth) — v1.3
-- ✓ Motion system (AnimatedCard stagger, Card hover, Button squish, View Transitions) — v1.3
-- ✓ Intentional coral-based dark mode with SSR detection (no flash) — v1.3
-- ✓ Accessibility polish (focus states, Empty component variants) — v1.3
-
-### Active
-
-- [ ] Fix critical auth gaps on enrichment endpoints and OAuth action
-- [ ] Implement OAuth state validation and PKCE for mobile flow
-- [ ] Add prompt injection defenses for LLM calls
-- [ ] Fix growth area aggregation bug in matching compute
-- [ ] Fix date conversion to use UTC in profile timestamps
-- [ ] Add runtime validation for LLM tool responses
-- [ ] Fix N+1 query patterns in programs, attendance, and email
-- [ ] Wrap navigation calls in useEffect for redirect components
-- [ ] Add keyboard/ARIA accessibility to interactive elements
-- [ ] Add CI pipeline, .env.example, and pre-commit hooks
-- [ ] Apply GradientBg to remaining pages and fix font-display headings
-- [ ] Remove test-upload route, console.logs, and dead code
-- [ ] Clean up dual lockfile (remove package-lock.json)
+- Rich profile creation via form + LLM conversation -- v1.0
+- Smart opportunity matching with explanations ("here's why this fits you") -- v1.0
+- LLM-estimated acceptance probability for each match -- v1.0
+- Personalized recommendations ("do these 3 things to improve your fit") -- v1.0
+- Org dashboard for BAISH to view their members (basic CRM) -- v1.0
+- Automated opportunity aggregation from 80k job board and aisafety.com -- v1.0
+- Email digests for matches -- v1.0
+- PDF/document upload for profile creation (CV, LinkedIn export) -- v1.1
+- Text paste for profile creation (any format) -- v1.1
+- LLM extraction from uploaded content -> auto-fill form fields -- v1.1
+- Context-aware enrichment chat (knows what's populated, only asks about gaps) -- v1.1
+- Org discovery with geography-based suggestions and invite links -- v1.2
+- Lu.ma event integration with automatic sync and dashboard display -- v1.2
+- Configurable event notifications with batching and org muting -- v1.2
+- Post-event attendance tracking with one-tap confirmation and feedback -- v1.2
+- LLM engagement scoring with explanations and admin override -- v1.2
+- Full CRM dashboard with member profiles, history, and CSV export -- v1.2
+- Custom program tracking with enrollment and attendance -- v1.2
+- Design token system (Lora + Plus Jakarta Sans fonts, OKLCH coral palette, fluid typography) -- v1.3
+- Font preloading infrastructure (no FOIT/FOUT) -- v1.3
+- Warm visual treatment (GradientBg, coral shadows, atmospheric depth) -- v1.3
+- Motion system (AnimatedCard stagger, Card hover, Button squish, View Transitions) -- v1.3
+- Intentional coral-based dark mode with SSR detection (no flash) -- v1.3
+- Accessibility polish (focus states, Empty component variants) -- v1.3
+- Auth hardening with shared helpers gating all endpoints -- v1.4
+- OAuth PKCE S256 with Tauri Store persistence and state validation -- v1.4
+- LLM prompt injection defense (XML delimiters, Zod validation, input limits) -- v1.4
+- CI pipeline (GitHub Actions) and pre-commit hooks (husky + lint-staged) -- v1.4
+- All known bugs fixed (growth areas, dates, navigation, engagement expiration) -- v1.4
+- N+1 query elimination and rate-limited matching -- v1.4
+- WCAG 2.1 aria-describedby across data-entry forms -- v1.4
+- GradientBg and font-display applied to all remaining pages -- v1.4
 
 ### Out of Scope
 
-- Application tracker — v2, after proving the hook works
-- Rejection analysis — v2, requires application history
-- Pre-fill applications — v2, retention feature not acquisition
-- Collaborator matching — v2+, complex feature
-- Reading/course tracking system — v2+, simple recs first
-- "Insist" escalation (multi-channel nudges) — v2+
-- Cross-org discovery — v2+
-- Sophisticated career pathing with milestones — v2+
-- Mobile Tauri native app — deferred, separate milestone
-- Tauri-specific fixes (7.1-7.5 from review) — deferred with mobile work
+- Application tracker -- v2, after proving the hook works
+- Rejection analysis -- v2, requires application history
+- Pre-fill applications -- v2, retention feature not acquisition
+- Collaborator matching -- v2+, complex feature
+- Reading/course tracking system -- v2+, simple recs first
+- "Insist" escalation (multi-channel nudges) -- v2+
+- Cross-org discovery -- v2+
+- Sophisticated career pathing with milestones -- v2+
+- Mobile Tauri native app -- deferred, separate milestone
 
 ## Context
 
-**Current state:** v1.3 shipped 2026-01-20. Comprehensive codebase review (2026-01-31) identified 3 critical, 2 high, 12 medium, and 16 low issues. Security and bug fixes are the priority before any new feature work.
+**Current state:** v1.4 shipped 2026-02-02. All security, bug, performance, accessibility, and code quality issues from the codebase review are resolved. Ready for BAISH pilot launch.
 
-**Known issues (from codebase review):**
-- 3 critical auth gaps: public enrichment endpoints, public OAuth code exchange
-- Missing OAuth state validation and PKCE in mobile flow
-- Prompt injection risk via unsanitized profile data in LLM prompts
-- Growth areas overwritten instead of aggregated in matching
-- Date conversion uses local timezone instead of UTC
-- N+1 query patterns in programs, attendance, and email batch processing
-- Navigation called during render (not in useEffect)
-- No runtime validation on LLM tool responses
-- v1.3 coverage gaps: GradientBg on settings/attendance/org pages, 35+ headings need font-display
-- `@ts-nocheck` in batchActions.ts (Convex action type inference workaround)
-- Aggregation requires 80K/Airtable API keys configured
-- Lu.ma API key required for event sync (per-org Lu.ma Plus subscription)
+**Known tech debt (v1.5 backlog):**
+
+- OAUTH-03: Access tokens returned to client in Tauri flow (low risk, short-lived tokens, sandboxed WebView)
+- Zod validation in shadow mode (needs real LLM output data before enforcing)
+- 3 matching concurrency edge cases (empty first batch, re-queried opportunity list, no concurrency guard)
+- No test files (CI test step passes vacuously)
+- @ts-nocheck in batchActions.ts (Convex action type inference workaround)
 
 **Launch plan:** Workshop-based onboarding where members create profiles (via upload, paste, or AI chat) and get immediate matches during the session.
 
 **Three-sided network:**
-1. Individuals — get matching + recommendations, keep profiles updated
-2. Local orgs — get CRM that maintains itself (members update their own profiles)
-3. Opportunity posters — get better candidates without changing workflow (v2, passive benefit from aggregation for now)
+
+1. Individuals -- get matching + recommendations, keep profiles updated
+2. Local orgs -- get CRM that maintains itself (members update their own profiles)
+3. Opportunity posters -- get better candidates without changing workflow (v2, passive benefit from aggregation for now)
 
 ## Constraints
 
@@ -128,37 +100,60 @@ v1.3 transformed ASTN from generic shadcn/ui to a warm, memorable visual identit
 
 ## Key Decisions
 
-| Decision | Rationale | Outcome |
-|----------|-----------|---------|
-| v1 focused on matching + recommendations, not application tracking | Need to prove the hook before building retention features | ✓ Good — shipped core value prop |
-| LLM-estimated acceptance probability from day one | Differentiator, can refine with real data over time | ✓ Good — prominent in UI with experimental label |
-| Org CRM in v1 | BAISH needs visibility into their members for pilot to work | ✓ Good — full dashboard with stats and export |
-| Automated opportunity aggregation | Manual curation doesn't scale; 80k/aisafety.com teams likely cooperative | ✓ Good — adapters working, needs API keys |
-| Convex over Supabase | Real-time sync, simpler developer experience, no separate vector DB needed | ✓ Good — real-time updates smooth |
-| Programmatic context over vectors | More control over what context the LLM sees, avoids embedding quality issues | ✓ Good — matching prompts well-structured |
-| Claude Sonnet 4.5 + Haiku 4.5 | Latest models, Sonnet for quality reasoning, Haiku for speed/cost | ✓ Good — Haiku fast for enrichment, quality TBD |
-| Tier labels (great/good/exploring) not percentages | More encouraging, less anxiety-inducing for job seekers | ✓ Good — aligns with encouraging tone |
-| Cold start prevention (opportunities first) | Ensure users see matches immediately on signup | ✓ Good — no empty state for new users |
-| Claude Haiku 4.5 for extraction | Fast, cheap (~$0.001/resume), vision capability for PDFs | ✓ Good — ~5-10 second extraction |
-| Extract-then-discard for privacy | No document retention after extraction | ✓ Good — privacy-preserving |
-| Explicit user review required | All extracted data must be reviewed before saving | ✓ Good — user maintains control |
-| 4-way entry point wizard | Upload, paste, manual, chat-first options | ✓ Good — covers all user preferences |
-| Default acceptance in review UI | Users reject unwanted fields rather than accepting each | ✓ Good — reduced friction |
-| Fuzzy skill matching (0.7 threshold) | Suggest ASTN skills from resume content | ✓ Good — helpful suggestions |
-| Location discovery opt-in | Privacy-first approach to geography features | ✓ Good — users control visibility |
-| Lu.ma integration over native events | Leverage existing event platform, avoid re-inventing | ✓ Good — faster delivery, familiar UX |
-| Weekly digest as default notification | Prevent notification fatigue from day one | ✓ Good — users can opt into more |
-| Post-event prompt within 2-4 hours | Balance response rate vs memory accuracy | ✓ Good — research-backed timing |
-| Claude Haiku for engagement scoring | Cost-effective for batch daily classification | ✓ Good — ~$0.001 per member |
-| Engagement levels not percentages | Avoid false precision, reduce member anxiety | ✓ Good — admin-only, actionable labels |
-| Server-side pagination for CRM | Prevent performance explosion at scale | ✓ Good — handles 100+ members |
-| OKLCH color space for tokens | Perceptually uniform, consistent chroma across hues | ✓ Good — coral-500 and teal-500 equally vibrant |
-| Lora for headings, Plus Jakarta Sans for body | Split personality creates elegance + readability | ✓ Good — warm and approachable |
-| Spring easing with 1.56 overshoot | Organic motion without being distracting | ✓ Good — subtle bounce feels alive |
-| Stagger cap at 9 items (450ms) | Prevent excessive wait times on large lists | ✓ Good — max delay feels responsive |
-| Dark mode primary stays coral | Maintain brand identity across themes | ✓ Good — warm charcoal background |
-| Cookie-based SSR theme detection | Eliminate dark mode flash on page load | ✓ Good — no FOIT equivalent for themes |
-| View Transitions API for navigation | Native browser animation, works without JS | ✓ Good — 250ms crossfade |
+<details>
+<summary>v1.0-v1.3 decisions (click to expand)</summary>
+
+| Decision                                                           | Rationale                                                                    | Outcome                                         |
+| ------------------------------------------------------------------ | ---------------------------------------------------------------------------- | ----------------------------------------------- |
+| v1 focused on matching + recommendations, not application tracking | Need to prove the hook before building retention features                    | Good -- shipped core value prop                 |
+| LLM-estimated acceptance probability from day one                  | Differentiator, can refine with real data over time                          | Good -- prominent in UI with experimental label |
+| Org CRM in v1                                                      | BAISH needs visibility into their members for pilot to work                  | Good -- full dashboard with stats and export    |
+| Automated opportunity aggregation                                  | Manual curation doesn't scale; 80k/aisafety.com teams likely cooperative     | Good -- adapters working, needs API keys        |
+| Convex over Supabase                                               | Real-time sync, simpler developer experience, no separate vector DB needed   | Good -- real-time updates smooth                |
+| Programmatic context over vectors                                  | More control over what context the LLM sees, avoids embedding quality issues | Good -- matching prompts well-structured        |
+| Claude Sonnet 4.5 + Haiku 4.5                                      | Latest models, Sonnet for quality reasoning, Haiku for speed/cost            | Good -- Haiku fast for enrichment, quality TBD  |
+| Tier labels (great/good/exploring) not percentages                 | More encouraging, less anxiety-inducing for job seekers                      | Good -- aligns with encouraging tone            |
+| Cold start prevention (opportunities first)                        | Ensure users see matches immediately on signup                               | Good -- no empty state for new users            |
+| Claude Haiku 4.5 for extraction                                    | Fast, cheap (~$0.001/resume), vision capability for PDFs                     | Good -- ~5-10 second extraction                 |
+| Extract-then-discard for privacy                                   | No document retention after extraction                                       | Good -- privacy-preserving                      |
+| Explicit user review required                                      | All extracted data must be reviewed before saving                            | Good -- user maintains control                  |
+| 4-way entry point wizard                                           | Upload, paste, manual, chat-first options                                    | Good -- covers all user preferences             |
+| Default acceptance in review UI                                    | Users reject unwanted fields rather than accepting each                      | Good -- reduced friction                        |
+| Fuzzy skill matching (0.7 threshold)                               | Suggest ASTN skills from resume content                                      | Good -- helpful suggestions                     |
+| Location discovery opt-in                                          | Privacy-first approach to geography features                                 | Good -- users control visibility                |
+| Lu.ma integration over native events                               | Leverage existing event platform, avoid re-inventing                         | Good -- faster delivery, familiar UX            |
+| Weekly digest as default notification                              | Prevent notification fatigue from day one                                    | Good -- users can opt into more                 |
+| Post-event prompt within 2-4 hours                                 | Balance response rate vs memory accuracy                                     | Good -- research-backed timing                  |
+| Claude Haiku for engagement scoring                                | Cost-effective for batch daily classification                                | Good -- ~$0.001 per member                      |
+| Engagement levels not percentages                                  | Avoid false precision, reduce member anxiety                                 | Good -- admin-only, actionable labels           |
+| Server-side pagination for CRM                                     | Prevent performance explosion at scale                                       | Good -- handles 100+ members                    |
+| OKLCH color space for tokens                                       | Perceptually uniform, consistent chroma across hues                          | Good -- coral-500 and teal-500 equally vibrant  |
+| Lora for headings, Plus Jakarta Sans for body                      | Split personality creates elegance + readability                             | Good -- warm and approachable                   |
+| Spring easing with 1.56 overshoot                                  | Organic motion without being distracting                                     | Good -- subtle bounce feels alive               |
+| Stagger cap at 9 items (450ms)                                     | Prevent excessive wait times on large lists                                  | Good -- max delay feels responsive              |
+| Dark mode primary stays coral                                      | Maintain brand identity across themes                                        | Good -- warm charcoal background                |
+| Cookie-based SSR theme detection                                   | Eliminate dark mode flash on page load                                       | Good -- no FOIT equivalent for themes           |
+| View Transitions API for navigation                                | Native browser animation, works without JS                                   | Good -- 250ms crossfade                         |
+
+</details>
+
+### v1.4 Decisions
+
+| Decision                                                                   | Rationale                                                                    |
+| -------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Security first, then CI, then polish                                       | Exploitable vulns must close before anything else                            |
+| requireAnyOrgAdmin for legacy admin endpoints                              | No orgId in frontend admin routes; verify any-org admin                      |
+| Queries return empty/null for unauthorized                                 | Graceful degradation matches frontend fallback patterns                      |
+| Web Crypto API for PKCE (no new deps)                                      | crypto.getRandomValues + crypto.subtle.digest available in browser and Tauri |
+| Tauri Store replaces module-level variables                                | Module vars lost on app kill; Store persists to disk                         |
+| Token exposure deferred to post-pilot                                      | Per CONTEXT.md; focus on PKCE + allowlist first                              |
+| Shadow mode for Zod LLM validation                                         | Log failures but never block operations; test against real outputs first     |
+| XML delimiter pattern for all LLM prompts                                  | Structural separation of user data from system instructions                  |
+| Deduplicate growth areas by normalized theme, rank by frequency, cap at 10 | Prevents unbounded growth while preserving most-mentioned items              |
+| JSON structured logging via convex/lib/logging.ts                          | Machine-parseable logs for Convex dashboard and log aggregation              |
+| Error toasts persist with duration: Infinity                               | Users must see failures; auto-dismiss would hide errors                      |
+| Admin pages keep dotGridStyle                                              | Intentional admin-specific visual differentiation from user pages            |
 
 ---
-*Last updated: 2026-01-31 after v1.4 Hardening milestone start*
+
+_Last updated: 2026-02-02 -- v1.4 Hardening shipped and archived_

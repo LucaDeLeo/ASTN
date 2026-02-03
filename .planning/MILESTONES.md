@@ -1,5 +1,35 @@
 # Project Milestones: AI Safety Talent Network (ASTN)
 
+## v1.4 Hardening (Shipped: 2026-02-02)
+
+**Delivered:** Security hardening, bug fixes, performance optimization, accessibility, and code quality improvements closing all issues from the comprehensive codebase review before the BAISH pilot.
+
+**Phases completed:** 27-29 (9 plans total)
+
+**Key accomplishments:**
+
+- Authentication hardening with shared requireAuth/requireAnyOrgAdmin helpers gating 9 previously-unprotected endpoints
+- OAuth PKCE S256 with Tauri Store persistence, redirectUri allowlist, and state validation for mobile auth flow
+- LLM prompt injection defense via XML delimiters on all 6 call points, shadow-mode Zod validation on all 5 tool_use responses
+- CI pipeline (GitHub Actions) and pre-commit hooks (husky + lint-staged), .env.example, dual lockfile cleanup
+- Bug fixes: growth area aggregation, Date.UTC conversion, useEffect navigation, engagement override expiration, structured JSON logging
+- N+1 query elimination, rate-limited matching via chained scheduled actions, WCAG 2.1 aria-describedby across 14 forms, GradientBg + font-display completion
+
+**Stats:**
+
+- 125 files changed
+- ~17,000 lines added/modified
+- 3 phases, 9 plans
+- 1 day execution (2026-02-02)
+
+**Git range:** `7769e7f` → `2dce89c`
+
+**Tech debt noted:** OAUTH-03 deferred to post-pilot, Zod validation in shadow mode, 3 matching concurrency edge cases tracked for v1.5.
+
+**What's next:** BAISH pilot launch, or v1.5 for matching robustness and extended hardening
+
+---
+
 ## v1.3 Visual Overhaul (Shipped: 2026-01-20)
 
 **Delivered:** Transform ASTN from generic shadcn/ui to a warm, memorable visual identity that says "AI safety is about people."
@@ -114,5 +144,5 @@
 
 ---
 
-*Milestones file created: 2026-01-18*
-*Updated: 2026-01-20 - Added v1.3 Visual Overhaul*
+_Milestones file created: 2026-01-18_
+_Updated: 2026-01-20 - Added v1.3 Visual Overhaul_
