@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from 'react'
 import {
   ArrowLeft,
   Check,
@@ -6,21 +6,31 @@ import {
   Loader2,
   Pencil,
   X,
-} from "lucide-react";
-import type { ExtractionFields, ExtractionItem, ExtractionStatus } from "./hooks/useEnrichment";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Card } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
-import { cn } from "~/lib/utils";
+} from 'lucide-react'
+import type {
+  ExtractionFields,
+  ExtractionItem,
+  ExtractionStatus,
+} from './hooks/useEnrichment'
+import { Button } from '~/components/ui/button'
+import { Input } from '~/components/ui/input'
+import { Card } from '~/components/ui/card'
+import { Badge } from '~/components/ui/badge'
+import { cn } from '~/lib/utils'
 
 interface ExtractionReviewProps {
-  extractions: Array<ExtractionItem>;
-  onUpdateStatus: (field: keyof ExtractionFields, status: ExtractionStatus) => void;
-  onUpdateValue: (field: keyof ExtractionFields, value: string | Array<string>) => void;
-  onApply: () => void;
-  onBack: () => void;
-  isApplying: boolean;
+  extractions: Array<ExtractionItem>
+  onUpdateStatus: (
+    field: keyof ExtractionFields,
+    status: ExtractionStatus,
+  ) => void
+  onUpdateValue: (
+    field: keyof ExtractionFields,
+    value: string | Array<string>,
+  ) => void
+  onApply: () => void
+  onBack: () => void
+  isApplying: boolean
 }
 
 export function ExtractionReview({
@@ -31,38 +41,41 @@ export function ExtractionReview({
   onBack,
   isApplying,
 }: ExtractionReviewProps) {
-  const [editingField, setEditingField] = useState<keyof ExtractionFields | null>(
-    null
-  );
-  const [editValue, setEditValue] = useState("");
+  const [editingField, setEditingField] = useState<
+    keyof ExtractionFields | null
+  >(null)
+  const [editValue, setEditValue] = useState('')
 
   const handleEdit = (item: ExtractionItem) => {
-    setEditingField(item.field);
-    const currentValue = item.editedValue ?? item.value;
+    setEditingField(item.field)
+    const currentValue = item.editedValue ?? item.value
     setEditValue(
-      Array.isArray(currentValue) ? currentValue.join(", ") : currentValue
-    );
-  };
+      Array.isArray(currentValue) ? currentValue.join(', ') : currentValue,
+    )
+  }
 
   const handleSaveEdit = (item: ExtractionItem) => {
     const newValue = Array.isArray(item.value)
-      ? editValue.split(",").map((s) => s.trim()).filter(Boolean)
-      : editValue;
-    onUpdateValue(item.field, newValue);
-    setEditingField(null);
-    setEditValue("");
-  };
+      ? editValue
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : editValue
+    onUpdateValue(item.field, newValue)
+    setEditingField(null)
+    setEditValue('')
+  }
 
   const handleCancelEdit = () => {
-    setEditingField(null);
-    setEditValue("");
-  };
+    setEditingField(null)
+    setEditValue('')
+  }
 
   const acceptedCount = extractions.filter(
-    (e) => e.status === "accepted" || e.status === "edited"
-  ).length;
+    (e) => e.status === 'accepted' || e.status === 'edited',
+  ).length
 
-  const hasAcceptedFields = acceptedCount > 0;
+  const hasAcceptedFields = acceptedCount > 0
 
   return (
     <div className="space-y-6">
@@ -88,36 +101,37 @@ export function ExtractionReview({
           <Card
             key={item.field}
             className={cn(
-              "p-4 transition-all duration-200",
-              item.status === "accepted" && "border-green-300 bg-green-50/50",
-              item.status === "edited" && "border-amber-300 bg-amber-50/50",
-              item.status === "rejected" && "border-slate-200 bg-slate-50 opacity-60"
+              'p-4 transition-all duration-200',
+              item.status === 'accepted' && 'border-green-300 bg-green-50/50',
+              item.status === 'edited' && 'border-amber-300 bg-amber-50/50',
+              item.status === 'rejected' &&
+                'border-slate-200 bg-slate-50 opacity-60',
             )}
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
                   <h4 className="font-medium text-foreground">{item.label}</h4>
-                  {item.status !== "pending" && (
+                  {item.status !== 'pending' && (
                     <Badge
                       variant={
-                        item.status === "rejected" ? "secondary" : "default"
+                        item.status === 'rejected' ? 'secondary' : 'default'
                       }
                       className={cn(
-                        "text-xs",
-                        item.status === "accepted" &&
-                          "bg-green-100 text-green-800 hover:bg-green-100",
-                        item.status === "edited" &&
-                          "bg-amber-100 text-amber-800 hover:bg-amber-100"
+                        'text-xs',
+                        item.status === 'accepted' &&
+                          'bg-green-100 text-green-800 hover:bg-green-100',
+                        item.status === 'edited' &&
+                          'bg-amber-100 text-amber-800 hover:bg-amber-100',
                       )}
                     >
-                      {item.status === "accepted" && (
+                      {item.status === 'accepted' && (
                         <>
                           <Check className="size-3 mr-1" /> Accepted
                         </>
                       )}
-                      {item.status === "rejected" && "Rejected"}
-                      {item.status === "edited" && (
+                      {item.status === 'rejected' && 'Rejected'}
+                      {item.status === 'edited' && (
                         <>
                           <Pencil className="size-3 mr-1" /> Edited
                         </>
@@ -133,8 +147,8 @@ export function ExtractionReview({
                       onChange={(e) => setEditValue(e.target.value)}
                       placeholder={
                         Array.isArray(item.value)
-                          ? "Enter values separated by commas"
-                          : "Enter value"
+                          ? 'Enter values separated by commas'
+                          : 'Enter value'
                       }
                       className="w-full"
                     />
@@ -154,29 +168,29 @@ export function ExtractionReview({
                 ) : (
                   <div
                     className={cn(
-                      "text-sm",
-                      item.status === "rejected"
-                        ? "line-through text-slate-400"
-                        : "text-slate-700"
+                      'text-sm',
+                      item.status === 'rejected'
+                        ? 'line-through text-slate-400'
+                        : 'text-slate-700',
                     )}
                   >
                     {Array.isArray(item.editedValue ?? item.value) ? (
                       <div className="flex flex-wrap gap-1.5">
-                        {((item.editedValue ?? item.value) as Array<string>).map(
-                          (v: string, i: number) => (
-                            <span
-                              key={i}
-                              className={cn(
-                                "inline-block px-2 py-0.5 rounded-full text-xs",
-                                item.status === "rejected"
-                                  ? "bg-slate-200 text-slate-500"
-                                  : "bg-slate-100 text-slate-700"
-                              )}
-                            >
-                              {v}
-                            </span>
-                          )
-                        )}
+                        {(
+                          (item.editedValue ?? item.value) as Array<string>
+                        ).map((v: string, i: number) => (
+                          <span
+                            key={i}
+                            className={cn(
+                              'inline-block px-2 py-0.5 rounded-full text-xs',
+                              item.status === 'rejected'
+                                ? 'bg-slate-200 text-slate-500'
+                                : 'bg-slate-100 text-slate-700',
+                            )}
+                          >
+                            {v}
+                          </span>
+                        ))}
                       </div>
                     ) : (
                       <p>{(item.editedValue ?? item.value) as string}</p>
@@ -191,12 +205,12 @@ export function ExtractionReview({
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    onClick={() => onUpdateStatus(item.field, "accepted")}
-                    disabled={item.status === "accepted"}
+                    onClick={() => onUpdateStatus(item.field, 'accepted')}
+                    disabled={item.status === 'accepted'}
                     className={cn(
-                      "text-slate-400 hover:text-green-600 hover:bg-green-50",
-                      item.status === "accepted" &&
-                        "text-green-600 bg-green-100"
+                      'text-slate-400 hover:text-green-600 hover:bg-green-50',
+                      item.status === 'accepted' &&
+                        'text-green-600 bg-green-100',
                     )}
                   >
                     <Check className="size-4" />
@@ -204,11 +218,11 @@ export function ExtractionReview({
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    onClick={() => onUpdateStatus(item.field, "rejected")}
-                    disabled={item.status === "rejected"}
+                    onClick={() => onUpdateStatus(item.field, 'rejected')}
+                    disabled={item.status === 'rejected'}
                     className={cn(
-                      "text-slate-400 hover:text-red-600 hover:bg-red-50",
-                      item.status === "rejected" && "text-red-600 bg-red-100"
+                      'text-slate-400 hover:text-red-600 hover:bg-red-50',
+                      item.status === 'rejected' && 'text-red-600 bg-red-100',
                     )}
                   >
                     <X className="size-4" />
@@ -252,5 +266,5 @@ export function ExtractionReview({
         </Button>
       </div>
     </div>
-  );
+  )
 }

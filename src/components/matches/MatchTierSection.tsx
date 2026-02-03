@@ -1,63 +1,63 @@
-import { Compass, Sparkles, ThumbsUp } from "lucide-react";
-import { useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { MatchCard } from "./MatchCard";
-import type { Id } from "../../../convex/_generated/dataModel";
-import { AnimatedCard } from "~/components/animation/AnimatedCard";
-import { SwipeableCard } from "~/components/gestures/swipeable-card";
-import { useIsMobile } from "~/hooks/use-media-query";
+import { Compass, Sparkles, ThumbsUp } from 'lucide-react'
+import { useMutation } from 'convex/react'
+import { api } from '../../../convex/_generated/api'
+import { MatchCard } from './MatchCard'
+import type { Id } from '../../../convex/_generated/dataModel'
+import { AnimatedCard } from '~/components/animation/AnimatedCard'
+import { SwipeableCard } from '~/components/gestures/swipeable-card'
+import { useIsMobile } from '~/hooks/use-media-query'
 
 interface MatchTierSectionProps {
-  tier: "great" | "good" | "exploring";
+  tier: 'great' | 'good' | 'exploring'
   matches: Array<{
-    _id: Id<"matches">;
-    tier: "great" | "good" | "exploring";
-    isNew: boolean;
-    status?: "active" | "dismissed" | "saved";
-    explanation: { strengths: Array<string> };
-    probability?: { interviewChance: string; ranking: string };
+    _id: Id<'matches'>
+    tier: 'great' | 'good' | 'exploring'
+    isNew: boolean
+    status?: 'active' | 'dismissed' | 'saved'
+    explanation: { strengths: Array<string> }
+    probability?: { interviewChance: string; ranking: string }
     opportunity: {
-      _id: string;
-      title: string;
-      organization: string;
-      location: string;
-      isRemote: boolean;
-      roleType: string;
-      deadline?: number;
-    };
-  }>;
+      _id: string
+      title: string
+      organization: string
+      location: string
+      isRemote: boolean
+      roleType: string
+      deadline?: number
+    }
+  }>
 }
 
 const tierMeta = {
   great: {
-    title: "Great Matches",
-    description: "Strong alignment with your background and goals",
+    title: 'Great Matches',
+    description: 'Strong alignment with your background and goals',
     icon: Sparkles,
-    color: "text-emerald-600",
+    color: 'text-emerald-600',
   },
   good: {
-    title: "Good Matches",
-    description: "Good fit with some areas to develop",
+    title: 'Good Matches',
+    description: 'Good fit with some areas to develop',
     icon: ThumbsUp,
-    color: "text-blue-600",
+    color: 'text-blue-600',
   },
   exploring: {
-    title: "Worth Exploring",
-    description: "Stretch opportunities that could expand your horizons",
+    title: 'Worth Exploring',
+    description: 'Stretch opportunities that could expand your horizons',
     icon: Compass,
-    color: "text-amber-600",
+    color: 'text-amber-600',
   },
-};
+}
 
 export function MatchTierSection({ tier, matches }: MatchTierSectionProps) {
-  const isMobile = useIsMobile();
-  const dismissMatch = useMutation(api.matches.dismissMatch);
-  const saveMatch = useMutation(api.matches.saveMatch);
+  const isMobile = useIsMobile()
+  const dismissMatch = useMutation(api.matches.dismissMatch)
+  const saveMatch = useMutation(api.matches.saveMatch)
 
-  if (matches.length === 0) return null;
+  if (matches.length === 0) return null
 
-  const meta = tierMeta[tier];
-  const Icon = meta.icon;
+  const meta = tierMeta[tier]
+  const Icon = meta.icon
 
   return (
     <section className="mb-8">
@@ -71,8 +71,8 @@ export function MatchTierSection({ tier, matches }: MatchTierSectionProps) {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {matches.map((match, index) => {
           const card = (
-            <MatchCard match={match} isSaved={match.status === "saved"} />
-          );
+            <MatchCard match={match} isSaved={match.status === 'saved'} />
+          )
 
           if (isMobile) {
             return (
@@ -81,20 +81,18 @@ export function MatchTierSection({ tier, matches }: MatchTierSectionProps) {
                 onSwipeLeft={() => dismissMatch({ matchId: match._id })}
                 onSwipeRight={() => saveMatch({ matchId: match._id })}
               >
-                <AnimatedCard index={index}>
-                  {card}
-                </AnimatedCard>
+                <AnimatedCard index={index}>{card}</AnimatedCard>
               </SwipeableCard>
-            );
+            )
           }
 
           return (
             <AnimatedCard key={match._id} index={index}>
               {card}
             </AnimatedCard>
-          );
+          )
         })}
       </div>
     </section>
-  );
+  )
 }

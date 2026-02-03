@@ -38,7 +38,7 @@ interface PKCEData {
 const PKCE_TTL_MS = 5 * 60 * 1000 // 5 minutes
 
 export async function storePKCEData(
-  data: Omit<PKCEData, 'timestamp'>
+  data: Omit<PKCEData, 'timestamp'>,
 ): Promise<void> {
   const { Store } = await import('@tauri-apps/plugin-store')
   const store = await Store.load('oauth.json')
@@ -101,13 +101,16 @@ export function setConvexClient(client: ConvexReactClient): void {
  * Initialize deep link listener for OAuth callbacks
  * Call this on app startup before any OAuth flow
  */
-export async function initDeepLinkAuth(onCallback: AuthCallback): Promise<void> {
+export async function initDeepLinkAuth(
+  onCallback: AuthCallback,
+): Promise<void> {
   if (!isTauri()) return
 
   authCallbackHandler = onCallback
 
   try {
-    const { getCurrent, onOpenUrl } = await import('@tauri-apps/plugin-deep-link')
+    const { getCurrent, onOpenUrl } =
+      await import('@tauri-apps/plugin-deep-link')
 
     // Check if app was launched via deep link (cold start)
     const startUrls = await getCurrent()
@@ -238,7 +241,7 @@ export async function exchangeOAuthCode(
   code: string,
   _state: string,
   provider: 'github' | 'google',
-  codeVerifier?: string
+  codeVerifier?: string,
 ): Promise<OAuthExchangeResult> {
   if (!convexClient) {
     return { success: false, error: 'Convex client not initialized' }

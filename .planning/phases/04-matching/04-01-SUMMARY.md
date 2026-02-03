@@ -33,14 +33,14 @@ key-files:
     - convex/schema.ts
 
 key-decisions:
-  - "Tier labels (great/good/exploring) instead of percentages per CONTEXT.md"
-  - "isNew boolean tracks first-time matches vs recurring for prioritization"
-  - "modelVersion field enables tracking which LLM version generated matches"
-  - "Separate internal queries/mutations following enrichment/ pattern"
+  - 'Tier labels (great/good/exploring) instead of percentages per CONTEXT.md'
+  - 'isNew boolean tracks first-time matches vs recurring for prioritization'
+  - 'modelVersion field enables tracking which LLM version generated matches'
+  - 'Separate internal queries/mutations following enrichment/ pattern'
 
 patterns-established:
-  - "Matching domain uses internal functions only - public API comes in later plans"
-  - "Match validation uses matchResultValidator for consistent LLM result handling"
+  - 'Matching domain uses internal functions only - public API comes in later plans'
+  - 'Match validation uses matchResultValidator for consistent LLM result handling'
 
 # Metrics
 duration: 3min
@@ -107,5 +107,6 @@ None - no external service configuration required.
 - No blockers for proceeding to compute action
 
 ---
-*Phase: 04-matching*
-*Completed: 2026-01-18*
+
+_Phase: 04-matching_
+_Completed: 2026-01-18_

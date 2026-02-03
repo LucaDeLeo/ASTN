@@ -5,7 +5,11 @@ import { ConvexQueryClient } from '@convex-dev/react-query'
 import { ConvexAuthProvider } from '@convex-dev/auth/react'
 import { routeTree } from './routeTree.gen'
 import { isTauri } from '~/lib/platform'
-import { exchangeOAuthCode, initDeepLinkAuth, setConvexClient } from '~/lib/tauri/auth'
+import {
+  exchangeOAuthCode,
+  initDeepLinkAuth,
+  setConvexClient,
+} from '~/lib/tauri/auth'
 
 export function getRouter() {
   const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!
@@ -35,7 +39,12 @@ export function getRouter() {
     initDeepLinkAuth(async ({ code, state, provider, codeVerifier }) => {
       try {
         // Exchange the code for tokens via Convex action, passing codeVerifier for PKCE
-        const result = await exchangeOAuthCode(code, state, provider, codeVerifier)
+        const result = await exchangeOAuthCode(
+          code,
+          state,
+          provider,
+          codeVerifier,
+        )
 
         if (result.success) {
           // Navigate to profile or intended destination

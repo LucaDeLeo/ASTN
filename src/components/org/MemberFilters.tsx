@@ -1,47 +1,40 @@
-import { useState } from "react";
-import {
-  CalendarDays,
-  Filter,
-  MapPin,
-  Search,
-  Sparkles,
-  X,
-} from "lucide-react";
-import type { EngagementLevel } from "~/components/engagement/EngagementBadge";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
+import { useState } from 'react'
+import { CalendarDays, Filter, MapPin, Search, Sparkles, X } from 'lucide-react'
+import type { EngagementLevel } from '~/components/engagement/EngagementBadge'
+import { Badge } from '~/components/ui/badge'
+import { Button } from '~/components/ui/button'
+import { Input } from '~/components/ui/input'
+import { Label } from '~/components/ui/label'
 import {
   ResponsiveSheet,
   ResponsiveSheetContent,
   ResponsiveSheetHeader,
   ResponsiveSheetTitle,
   ResponsiveSheetTrigger,
-} from "~/components/ui/responsive-sheet";
+} from '~/components/ui/responsive-sheet'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select";
+} from '~/components/ui/select'
 
 export interface MemberFiltersType {
-  search?: string;
-  engagementLevels?: Array<EngagementLevel>;
-  skills?: Array<string>;
-  locations?: Array<string>;
-  joinedAfter?: number;
-  joinedBefore?: number;
-  directoryVisibility?: "visible" | "hidden" | "all";
+  search?: string
+  engagementLevels?: Array<EngagementLevel>
+  skills?: Array<string>
+  locations?: Array<string>
+  joinedAfter?: number
+  joinedBefore?: number
+  directoryVisibility?: 'visible' | 'hidden' | 'all'
 }
 
 interface MemberFiltersProps {
-  filters: MemberFiltersType;
-  onFiltersChange: (filters: MemberFiltersType) => void;
-  availableSkills: Array<string>;
-  availableLocations: Array<string>;
+  filters: MemberFiltersType
+  onFiltersChange: (filters: MemberFiltersType) => void
+  availableSkills: Array<string>
+  availableLocations: Array<string>
 }
 
 export function MemberFilters({
@@ -50,7 +43,7 @@ export function MemberFilters({
   availableSkills,
   availableLocations,
 }: MemberFiltersProps) {
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   const hasFilters =
     filters.search ||
@@ -59,89 +52,86 @@ export function MemberFilters({
     (filters.locations && filters.locations.length > 0) ||
     filters.joinedAfter ||
     filters.joinedBefore ||
-    (filters.directoryVisibility && filters.directoryVisibility !== "all");
+    (filters.directoryVisibility && filters.directoryVisibility !== 'all')
 
   const clearFilters = () => {
-    onFiltersChange({});
-  };
+    onFiltersChange({})
+  }
 
   // Helper to convert timestamp to YYYY-MM-DD for date input
   const timestampToDateString = (timestamp: number | undefined): string => {
-    if (!timestamp) return "";
-    return new Date(timestamp).toISOString().split("T")[0];
-  };
+    if (!timestamp) return ''
+    return new Date(timestamp).toISOString().split('T')[0]
+  }
 
   // Helper to convert YYYY-MM-DD to timestamp
   const dateStringToTimestamp = (dateStr: string): number | undefined => {
-    if (!dateStr) return undefined;
-    return new Date(dateStr).getTime();
-  };
+    if (!dateStr) return undefined
+    return new Date(dateStr).getTime()
+  }
 
   // Build active filter chips for mobile
   const activeFilters: Array<{
-    key: string;
-    label: string;
-    onRemove: () => void;
-  }> = [];
+    key: string
+    label: string
+    onRemove: () => void
+  }> = []
 
   if (filters.search) {
     activeFilters.push({
-      key: "search",
+      key: 'search',
       label: `"${filters.search}"`,
       onRemove: () => onFiltersChange({ ...filters, search: undefined }),
-    });
+    })
   }
   if (filters.engagementLevels && filters.engagementLevels.length > 0) {
     const engagementLabels: Record<EngagementLevel, string> = {
-      highly_engaged: "Active",
-      moderate: "Moderate",
-      at_risk: "At Risk",
-      new: "New",
-      inactive: "Inactive",
-    };
+      highly_engaged: 'Active',
+      moderate: 'Moderate',
+      at_risk: 'At Risk',
+      new: 'New',
+      inactive: 'Inactive',
+    }
     activeFilters.push({
-      key: "engagement",
+      key: 'engagement',
       label: engagementLabels[filters.engagementLevels[0]],
       onRemove: () =>
         onFiltersChange({ ...filters, engagementLevels: undefined }),
-    });
+    })
   }
   if (filters.skills && filters.skills.length > 0) {
     activeFilters.push({
-      key: "skills",
+      key: 'skills',
       label: filters.skills[0],
       onRemove: () => onFiltersChange({ ...filters, skills: undefined }),
-    });
+    })
   }
   if (filters.locations && filters.locations.length > 0) {
     activeFilters.push({
-      key: "locations",
+      key: 'locations',
       label: filters.locations[0],
       onRemove: () => onFiltersChange({ ...filters, locations: undefined }),
-    });
+    })
   }
   if (filters.joinedAfter || filters.joinedBefore) {
     activeFilters.push({
-      key: "dates",
-      label: "Date range",
+      key: 'dates',
+      label: 'Date range',
       onRemove: () =>
         onFiltersChange({
           ...filters,
           joinedAfter: undefined,
           joinedBefore: undefined,
         }),
-    });
+    })
   }
-  if (
-    filters.directoryVisibility &&
-    filters.directoryVisibility !== "all"
-  ) {
+  if (filters.directoryVisibility && filters.directoryVisibility !== 'all') {
     activeFilters.push({
-      key: "visibility",
-      label: filters.directoryVisibility === "visible" ? "Visible" : "Hidden",
+      key: 'visibility',
+      label: filters.directoryVisibility === 'visible' ? 'Visible' : 'Hidden',
       onRemove: () =>
         onFiltersChange({ ...filters, directoryVisibility: undefined }),
-    });
+    })
   }
 
   return (
@@ -152,7 +142,11 @@ export function MemberFilters({
         {activeFilters.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {activeFilters.map((filter) => (
-              <Badge key={filter.key} variant="secondary" className="pr-1 gap-1">
+              <Badge
+                key={filter.key}
+                variant="secondary"
+                className="pr-1 gap-1"
+              >
                 {filter.label}
                 <button
                   onClick={filter.onRemove}
@@ -197,7 +191,7 @@ export function MemberFilters({
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                   <Input
                     placeholder="Name or email..."
-                    value={filters.search ?? ""}
+                    value={filters.search ?? ''}
                     onChange={(e) =>
                       onFiltersChange({
                         ...filters,
@@ -213,12 +207,14 @@ export function MemberFilters({
               <div className="space-y-2">
                 <Label>Engagement</Label>
                 <Select
-                  value={filters.engagementLevels?.[0] ?? "all"}
+                  value={filters.engagementLevels?.[0] ?? 'all'}
                   onValueChange={(value) =>
                     onFiltersChange({
                       ...filters,
                       engagementLevels:
-                        value === "all" ? undefined : [value as EngagementLevel],
+                        value === 'all'
+                          ? undefined
+                          : [value as EngagementLevel],
                     })
                   }
                 >
@@ -242,11 +238,11 @@ export function MemberFilters({
                 <div className="space-y-2">
                   <Label>Skills</Label>
                   <Select
-                    value={filters.skills?.[0] ?? "all"}
+                    value={filters.skills?.[0] ?? 'all'}
                     onValueChange={(value) =>
                       onFiltersChange({
                         ...filters,
-                        skills: value === "all" ? undefined : [value],
+                        skills: value === 'all' ? undefined : [value],
                       })
                     }
                   >
@@ -270,11 +266,11 @@ export function MemberFilters({
                 <div className="space-y-2">
                   <Label>Location</Label>
                   <Select
-                    value={filters.locations?.[0] ?? "all"}
+                    value={filters.locations?.[0] ?? 'all'}
                     onValueChange={(value) =>
                       onFiltersChange({
                         ...filters,
-                        locations: value === "all" ? undefined : [value],
+                        locations: value === 'all' ? undefined : [value],
                       })
                     }
                   >
@@ -327,14 +323,14 @@ export function MemberFilters({
               <div className="space-y-2">
                 <Label>Directory Visibility</Label>
                 <Select
-                  value={filters.directoryVisibility ?? "all"}
+                  value={filters.directoryVisibility ?? 'all'}
                   onValueChange={(value) =>
                     onFiltersChange({
                       ...filters,
                       directoryVisibility:
-                        value === "all"
+                        value === 'all'
                           ? undefined
-                          : (value as "visible" | "hidden" | "all"),
+                          : (value as 'visible' | 'hidden' | 'all'),
                     })
                   }
                 >
@@ -378,9 +374,12 @@ export function MemberFilters({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
           <Input
             placeholder="Search by name or email..."
-            value={filters.search ?? ""}
+            value={filters.search ?? ''}
             onChange={(e) =>
-              onFiltersChange({ ...filters, search: e.target.value || undefined })
+              onFiltersChange({
+                ...filters,
+                search: e.target.value || undefined,
+              })
             }
             className="pl-10"
           />
@@ -388,12 +387,12 @@ export function MemberFilters({
 
         {/* Engagement filter */}
         <Select
-          value={filters.engagementLevels?.[0] ?? "all"}
+          value={filters.engagementLevels?.[0] ?? 'all'}
           onValueChange={(value) =>
             onFiltersChange({
               ...filters,
               engagementLevels:
-                value === "all" ? undefined : [value as EngagementLevel],
+                value === 'all' ? undefined : [value as EngagementLevel],
             })
           }
         >
@@ -414,11 +413,11 @@ export function MemberFilters({
         {/* Skills filter */}
         {availableSkills.length > 0 && (
           <Select
-            value={filters.skills?.[0] ?? "all"}
+            value={filters.skills?.[0] ?? 'all'}
             onValueChange={(value) =>
               onFiltersChange({
                 ...filters,
-                skills: value === "all" ? undefined : [value],
+                skills: value === 'all' ? undefined : [value],
               })
             }
           >
@@ -440,11 +439,11 @@ export function MemberFilters({
         {/* Location filter */}
         {availableLocations.length > 0 && (
           <Select
-            value={filters.locations?.[0] ?? "all"}
+            value={filters.locations?.[0] ?? 'all'}
             onValueChange={(value) =>
               onFiltersChange({
                 ...filters,
-                locations: value === "all" ? undefined : [value],
+                locations: value === 'all' ? undefined : [value],
               })
             }
           >
@@ -495,14 +494,14 @@ export function MemberFilters({
 
         {/* Directory visibility filter */}
         <Select
-          value={filters.directoryVisibility ?? "all"}
+          value={filters.directoryVisibility ?? 'all'}
           onValueChange={(value) =>
             onFiltersChange({
               ...filters,
               directoryVisibility:
-                value === "all"
+                value === 'all'
                   ? undefined
-                  : (value as "visible" | "hidden" | "all"),
+                  : (value as 'visible' | 'hidden' | 'all'),
             })
           }
         >
@@ -525,5 +524,5 @@ export function MemberFilters({
         )}
       </div>
     </div>
-  );
+  )
 }

@@ -14,11 +14,13 @@ Users can upload PDFs or paste text with clear feedback and error handling. This
 ## Implementation Decisions
 
 ### Overall personality
+
 - Playful confidence — bold colors, bouncy micro-interactions, encouraging copy
 - Not generic/safe; should feel distinctive and memorable
 - Balance playfulness on entry with smooth elegance once file is present
 
 ### Upload zone design
+
 - Prominent card with illustration, instructions, and visible "Browse" button
 - Single file only (one resume/CV at a time)
 - On drag hover: reveal animation — hidden element animates in to "catch" the file
@@ -26,23 +28,27 @@ Users can upload PDFs or paste text with clear feedback and error handling. This
 - Success state: smooth morph — elegant transform, satisfying but not over the top
 
 ### Text paste experience
+
 - Paste is fallback — appears as secondary option below the primary upload zone
 - On click: reveal with flair — playful animation matching upload zone energy
 - Placeholder: encouraging — "Paste your resume, LinkedIn summary, or anything career-related..."
 - Limits: soft warning — no hard limit, friendly nudge if text seems excessive
 
 ### Progress & status
+
 - Animated horizontal progress bar with percentage displayed
 - Distinct processing state — "Analyzing your resume..." with different animation than upload progress
 - No cancel option — operations are fast, simpler flow
 
 ### Error handling
+
 - Wrong format: quick shake animation + inline message — playful but clear
 - Too large (>10MB): prevent + explain — shows actual size vs limit, suggests compression
 - Network error: retry button + paste fallback suggestion
 - Error duration: until action — errors persist until user tries again or dismisses
 
 ### Claude's Discretion
+
 - The reveal element design (character, shape, icon that "catches" the file)
 - Exact animation timing and easing curves
 - Color palette choices within "playful confidence" direction
@@ -69,5 +75,5 @@ None — discussion stayed within phase scope
 
 ---
 
-*Phase: 07-file-upload-foundation*
-*Context gathered: 2026-01-18*
+_Phase: 07-file-upload-foundation_
+_Context gathered: 2026-01-18_

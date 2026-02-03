@@ -1,18 +1,18 @@
-import { OrgCard } from "./OrgCard";
-import type { OrgCardProps } from "./OrgCard";
-import type { ReactNode } from "react";
+import { OrgCard } from './OrgCard'
+import type { OrgCardProps } from './OrgCard'
+import type { ReactNode } from 'react'
 
 interface OrgCarouselProps {
-  orgs: Array<OrgCardProps["org"]>;
-  emptyState?: ReactNode;
+  orgs: Array<OrgCardProps['org']>
+  emptyState?: ReactNode
 }
 
 export function OrgCarousel({ orgs, emptyState }: OrgCarouselProps) {
   if (orgs.length === 0) {
     if (emptyState) {
-      return <>{emptyState}</>;
+      return <>{emptyState}</>
     }
-    return null;
+    return null
   }
 
   return (
@@ -29,5 +29,5 @@ export function OrgCarousel({ orgs, emptyState }: OrgCarouselProps) {
       {/* Subtle scroll hint gradient on right edge */}
       <div className="absolute right-0 top-0 bottom-4 w-8 bg-gradient-to-l from-slate-50 to-transparent pointer-events-none" />
     </div>
-  );
+  )
 }

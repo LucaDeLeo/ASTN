@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { AlertCircle, ChevronDown, ClipboardPaste } from "lucide-react";
-import { cn } from "~/lib/utils";
-import { Button } from "~/components/ui/button";
-import { Textarea } from "~/components/ui/textarea";
+import { useState } from 'react'
+import { AlertCircle, ChevronDown, ClipboardPaste } from 'lucide-react'
+import { cn } from '~/lib/utils'
+import { Button } from '~/components/ui/button'
+import { Textarea } from '~/components/ui/textarea'
 
-const SOFT_LIMIT = 10000;
+const SOFT_LIMIT = 10000
 
 interface TextPasteZoneProps {
-  onTextSubmit: (text: string) => void;
-  disabled?: boolean;
-  defaultExpanded?: boolean;
+  onTextSubmit: (text: string) => void
+  disabled?: boolean
+  defaultExpanded?: boolean
 }
 
 /**
@@ -29,28 +29,28 @@ export function TextPasteZone({
   disabled = false,
   defaultExpanded = false,
 }: TextPasteZoneProps) {
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
-  const [text, setText] = useState("");
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded)
+  const [text, setText] = useState('')
 
-  const charCount = text.length;
-  const showWarning = charCount > SOFT_LIMIT;
+  const charCount = text.length
+  const showWarning = charCount > SOFT_LIMIT
 
   const handleSubmit = () => {
     if (text.trim()) {
-      onTextSubmit(text.trim());
+      onTextSubmit(text.trim())
     }
-  };
+  }
 
   const handleCancel = () => {
-    setIsExpanded(false);
-    setText("");
-  };
+    setIsExpanded(false)
+    setText('')
+  }
 
   const handleExpand = () => {
     if (!disabled) {
-      setIsExpanded(true);
+      setIsExpanded(true)
     }
-  };
+  }
 
   if (!isExpanded) {
     return (
@@ -59,15 +59,15 @@ export function TextPasteZone({
         onClick={handleExpand}
         disabled={disabled}
         className={cn(
-          "flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors",
-          disabled && "opacity-50 cursor-not-allowed"
+          'flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors',
+          disabled && 'opacity-50 cursor-not-allowed',
         )}
       >
         <ClipboardPaste className="size-4" />
         <span>Or paste text instead</span>
         <ChevronDown className="size-3" />
       </button>
-    );
+    )
   }
 
   return (
@@ -101,10 +101,10 @@ export function TextPasteZone({
           </div>
           <span
             className={cn(
-              "text-sm tabular-nums",
+              'text-sm tabular-nums',
               showWarning
-                ? "text-amber-600 dark:text-amber-500"
-                : "text-muted-foreground"
+                ? 'text-amber-600 dark:text-amber-500'
+                : 'text-muted-foreground',
             )}
           >
             {charCount.toLocaleString()} characters
@@ -133,5 +133,5 @@ export function TextPasteZone({
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useAction, useQuery } from "convex/react";
-import { AlertTriangle } from "lucide-react";
-import { api } from "../../../../convex/_generated/api";
-import { SkillChip } from "./SkillChip";
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useAction, useQuery } from 'convex/react'
+import { AlertTriangle } from 'lucide-react'
+import { api } from '../../../../convex/_generated/api'
+import { SkillChip } from './SkillChip'
 
 interface SkillsInputProps {
-  selectedSkills: Array<string>;
-  onSkillsChange: (skills: Array<string>) => void;
-  maxSuggested?: number;
+  selectedSkills: Array<string>
+  onSkillsChange: (skills: Array<string>) => void
+  maxSuggested?: number
 }
 
 export function SkillsInput({
@@ -15,86 +15,86 @@ export function SkillsInput({
   onSkillsChange,
   maxSuggested = 10,
 }: SkillsInputProps) {
-  const [input, setInput] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const suggestionsRef = useRef<HTMLUListElement>(null);
+  const [input, setInput] = useState('')
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [highlightedIndex, setHighlightedIndex] = useState(-1)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const suggestionsRef = useRef<HTMLUListElement>(null)
 
-  const taxonomy = useQuery(api.skills.getTaxonomy);
-  const ensureTaxonomySeeded = useAction(api.skills.ensureTaxonomySeeded);
+  const taxonomy = useQuery(api.skills.getTaxonomy)
+  const ensureTaxonomySeeded = useAction(api.skills.ensureTaxonomySeeded)
 
   // Seed taxonomy on mount if empty
   useEffect(() => {
     if (taxonomy && taxonomy.length === 0) {
-      ensureTaxonomySeeded();
+      ensureTaxonomySeeded()
     }
-  }, [taxonomy, ensureTaxonomySeeded]);
+  }, [taxonomy, ensureTaxonomySeeded])
 
   // Filter suggestions based on input
   const suggestions = useMemo(() => {
-    if (!input.trim() || !taxonomy) return [];
-    const lowerInput = input.toLowerCase();
+    if (!input.trim() || !taxonomy) return []
+    const lowerInput = input.toLowerCase()
     return taxonomy
       .filter(
         (skill) =>
           skill.name.toLowerCase().includes(lowerInput) &&
-          !selectedSkills.includes(skill.name)
+          !selectedSkills.includes(skill.name),
       )
-      .slice(0, 8);
-  }, [input, taxonomy, selectedSkills]);
+      .slice(0, 8)
+  }, [input, taxonomy, selectedSkills])
 
   // Reset highlighted index when suggestions change
   useEffect(() => {
-    setHighlightedIndex(-1);
-  }, [suggestions]);
+    setHighlightedIndex(-1)
+  }, [suggestions])
 
   const addSkill = (skill: string) => {
-    const trimmedSkill = skill.trim();
+    const trimmedSkill = skill.trim()
     if (trimmedSkill && !selectedSkills.includes(trimmedSkill)) {
-      onSkillsChange([...selectedSkills, trimmedSkill]);
+      onSkillsChange([...selectedSkills, trimmedSkill])
     }
-    setInput("");
-    setShowSuggestions(false);
-    inputRef.current?.focus();
-  };
+    setInput('')
+    setShowSuggestions(false)
+    inputRef.current?.focus()
+  }
 
   const removeSkill = (skill: string) => {
-    onSkillsChange(selectedSkills.filter((s) => s !== skill));
-  };
+    onSkillsChange(selectedSkills.filter((s) => s !== skill))
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
       setHighlightedIndex((prev) =>
-        prev < suggestions.length - 1 ? prev + 1 : prev
-      );
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : -1));
-    } else if (e.key === "Enter") {
-      e.preventDefault();
+        prev < suggestions.length - 1 ? prev + 1 : prev,
+      )
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : -1))
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
       if (highlightedIndex >= 0 && suggestions[highlightedIndex]) {
-        addSkill(suggestions[highlightedIndex].name);
+        addSkill(suggestions[highlightedIndex].name)
       } else if (input.trim()) {
         // Add custom skill
-        addSkill(input.trim());
+        addSkill(input.trim())
       }
-    } else if (e.key === "Escape") {
-      setShowSuggestions(false);
-      setHighlightedIndex(-1);
+    } else if (e.key === 'Escape') {
+      setShowSuggestions(false)
+      setHighlightedIndex(-1)
     }
-  };
+  }
 
   // Scroll highlighted item into view
   useEffect(() => {
     if (highlightedIndex >= 0 && suggestionsRef.current) {
       const highlightedElement = suggestionsRef.current.children[
         highlightedIndex
-      ] as HTMLElement | undefined;
-      highlightedElement?.scrollIntoView({ block: "nearest" });
+      ] as HTMLElement | undefined
+      highlightedElement?.scrollIntoView({ block: 'nearest' })
     }
-  }, [highlightedIndex]);
+  }, [highlightedIndex])
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -105,15 +105,15 @@ export function SkillsInput({
         suggestionsRef.current &&
         !suggestionsRef.current.contains(e.target as Node)
       ) {
-        setShowSuggestions(false);
+        setShowSuggestions(false)
       }
-    };
+    }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
-  const showSoftLimit = selectedSkills.length >= maxSuggested;
+  const showSoftLimit = selectedSkills.length >= maxSuggested
 
   return (
     <div className="space-y-3">
@@ -121,7 +121,10 @@ export function SkillsInput({
       {showSoftLimit && (
         <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-md text-amber-800 text-sm">
           <AlertTriangle className="size-4 flex-shrink-0" />
-          <span>Consider focusing on your top {maxSuggested} skills for better matching</span>
+          <span>
+            Consider focusing on your top {maxSuggested} skills for better
+            matching
+          </span>
         </div>
       )}
 
@@ -145,8 +148,8 @@ export function SkillsInput({
           type="text"
           value={input}
           onChange={(e) => {
-            setInput(e.target.value);
-            setShowSuggestions(true);
+            setInput(e.target.value)
+            setShowSuggestions(true)
           }}
           onFocus={() => setShowSuggestions(true)}
           onKeyDown={handleKeyDown}
@@ -167,8 +170,8 @@ export function SkillsInput({
                 onMouseEnter={() => setHighlightedIndex(index)}
                 className={`px-3 py-2 cursor-pointer flex items-center justify-between ${
                   index === highlightedIndex
-                    ? "bg-coral-50"
-                    : "hover:bg-slate-50"
+                    ? 'bg-coral-50'
+                    : 'hover:bg-slate-50'
                 }`}
               >
                 <span className="text-foreground">{skill.name}</span>
@@ -193,5 +196,5 @@ export function SkillsInput({
         Select from AI safety taxonomy or add your own skills
       </p>
     </div>
-  );
+  )
 }

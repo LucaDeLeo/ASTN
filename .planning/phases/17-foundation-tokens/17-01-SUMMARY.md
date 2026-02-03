@@ -18,13 +18,13 @@ affects: [18-page-layouts, 19-components, 20-polish]
 # Tech tracking
 tech-stack:
   added:
-    - "@fontsource-variable/plus-jakarta-sans@5.2.8"
-    - "@fontsource-variable/lora@5.2.8"
+    - '@fontsource-variable/plus-jakarta-sans@5.2.8'
+    - '@fontsource-variable/lora@5.2.8'
   patterns:
-    - "OKLCH color tokens for perceptual uniformity"
-    - "Primitive + semantic token layering"
-    - "Fluid typography with clamp() for responsive scaling"
-    - "@theme inline for Tailwind v4 utility generation"
+    - 'OKLCH color tokens for perceptual uniformity'
+    - 'Primitive + semantic token layering'
+    - 'Fluid typography with clamp() for responsive scaling'
+    - '@theme inline for Tailwind v4 utility generation'
 
 key-files:
   created: []
@@ -32,14 +32,14 @@ key-files:
     - src/styles/app.css
 
 key-decisions:
-  - "Used OKLCH color space for all new tokens (perceptually uniform, consistent chroma)"
-  - "Lora for display/headings, Plus Jakarta Sans for body (split personality per CONTEXT.md)"
-  - "Fluid type scale range: 320px to 1440px viewport (mobile to desktop)"
+  - 'Used OKLCH color space for all new tokens (perceptually uniform, consistent chroma)'
+  - 'Lora for display/headings, Plus Jakarta Sans for body (split personality per CONTEXT.md)'
+  - 'Fluid type scale range: 320px to 1440px viewport (mobile to desktop)'
 
 patterns-established:
-  - "Primitive tokens as raw --color-name: oklch values"
-  - "Semantic tokens reference primitives via var()"
-  - "@theme inline maps --color-* to Tailwind utilities"
+  - 'Primitive tokens as raw --color-name: oklch values'
+  - 'Semantic tokens reference primitives via var()'
+  - '@theme inline maps --color-* to Tailwind utilities'
 
 # Metrics
 duration: 3min
@@ -64,7 +64,7 @@ completed: 2026-01-20
 - Defined warm cream palette (4 steps) and extended coral scale (10 steps) in OKLCH
 - Added complementary teal accent and warm-shifted semantic colors
 - Created fluid typography scale that scales smoothly 320px-1440px viewport
-- Generated Tailwind utilities: bg-cream-*, text-coral-*, font-display, font-body, etc.
+- Generated Tailwind utilities: bg-cream-_, text-coral-_, font-display, font-body, etc.
 
 ## Task Commits
 
@@ -107,5 +107,6 @@ None - no external service configuration required.
 - All existing shadcn components continue working (backward compatible)
 
 ---
-*Phase: 17-foundation-tokens*
-*Completed: 2026-01-20*
+
+_Phase: 17-foundation-tokens_
+_Completed: 2026-01-20_

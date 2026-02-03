@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from 'react'
 import {
   Dialog,
   DialogClose,
@@ -7,9 +7,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "~/components/ui/dialog"
-import { useIsMobile } from "~/hooks/use-media-query"
-import { cn } from "~/lib/utils"
+} from '~/components/ui/dialog'
+import { useIsMobile } from '~/hooks/use-media-query'
+import { cn } from '~/lib/utils'
 
 interface ResponsiveSheetProps {
   children: React.ReactNode
@@ -21,8 +21,9 @@ function ResponsiveSheet({ children, ...props }: ResponsiveSheetProps) {
   return <Dialog {...props}>{children}</Dialog>
 }
 
-interface ResponsiveSheetContentProps
-  extends React.ComponentProps<typeof DialogContent> {
+interface ResponsiveSheetContentProps extends React.ComponentProps<
+  typeof DialogContent
+> {
   children: React.ReactNode
 }
 
@@ -38,16 +39,16 @@ function ResponsiveSheetContent({
       className={cn(
         isMobile && [
           // Bottom sheet positioning
-          "fixed bottom-0 top-auto left-0 right-0",
-          "translate-x-0 translate-y-0",
-          "max-w-full w-full",
-          "rounded-t-xl rounded-b-none",
-          "max-h-[85vh]",
+          'fixed bottom-0 top-auto left-0 right-0',
+          'translate-x-0 translate-y-0',
+          'max-w-full w-full',
+          'rounded-t-xl rounded-b-none',
+          'max-h-[85vh]',
           // Slide up animation
-          "data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom",
-          "data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom",
+          'data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom',
+          'data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom',
         ],
-        className
+        className,
       )}
       {...props}
     >

@@ -14,6 +14,7 @@ Users can create and manage rich profiles capturing their background, skills, an
 ## Implementation Decisions
 
 ### Form flow & structure
+
 - Multi-step wizard (not single page or cards)
 - Claude determines optimal step grouping based on field relationships
 - Auto-save on blur — each field saves when user leaves it
@@ -21,11 +22,13 @@ Users can create and manage rich profiles capturing their background, skills, an
 - Users can skip steps and return later to complete them
 
 ### Skills selection experience
+
 - Freeform input with taxonomy suggestions — type freely, system suggests matches from AI safety taxonomy
 - Tag-based chips UI — skills appear as removable chips (like GitHub topics)
 - Soft limit with guidance — suggest "pick your top 10" but allow more if needed
 
 ### LLM enrichment conversation
+
 - Integrated as a wizard step (not separate or post-completion)
 - Career coach tone — friendly, exploratory ("Tell me about what draws you to AI safety...")
 - Auto-extract and fill — LLM extracts info and updates profile fields automatically
@@ -36,6 +39,7 @@ Users can create and manage rich profiles capturing their background, skills, an
 - Continuable anytime — "Continue enrichment" button on profile, context preserved
 
 ### Completeness & privacy
+
 - Checklist of sections (not progress bar or ring) — shows which sections done vs remaining
 - Display during wizard — see progress update as you complete steps
 - Dedicated privacy step in wizard — focused attention on privacy settings
@@ -45,6 +49,7 @@ Users can create and manage rich profiles capturing their background, skills, an
 - LinkedIn-style visibility controls — dropdowns per section
 
 ### Claude's Discretion
+
 - Optimal wizard step grouping and field organization
 - Skill proficiency levels (whether to include and how)
 - Unlock tier structure for completeness thresholds
@@ -72,5 +77,5 @@ None — discussion stayed within phase scope
 
 ---
 
-*Phase: 03-profiles*
-*Context gathered: 2026-01-17*
+_Phase: 03-profiles_
+_Context gathered: 2026-01-17_

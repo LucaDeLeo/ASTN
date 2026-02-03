@@ -14,36 +14,43 @@ Users receive configurable notifications about events from their orgs. Includes 
 ## Implementation Decisions
 
 ### Notification Frequency
+
 - Four tiers: All / Daily digest / Weekly digest / None
 - Weekly digest sent Sunday evening
 - Daily digest timing: Claude's discretion
 - Default for new users: Weekly digest (safe, not overwhelming)
 
 ### Batching & Rate Limiting
+
 - "All" frequency has rate limiting to prevent spam (Claude decides limits)
 - Digests batch all events since last digest
 - Notifications batch properly per research concern about fatigue
 
 ### Reminder Timing
+
 - Three options available: 1 week before / 1 day before / 1 hour before
 - Users can enable any combination of these
 - Default: 1 day + 1 hour before (two reminders)
 
 ### Reminder Audience
+
 - Reminders sent to anyone who viewed the event
 - Broader reach than just RSVP'd users — may convert interest to attendance
 
 ### Channels
+
 - Email + in-app for this phase
 - Push notifications planned for later (out of scope)
 - In-app: Toast notifications + persisted in bell icon notification center
 
 ### Notification Content
+
 - Medium detail level: title, date, org, link, description snippet, location
 - Enough context to decide without clicking through
 - Action buttons: "View event" + "RSVP on lu.ma"
 
 ### Claude's Discretion
+
 - Rate limiting specifics for "All" frequency (reasonable limits to prevent overload)
 - Event type taxonomy (use lu.ma types or define our own)
 - Type filtering scope (global vs per-org)
@@ -73,5 +80,5 @@ None — discussion stayed within phase scope
 
 ---
 
-*Phase: 13-event-notifications*
-*Context gathered: 2026-01-19*
+_Phase: 13-event-notifications_
+_Context gathered: 2026-01-19_

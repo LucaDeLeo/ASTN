@@ -36,21 +36,24 @@ Organize your Convex functions by domain:
 
 ```typescript
 // convex/users.ts - User-related functions
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
+import { query, mutation } from './_generated/server'
+import { v } from 'convex/values'
 
 export const get = query({
-  args: { userId: v.id("users") },
-  returns: v.union(v.object({
-    _id: v.id("users"),
-    _creationTime: v.number(),
-    name: v.string(),
-    email: v.string(),
-  }), v.null()),
+  args: { userId: v.id('users') },
+  returns: v.union(
+    v.object({
+      _id: v.id('users'),
+      _creationTime: v.number(),
+      name: v.string(),
+      email: v.string(),
+    }),
+    v.null(),
+  ),
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.userId);
+    return await ctx.db.get(args.userId)
   },
-});
+})
 ```
 
 ### Argument and Return Validation
@@ -62,19 +65,19 @@ export const createTask = mutation({
   args: {
     title: v.string(),
     description: v.optional(v.string()),
-    priority: v.union(v.literal("low"), v.literal("medium"), v.literal("high")),
+    priority: v.union(v.literal('low'), v.literal('medium'), v.literal('high')),
   },
-  returns: v.id("tasks"),
+  returns: v.id('tasks'),
   handler: async (ctx, args) => {
-    return await ctx.db.insert("tasks", {
+    return await ctx.db.insert('tasks', {
       title: args.title,
       description: args.description,
       priority: args.priority,
       completed: false,
       createdAt: Date.now(),
-    });
+    })
   },
-});
+})
 ```
 
 ### Query Patterns
@@ -85,32 +88,34 @@ Use indexes instead of filters for efficient queries:
 // Schema with index
 export default defineSchema({
   tasks: defineTable({
-    userId: v.id("users"),
+    userId: v.id('users'),
     status: v.string(),
     createdAt: v.number(),
   })
-    .index("by_user", ["userId"])
-    .index("by_user_and_status", ["userId", "status"]),
-});
+    .index('by_user', ['userId'])
+    .index('by_user_and_status', ['userId', 'status']),
+})
 
 // Query using index
 export const getTasksByUser = query({
-  args: { userId: v.id("users") },
-  returns: v.array(v.object({
-    _id: v.id("tasks"),
-    _creationTime: v.number(),
-    userId: v.id("users"),
-    status: v.string(),
-    createdAt: v.number(),
-  })),
+  args: { userId: v.id('users') },
+  returns: v.array(
+    v.object({
+      _id: v.id('tasks'),
+      _creationTime: v.number(),
+      userId: v.id('users'),
+      status: v.string(),
+      createdAt: v.number(),
+    }),
+  ),
   handler: async (ctx, args) => {
     return await ctx.db
-      .query("tasks")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
-      .order("desc")
-      .collect();
+      .query('tasks')
+      .withIndex('by_user', (q) => q.eq('userId', args.userId))
+      .order('desc')
+      .collect()
   },
-});
+})
 ```
 
 ### Error Handling
@@ -118,28 +123,28 @@ export const getTasksByUser = query({
 Use ConvexError for user-facing errors:
 
 ```typescript
-import { ConvexError } from "convex/values";
+import { ConvexError } from 'convex/values'
 
 export const updateTask = mutation({
   args: {
-    taskId: v.id("tasks"),
+    taskId: v.id('tasks'),
     title: v.string(),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const task = await ctx.db.get(args.taskId);
-    
+    const task = await ctx.db.get(args.taskId)
+
     if (!task) {
       throw new ConvexError({
-        code: "NOT_FOUND",
-        message: "Task not found",
-      });
+        code: 'NOT_FOUND',
+        message: 'Task not found',
+      })
     }
-    
-    await ctx.db.patch(args.taskId, { title: args.title });
-    return null;
+
+    await ctx.db.patch(args.taskId, { title: args.title })
+    return null
   },
-});
+})
 ```
 
 ### Avoiding Write Conflicts (Optimistic Concurrency Control)
@@ -149,62 +154,62 @@ Convex uses OCC. Follow these patterns to minimize conflicts:
 ```typescript
 // GOOD: Make mutations idempotent
 export const completeTask = mutation({
-  args: { taskId: v.id("tasks") },
+  args: { taskId: v.id('tasks') },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const task = await ctx.db.get(args.taskId);
-    
+    const task = await ctx.db.get(args.taskId)
+
     // Early return if already complete (idempotent)
-    if (!task || task.status === "completed") {
-      return null;
+    if (!task || task.status === 'completed') {
+      return null
     }
-    
+
     await ctx.db.patch(args.taskId, {
-      status: "completed",
+      status: 'completed',
       completedAt: Date.now(),
-    });
-    return null;
+    })
+    return null
   },
-});
+})
 
 // GOOD: Patch directly without reading first when possible
 export const updateNote = mutation({
-  args: { id: v.id("notes"), content: v.string() },
+  args: { id: v.id('notes'), content: v.string() },
   returns: v.null(),
   handler: async (ctx, args) => {
     // Patch directly - ctx.db.patch throws if document doesn't exist
-    await ctx.db.patch(args.id, { content: args.content });
-    return null;
+    await ctx.db.patch(args.id, { content: args.content })
+    return null
   },
-});
+})
 
 // GOOD: Use Promise.all for parallel independent updates
 export const reorderItems = mutation({
-  args: { itemIds: v.array(v.id("items")) },
+  args: { itemIds: v.array(v.id('items')) },
   returns: v.null(),
   handler: async (ctx, args) => {
     const updates = args.itemIds.map((id, index) =>
-      ctx.db.patch(id, { order: index })
-    );
-    await Promise.all(updates);
-    return null;
+      ctx.db.patch(id, { order: index }),
+    )
+    await Promise.all(updates)
+    return null
   },
-});
+})
 ```
 
 ### TypeScript Best Practices
 
 ```typescript
-import { Id, Doc } from "./_generated/dataModel";
+import { Id, Doc } from './_generated/dataModel'
 
 // Use Id type for document references
-type UserId = Id<"users">;
+type UserId = Id<'users'>
 
 // Use Doc type for full documents
-type User = Doc<"users">;
+type User = Doc<'users'>
 
 // Define Record types properly
-const userScores: Record<Id<"users">, number> = {};
+const userScores: Record<Id<'users'>, number> = {}
 ```
 
 ### Internal vs Public Functions
@@ -212,21 +217,26 @@ const userScores: Record<Id<"users">, number> = {};
 ```typescript
 // Public function - exposed to clients
 export const getUser = query({
-  args: { userId: v.id("users") },
-  returns: v.union(v.null(), v.object({ /* ... */ })),
+  args: { userId: v.id('users') },
+  returns: v.union(
+    v.null(),
+    v.object({
+      /* ... */
+    }),
+  ),
   handler: async (ctx, args) => {
     // ...
   },
-});
+})
 
 // Internal function - only callable from other Convex functions
 export const _updateUserStats = internalMutation({
-  args: { userId: v.id("users") },
+  args: { userId: v.id('users') },
   returns: v.null(),
   handler: async (ctx, args) => {
     // ...
   },
-});
+})
 ```
 
 ## Examples
@@ -235,74 +245,74 @@ export const _updateUserStats = internalMutation({
 
 ```typescript
 // convex/tasks.ts
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
-import { ConvexError } from "convex/values";
+import { query, mutation } from './_generated/server'
+import { v } from 'convex/values'
+import { ConvexError } from 'convex/values'
 
 const taskValidator = v.object({
-  _id: v.id("tasks"),
+  _id: v.id('tasks'),
   _creationTime: v.number(),
   title: v.string(),
   completed: v.boolean(),
-  userId: v.id("users"),
-});
+  userId: v.id('users'),
+})
 
 export const list = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id('users') },
   returns: v.array(taskValidator),
   handler: async (ctx, args) => {
     return await ctx.db
-      .query("tasks")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
-      .collect();
+      .query('tasks')
+      .withIndex('by_user', (q) => q.eq('userId', args.userId))
+      .collect()
   },
-});
+})
 
 export const create = mutation({
   args: {
     title: v.string(),
-    userId: v.id("users"),
+    userId: v.id('users'),
   },
-  returns: v.id("tasks"),
+  returns: v.id('tasks'),
   handler: async (ctx, args) => {
-    return await ctx.db.insert("tasks", {
+    return await ctx.db.insert('tasks', {
       title: args.title,
       completed: false,
       userId: args.userId,
-    });
+    })
   },
-});
+})
 
 export const update = mutation({
   args: {
-    taskId: v.id("tasks"),
+    taskId: v.id('tasks'),
     title: v.optional(v.string()),
     completed: v.optional(v.boolean()),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const { taskId, ...updates } = args;
-    
+    const { taskId, ...updates } = args
+
     // Remove undefined values
     const cleanUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([_, v]) => v !== undefined)
-    );
-    
+      Object.entries(updates).filter(([_, v]) => v !== undefined),
+    )
+
     if (Object.keys(cleanUpdates).length > 0) {
-      await ctx.db.patch(taskId, cleanUpdates);
+      await ctx.db.patch(taskId, cleanUpdates)
     }
-    return null;
+    return null
   },
-});
+})
 
 export const remove = mutation({
-  args: { taskId: v.id("tasks") },
+  args: { taskId: v.id('tasks') },
   returns: v.null(),
   handler: async (ctx, args) => {
-    await ctx.db.delete(args.taskId);
-    return null;
+    await ctx.db.delete(args.taskId)
+    return null
   },
-});
+})
 ```
 
 ## Best Practices

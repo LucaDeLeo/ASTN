@@ -2,7 +2,51 @@ import { getAuthUserId } from '@convex-dev/auth/server'
 import { v } from 'convex/values'
 import { query } from '../_generated/server'
 import { log } from '../lib/logging'
+import type { QueryCtx } from '../_generated/server'
 import type { Doc, Id } from '../_generated/dataModel'
+
+/**
+ * Build a Map from parallel-fetched results for O(1) lookup.
+ * Pairs each ID with its fetched document, skipping nulls (deleted docs).
+ */
+function buildLookupMap<T extends { _id: string }>(
+  ids: Array<string>,
+  docs: Array<T | null>,
+): Map<string, T> {
+  const map = new Map<string, T>()
+  for (let i = 0; i < ids.length; i++) {
+    const doc = docs[i]
+    if (doc) map.set(ids[i], doc)
+  }
+  return map
+}
+
+/**
+ * Batch-fetch events and orgs for a set of IDs, returning lookup Maps.
+ */
+async function batchFetchEventsAndOrgs(
+  ctx: QueryCtx,
+  eventIds: Set<Id<'events'>>,
+  orgIds: Set<Id<'organizations'>>,
+): Promise<{
+  eventMap: Map<string, Doc<'events'>>
+  orgMap: Map<string, Doc<'organizations'>>
+  eventCount: number
+  orgCount: number
+}> {
+  const eventIdArr = [...eventIds]
+  const orgIdArr = [...orgIds]
+  const [events, orgs] = await Promise.all([
+    Promise.all(eventIdArr.map((id) => ctx.db.get('events', id))),
+    Promise.all(orgIdArr.map((id) => ctx.db.get('organizations', id))),
+  ])
+  return {
+    eventMap: buildLookupMap(eventIdArr, events),
+    orgMap: buildLookupMap(orgIdArr, orgs),
+    eventCount: eventIdArr.length,
+    orgCount: orgIdArr.length,
+  }
+}
 
 /**
  * Get current user's attendance history
@@ -23,7 +67,7 @@ export const getMyAttendanceHistory = query({
 
     if (attendance.length === 0) return []
 
-    // Pass 1: Collect unique IDs
+    // Collect unique IDs
     const eventIds = new Set<Id<'events'>>()
     const orgIds = new Set<Id<'organizations'>>()
     for (const record of attendance) {
@@ -31,30 +75,14 @@ export const getMyAttendanceHistory = query({
       orgIds.add(record.orgId)
     }
 
-    // Pass 2: Batch fetch
-    const eventIdArr = [...eventIds]
-    const orgIdArr = [...orgIds]
-    const [events, orgs] = await Promise.all([
-      Promise.all(eventIdArr.map((id) => ctx.db.get('events', id))),
-      Promise.all(orgIdArr.map((id) => ctx.db.get('organizations', id))),
-    ])
-
-    // Pass 3: Build Maps for O(1) lookup
-    const eventMap = new Map<string, Doc<'events'>>()
-    for (let i = 0; i < eventIdArr.length; i++) {
-      const event = events[i]
-      if (event) eventMap.set(eventIdArr[i], event)
-    }
-    const orgMap = new Map<string, Doc<'organizations'>>()
-    for (let i = 0; i < orgIdArr.length; i++) {
-      const org = orgs[i]
-      if (org) orgMap.set(orgIdArr[i], org)
-    }
+    // Batch fetch and build lookup Maps
+    const { eventMap, orgMap, eventCount, orgCount } =
+      await batchFetchEventsAndOrgs(ctx, eventIds, orgIds)
 
     log('info', 'getMyAttendanceHistory', {
       records: attendance.length,
-      batchedEventReads: eventIdArr.length,
-      batchedOrgReads: orgIdArr.length,
+      batchedEventReads: eventCount,
+      batchedOrgReads: orgCount,
     })
 
     // Enrich with Map lookups
@@ -110,7 +138,7 @@ export const getPendingPrompts = query({
 
     if (prompts.length === 0) return []
 
-    // Pass 1: Collect unique IDs
+    // Collect unique IDs
     const eventIds = new Set<Id<'events'>>()
     const orgIds = new Set<Id<'organizations'>>()
     for (const prompt of prompts) {
@@ -118,30 +146,14 @@ export const getPendingPrompts = query({
       if (prompt.orgId) orgIds.add(prompt.orgId)
     }
 
-    // Pass 2: Batch fetch
-    const eventIdArr = [...eventIds]
-    const orgIdArr = [...orgIds]
-    const [events, orgs] = await Promise.all([
-      Promise.all(eventIdArr.map((id) => ctx.db.get('events', id))),
-      Promise.all(orgIdArr.map((id) => ctx.db.get('organizations', id))),
-    ])
-
-    // Pass 3: Build Maps for O(1) lookup
-    const eventMap = new Map<string, Doc<'events'>>()
-    for (let i = 0; i < eventIdArr.length; i++) {
-      const event = events[i]
-      if (event) eventMap.set(eventIdArr[i], event)
-    }
-    const orgMap = new Map<string, Doc<'organizations'>>()
-    for (let i = 0; i < orgIdArr.length; i++) {
-      const org = orgs[i]
-      if (org) orgMap.set(orgIdArr[i], org)
-    }
+    // Batch fetch and build lookup Maps
+    const { eventMap, orgMap, eventCount, orgCount } =
+      await batchFetchEventsAndOrgs(ctx, eventIds, orgIds)
 
     log('info', 'getPendingPrompts', {
       prompts: prompts.length,
-      batchedEventReads: eventIdArr.length,
-      batchedOrgReads: orgIdArr.length,
+      batchedEventReads: eventCount,
+      batchedOrgReads: orgCount,
     })
 
     // Enrich with Map lookups
@@ -237,7 +249,7 @@ export const getMyAttendanceSummary = query({
       }
     }
 
-    // Pass 1: Collect unique IDs from recent records
+    // Collect unique IDs from recent records
     const eventIds = new Set<Id<'events'>>()
     const orgIds = new Set<Id<'organizations'>>()
     for (const record of recentRecords) {
@@ -245,31 +257,15 @@ export const getMyAttendanceSummary = query({
       orgIds.add(record.orgId)
     }
 
-    // Pass 2: Batch fetch
-    const eventIdArr = [...eventIds]
-    const orgIdArr = [...orgIds]
-    const [events, orgs] = await Promise.all([
-      Promise.all(eventIdArr.map((id) => ctx.db.get('events', id))),
-      Promise.all(orgIdArr.map((id) => ctx.db.get('organizations', id))),
-    ])
-
-    // Pass 3: Build Maps for O(1) lookup
-    const eventMap = new Map<string, Doc<'events'>>()
-    for (let i = 0; i < eventIdArr.length; i++) {
-      const event = events[i]
-      if (event) eventMap.set(eventIdArr[i], event)
-    }
-    const orgMap = new Map<string, Doc<'organizations'>>()
-    for (let i = 0; i < orgIdArr.length; i++) {
-      const org = orgs[i]
-      if (org) orgMap.set(orgIdArr[i], org)
-    }
+    // Batch fetch and build lookup Maps
+    const { eventMap, orgMap, eventCount, orgCount } =
+      await batchFetchEventsAndOrgs(ctx, eventIds, orgIds)
 
     log('info', 'getMyAttendanceSummary', {
       totalRecords: allAttendance.length,
       recentRecords: recentRecords.length,
-      batchedEventReads: eventIdArr.length,
-      batchedOrgReads: orgIdArr.length,
+      batchedEventReads: eventCount,
+      batchedOrgReads: orgCount,
     })
 
     // Enrich recent records with Map lookups

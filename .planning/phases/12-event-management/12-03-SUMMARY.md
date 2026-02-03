@@ -29,13 +29,13 @@ key-files:
     - src/routes/index.tsx
 
 key-decisions:
-  - "Events grouped by org name on dashboard for clear organization"
-  - "Max 5 events shown per org with overflow indicator"
+  - 'Events grouped by org name on dashboard for clear organization'
+  - 'Max 5 events shown per org with overflow indicator'
   - "Date format: 'Fri, Jan 24 at 6:00 PM' using date-fns"
 
 patterns-established:
-  - "EventCard: compact card linking to external lu.ma event page"
-  - "Dashboard events: grouped by org with empty state fallbacks"
+  - 'EventCard: compact card linking to external lu.ma event page'
+  - 'Dashboard events: grouped by org with empty state fallbacks'
 
 # Metrics
 duration: 5min
@@ -100,5 +100,6 @@ None - no external service configuration required.
 - Ready for Phase 13: Attendance Tracking
 
 ---
-*Phase: 12-event-management*
-*Completed: 2026-01-19*
+
+_Phase: 12-event-management_
+_Completed: 2026-01-19_

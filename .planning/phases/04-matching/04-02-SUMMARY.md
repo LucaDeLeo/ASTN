@@ -37,16 +37,16 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Use internalAction for compute to avoid TypeScript circular reference with public triggerMatchComputation"
-  - "Batch 15 opportunities per LLM call for efficient context usage"
-  - "Cap at 50 opportunities per profile for pilot (configurable)"
-  - "Explicit type annotations in action handlers to break TypeScript inference cycles"
+  - 'Use internalAction for compute to avoid TypeScript circular reference with public triggerMatchComputation'
+  - 'Batch 15 opportunities per LLM call for efficient context usage'
+  - 'Cap at 50 opportunities per profile for pilot (configurable)'
+  - 'Explicit type annotations in action handlers to break TypeScript inference cycles'
 
 patterns-established:
-  - "Context builders produce markdown-formatted strings for LLM consumption"
-  - "Tool definition with forced tool_choice guarantees structured output"
-  - "Public actions call internal actions for LLM work"
-  - "Match results include tier, score, strengths, gap, probability, recommendations"
+  - 'Context builders produce markdown-formatted strings for LLM consumption'
+  - 'Tool definition with forced tool_choice guarantees structured output'
+  - 'Public actions call internal actions for LLM work'
+  - 'Match results include tier, score, strengths, gap, probability, recommendations'
 
 # Metrics
 duration: 5min
@@ -97,6 +97,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Fixed TypeScript circular type inference**
+
 - **Found during:** Task 3 (public queries)
 - **Issue:** TypeScript reported circular reference errors when action called another action via `api`
 - **Fix:** Changed compute action to `internalAction`, call via `internal.matching.compute`, added explicit return type annotations
@@ -125,5 +126,6 @@ None - no external service configuration required. ANTHROPIC_API_KEY already con
 - No blockers for proceeding to matches dashboard
 
 ---
-*Phase: 04-matching*
-*Completed: 2026-01-18*
+
+_Phase: 04-matching_
+_Completed: 2026-01-18_

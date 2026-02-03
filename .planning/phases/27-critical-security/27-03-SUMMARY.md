@@ -18,7 +18,12 @@ affects: [28-important-security, 29-nice-to-have-security]
 # Tech tracking
 tech-stack:
   added: [zod@3.25 (explicit dependency)]
-  patterns: [XML-delimited user data in LLM prompts, shadow-mode Zod validation, centralized field limits]
+  patterns:
+    [
+      XML-delimited user data in LLM prompts,
+      shadow-mode Zod validation,
+      centralized field limits,
+    ]
 
 key-files:
   created:
@@ -39,17 +44,17 @@ key-files:
     - convex/extraction/prompts.ts
 
 key-decisions:
-  - "Shadow mode for Zod validation: log failures but never block operations (pilot safety)"
-  - "Permissive schemas with .passthrough() and .optional() -- catch structural issues without false positives"
-  - "matchItemSchema recommendations uses .default([]) so downstream code always gets an array"
-  - "z.coerce.number() for score fields to handle LLM returning strings"
-  - "z.string() (not z.enum) for interviewChance, ranking, confidence -- LLM may use unexpected values"
-  - "XML tag names chosen to match data semantics: candidate_profile, opportunities, profile_data, member_data, document_content, conversation"
-  - "enrichment extraction restructured from multi-message to single XML-wrapped user message"
-  - "Profile context truncated at 50K chars as safety net against abnormally large profiles"
+  - 'Shadow mode for Zod validation: log failures but never block operations (pilot safety)'
+  - 'Permissive schemas with .passthrough() and .optional() -- catch structural issues without false positives'
+  - 'matchItemSchema recommendations uses .default([]) so downstream code always gets an array'
+  - 'z.coerce.number() for score fields to handle LLM returning strings'
+  - 'z.string() (not z.enum) for interviewChance, ranking, confidence -- LLM may use unexpected values'
+  - 'XML tag names chosen to match data semantics: candidate_profile, opportunities, profile_data, member_data, document_content, conversation'
+  - 'enrichment extraction restructured from multi-message to single XML-wrapped user message'
+  - 'Profile context truncated at 50K chars as safety net against abnormally large profiles'
 
 patterns-established:
-  - "XML delimiter pattern: wrap user data in named XML tags, add system prompt instruction that tagged content is data not instructions"
+  - 'XML delimiter pattern: wrap user data in named XML tags, add system prompt instruction that tagged content is data not instructions'
   - "Shadow validation pattern: safeParse + console.error('[LLM_VALIDATION_FAIL] subsystem') + fallback to raw input"
   - "Input length enforcement pattern: check FIELD_LIMITS before LLM call, throw generic 'Content too long to process'"
 
@@ -71,6 +76,7 @@ completed: 2026-02-02
 - **Files modified:** 16 (5 created, 9 modified, plus package.json and bun.lock)
 
 ## Accomplishments
+
 - XML structural separation on all 6 LLM prompt entry points prevents prompt injection by clearly marking user data boundaries
 - Shadow-mode Zod validation on all 5 tool_use response parsing points catches malformed LLM responses at runtime without blocking operations
 - Field length limits module provides centralized constants for chat messages (5K chars), document text (100K chars), and profile fields
@@ -84,6 +90,7 @@ Each task was committed atomically:
 2. **Task 2: Add XML delimiters, Zod shadow validation, input limits** - `ac7eff5` (feat)
 
 ## Files Created/Modified
+
 - `convex/lib/limits.ts` - Field length limit constants (FIELD_LIMITS) and validateFieldLength helper
 - `convex/matching/validation.ts` - Permissive Zod schema for matching LLM responses (matchResultSchema)
 - `convex/engagement/validation.ts` - Zod schema for engagement classification (engagementResultSchema)
@@ -100,6 +107,7 @@ Each task was committed atomically:
 - `convex/extraction/prompts.ts` - Data handling instruction for document extraction
 
 ## Decisions Made
+
 - **Shadow mode over enforcement:** Zod validation logs failures but never blocks operations. This protects pilot users from false positives while giving visibility into LLM output quality via Convex dashboard logs.
 - **Permissive schemas:** All schemas use `.passthrough()` (allow extra fields) and `.optional()` (handle omitted fields). `z.string()` used instead of `z.enum()` for fields where LLM may use unexpected but valid values.
 - **matchItemSchema.recommendations defaults to []:** Uses `.default([])` so downstream `saveMatches` always receives an array even when LLM omits the recommendations field.
@@ -111,17 +119,21 @@ Each task was committed atomically:
 None - plan executed exactly as written.
 
 ## Issues Encountered
+
 None
 
 ## User Setup Required
+
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Phase 27 (Critical Security) is now complete: auth (01), OAuth (02), and LLM defense (03) all shipped
 - Shadow-mode validation logs are ready to monitor in Convex dashboard
 - Future phases can graduate from shadow mode to enforcement once real LLM outputs are validated
 - Input length limits can be extended to per-field profile validation in Phase 29
 
 ---
-*Phase: 27-critical-security*
-*Completed: 2026-02-02*
+
+_Phase: 27-critical-security_
+_Completed: 2026-02-02_

@@ -34,13 +34,13 @@ key-files:
     - src/components/notifications/NotificationList.tsx
 
 key-decisions:
-  - "Soft nudge before skip shows amber warning on first click, requires second click to dismiss"
-  - "AttendancePrompt renders inline in notification list, not as click-to-navigate"
-  - "FeedbackForm uses body text as fallback if eventTitle not provided"
+  - 'Soft nudge before skip shows amber warning on first click, requires second click to dismiss'
+  - 'AttendancePrompt renders inline in notification list, not as click-to-navigate'
+  - 'FeedbackForm uses body text as fallback if eventTitle not provided'
 
 patterns-established:
-  - "Inline notification interaction: some notification types render interactive components instead of clickable buttons"
-  - "Star rating accessibility: aria-label and aria-checked on each star button"
+  - 'Inline notification interaction: some notification types render interactive components instead of clickable buttons'
+  - 'Star rating accessibility: aria-label and aria-checked on each star button'
 
 # Metrics
 duration: 3min
@@ -109,5 +109,6 @@ None - no external service configuration required.
 - No blockers for next phase
 
 ---
-*Phase: 14-attendance-tracking*
-*Completed: 2026-01-19*
+
+_Phase: 14-attendance-tracking_
+_Completed: 2026-01-19_

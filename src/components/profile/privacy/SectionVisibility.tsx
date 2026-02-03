@@ -9,7 +9,6 @@ import {
 } from '~/components/ui/select'
 
 interface SectionVisibilityProps {
-  section: string
   label: string
   value: string | undefined
   onChange: (value: string | undefined) => void

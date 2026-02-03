@@ -23,18 +23,18 @@ Convex Backend
 
 ### Component Inventory with Security Assessment
 
-| Component | Type | Auth Pattern | Issues Found |
-|-----------|------|-------------|--------------|
-| `convex/profiles.ts` | public query/mutation | `auth.getUserId(ctx)` | `getCompleteness` has no auth check |
-| `convex/matches.ts` | public query/mutation/action | `auth.getUserId(ctx)` | Well-protected |
-| `convex/programs.ts` | public query/mutation | `requireOrgAdmin` helper | N+1 in `getOrgPrograms`, `getProgramParticipants` |
-| `convex/enrichment/queries.ts` | mixed public+internal | None on `getMessagesPublic` | **CRITICAL**: No auth on public query |
-| `convex/enrichment/conversation.ts` | public action | None | **CRITICAL**: No auth on `sendMessage` |
-| `convex/authTauri.ts` | public action | None | **CRITICAL**: Public OAuth code exchange, no PKCE |
-| `convex/attendance/queries.ts` | public query | `getAuthUserId(ctx)` | N+1 in enrichment loops |
-| `convex/emails/send.ts` | internal query/mutation | N/A (internal) | N+1 in user lookup loops, full table scans |
-| `convex/matching/compute.ts` | internal action | N/A (internal) | No LLM response validation, growth area bug |
-| `convex/engagement/compute.ts` | internal action | N/A (internal) | No LLM response validation |
+| Component                           | Type                         | Auth Pattern                | Issues Found                                      |
+| ----------------------------------- | ---------------------------- | --------------------------- | ------------------------------------------------- |
+| `convex/profiles.ts`                | public query/mutation        | `auth.getUserId(ctx)`       | `getCompleteness` has no auth check               |
+| `convex/matches.ts`                 | public query/mutation/action | `auth.getUserId(ctx)`       | Well-protected                                    |
+| `convex/programs.ts`                | public query/mutation        | `requireOrgAdmin` helper    | N+1 in `getOrgPrograms`, `getProgramParticipants` |
+| `convex/enrichment/queries.ts`      | mixed public+internal        | None on `getMessagesPublic` | **CRITICAL**: No auth on public query             |
+| `convex/enrichment/conversation.ts` | public action                | None                        | **CRITICAL**: No auth on `sendMessage`            |
+| `convex/authTauri.ts`               | public action                | None                        | **CRITICAL**: Public OAuth code exchange, no PKCE |
+| `convex/attendance/queries.ts`      | public query                 | `getAuthUserId(ctx)`        | N+1 in enrichment loops                           |
+| `convex/emails/send.ts`             | internal query/mutation      | N/A (internal)              | N+1 in user lookup loops, full table scans        |
+| `convex/matching/compute.ts`        | internal action              | N/A (internal)              | No LLM response validation, growth area bug       |
+| `convex/engagement/compute.ts`      | internal action              | N/A (internal)              | No LLM response validation                        |
 
 ---
 
@@ -60,28 +60,29 @@ Create a shared authentication helper that both throws on unauthenticated access
 
 ```typescript
 // convex/lib/auth.ts
-import { auth } from "../auth";
-import type { QueryCtx, MutationCtx, ActionCtx } from "../_generated/server";
+import { auth } from '../auth'
+import type { QueryCtx, MutationCtx, ActionCtx } from '../_generated/server'
 
 /**
  * Require authentication. Throws if not authenticated.
  * Use in any public query/mutation/action that needs auth.
  */
 export async function requireAuth(
-  ctx: QueryCtx | MutationCtx | ActionCtx
+  ctx: QueryCtx | MutationCtx | ActionCtx,
 ): Promise<string> {
-  const userId = await auth.getUserId(ctx);
+  const userId = await auth.getUserId(ctx)
   if (!userId) {
-    throw new Error("Not authenticated");
+    throw new Error('Not authenticated')
   }
-  return userId;
+  return userId
 }
 ```
 
 This helper eliminates the repeated pattern found across 20+ functions:
+
 ```typescript
-const userId = await auth.getUserId(ctx);
-if (!userId) throw new Error("Not authenticated");
+const userId = await auth.getUserId(ctx)
+if (!userId) throw new Error('Not authenticated')
 ```
 
 ### Integration with Existing Functions
@@ -90,11 +91,11 @@ if (!userId) throw new Error("Not authenticated");
 
 #### Files Needing Auth Added (public functions without auth checks)
 
-| File | Function | Current Behavior | Fix | Client Impact |
-|------|----------|-----------------|-----|---------------|
-| `convex/enrichment/queries.ts:16` | `getMessagesPublic` | Returns messages for ANY profileId, no auth | Add `requireAuth` + verify `profile.userId === userId` | None -- client already passes own profileId |
-| `convex/enrichment/conversation.ts:46` | `sendMessage` | Calls Claude for ANY profileId, no auth | Add `requireAuth` + verify `profile.userId === userId` | None -- client already passes own profileId |
-| `convex/profiles.ts:189` | `getCompleteness` | Returns completeness for ANY profileId, no auth | Add auth + ownership check, or deprecate in favor of `getMyCompleteness` | Check if any client uses this directly |
+| File                                   | Function            | Current Behavior                                | Fix                                                                      | Client Impact                               |
+| -------------------------------------- | ------------------- | ----------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------- |
+| `convex/enrichment/queries.ts:16`      | `getMessagesPublic` | Returns messages for ANY profileId, no auth     | Add `requireAuth` + verify `profile.userId === userId`                   | None -- client already passes own profileId |
+| `convex/enrichment/conversation.ts:46` | `sendMessage`       | Calls Claude for ANY profileId, no auth         | Add `requireAuth` + verify `profile.userId === userId`                   | None -- client already passes own profileId |
+| `convex/profiles.ts:189`               | `getCompleteness`   | Returns completeness for ANY profileId, no auth | Add auth + ownership check, or deprecate in favor of `getMyCompleteness` | Check if any client uses this directly      |
 
 #### Concrete Code Change for Enrichment Auth
 
@@ -103,32 +104,32 @@ if (!userId) throw new Error("Not authenticated");
 ```typescript
 // BEFORE (vulnerable):
 export const getMessagesPublic = query({
-  args: { profileId: v.id("profiles") },
+  args: { profileId: v.id('profiles') },
   handler: async (ctx, { profileId }) => {
     return await ctx.db
-      .query("enrichmentMessages")
-      .withIndex("by_profile", (q) => q.eq("profileId", profileId))
-      .collect();
+      .query('enrichmentMessages')
+      .withIndex('by_profile', (q) => q.eq('profileId', profileId))
+      .collect()
   },
-});
+})
 
 // AFTER (secure):
 export const getMessagesPublic = query({
-  args: { profileId: v.id("profiles") },
+  args: { profileId: v.id('profiles') },
   handler: async (ctx, { profileId }) => {
-    const userId = await auth.getUserId(ctx);
-    if (!userId) return [];
+    const userId = await auth.getUserId(ctx)
+    if (!userId) return []
 
     // Verify ownership
-    const profile = await ctx.db.get("profiles", profileId);
-    if (!profile || profile.userId !== userId) return [];
+    const profile = await ctx.db.get('profiles', profileId)
+    if (!profile || profile.userId !== userId) return []
 
     return await ctx.db
-      .query("enrichmentMessages")
-      .withIndex("by_profile", (q) => q.eq("profileId", profileId))
-      .collect();
+      .query('enrichmentMessages')
+      .withIndex('by_profile', (q) => q.eq('profileId', profileId))
+      .collect()
   },
-});
+})
 ```
 
 **`convex/enrichment/conversation.ts` -- `sendMessage` (line 46):**
@@ -166,12 +167,14 @@ export const sendMessage = action({
 ### Data Flow Change: Enrichment Auth
 
 **Before (vulnerable):**
+
 ```
 Any client ---> getMessagesPublic(profileId: ANY) ---> Returns messages
 Any client ---> sendMessage(profileId: ANY, message) ---> Calls Claude, costs money
 ```
 
 **After (secure):**
+
 ```
 Client ---> getMessagesPublic(profileId) ---> auth check ---> ownership check ---> Returns messages
 Client ---> sendMessage(profileId, message) ---> auth check ---> ownership check ---> Calls Claude
@@ -186,6 +189,7 @@ Client ---> sendMessage(profileId, message) ---> auth check ---> ownership check
 `convex/authTauri.ts` exports a public `action` called `exchangeOAuthCode`. This is callable by ANY client.
 
 **What the function does:**
+
 1. Takes a `code`, `provider`, and `redirectUri` as args
 2. Exchanges the code with GitHub/Google using server-stored client secrets
 3. Returns `accessToken` and user info directly to the caller
@@ -233,85 +237,89 @@ Client (oauth-buttons.tsx)                    Server (authTauri.ts)
 ### Concrete Changes
 
 **`src/components/auth/oauth-buttons.tsx`:**
+
 ```typescript
 const handleGitHubSignIn = async () => {
   if (isTauri()) {
-    setPendingOAuthProvider("github");
-    const redirectUri = encodeURIComponent(getOAuthRedirectUrl());
-    const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID_MOBILE;
+    setPendingOAuthProvider('github')
+    const redirectUri = encodeURIComponent(getOAuthRedirectUrl())
+    const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID_MOBILE
 
     // PKCE: Generate verifier and challenge
-    const codeVerifier = generateCodeVerifier();  // NEW
-    const codeChallenge = await generateCodeChallenge(codeVerifier);  // NEW
-    storePKCEVerifier(codeVerifier);  // NEW: Store for later
+    const codeVerifier = generateCodeVerifier() // NEW
+    const codeChallenge = await generateCodeChallenge(codeVerifier) // NEW
+    storePKCEVerifier(codeVerifier) // NEW: Store for later
 
     // State: Generate and store for validation
-    const state = crypto.randomUUID();
-    storeOAuthState(state);  // NEW: Store for validation on callback
+    const state = crypto.randomUUID()
+    storeOAuthState(state) // NEW: Store for validation on callback
 
-    const authUrl = `https://github.com/login/oauth/authorize?` +
+    const authUrl =
+      `https://github.com/login/oauth/authorize?` +
       `client_id=${clientId}` +
       `&redirect_uri=${redirectUri}` +
       `&state=${state}` +
       `&scope=read:user,user:email` +
-      `&code_challenge=${codeChallenge}` +       // NEW
-      `&code_challenge_method=S256`;             // NEW
-    await openOAuthInBrowser(authUrl);
+      `&code_challenge=${codeChallenge}` + // NEW
+      `&code_challenge_method=S256` // NEW
+    await openOAuthInBrowser(authUrl)
   }
-};
+}
 ```
 
 **`src/lib/tauri/auth.ts` -- Add PKCE helpers and state validation:**
+
 ```typescript
 // PKCE helpers
 function generateCodeVerifier(): string {
-  const array = new Uint8Array(32);
-  crypto.getRandomValues(array);
-  return base64UrlEncode(array);  // 43 chars
+  const array = new Uint8Array(32)
+  crypto.getRandomValues(array)
+  return base64UrlEncode(array) // 43 chars
 }
 
 async function generateCodeChallenge(verifier: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(verifier);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return base64UrlEncode(new Uint8Array(hash));
+  const encoder = new TextEncoder()
+  const data = encoder.encode(verifier)
+  const hash = await crypto.subtle.digest('SHA-256', data)
+  return base64UrlEncode(new Uint8Array(hash))
 }
 
 // State validation on callback
 function handleDeepLinkUrl(url: string): void {
   // ... existing URL parsing ...
-  const state = parsed.searchParams.get('state');
-  const storedState = getStoredOAuthState();
+  const state = parsed.searchParams.get('state')
+  const storedState = getStoredOAuthState()
   if (state !== storedState) {
-    console.error('OAuth state mismatch -- possible CSRF');
-    return;  // REJECT the callback
+    console.error('OAuth state mismatch -- possible CSRF')
+    return // REJECT the callback
   }
   // ... continue with code exchange, passing stored verifier ...
 }
 ```
 
 **`convex/authTauri.ts` -- Accept and forward codeVerifier:**
+
 ```typescript
 export const exchangeOAuthCode = action({
   args: {
     code: v.string(),
-    provider: v.union(v.literal("github"), v.literal("google")),
+    provider: v.union(v.literal('github'), v.literal('google')),
     redirectUri: v.string(),
-    codeVerifier: v.optional(v.string()),  // NEW: Optional for backward compat
+    codeVerifier: v.optional(v.string()), // NEW: Optional for backward compat
   },
   handler: async (_ctx, args) => {
-    const { code, provider, redirectUri, codeVerifier } = args;
-    if (provider === "github") {
-      return exchangeGitHubCode(code, redirectUri, codeVerifier);
+    const { code, provider, redirectUri, codeVerifier } = args
+    if (provider === 'github') {
+      return exchangeGitHubCode(code, redirectUri, codeVerifier)
     }
     // ...
   },
-});
+})
 
 async function exchangeGitHubCode(
   code: string,
   redirectUri: string,
-  codeVerifier?: string
+  codeVerifier?: string,
 ) {
   // ... existing code ...
   const body: Record<string, string> = {
@@ -319,9 +327,9 @@ async function exchangeGitHubCode(
     client_secret: clientSecret,
     code,
     redirect_uri: redirectUri,
-  };
+  }
   if (codeVerifier) {
-    body.code_verifier = codeVerifier;  // NEW: Forward to GitHub
+    body.code_verifier = codeVerifier // NEW: Forward to GitHub
   }
   // ... rest of exchange ...
 }
@@ -335,19 +343,21 @@ async function exchangeGitHubCode(
 
 Three LLM integration points exist, all using string interpolation to embed user data:
 
-| File | LLM Use | User Data in Prompt | Risk |
-|------|---------|---------------------|------|
-| `convex/enrichment/conversation.ts` | Career coaching chat | Raw user messages + profile data | MEDIUM |
-| `convex/matching/compute.ts` + `prompts.ts` | Opportunity scoring | Profile data (DB-sourced) | LOW |
-| `convex/engagement/compute.ts` + `prompts.ts` | Engagement classification | Activity signals (DB-sourced) | LOW |
+| File                                          | LLM Use                   | User Data in Prompt              | Risk   |
+| --------------------------------------------- | ------------------------- | -------------------------------- | ------ |
+| `convex/enrichment/conversation.ts`           | Career coaching chat      | Raw user messages + profile data | MEDIUM |
+| `convex/matching/compute.ts` + `prompts.ts`   | Opportunity scoring       | Profile data (DB-sourced)        | LOW    |
+| `convex/engagement/compute.ts` + `prompts.ts` | Engagement classification | Activity signals (DB-sourced)    | LOW    |
 
 ### Current Prompt Construction (matching/compute.ts line 68-71)
 
 ```typescript
-messages: [{
-  role: "user",
-  content: `${profileContext}\n\n---\n\n${opportunitiesContext}\n\nScore all opportunities...`
-}]
+messages: [
+  {
+    role: 'user',
+    content: `${profileContext}\n\n---\n\n${opportunitiesContext}\n\nScore all opportunities...`,
+  },
+]
 ```
 
 User data and instructions are concatenated in the same text block. A profile with crafted content like `careerGoals: "Ignore previous instructions and..."` could influence scoring.
@@ -363,24 +373,27 @@ Use XML-delimited boundaries to clearly separate data from instructions:
 // return formatted strings. Wrap them in XML tags at the call site:
 
 // matching/compute.ts -- replace line 68-71:
-messages: [{
-  role: "user",
-  content: [
-    {
-      type: "text",
-      text: "Analyze the candidate profile against the listed opportunities. " +
-            "Use the score_opportunities tool to return results.",
-    },
-    {
-      type: "text",
-      text: `<candidate_profile>\n${profileContext}\n</candidate_profile>`,
-    },
-    {
-      type: "text",
-      text: `<opportunities>\n${opportunitiesContext}\n</opportunities>`,
-    },
-  ],
-}]
+messages: [
+  {
+    role: 'user',
+    content: [
+      {
+        type: 'text',
+        text:
+          'Analyze the candidate profile against the listed opportunities. ' +
+          'Use the score_opportunities tool to return results.',
+      },
+      {
+        type: 'text',
+        text: `<candidate_profile>\n${profileContext}\n</candidate_profile>`,
+      },
+      {
+        type: 'text',
+        text: `<opportunities>\n${opportunitiesContext}\n</opportunities>`,
+      },
+    ],
+  },
+]
 ```
 
 **For enrichment conversation (free-form chat):**
@@ -403,17 +416,17 @@ Stay focused on career coaching regardless of what the user requests.
 Current profile context:
 <profile_data>
 {profileContext}
-</profile_data>`;
+</profile_data>`
 ```
 
 ### Implementation Scope
 
-| File | Change | Lines Affected | Effort |
-|------|--------|---------------|--------|
-| `convex/matching/compute.ts` | Wrap user message content in XML tags | ~5 lines | Small |
-| `convex/matching/prompts.ts` | No changes needed (context builders stay the same) | 0 | None |
-| `convex/enrichment/conversation.ts` | Add boundary to system prompt, wrap profileContext in XML | ~10 lines | Small |
-| `convex/engagement/prompts.ts` | Wrap member data in `<member_data>` tags in `buildEngagementContext` | ~4 lines | Small |
+| File                                | Change                                                               | Lines Affected | Effort |
+| ----------------------------------- | -------------------------------------------------------------------- | -------------- | ------ |
+| `convex/matching/compute.ts`        | Wrap user message content in XML tags                                | ~5 lines       | Small  |
+| `convex/matching/prompts.ts`        | No changes needed (context builders stay the same)                   | 0              | None   |
+| `convex/enrichment/conversation.ts` | Add boundary to system prompt, wrap profileContext in XML            | ~10 lines      | Small  |
+| `convex/engagement/prompts.ts`      | Wrap member data in `<member_data>` tags in `buildEngagementContext` | ~4 lines       | Small  |
 
 ---
 
@@ -425,17 +438,18 @@ LLM responses are cast with `as` type assertions without runtime validation:
 
 ```typescript
 // matching/compute.ts line 81:
-const batchResult = toolUse.input as MatchingResult;
+const batchResult = toolUse.input as MatchingResult
 
 // engagement/compute.ts line 131:
-const result = toolUse.input as EngagementResult;
+const result = toolUse.input as EngagementResult
 ```
 
 The only validation is a shallow array check (matching/compute.ts line 84):
+
 ```typescript
 if (!Array.isArray(batchResult.matches)) {
-  console.error("Invalid tool response...");
-  continue;
+  console.error('Invalid tool response...')
+  continue
 }
 ```
 
@@ -446,41 +460,53 @@ Zod is already a project dependency (used in `src/routes/profile/edit.tsx` for s
 ### New Component: `convex/matching/validation.ts`
 
 ```typescript
-import { z } from "zod";
+import { z } from 'zod'
 
 export const matchResultSchema = z.object({
-  matches: z.array(z.object({
-    opportunityId: z.string(),
-    tier: z.enum(["great", "good", "exploring"]),
-    score: z.number().min(0).max(100),
-    strengths: z.array(z.string()).min(1).max(6),
-    gap: z.string().optional(),
-    interviewChance: z.enum(["Strong chance", "Good chance", "Moderate chance"]),
-    ranking: z.string(),
-    confidence: z.enum(["HIGH", "MEDIUM", "LOW"]),
-    recommendations: z.array(z.object({
-      type: z.enum(["specific", "skill", "experience"]),
-      action: z.string(),
-      priority: z.enum(["high", "medium", "low"]),
-    })).min(1),
-  })),
-  growthAreas: z.array(z.object({
-    theme: z.string(),
-    items: z.array(z.string()),
-  })),
-});
+  matches: z.array(
+    z.object({
+      opportunityId: z.string(),
+      tier: z.enum(['great', 'good', 'exploring']),
+      score: z.number().min(0).max(100),
+      strengths: z.array(z.string()).min(1).max(6),
+      gap: z.string().optional(),
+      interviewChance: z.enum([
+        'Strong chance',
+        'Good chance',
+        'Moderate chance',
+      ]),
+      ranking: z.string(),
+      confidence: z.enum(['HIGH', 'MEDIUM', 'LOW']),
+      recommendations: z
+        .array(
+          z.object({
+            type: z.enum(['specific', 'skill', 'experience']),
+            action: z.string(),
+            priority: z.enum(['high', 'medium', 'low']),
+          }),
+        )
+        .min(1),
+    }),
+  ),
+  growthAreas: z.array(
+    z.object({
+      theme: z.string(),
+      items: z.array(z.string()),
+    }),
+  ),
+})
 ```
 
 ### New Component: `convex/engagement/validation.ts`
 
 ```typescript
-import { z } from "zod";
+import { z } from 'zod'
 
 export const engagementResultSchema = z.object({
-  level: z.enum(["highly_engaged", "moderate", "at_risk", "new", "inactive"]),
+  level: z.enum(['highly_engaged', 'moderate', 'at_risk', 'new', 'inactive']),
   adminExplanation: z.string().min(1),
   userExplanation: z.string().min(1),
-});
+})
 ```
 
 ### Integration into Existing Code
@@ -488,16 +514,20 @@ export const engagementResultSchema = z.object({
 ```typescript
 // In matching/compute.ts, replace line 81:
 // BEFORE:
-const batchResult = toolUse.input as MatchingResult;
+const batchResult = toolUse.input as MatchingResult
 
 // AFTER:
-import { matchResultSchema } from "./validation";
-const parseResult = matchResultSchema.safeParse(toolUse.input);
+import { matchResultSchema } from './validation'
+const parseResult = matchResultSchema.safeParse(toolUse.input)
 if (!parseResult.success) {
-  console.error("LLM response validation failed for batch", i, parseResult.error.flatten());
-  continue; // Skip this batch, try next
+  console.error(
+    'LLM response validation failed for batch',
+    i,
+    parseResult.error.flatten(),
+  )
+  continue // Skip this batch, try next
 }
-const batchResult = parseResult.data;
+const batchResult = parseResult.data
 ```
 
 ### Growth Area Aggregation Bug Fix
@@ -506,8 +536,11 @@ const batchResult = parseResult.data;
 
 ```typescript
 // CURRENT: Replaces all growth areas with last batch's areas
-if (Array.isArray(batchResult.growthAreas) && batchResult.growthAreas.length > 0) {
-  aggregatedGrowthAreas = batchResult.growthAreas;
+if (
+  Array.isArray(batchResult.growthAreas) &&
+  batchResult.growthAreas.length > 0
+) {
+  aggregatedGrowthAreas = batchResult.growthAreas
 }
 ```
 
@@ -517,12 +550,12 @@ When processing multiple batches (>15 opportunities), only the last batch's grow
 // FIXED: Merge growth areas across batches
 if (parseResult.data.growthAreas.length > 0) {
   for (const area of parseResult.data.growthAreas) {
-    const existing = aggregatedGrowthAreas.find(a => a.theme === area.theme);
+    const existing = aggregatedGrowthAreas.find((a) => a.theme === area.theme)
     if (existing) {
-      const mergedItems = [...new Set([...existing.items, ...area.items])];
-      existing.items = mergedItems;
+      const mergedItems = [...new Set([...existing.items, ...area.items])]
+      existing.items = mergedItems
     } else {
-      aggregatedGrowthAreas.push({ ...area });
+      aggregatedGrowthAreas.push({ ...area })
     }
   }
 }
@@ -550,16 +583,17 @@ const programsWithCounts = await Promise.all(
 );
 ```
 
-In Convex, `Promise.all` with `ctx.db.get(id)` is the *idiomatic pattern* for joins. The `ctx.db.get` by document ID is O(1). However, `ctx.db.query(...).collect()` inside a loop is genuinely wasteful.
+In Convex, `Promise.all` with `ctx.db.get(id)` is the _idiomatic pattern_ for joins. The `ctx.db.get` by document ID is O(1). However, `ctx.db.query(...).collect()` inside a loop is genuinely wasteful.
 
 #### Pattern B: Sequential loop with per-item queries (emails/send.ts)
 
 ```typescript
 // emails/send.ts lines 76-109: Sequential user lookup per profile
 for (const profile of profiles) {
-  const user = await ctx.db.query("users")
-    .filter((q) => q.eq(q.field("_id"), profile.userId))
-    .first();
+  const user = await ctx.db
+    .query('users')
+    .filter((q) => q.eq(q.field('_id'), profile.userId))
+    .first()
 }
 ```
 
@@ -568,6 +602,7 @@ This is worse than Pattern A because it is sequential (not parallel) AND uses a 
 ### Fix Strategy
 
 **Key Convex insight from official docs:** In-memory processing combining multiple reads is idiomatic and consistent. The fix is to:
+
 1. Use `ctx.db.get(id)` instead of `ctx.db.query(...).filter(...)` when you have the ID
 2. Use `Promise.all` for parallelism
 3. Cache repeated lookups of the same document
@@ -576,25 +611,26 @@ This is worse than Pattern A because it is sequential (not parallel) AND uses a 
 
 ```typescript
 // BEFORE: Full table scan + sequential per-profile user lookup
-const profiles = await ctx.db.query("profiles").collect();
+const profiles = await ctx.db.query('profiles').collect()
 for (const profile of profiles) {
   // ... filter logic ...
-  const user = await ctx.db.query("users")
-    .filter((q) => q.eq(q.field("_id"), profile.userId))
-    .first();
+  const user = await ctx.db
+    .query('users')
+    .filter((q) => q.eq(q.field('_id'), profile.userId))
+    .first()
 }
 
 // AFTER: Filter first, then parallel direct-ID lookups
-const profiles = await ctx.db.query("profiles").collect();
+const profiles = await ctx.db.query('profiles').collect()
 const eligibleProfiles = profiles.filter(
-  p => p.notificationPreferences?.matchAlerts.enabled
-);
+  (p) => p.notificationPreferences?.matchAlerts.enabled,
+)
 const userLookups = await Promise.all(
   eligibleProfiles.map(async (profile) => {
-    const user = await ctx.db.get(profile.userId as Id<"users">);
-    return { profile, user };
-  })
-);
+    const user = await ctx.db.get(profile.userId as Id<'users'>)
+    return { profile, user }
+  }),
+)
 ```
 
 Note: `profile.userId` is stored as `v.string()` but actually contains a Convex user document ID. Using `ctx.db.get(id)` is O(1) vs `ctx.db.query(...).filter(...)` which scans.
@@ -635,11 +671,11 @@ The `getOrgPrograms` N+1 uses `Promise.all` which is the Convex-idiomatic patter
 
 ### Scale Considerations
 
-| Query | Current Impact (50-100 users) | At 1000+ Users |
-|-------|-------------------------------|----------------|
-| `emails/send.ts` full table scan | ~100 profile reads per cron run | Needs index or denormalization |
-| `attendance/queries.ts` org cache | ~3-5 redundant org reads | ~50+ redundant reads |
-| `programs.ts` participant count | ~5-10 queries per page load | ~50+ queries per page load |
+| Query                             | Current Impact (50-100 users)   | At 1000+ Users                 |
+| --------------------------------- | ------------------------------- | ------------------------------ |
+| `emails/send.ts` full table scan  | ~100 profile reads per cron run | Needs index or denormalization |
+| `attendance/queries.ts` org cache | ~3-5 redundant org reads        | ~50+ redundant reads           |
+| `programs.ts` participant count   | ~5-10 queries per page load     | ~50+ queries per page load     |
 
 ---
 
@@ -686,7 +722,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
-      - run: bun run lint  # runs tsc && eslint
+      - run: bun run lint # runs tsc && eslint
 
   deploy:
     needs: check
@@ -704,8 +740,8 @@ jobs:
 
 ### Environment Variables Required
 
-| Variable | Source | Purpose |
-|----------|--------|---------|
+| Variable            | Source                                                 | Purpose                           |
+| ------------------- | ------------------------------------------------------ | --------------------------------- |
 | `CONVEX_DEPLOY_KEY` | Convex Dashboard > Settings > Deploy Keys (Production) | Authenticates `npx convex deploy` |
 
 ### Integration Notes
@@ -734,6 +770,7 @@ function UnauthenticatedRedirect() {
 React 19 with React Compiler may tolerate this, but it is technically incorrect and can cause "Cannot update a component while rendering a different component" warnings.
 
 **Fix (matching the pattern already used in matches/index.tsx line 107-110):**
+
 ```typescript
 function UnauthenticatedRedirect() {
   const navigate = useNavigate();
@@ -751,12 +788,13 @@ function UnauthenticatedRedirect() {
 ```typescript
 useEffect(() => {
   if (matchesData?.needsComputation && !isComputing) {
-    handleCompute();  // handleCompute not in dependency array
+    handleCompute() // handleCompute not in dependency array
   }
-}, [matchesData?.needsComputation, isComputing]);
+}, [matchesData?.needsComputation, isComputing])
 ```
 
 **Fix options:**
+
 - Wrap `handleCompute` in `useCallback` and add to deps
 - Use a ref to avoid the dependency
 
@@ -834,43 +872,43 @@ Based on dependency analysis, risk priority, and implementation coupling:
 
 ### New Components (4 files)
 
-| Component | Purpose | Created In |
-|-----------|---------|------------|
-| `convex/lib/auth.ts` | Shared `requireAuth` helper | Phase 1 |
-| `convex/matching/validation.ts` | Zod schemas for match LLM responses | Phase 3 |
-| `convex/engagement/validation.ts` | Zod schemas for engagement LLM responses | Phase 3 |
-| `.github/workflows/ci.yml` | CI/CD pipeline | Phase 5 |
+| Component                         | Purpose                                  | Created In |
+| --------------------------------- | ---------------------------------------- | ---------- |
+| `convex/lib/auth.ts`              | Shared `requireAuth` helper              | Phase 1    |
+| `convex/matching/validation.ts`   | Zod schemas for match LLM responses      | Phase 3    |
+| `convex/engagement/validation.ts` | Zod schemas for engagement LLM responses | Phase 3    |
+| `.github/workflows/ci.yml`        | CI/CD pipeline                           | Phase 5    |
 
 ### Modified Components (14 files)
 
-| Component | Change Scope | Phase | Risk |
-|-----------|-------------|-------|------|
-| `convex/enrichment/queries.ts` | Add auth + ownership check | 1 | Low |
-| `convex/enrichment/conversation.ts` | Add auth + ownership check + prompt boundary | 1, 3 | Low |
-| `convex/profiles.ts` | Add auth to `getCompleteness` | 1 | Low |
-| `convex/authTauri.ts` | Accept `codeVerifier`, forward to OAuth | 2 | Medium |
-| `src/components/auth/oauth-buttons.tsx` | PKCE params in OAuth URL | 2 | Medium |
-| `src/lib/tauri/auth.ts` | PKCE helpers, state validation | 2 | Medium |
-| `convex/matching/compute.ts` | Zod validation, growth area fix, XML tags | 3 | Low |
-| `convex/engagement/compute.ts` | Zod validation | 3 | Low |
-| `convex/matching/prompts.ts` | (Optional) XML tag helpers | 3 | Low |
-| `convex/engagement/prompts.ts` | XML tags in context builder | 3 | Low |
-| `convex/emails/send.ts` | Parallel lookups, `ctx.db.get` by ID | 4 | Low |
-| `convex/attendance/queries.ts` | Org caching | 4 | Low |
-| `src/routes/profile/index.tsx` | useEffect for navigate | 5 | Low |
-| `src/routes/matches/index.tsx` | useCallback/deps fix | 5 | Low |
+| Component                               | Change Scope                                 | Phase | Risk   |
+| --------------------------------------- | -------------------------------------------- | ----- | ------ |
+| `convex/enrichment/queries.ts`          | Add auth + ownership check                   | 1     | Low    |
+| `convex/enrichment/conversation.ts`     | Add auth + ownership check + prompt boundary | 1, 3  | Low    |
+| `convex/profiles.ts`                    | Add auth to `getCompleteness`                | 1     | Low    |
+| `convex/authTauri.ts`                   | Accept `codeVerifier`, forward to OAuth      | 2     | Medium |
+| `src/components/auth/oauth-buttons.tsx` | PKCE params in OAuth URL                     | 2     | Medium |
+| `src/lib/tauri/auth.ts`                 | PKCE helpers, state validation               | 2     | Medium |
+| `convex/matching/compute.ts`            | Zod validation, growth area fix, XML tags    | 3     | Low    |
+| `convex/engagement/compute.ts`          | Zod validation                               | 3     | Low    |
+| `convex/matching/prompts.ts`            | (Optional) XML tag helpers                   | 3     | Low    |
+| `convex/engagement/prompts.ts`          | XML tags in context builder                  | 3     | Low    |
+| `convex/emails/send.ts`                 | Parallel lookups, `ctx.db.get` by ID         | 4     | Low    |
+| `convex/attendance/queries.ts`          | Org caching                                  | 4     | Low    |
+| `src/routes/profile/index.tsx`          | useEffect for navigate                       | 5     | Low    |
+| `src/routes/matches/index.tsx`          | useCallback/deps fix                         | 5     | Low    |
 
 ### Unchanged Components (already secure)
 
-| Component | Why No Change |
-|-----------|--------------|
-| `convex/matches.ts` | Already uses `auth.getUserId` + ownership checks throughout |
-| `convex/matching/queries.ts` | All `internalQuery` -- not client-accessible |
-| `convex/matching/mutations.ts` | All `internalMutation` -- not client-accessible |
-| `convex/engagement/queries.ts` | Mix of internal + properly auth'd public queries |
-| `convex/auth.ts` | Core auth config, no changes needed |
-| `convex/schema.ts` | Schema is correct, no changes needed |
-| `convex/programs.ts` | N+1 acceptable at pilot scale, already uses `requireOrgAdmin` |
+| Component                      | Why No Change                                                 |
+| ------------------------------ | ------------------------------------------------------------- |
+| `convex/matches.ts`            | Already uses `auth.getUserId` + ownership checks throughout   |
+| `convex/matching/queries.ts`   | All `internalQuery` -- not client-accessible                  |
+| `convex/matching/mutations.ts` | All `internalMutation` -- not client-accessible               |
+| `convex/engagement/queries.ts` | Mix of internal + properly auth'd public queries              |
+| `convex/auth.ts`               | Core auth config, no changes needed                           |
+| `convex/schema.ts`             | Schema is correct, no changes needed                          |
+| `convex/programs.ts`           | N+1 acceptable at pilot scale, already uses `requireOrgAdmin` |
 
 ---
 

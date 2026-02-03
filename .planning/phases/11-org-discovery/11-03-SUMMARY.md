@@ -17,8 +17,9 @@ affects: [events, org-profile, member-directory]
 
 # Tech tracking
 tech-stack:
-  added: ["@types/leaflet (dev)", "leaflet@1.9.4 (CDN)"]
-  patterns: [CDN-loaded libraries with type-only imports, split view responsive layout]
+  added: ['@types/leaflet (dev)', 'leaflet@1.9.4 (CDN)']
+  patterns:
+    [CDN-loaded libraries with type-only imports, split view responsive layout]
 
 key-files:
   created:
@@ -30,13 +31,13 @@ key-files:
     - src/routes/__root.tsx
 
 key-decisions:
-  - "Leaflet via CDN avoids npm dependency, types via @types/leaflet for dev safety"
-  - "Map hidden on mobile (lg:block) for better UX on small screens"
-  - "Search requires 2+ characters before querying to reduce API calls"
+  - 'Leaflet via CDN avoids npm dependency, types via @types/leaflet for dev safety'
+  - 'Map hidden on mobile (lg:block) for better UX on small screens'
+  - 'Search requires 2+ characters before querying to reduce API calls'
 
 patterns-established:
-  - "CDN script loading via TanStack Start root layout links/scripts"
-  - "Split view pattern: map left, list right, responsive at lg breakpoint"
+  - 'CDN script loading via TanStack Start root layout links/scripts'
+  - 'Split view pattern: map left, list right, responsive at lg breakpoint'
 
 # Metrics
 duration: 6min
@@ -106,5 +107,6 @@ None - no external service configuration required.
 - Next phases can add coordinate data to more organizations for map display
 
 ---
-*Phase: 11-org-discovery*
-*Completed: 2026-01-19*
+
+_Phase: 11-org-discovery_
+_Completed: 2026-01-19_

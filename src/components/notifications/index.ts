@@ -1,2 +1,2 @@
-export { NotificationBell } from "./NotificationBell";
-export { NotificationList } from "./NotificationList";
+export { NotificationBell } from './NotificationBell'
+export { NotificationList } from './NotificationList'

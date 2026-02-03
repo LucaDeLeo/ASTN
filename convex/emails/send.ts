@@ -132,12 +132,11 @@ export const getUsersForWeeklyDigestBatch = internalQuery({
     const profiles = await ctx.db.query('profiles').collect()
 
     // Pass 1: Filter eligible profiles (digest enabled)
-    const eligible = profiles.filter((profile) => {
-      return (
+    const eligible = profiles.filter(
+      (profile) =>
         profile.notificationPreferences &&
-        profile.notificationPreferences.weeklyDigest.enabled
-      )
-    })
+        profile.notificationPreferences.weeklyDigest.enabled,
+    )
 
     // Pass 2: Batch fetch users with direct ID access
     const users = await Promise.all(
@@ -342,9 +341,9 @@ export const getUsersForWeeklyEventDigestBatch = internalQuery({
       : never
 
     // Pass 1: Filter eligible profiles (weekly frequency)
-    const eligible = profiles.filter((profile) => {
-      return profile.eventNotificationPreferences?.frequency === 'weekly'
-    })
+    const eligible = profiles.filter(
+      (profile) => profile.eventNotificationPreferences?.frequency === 'weekly',
+    )
 
     // Pass 2: Batch fetch users with direct ID access
     const users = await Promise.all(

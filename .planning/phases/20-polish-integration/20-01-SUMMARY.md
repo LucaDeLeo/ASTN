@@ -7,9 +7,9 @@ tags: [theme, dark-mode, css-tokens, oklch, react-context]
 # Dependency graph
 requires:
   - phase: 17-foundations
-    provides: "Coral color tokens and warm shadow system"
+    provides: 'Coral color tokens and warm shadow system'
   - phase: 19-motion
-    provides: "Animation timing tokens"
+    provides: 'Animation timing tokens'
 provides:
   - ThemeProvider context and useTheme hook
   - ThemeToggle dropdown component
@@ -21,9 +21,9 @@ affects: [21-mobile, future-ui-phases]
 tech-stack:
   added: []
   patterns:
-    - "Theme context with localStorage persistence"
-    - "FOIT prevention via inline script in head"
-    - "OKLCH dark mode with warm undertones (hue 30)"
+    - 'Theme context with localStorage persistence'
+    - 'FOIT prevention via inline script in head'
+    - 'OKLCH dark mode with warm undertones (hue 30)'
 
 key-files:
   created:
@@ -35,14 +35,14 @@ key-files:
     - src/components/layout/auth-header.tsx
 
 key-decisions:
-  - "Dark mode primary stays coral (oklch 0.70 0.16 30) not gray"
-  - "Background uses warm charcoal (0.13 lightness, hue 30) not OLED black"
-  - "All dark mode neutrals have hue 30 for warm undertone"
-  - "Dark shadows include coral glow effect"
+  - 'Dark mode primary stays coral (oklch 0.70 0.16 30) not gray'
+  - 'Background uses warm charcoal (0.13 lightness, hue 30) not OLED black'
+  - 'All dark mode neutrals have hue 30 for warm undertone'
+  - 'Dark shadows include coral glow effect'
 
 patterns-established:
-  - "Theme system: ThemeProvider wraps app, useTheme hook for access"
-  - "FOIT prevention: inline script in head reads localStorage before CSS"
+  - 'Theme system: ThemeProvider wraps app, useTheme hook for access'
+  - 'FOIT prevention: inline script in head reads localStorage before CSS'
 
 # Metrics
 duration: 3min
@@ -111,5 +111,6 @@ None - no external service configuration required.
 - All existing components will automatically support dark mode via semantic tokens
 
 ---
-*Phase: 20-polish-integration*
-*Completed: 2026-01-20*
+
+_Phase: 20-polish-integration_
+_Completed: 2026-01-20_

@@ -1,21 +1,24 @@
-import { useMutation, useQuery } from "convex/react";
-import { Bell } from "lucide-react";
-import { api } from "../../../convex/_generated/api";
-import { NotificationList } from "./NotificationList";
-import { Button } from "~/components/ui/button";
+import { useMutation, useQuery } from 'convex/react'
+import { Bell } from 'lucide-react'
+import { api } from '../../../convex/_generated/api'
+import { NotificationList } from './NotificationList'
+import { Button } from '~/components/ui/button'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "~/components/ui/popover";
+} from '~/components/ui/popover'
 
 export function NotificationBell() {
-  const unreadCount = useQuery(api.notifications.queries.getUnreadCount);
-  const notifications = useQuery(api.notifications.queries.getRecentNotifications, { limit: 10 });
-  const markAllAsRead = useMutation(api.notifications.mutations.markAllAsRead);
+  const unreadCount = useQuery(api.notifications.queries.getUnreadCount)
+  const notifications = useQuery(
+    api.notifications.queries.getRecentNotifications,
+    { limit: 10 },
+  )
+  const markAllAsRead = useMutation(api.notifications.mutations.markAllAsRead)
 
   // Don't render for unauthenticated users
-  if (unreadCount === undefined) return null;
+  if (unreadCount === undefined) return null
 
   return (
     <Popover>
@@ -24,7 +27,7 @@ export function NotificationBell() {
           <Bell className="size-5" />
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 size-5 rounded-full bg-primary text-xs text-primary-foreground flex items-center justify-center font-medium">
-              {unreadCount > 9 ? "9+" : unreadCount}
+              {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
         </Button>
@@ -46,5 +49,5 @@ export function NotificationBell() {
         <NotificationList notifications={notifications || []} />
       </PopoverContent>
     </Popover>
-  );
+  )
 }

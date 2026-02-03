@@ -235,33 +235,33 @@ organizations: defineTable({
 
 ### Data Access Layer (Convex Functions)
 
-| Component | Responsibility | Files |
-|-----------|----------------|-------|
-| Event CRUD | Create, read, update, cancel events | `convex/events/mutations.ts`, `convex/events/queries.ts` |
-| Attendance | RSVP, attendance confirmation, feedback | `convex/attendance/mutations.ts`, `convex/attendance/queries.ts` |
-| Engagement Logs | Record activity, query history | `convex/engagement/logs.ts` |
-| Engagement Scoring | LLM computation, admin override | `convex/engagement/scoring.ts` (action) |
-| Org Discovery | Search, geography-based suggestions | `convex/orgs/discovery.ts` |
+| Component          | Responsibility                          | Files                                                            |
+| ------------------ | --------------------------------------- | ---------------------------------------------------------------- |
+| Event CRUD         | Create, read, update, cancel events     | `convex/events/mutations.ts`, `convex/events/queries.ts`         |
+| Attendance         | RSVP, attendance confirmation, feedback | `convex/attendance/mutations.ts`, `convex/attendance/queries.ts` |
+| Engagement Logs    | Record activity, query history          | `convex/engagement/logs.ts`                                      |
+| Engagement Scoring | LLM computation, admin override         | `convex/engagement/scoring.ts` (action)                          |
+| Org Discovery      | Search, geography-based suggestions     | `convex/orgs/discovery.ts`                                       |
 
 ### UI Components
 
-| Component | Responsibility | Route |
-|-----------|----------------|-------|
-| Org Discovery | Search, map, suggestions | `/orgs` (new) |
-| Event List | Upcoming/past events for an org | `/org/$slug/events` (new) |
-| Event Detail | Event info, RSVP, attendees | `/org/$slug/events/$id` (new) |
-| Attendance Prompt | "Did you attend?" modal | Component in `/org/$slug/events` |
-| Org CRM Dashboard | Member list with engagement | `/org/$slug/admin` (extend existing) |
-| Member Profile View | Attendance history on profile | `/org/$slug/admin/members/$id` (new) |
+| Component           | Responsibility                  | Route                                |
+| ------------------- | ------------------------------- | ------------------------------------ |
+| Org Discovery       | Search, map, suggestions        | `/orgs` (new)                        |
+| Event List          | Upcoming/past events for an org | `/org/$slug/events` (new)            |
+| Event Detail        | Event info, RSVP, attendees     | `/org/$slug/events/$id` (new)        |
+| Attendance Prompt   | "Did you attend?" modal         | Component in `/org/$slug/events`     |
+| Org CRM Dashboard   | Member list with engagement     | `/org/$slug/admin` (extend existing) |
+| Member Profile View | Attendance history on profile   | `/org/$slug/admin/members/$id` (new) |
 
 ### Background Jobs (Crons)
 
-| Job | Schedule | Responsibility |
-|-----|----------|----------------|
-| Event Reminders | Hourly | Send reminders to RSVPed members |
-| Attendance Prompts | Daily at 10 AM local | Ask "Did you attend?" for past events |
-| Engagement Recompute | Daily at 3 AM UTC | Recompute engagement scores for active orgs |
-| Event Status Update | Hourly | Move events from "upcoming" to "past" |
+| Job                  | Schedule             | Responsibility                              |
+| -------------------- | -------------------- | ------------------------------------------- |
+| Event Reminders      | Hourly               | Send reminders to RSVPed members            |
+| Attendance Prompts   | Daily at 10 AM local | Ask "Did you attend?" for past events       |
+| Engagement Recompute | Daily at 3 AM UTC    | Recompute engagement scores for active orgs |
+| Event Status Update  | Hourly               | Move events from "upcoming" to "past"       |
 
 ## Data Flow Diagrams
 
@@ -358,34 +358,36 @@ organizations: defineTable({
 
 ### What Gets Extended
 
-| Existing Component | Extension |
-|--------------------|-----------|
-| `/org/$slug/admin` | Add engagement tab, filter by engagement level |
-| `/org/$slug/admin/members` | Add attendance history, engagement score display |
-| `getOrgStats` query | Add event count, attendance rate, engagement distribution |
-| `getAllMembersWithProfiles` | Add engagement data, last activity |
-| Profile page | Add event attendance history section (user's own orgs) |
-| Notification preferences | Add event notification settings |
+| Existing Component          | Extension                                                 |
+| --------------------------- | --------------------------------------------------------- |
+| `/org/$slug/admin`          | Add engagement tab, filter by engagement level            |
+| `/org/$slug/admin/members`  | Add attendance history, engagement score display          |
+| `getOrgStats` query         | Add event count, attendance rate, engagement distribution |
+| `getAllMembersWithProfiles` | Add engagement data, last activity                        |
+| Profile page                | Add event attendance history section (user's own orgs)    |
+| Notification preferences    | Add event notification settings                           |
 
 ### What's New
 
-| New Component | Purpose |
-|---------------|---------|
-| Events subsystem | Full event lifecycle management |
-| Attendance subsystem | Track confirmed attendance |
-| Engagement subsystem | Log activities, compute scores |
-| Org discovery | Search, geography, suggestions |
+| New Component        | Purpose                         |
+| -------------------- | ------------------------------- |
+| Events subsystem     | Full event lifecycle management |
+| Attendance subsystem | Track confirmed attendance      |
+| Engagement subsystem | Log activities, compute scores  |
+| Org discovery        | Search, geography, suggestions  |
 
 ## LLM Integration for Engagement Scoring
 
 ### Why LLM (Not Just Rules)
 
 Rule-based scoring (e.g., "attended 3+ events = highly engaged") is brittle:
+
 - Doesn't account for event frequency (3 events in 6 months vs 3 events in 1 year)
 - Doesn't weight recent activity higher
 - Can't explain the reasoning to admins
 
 LLM scoring provides:
+
 - Contextual interpretation of activity patterns
 - Natural language explanation for admins
 - Easy to adjust by modifying the prompt (not code)
@@ -394,11 +396,11 @@ LLM scoring provides:
 
 ```typescript
 // convex/engagement/scoring.ts
-"use node";
+'use node'
 
-import Anthropic from "@anthropic-ai/sdk";
-import { internalAction } from "../_generated/server";
-import { internal } from "../_generated/api";
+import Anthropic from '@anthropic-ai/sdk'
+import { internalAction } from '../_generated/server'
+import { internal } from '../_generated/api'
 
 const ENGAGEMENT_PROMPT = `You are evaluating a community member's engagement level.
 
@@ -415,66 +417,69 @@ Respond with JSON:
 {
   "level": "highly_engaged" | "engaged" | "occasional" | "inactive",
   "rationale": "Brief explanation for admins (1-2 sentences)"
-}`;
+}`
 
 export const computeEngagementForMember = internalAction({
-  args: { membershipId: v.id("orgMemberships") },
+  args: { membershipId: v.id('orgMemberships') },
   handler: async (ctx, { membershipId }) => {
     // 1. Get activity data
     const activities = await ctx.runQuery(
       internal.engagement.logs.getRecentActivities,
-      { membershipId, days: 90 }
-    );
+      { membershipId, days: 90 },
+    )
 
     // 2. Build context
-    const context = buildActivityContext(activities);
+    const context = buildActivityContext(activities)
 
     // 3. Call Claude Haiku (fast, cheap)
-    const anthropic = new Anthropic();
+    const anthropic = new Anthropic()
     const response = await anthropic.messages.create({
-      model: "claude-haiku-4-5-20251001",
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 256,
-      messages: [{
-        role: "user",
-        content: ENGAGEMENT_PROMPT.replace("{activityContext}", context)
-      }]
-    });
+      messages: [
+        {
+          role: 'user',
+          content: ENGAGEMENT_PROMPT.replace('{activityContext}', context),
+        },
+      ],
+    })
 
     // 4. Parse and store
-    const result = JSON.parse(response.content[0].text);
+    const result = JSON.parse(response.content[0].text)
     await ctx.runMutation(internal.engagement.mutations.updateEngagement, {
       membershipId,
       computedLevel: result.level,
       computedRationale: result.rationale,
-    });
-  }
-});
+    })
+  },
+})
 ```
 
 ### Admin Override Pattern
 
 Admins can override the LLM score when they have context the system doesn't:
+
 - "This person is highly engaged offline but doesn't use the platform"
 - "This person is temporarily inactive due to personal circumstances"
 
 ```typescript
 export const setEngagementOverride = mutation({
   args: {
-    membershipId: v.id("orgMemberships"),
+    membershipId: v.id('orgMemberships'),
     level: engagementLevelValidator,
     reason: v.string(),
   },
   handler: async (ctx, { membershipId, level, reason }) => {
-    const adminMembership = await requireOrgAdmin(ctx, orgId);
+    const adminMembership = await requireOrgAdmin(ctx, orgId)
 
     await ctx.db.patch(memberEngagementId, {
       adminOverrideLevel: level,
       adminOverrideBy: adminMembership._id,
       adminOverrideAt: Date.now(),
       adminOverrideReason: reason,
-    });
-  }
-});
+    })
+  },
+})
 ```
 
 ## Suggested Build Order
@@ -552,11 +557,11 @@ Based on dependencies between components:
 
 ## Scaling Considerations
 
-| Scale | Considerations |
-|-------|----------------|
-| 1-5 orgs, <500 members | Default architecture fine. Compute engagement on-demand. |
-| 5-20 orgs, 500-2K members | Pre-compute engagement scores daily. Batch attendance prompts. |
-| 20+ orgs, 2K+ members | Shard engagement computation by org. Consider engagement staleness tolerance. |
+| Scale                     | Considerations                                                                |
+| ------------------------- | ----------------------------------------------------------------------------- |
+| 1-5 orgs, <500 members    | Default architecture fine. Compute engagement on-demand.                      |
+| 5-20 orgs, 500-2K members | Pre-compute engagement scores daily. Batch attendance prompts.                |
+| 20+ orgs, 2K+ members     | Shard engagement computation by org. Consider engagement staleness tolerance. |
 
 ### Key Bottlenecks
 
@@ -599,18 +604,22 @@ Based on dependencies between components:
 ## Sources
 
 ### Convex Patterns
+
 - Existing ASTN codebase patterns for org membership, auth, LLM actions
 - Convex documentation for scheduled jobs and actions
 
 ### Event Management
+
 - Standard event RSVP patterns from Meetup, Eventbrite, Luma
 - Post-event feedback patterns from workshop platforms
 
 ### Engagement Scoring
+
 - Community engagement scoring patterns from Discord, Slack
 - LLM-based classification patterns from existing ASTN matching
 
 ---
-*Architecture research for: ASTN v1.2 Org CRM & Events*
-*Researched: 2026-01-19*
-*Confidence: HIGH - builds on proven patterns in existing codebase*
+
+_Architecture research for: ASTN v1.2 Org CRM & Events_
+_Researched: 2026-01-19_
+_Confidence: HIGH - builds on proven patterns in existing codebase_

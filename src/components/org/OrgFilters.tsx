@@ -1,21 +1,21 @@
-import { useQuery } from "convex/react";
-import { MapPin, Search, X } from "lucide-react";
-import { api } from "../../../convex/_generated/api";
-import { Input } from "~/components/ui/input";
+import { useQuery } from 'convex/react'
+import { MapPin, Search, X } from 'lucide-react'
+import { api } from '../../../convex/_generated/api'
+import { Input } from '~/components/ui/input'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select";
-import { Button } from "~/components/ui/button";
+} from '~/components/ui/select'
+import { Button } from '~/components/ui/button'
 
 interface OrgFiltersProps {
-  searchQuery: string;
-  onSearchChange: (value: string) => void;
-  country: string | undefined;
-  onCountryChange: (value: string | undefined) => void;
+  searchQuery: string
+  onSearchChange: (value: string) => void
+  country: string | undefined
+  onCountryChange: (value: string | undefined) => void
 }
 
 export function OrgFilters({
@@ -24,14 +24,14 @@ export function OrgFilters({
   country,
   onCountryChange,
 }: OrgFiltersProps) {
-  const countries = useQuery(api.orgs.discovery.getOrgCountries);
+  const countries = useQuery(api.orgs.discovery.getOrgCountries)
 
-  const hasFilters = searchQuery || country;
+  const hasFilters = searchQuery || country
 
   const clearFilters = () => {
-    onSearchChange("");
-    onCountryChange(undefined);
-  };
+    onSearchChange('')
+    onCountryChange(undefined)
+  }
 
   return (
     <div className="flex flex-col sm:flex-row gap-3 mb-4">
@@ -49,8 +49,10 @@ export function OrgFilters({
 
       {/* Country filter */}
       <Select
-        value={country ?? "all"}
-        onValueChange={(val) => onCountryChange(val === "all" ? undefined : val)}
+        value={country ?? 'all'}
+        onValueChange={(val) =>
+          onCountryChange(val === 'all' ? undefined : val)
+        }
       >
         <SelectTrigger className="w-full sm:w-48">
           <MapPin className="size-4 mr-2 text-slate-400" />
@@ -73,5 +75,5 @@ export function OrgFilters({
         </Button>
       )}
     </div>
-  );
+  )
 }

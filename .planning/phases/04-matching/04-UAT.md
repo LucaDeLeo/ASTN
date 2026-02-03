@@ -13,26 +13,32 @@ updated: 2026-01-18T02:45:00Z
 ## Tests
 
 ### 1. Navigate to /matches and see matched opportunities
+
 expected: User can navigate to /matches and see their matched opportunities listed
 result: pass
 
 ### 2. Matches grouped by tier (Great/Good/Exploring)
+
 expected: Matches are organized into tier sections with headers "Great Matches", "Good Matches", "Worth Exploring"
 result: pass
 
 ### 3. Match cards show tier badge, explanation preview, details
+
 expected: Each match card displays tier badge (colored), opportunity title, organization, location, remote indicator, and 2 strength previews
 result: pass
 
 ### 4. Click through to full match detail page
+
 expected: Clicking on match card title navigates to /matches/$id with full match details
 result: pass
 
 ### 5. Match detail shows probability with experimental label
+
 expected: Match detail page shows "Interview Likelihood" section with probability estimate and "experimental" label
 result: pass
 
 ### 6. Growth Areas section shows aggregated recommendations
+
 expected: Matches list page shows aggregated Growth Areas section based on all matches
 result: pass
 note: Fixed during UAT - integrated GrowthAreas component with recommendation aggregation
@@ -64,8 +70,9 @@ Two bugs were discovered and fixed during UAT:
 [All gaps fixed during UAT session]
 
 ### Fixed: Growth Areas integration
+
 - truth: "Growth Areas section shows aggregated recommendations on matches list page"
   status: fixed
   fix: "Added aggregateGrowthAreas helper to aggregate recommendations from all matches, imported GrowthAreas component, renders below match sections"
   files_changed:
-    - src/routes/matches/index.tsx
+  - src/routes/matches/index.tsx

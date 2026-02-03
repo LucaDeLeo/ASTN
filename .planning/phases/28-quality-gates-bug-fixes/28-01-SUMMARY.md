@@ -53,15 +53,15 @@ GitHub Actions CI pipeline with lint/typecheck/build/test gates, husky pre-commi
 
 ## Performance
 
-| Metric | Value |
-|--------|-------|
-| Duration | 5 minutes |
-| Started | 2026-02-02T22:59:06Z |
-| Completed | 2026-02-02T23:04:33Z |
-| Tasks | 2/2 |
-| Files created | 3 |
-| Files modified | 11 |
-| Files deleted | 1 |
+| Metric         | Value                |
+| -------------- | -------------------- |
+| Duration       | 5 minutes            |
+| Started        | 2026-02-02T22:59:06Z |
+| Completed      | 2026-02-02T23:04:33Z |
+| Tasks          | 2/2                  |
+| Files created  | 3                    |
+| Files modified | 11                   |
+| Files deleted  | 1                    |
 
 ## Accomplishments
 
@@ -83,10 +83,10 @@ GitHub Actions CI pipeline with lint/typecheck/build/test gates, husky pre-commi
 
 ## Task Commits
 
-| Task | Name | Commit | Key Files |
-|------|------|--------|-----------|
-| 1 | Create GitHub Actions CI workflow and update package.json scripts | af785cc | .github/workflows/ci.yml, package.json, 10 lint-fixed files |
-| 2 | Install husky + lint-staged and create .env.example | 0d20405 | .husky/pre-commit, .env.example, package.json, bun.lock |
+| Task | Name                                                              | Commit  | Key Files                                                   |
+| ---- | ----------------------------------------------------------------- | ------- | ----------------------------------------------------------- |
+| 1    | Create GitHub Actions CI workflow and update package.json scripts | af785cc | .github/workflows/ci.yml, package.json, 10 lint-fixed files |
+| 2    | Install husky + lint-staged and create .env.example               | 0d20405 | .husky/pre-commit, .env.example, package.json, bun.lock     |
 
 ## Files Created
 
@@ -116,18 +116,19 @@ GitHub Actions CI pipeline with lint/typecheck/build/test gates, husky pre-commi
 
 ## Decisions Made
 
-| Decision | Rationale |
-|----------|-----------|
-| Remove `--ext ts,tsx` from eslint command | Deprecated in eslint v9+ flat config; file patterns defined in eslint.config.mjs |
-| Full typecheck in pre-commit (not just staged) | TypeScript needs full project context; partial check would miss cross-file errors |
-| `--no-verify` for Task 2 commit | The pre-commit hook was being set up in this commit; running it during its own creation would be circular |
-| Fix 22 existing lint errors inline | CI pipeline would fail immediately if lint errors existed; fixing them is prerequisite |
+| Decision                                       | Rationale                                                                                                 |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Remove `--ext ts,tsx` from eslint command      | Deprecated in eslint v9+ flat config; file patterns defined in eslint.config.mjs                          |
+| Full typecheck in pre-commit (not just staged) | TypeScript needs full project context; partial check would miss cross-file errors                         |
+| `--no-verify` for Task 2 commit                | The pre-commit hook was being set up in this commit; running it during its own creation would be circular |
+| Fix 22 existing lint errors inline             | CI pipeline would fail immediately if lint errors existed; fixing them is prerequisite                    |
 
 ## Deviations from Plan
 
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] Fixed 22 pre-existing eslint errors**
+
 - **Found during:** Task 1 verification
 - **Issue:** `bun run lint` failed with 22 errors across 10 files (import ordering, unnecessary conditions, optional chains, type assertions, sort-imports)
 - **Fix:** Ran `eslint --fix` for 13 auto-fixable errors; manually fixed remaining 9 (authTauri.ts unnecessary conditional, conversation.ts optional chains)
@@ -135,6 +136,7 @@ GitHub Actions CI pipeline with lint/typecheck/build/test gates, husky pre-commi
 - **Commit:** af785cc
 
 **2. [Rule 1 - Bug] Fixed navigate-in-render in profile/index.tsx**
+
 - **Found during:** Task 1 eslint --fix
 - **Issue:** `navigate({ to: "/login" })` called directly during render in UnauthenticatedRedirect component, violating React rules (side effect during render)
 - **Fix:** Wrapped in `useEffect(() => { navigate({ to: "/login" }) }, [navigate])`

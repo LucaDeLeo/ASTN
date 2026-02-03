@@ -1,16 +1,16 @@
-import { useQuery } from "convex/react";
-import { MapPin, Shield, Users } from "lucide-react";
-import { api } from "../../../convex/_generated/api";
-import type { Id } from "../../../convex/_generated/dataModel";
-import { Card } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
+import { useQuery } from 'convex/react'
+import { MapPin, Shield, Users } from 'lucide-react'
+import { api } from '../../../convex/_generated/api'
+import type { Id } from '../../../convex/_generated/dataModel'
+import { Card } from '~/components/ui/card'
+import { Badge } from '~/components/ui/badge'
 
 interface MemberDirectoryProps {
-  orgId: Id<"organizations">;
+  orgId: Id<'organizations'>
 }
 
 export function MemberDirectory({ orgId }: MemberDirectoryProps) {
-  const members = useQuery(api.orgs.directory.getVisibleMembers, { orgId });
+  const members = useQuery(api.orgs.directory.getVisibleMembers, { orgId })
 
   if (members === undefined) {
     return (
@@ -26,7 +26,7 @@ export function MemberDirectory({ orgId }: MemberDirectoryProps) {
           </Card>
         ))}
       </div>
-    );
+    )
   }
 
   if (members.length === 0) {
@@ -42,7 +42,7 @@ export function MemberDirectory({ orgId }: MemberDirectoryProps) {
           Members can choose to appear in the directory when they join.
         </p>
       </Card>
-    );
+    )
   }
 
   return (
@@ -51,23 +51,23 @@ export function MemberDirectory({ orgId }: MemberDirectoryProps) {
         <MemberCard key={member.membershipId} member={member} />
       ))}
     </div>
-  );
+  )
 }
 
 type Member = {
-  membershipId: Id<"orgMemberships">;
-  userId: string;
-  role: "admin" | "member";
+  membershipId: Id<'orgMemberships'>
+  userId: string
+  role: 'admin' | 'member'
   profile: {
-    name: string;
-    headline?: string;
-    skills: Array<string>;
-    location?: string;
-  };
-};
+    name: string
+    headline?: string
+    skills: Array<string>
+    location?: string
+  }
+}
 
 interface MemberCardProps {
-  member: Member;
+  member: Member
 }
 
 function MemberCard({ member }: MemberCardProps) {
@@ -82,7 +82,7 @@ function MemberCard({ member }: MemberCardProps) {
             </p>
           )}
         </div>
-        {member.role === "admin" && (
+        {member.role === 'admin' && (
           <Badge variant="secondary" className="shrink-0 ml-2">
             <Shield className="size-3 mr-1" />
             Admin
@@ -107,5 +107,5 @@ function MemberCard({ member }: MemberCardProps) {
         </div>
       )}
     </Card>
-  );
+  )
 }

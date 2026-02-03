@@ -20,8 +20,8 @@ affects: [08-02, 08-03, 09-review-integration]
 tech-stack:
   added: []
   patterns:
-    - "Claude tool calling for structured extraction"
-    - "Skill fuzzy matching with 0.7 threshold"
+    - 'Claude tool calling for structured extraction'
+    - 'Skill fuzzy matching with 0.7 threshold'
 
 key-files:
   created:
@@ -31,13 +31,13 @@ key-files:
     - convex/schema.ts
 
 key-decisions:
-  - "Only name required in extraction schema - resumes vary widely"
-  - "YYYY-MM format for work dates from LLM for parsing flexibility"
-  - "0.7 similarity threshold for fuzzy skill matching"
+  - 'Only name required in extraction schema - resumes vary widely'
+  - 'YYYY-MM format for work dates from LLM for parsing flexibility'
+  - '0.7 similarity threshold for fuzzy skill matching'
 
 patterns-established:
-  - "extraction module structure: prompts.ts + skills.ts"
-  - "ExtractionResult interface mirroring extractedData schema"
+  - 'extraction module structure: prompts.ts + skills.ts'
+  - 'ExtractionResult interface mirroring extractedData schema'
 
 # Metrics
 duration: 3min
@@ -57,6 +57,7 @@ completed: 2026-01-18
 - **Files modified:** 3
 
 ## Accomplishments
+
 - Schema updated with extractedData field matching profile structure for seamless data transfer
 - Claude tool definition ready for forced tool_choice extraction
 - Skill matching utility with 3-tier matching (exact, alias, fuzzy)
@@ -70,11 +71,13 @@ Each task was committed atomically:
 3. **Task 3: Create skill matching utility** - `c8c95f5` (feat)
 
 ## Files Created/Modified
+
 - `convex/schema.ts` - Added extractedData object to uploadedDocuments, added "extracting" status
 - `convex/extraction/prompts.ts` - ExtractionResult interface, extractProfileTool definition, EXTRACTION_SYSTEM_PROMPT
 - `convex/extraction/skills.ts` - matchSkillsToTaxonomy function with fuzzy matching
 
 ## Decisions Made
+
 - Only name required in extraction tool schema - resumes vary widely and many fields optional
 - Used YYYY-MM string format for workHistory dates from LLM (easier parsing than timestamps)
 - Set 0.7 similarity threshold for fuzzy skill matching (standard for string similarity)
@@ -93,11 +96,13 @@ None
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - ExtractionResult type ready for pdf.ts and text.ts actions
 - extractProfileTool ready for Claude messages.create with forced tool_choice
 - matchSkillsToTaxonomy ready to normalize extracted skills against taxonomy
 - Schema supports "extracting" status for progress tracking
 
 ---
-*Phase: 08-llm-extraction-core*
-*Completed: 2026-01-18*
+
+_Phase: 08-llm-extraction-core_
+_Completed: 2026-01-18_

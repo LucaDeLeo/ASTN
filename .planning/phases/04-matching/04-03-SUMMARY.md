@@ -37,15 +37,15 @@ key-files:
     - CLAUDE.md (added matches routes to documentation)
 
 key-decisions:
-  - "Use tierConfig objects for consistent tier styling across components"
-  - "Auto-trigger match computation when needsComputation flag detected"
+  - 'Use tierConfig objects for consistent tier styling across components'
+  - 'Auto-trigger match computation when needsComputation flag detected'
   - "Display probability with explicit 'experimental' label per requirements"
-  - "Show aggregated growth areas on list page, detailed recommendations on detail page"
+  - 'Show aggregated growth areas on list page, detailed recommendations on detail page'
 
 patterns-established:
-  - "Tier grouping: Great/Good/Exploring with distinct icons and colors"
-  - "Match cards link to detail pages via TanStack Router params"
-  - "ProbabilityBadge always shows experimental disclaimer"
+  - 'Tier grouping: Great/Good/Exploring with distinct icons and colors'
+  - 'Match cards link to detail pages via TanStack Router params'
+  - 'ProbabilityBadge always shows experimental disclaimer'
 
 # Metrics
 duration: ~30min
@@ -94,6 +94,7 @@ Each task was committed atomically:
 ## UI Components Verified
 
 ### Matches List Page (`/matches`)
+
 - "Your Matches" header with "Refresh Matches" button
 - "Last updated" timestamp
 - Tier sections: "Great Matches", "Good Matches", "Worth Exploring"
@@ -103,6 +104,7 @@ Each task was committed atomically:
 - Empty state with links to profile/opportunities
 
 ### Match Detail Page (`/matches/$id`)
+
 - Back navigation link
 - Tier badge and opportunity header
 - Location, Remote badge, Deadline info
@@ -137,5 +139,6 @@ Each task was committed atomically:
 - Ready for Phase 05 engagement features
 
 ---
-*Phase: 04-matching*
-*Completed: 2026-01-18*
+
+_Phase: 04-matching_
+_Completed: 2026-01-18_

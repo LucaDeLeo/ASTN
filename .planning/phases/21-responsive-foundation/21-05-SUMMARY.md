@@ -37,14 +37,14 @@ key-files:
     - src/routes/matches/index.tsx
 
 key-decisions:
-  - "CSS data-attribute selectors for icon button touch targets (cleaner than variant changes)"
-  - "prefers-reduced-motion query for layout transitions (accessibility)"
-  - "flex-col to sm:flex-row pattern for mobile-first header layouts"
+  - 'CSS data-attribute selectors for icon button touch targets (cleaner than variant changes)'
+  - 'prefers-reduced-motion query for layout transitions (accessibility)'
+  - 'flex-col to sm:flex-row pattern for mobile-first header layouts'
 
 patterns-established:
-  - "Touch target pattern: [data-slot=button][data-size=icon*] min-h-11 min-w-11 on mobile"
-  - "Responsive header pattern: flex-col sm:flex-row with full-width buttons on mobile"
-  - "Overflow prevention pattern: min-w-0 + break-words for text containers"
+  - 'Touch target pattern: [data-slot=button][data-size=icon*] min-h-11 min-w-11 on mobile'
+  - 'Responsive header pattern: flex-col sm:flex-row with full-width buttons on mobile'
+  - 'Overflow prevention pattern: min-w-0 + break-words for text containers'
 
 # Metrics
 duration: 8min
@@ -119,5 +119,6 @@ None - no external service configuration required.
 - Ready for Phase 23 (touch interactions - pull-to-refresh, swipe gestures)
 
 ---
-*Phase: 21-responsive-foundation*
-*Completed: 2026-01-21*
+
+_Phase: 21-responsive-foundation_
+_Completed: 2026-01-21_

@@ -31,6 +31,7 @@ bun run build
 ## Architecture
 
 ### Frontend Stack
+
 - **TanStack Start** with file-based routing in `src/routes/`
 - **TanStack Router + Query** integrated with Convex for data fetching
 - **React 19** with React Compiler enabled (via babel-plugin-react-compiler)
@@ -38,11 +39,13 @@ bun run build
 - Path alias: `~/` maps to `src/`
 
 ### Backend Stack
+
 - **Convex** for database, real-time sync, and serverless functions
 - **@convex-dev/auth** for authentication (GitHub, Google, Password providers)
 - **Claude API** for LLM features (Sonnet 4.5 for quality, Haiku 4.5 for speed)
 
 ### Convex Structure
+
 ```
 convex/
 ├── schema.ts          # Database schema (profiles, opportunities, matches, etc.)
@@ -68,6 +71,7 @@ convex/
 **No Vector Search**: Context for LLM calls is programmatically constructed, not using embeddings.
 
 ### Route Structure
+
 - `/` - Home/landing
 - `/login` - Authentication
 - `/profile/*` - Profile management (protected)
@@ -79,5 +83,6 @@ convex/
 ## Environment Variables
 
 Required in `.env.local`:
+
 - `VITE_CONVEX_URL` - Convex deployment URL
 - `ANTHROPIC_API_KEY` - Set in Convex dashboard for LLM features

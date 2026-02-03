@@ -1,22 +1,22 @@
-import { useState } from "react";
-import { Check, Pencil, X } from "lucide-react";
-import type { ResumeReviewStatus } from "./types";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Card } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
-import { cn } from "~/lib/utils";
+import { useState } from 'react'
+import { Check, Pencil, X } from 'lucide-react'
+import type { ResumeReviewStatus } from './types'
+import { Button } from '~/components/ui/button'
+import { Input } from '~/components/ui/input'
+import { Card } from '~/components/ui/card'
+import { Badge } from '~/components/ui/badge'
+import { cn } from '~/lib/utils'
 
 interface ExtractionFieldCardProps {
-  label: string;
-  value: string | undefined;
-  editedValue?: string;
-  status: ResumeReviewStatus;
-  onAccept: () => void;
-  onReject: () => void;
-  onEdit: (value: string) => void;
-  displayOnly?: boolean; // For email - shows but can't be applied
-  placeholder?: string; // "Not found in document"
+  label: string
+  value: string | undefined
+  editedValue?: string
+  status: ResumeReviewStatus
+  onAccept: () => void
+  onReject: () => void
+  onEdit: (value: string) => void
+  displayOnly?: boolean // For email - shows but can't be applied
+  placeholder?: string // "Not found in document"
 }
 
 export function ExtractionFieldCard({
@@ -28,56 +28,56 @@ export function ExtractionFieldCard({
   onReject,
   onEdit,
   displayOnly = false,
-  placeholder = "Not found in document",
+  placeholder = 'Not found in document',
 }: ExtractionFieldCardProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState("");
+  const [isEditing, setIsEditing] = useState(false)
+  const [editValue, setEditValue] = useState('')
 
-  const displayValue = editedValue ?? value;
-  const hasValue = displayValue !== undefined && displayValue !== "";
+  const displayValue = editedValue ?? value
+  const hasValue = displayValue !== undefined && displayValue !== ''
 
   const handleStartEdit = () => {
-    setEditValue(displayValue ?? "");
-    setIsEditing(true);
-  };
+    setEditValue(displayValue ?? '')
+    setIsEditing(true)
+  }
 
   const handleSaveEdit = () => {
     if (editValue.trim()) {
-      onEdit(editValue.trim());
+      onEdit(editValue.trim())
     }
-    setIsEditing(false);
-    setEditValue("");
-  };
+    setIsEditing(false)
+    setEditValue('')
+  }
 
   const handleCancelEdit = () => {
-    setIsEditing(false);
-    setEditValue("");
-  };
+    setIsEditing(false)
+    setEditValue('')
+  }
 
   const handleBlur = () => {
     // Save on blur if value changed
     if (editValue.trim() && editValue.trim() !== displayValue) {
-      handleSaveEdit();
+      handleSaveEdit()
     } else {
-      handleCancelEdit();
+      handleCancelEdit()
     }
-  };
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSaveEdit();
-    } else if (e.key === "Escape") {
-      handleCancelEdit();
+    if (e.key === 'Enter') {
+      handleSaveEdit()
+    } else if (e.key === 'Escape') {
+      handleCancelEdit()
     }
-  };
+  }
 
   // Display-only fields (like email)
   if (displayOnly) {
     return (
       <Card
         className={cn(
-          "p-3 transition-all duration-200 shadow-sm",
-          "border-slate-300 bg-white"
+          'p-3 transition-all duration-200 shadow-sm',
+          'border-slate-300 bg-white',
         )}
       >
         <div className="flex items-start justify-between gap-4">
@@ -89,18 +89,20 @@ export function ExtractionFieldCard({
               </Badge>
             </div>
             <p className="text-sm text-slate-700">
-              {hasValue ? displayValue : (
+              {hasValue ? (
+                displayValue
+              ) : (
                 <span className="text-slate-400 italic">{placeholder}</span>
               )}
             </p>
           </div>
         </div>
       </Card>
-    );
+    )
   }
 
   // Missing value
-  if (!hasValue && (status === "pending" || status === "accepted")) {
+  if (!hasValue && (status === 'pending' || status === 'accepted')) {
     return (
       <Card className="p-3 transition-all duration-200 shadow-sm border-slate-300 bg-white">
         <div className="flex items-start justify-between gap-4">
@@ -110,34 +112,34 @@ export function ExtractionFieldCard({
           </div>
         </div>
       </Card>
-    );
+    )
   }
 
   return (
     <Card
       className={cn(
-        "p-3 transition-all duration-200 shadow-sm",
-        status === "accepted" && "border-slate-300 bg-white",
-        status === "edited" && "border-amber-400 bg-amber-50",
-        status === "rejected" && "border-slate-300 bg-slate-100 opacity-60",
-        status === "pending" && "border-slate-300 bg-white"
+        'p-3 transition-all duration-200 shadow-sm',
+        status === 'accepted' && 'border-slate-300 bg-white',
+        status === 'edited' && 'border-amber-400 bg-amber-50',
+        status === 'rejected' && 'border-slate-300 bg-slate-100 opacity-60',
+        status === 'pending' && 'border-slate-300 bg-white',
       )}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
             <h4 className="font-medium text-foreground">{label}</h4>
-            {(status === "edited" || status === "rejected") && (
+            {(status === 'edited' || status === 'rejected') && (
               <Badge
-                variant={status === "rejected" ? "secondary" : "default"}
+                variant={status === 'rejected' ? 'secondary' : 'default'}
                 className={cn(
-                  "text-xs",
-                  status === "edited" &&
-                    "bg-amber-100 text-amber-800 hover:bg-amber-100"
+                  'text-xs',
+                  status === 'edited' &&
+                    'bg-amber-100 text-amber-800 hover:bg-amber-100',
                 )}
               >
-                {status === "rejected" && "Rejected"}
-                {status === "edited" && (
+                {status === 'rejected' && 'Rejected'}
+                {status === 'edited' && (
                   <>
                     <Pencil className="size-3 mr-1" /> Edited
                   </>
@@ -169,10 +171,10 @@ export function ExtractionFieldCard({
           ) : (
             <p
               className={cn(
-                "text-sm",
-                status === "rejected"
-                  ? "line-through text-slate-400"
-                  : "text-slate-700"
+                'text-sm',
+                status === 'rejected'
+                  ? 'line-through text-slate-400'
+                  : 'text-slate-700',
               )}
             >
               {displayValue}
@@ -187,10 +189,10 @@ export function ExtractionFieldCard({
               variant="ghost"
               size="icon-sm"
               onClick={onAccept}
-              disabled={status === "accepted"}
+              disabled={status === 'accepted'}
               className={cn(
-                "text-slate-400 hover:text-green-600 hover:bg-green-50",
-                status === "accepted" && "text-green-600 bg-green-100"
+                'text-slate-400 hover:text-green-600 hover:bg-green-50',
+                status === 'accepted' && 'text-green-600 bg-green-100',
               )}
             >
               <Check className="size-4" />
@@ -199,10 +201,10 @@ export function ExtractionFieldCard({
               variant="ghost"
               size="icon-sm"
               onClick={onReject}
-              disabled={status === "rejected"}
+              disabled={status === 'rejected'}
               className={cn(
-                "text-slate-400 hover:text-red-600 hover:bg-red-50",
-                status === "rejected" && "text-red-600 bg-red-100"
+                'text-slate-400 hover:text-red-600 hover:bg-red-50',
+                status === 'rejected' && 'text-red-600 bg-red-100',
               )}
             >
               <X className="size-4" />
@@ -219,5 +221,5 @@ export function ExtractionFieldCard({
         )}
       </div>
     </Card>
-  );
+  )
 }

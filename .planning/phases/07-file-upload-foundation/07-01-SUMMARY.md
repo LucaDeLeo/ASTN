@@ -18,7 +18,7 @@ affects: [07-02, 07-03, 08-extraction-pipeline]
 tech-stack:
   added: []
   patterns:
-    - "Convex 3-step upload pattern: generate URL, POST file, save metadata"
+    - 'Convex 3-step upload pattern: generate URL, POST file, save metadata'
     - "Storage reference via v.id('_storage')"
 
 key-files:
@@ -28,11 +28,11 @@ key-files:
     - convex/schema.ts
 
 key-decisions:
-  - "Status enum includes pending_extraction, extracted, failed for Phase 8 processing"
+  - 'Status enum includes pending_extraction, extracted, failed for Phase 8 processing'
 
 patterns-established:
-  - "Upload mutations pattern: auth check, then storage operation"
-  - "Document status workflow: pending_extraction -> extracted | failed"
+  - 'Upload mutations pattern: auth check, then storage operation'
+  - 'Document status workflow: pending_extraction -> extracted | failed'
 
 # Metrics
 duration: 5min
@@ -93,5 +93,6 @@ None - no external service configuration required.
 - Phase 8 can query by_status index for pending_extraction documents
 
 ---
-*Phase: 07-file-upload-foundation*
-*Completed: 2026-01-18*
+
+_Phase: 07-file-upload-foundation_
+_Completed: 2026-01-18_

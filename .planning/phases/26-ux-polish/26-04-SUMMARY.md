@@ -33,13 +33,13 @@ key-files:
     - src/components/opportunities/opportunity-detail.tsx
 
 key-decisions:
-  - "Navy/slate (hue 250) for primary, coral (hue 30) for accent only"
-  - "Dark mode primary uses lighter navy (oklch 0.55) for visibility"
-  - "Semantic tokens (text-muted-foreground) over hardcoded Tailwind colors"
+  - 'Navy/slate (hue 250) for primary, coral (hue 30) for accent only'
+  - 'Dark mode primary uses lighter navy (oklch 0.55) for visibility'
+  - 'Semantic tokens (text-muted-foreground) over hardcoded Tailwind colors'
 
 patterns-established:
-  - "Color palette: Navy primary for professional tone, coral accent for CTAs"
-  - "Dark mode: Use semantic tokens, add dark: variants for Tailwind utilities"
+  - 'Color palette: Navy primary for professional tone, coral accent for CTAs'
+  - 'Dark mode: Use semantic tokens, add dark: variants for Tailwind utilities'
 
 # Metrics
 duration: 7min
@@ -59,6 +59,7 @@ completed: 2026-01-22
 - **Files modified:** 3
 
 ## Accomplishments
+
 - Evolved color palette from coral primary to navy/slate primary for professional appearance
 - Added navy/slate primitive tokens (--navy-900 to --slate-100)
 - Fixed hardcoded Tailwind colors breaking dark mode in MatchCard and opportunity-detail
@@ -74,11 +75,13 @@ Each task was committed atomically:
 3. **Task 3: Fix hardcoded colors and dark mode contrast** - `10b525d` (fix)
 
 ## Files Created/Modified
+
 - `src/styles/app.css` - Navy/slate primitives, updated semantic tokens, gradient classes, shadow tokens
-- `src/components/matches/MatchCard.tsx` - Replaced text-slate-* with text-muted-foreground
+- `src/components/matches/MatchCard.tsx` - Replaced text-slate-\* with text-muted-foreground
 - `src/components/opportunities/opportunity-detail.tsx` - Replaced hardcoded colors with semantic tokens, added dark mode variants
 
 ## Decisions Made
+
 - **Navy primary (hue 250):** Professional, serious tone appropriate for AI Safety domain
 - **Coral as accent only:** CTAs, highlights - not primary color
 - **Dark mode primary lighter:** oklch(0.55 0.08 250) ensures 4.5:1 contrast against dark background
@@ -97,10 +100,12 @@ None
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Phase 26 (UX Polish) is now complete
 - Color system is cohesive across light and dark modes
 - All high-priority polish items addressed
 
 ---
-*Phase: 26-ux-polish*
-*Completed: 2026-01-22*
+
+_Phase: 26-ux-polish_
+_Completed: 2026-01-22_

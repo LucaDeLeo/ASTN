@@ -21,9 +21,9 @@ affects: [08-03, 09-review-integration]
 tech-stack:
   added: []
   patterns:
-    - "Claude document content blocks for PDF extraction"
-    - "Exponential backoff retry (3 attempts: 1s, 2s, 4s)"
-    - "internalMutation/internalQuery for action support functions"
+    - 'Claude document content blocks for PDF extraction'
+    - 'Exponential backoff retry (3 attempts: 1s, 2s, 4s)'
+    - 'internalMutation/internalQuery for action support functions'
 
 key-files:
   created:
@@ -34,14 +34,14 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Claude Haiku 4.5 model version: claude-haiku-4-5-20251001"
-  - "MAX_RETRIES = 3 with exponential backoff"
-  - "Skill matching happens in action after extraction"
+  - 'Claude Haiku 4.5 model version: claude-haiku-4-5-20251001'
+  - 'MAX_RETRIES = 3 with exponential backoff'
+  - 'Skill matching happens in action after extraction'
 
 patterns-established:
-  - "PDF extraction via base64 document content block"
-  - "Status flow: pending_extraction -> extracting -> extracted/failed"
-  - "Actions call internal mutations/queries for database access"
+  - 'PDF extraction via base64 document content block'
+  - 'Status flow: pending_extraction -> extracting -> extracted/failed'
+  - 'Actions call internal mutations/queries for database access'
 
 # Metrics
 duration: 5min
@@ -61,6 +61,7 @@ completed: 2026-01-18
 - **Files modified:** 4
 
 ## Accomplishments
+
 - PDF extraction retrieves file from Convex storage, converts to base64, sends via Claude document content block
 - Text extraction processes pasted resume text through same extraction pipeline
 - Both actions retry 3x with exponential backoff (1s, 2s, 4s) on Claude API failures
@@ -77,12 +78,14 @@ Each task was committed atomically:
 **Lint fixes:** `efd1a35` (style: fix lint errors in extraction module)
 
 ## Files Created/Modified
+
 - `convex/extraction/pdf.ts` - extractFromPdf action with Claude document content block
 - `convex/extraction/text.ts` - extractFromText action for pasted text
 - `convex/extraction/mutations.ts` - updateDocumentStatus, saveExtractionResult mutations
 - `convex/extraction/queries.ts` - getDocument, getSkillsTaxonomy, getDocumentStatus queries
 
 ## Decisions Made
+
 - Used Claude Haiku 4.5 model version `claude-haiku-4-5-20251001` for fast, cheap extraction
 - Set MAX_RETRIES = 3 with exponential backoff (1s, 2s, 4s delays)
 - Skill matching happens in action after Claude extraction, before saving results
@@ -93,6 +96,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Fixed lint errors for explicit table IDs**
+
 - **Found during:** Task 3 verification
 - **Issue:** Convex lint rule requires explicit table name in db.patch/db.get calls
 - **Fix:** Changed `ctx.db.patch(documentId, {...})` to `ctx.db.patch("uploadedDocuments", documentId, {...})`
@@ -101,6 +105,7 @@ Each task was committed atomically:
 - **Committed in:** fd9bfe5 (part of Task 3 commit)
 
 **2. [Rule 3 - Blocking] Fixed lint errors in prompts.ts and skills.ts**
+
 - **Found during:** Task 3 verification
 - **Issue:** Array type syntax `string[]` forbidden, must use `Array<string>`; Anthropic import must be type-only
 - **Fix:** Updated type syntax and import statement
@@ -122,11 +127,13 @@ None
 None - no external service configuration required. ANTHROPIC_API_KEY already configured in Convex dashboard from enrichment feature.
 
 ## Next Phase Readiness
+
 - extractFromPdf ready to be triggered after file upload
 - extractFromText ready for text paste workflow
 - Status queries ready for frontend polling
 - Phase 08-03 (trigger integration) can wire up document upload to extraction
 
 ---
-*Phase: 08-llm-extraction-core*
-*Completed: 2026-01-18*
+
+_Phase: 08-llm-extraction-core_
+_Completed: 2026-01-18_

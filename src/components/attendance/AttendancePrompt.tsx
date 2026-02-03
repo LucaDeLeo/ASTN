@@ -1,17 +1,17 @@
-import { useState } from "react";
-import { CheckCircle, Clock, MinusCircle, XCircle } from "lucide-react";
-import { useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { FeedbackForm } from "./FeedbackForm";
-import type { Id } from "../../../convex/_generated/dataModel";
-import { Button } from "~/components/ui/button";
+import { useState } from 'react'
+import { CheckCircle, Clock, MinusCircle, XCircle } from 'lucide-react'
+import { useMutation } from 'convex/react'
+import { api } from '../../../convex/_generated/api'
+import { FeedbackForm } from './FeedbackForm'
+import type { Id } from '../../../convex/_generated/dataModel'
+import { Button } from '~/components/ui/button'
 
 interface AttendancePromptProps {
-  notificationId: Id<"notifications">;
-  eventId: Id<"events">;
-  eventTitle: string;
-  orgName?: string;
-  onDismiss: () => void;
+  notificationId: Id<'notifications'>
+  eventId: Id<'events'>
+  eventTitle: string
+  orgName?: string
+  onDismiss: () => void
 }
 
 export function AttendancePrompt({
@@ -21,46 +21,50 @@ export function AttendancePrompt({
   orgName,
   onDismiss,
 }: AttendancePromptProps) {
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [submitting, setSubmitting] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false)
+  const [submitting, setSubmitting] = useState<string | null>(null)
 
-  const recordAttendance = useMutation(api.attendance.mutations.recordAttendance);
-  const snoozePrompt = useMutation(api.attendance.mutations.snoozeAttendancePrompt);
+  const recordAttendance = useMutation(
+    api.attendance.mutations.recordAttendance,
+  )
+  const snoozePrompt = useMutation(
+    api.attendance.mutations.snoozeAttendancePrompt,
+  )
 
   const handleResponse = async (
-    status: "attended" | "partial" | "not_attended"
+    status: 'attended' | 'partial' | 'not_attended',
   ) => {
-    setSubmitting(status);
+    setSubmitting(status)
     try {
       await recordAttendance({
         eventId,
         status,
         notificationId,
-      });
+      })
 
-      if (status === "attended" || status === "partial") {
-        setShowFeedback(true);
+      if (status === 'attended' || status === 'partial') {
+        setShowFeedback(true)
       } else {
-        onDismiss();
+        onDismiss()
       }
     } catch (error) {
-      console.error("Failed to record attendance:", error);
+      console.error('Failed to record attendance:', error)
     } finally {
-      setSubmitting(null);
+      setSubmitting(null)
     }
-  };
+  }
 
   const handleSnooze = async () => {
-    setSubmitting("snooze");
+    setSubmitting('snooze')
     try {
-      await snoozePrompt({ notificationId });
-      onDismiss();
+      await snoozePrompt({ notificationId })
+      onDismiss()
     } catch (error) {
-      console.error("Failed to snooze prompt:", error);
+      console.error('Failed to snooze prompt:', error)
     } finally {
-      setSubmitting(null);
+      setSubmitting(null)
     }
-  };
+  }
 
   if (showFeedback) {
     return (
@@ -69,7 +73,7 @@ export function AttendancePrompt({
         eventTitle={eventTitle}
         onComplete={onDismiss}
       />
-    );
+    )
   }
 
   return (
@@ -83,7 +87,7 @@ export function AttendancePrompt({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => handleResponse("attended")}
+          onClick={() => handleResponse('attended')}
           disabled={submitting !== null}
           className="text-green-600 hover:text-green-700 hover:bg-green-50"
         >
@@ -93,7 +97,7 @@ export function AttendancePrompt({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => handleResponse("partial")}
+          onClick={() => handleResponse('partial')}
           disabled={submitting !== null}
           className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
         >
@@ -103,7 +107,7 @@ export function AttendancePrompt({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => handleResponse("not_attended")}
+          onClick={() => handleResponse('not_attended')}
           disabled={submitting !== null}
           className="text-slate-500 hover:text-slate-600"
         >
@@ -122,5 +126,5 @@ export function AttendancePrompt({
         </Button>
       </div>
     </div>
-  );
+  )
 }

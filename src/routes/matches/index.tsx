@@ -1,66 +1,80 @@
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { AuthLoading, Authenticated, Unauthenticated, useAction, useQuery } from "convex/react";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { convexQuery } from "@convex-dev/react-query";
-import { RefreshCw, Sparkles, User } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { api } from "../../../convex/_generated/api";
-import { AuthHeader } from "~/components/layout/auth-header";
-import { GradientBg } from "~/components/layout/GradientBg";
-import { MobileShell } from "~/components/layout/mobile-shell";
-import { useIsMobile } from "~/hooks/use-media-query";
-import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
-import { Empty } from "~/components/ui/empty";
-import { Spinner } from "~/components/ui/spinner";
-import { PullToRefresh } from "~/components/ui/pull-to-refresh";
-import { MatchTierSection } from "~/components/matches/MatchTierSection";
-import { SavedMatchesSection } from "~/components/matches/SavedMatchesSection";
-import { GrowthAreas } from "~/components/matches/GrowthAreas";
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
+import {
+  AuthLoading,
+  Authenticated,
+  Unauthenticated,
+  useAction,
+  useQuery,
+} from 'convex/react'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { convexQuery } from '@convex-dev/react-query'
+import { RefreshCw, Sparkles, User } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { api } from '../../../convex/_generated/api'
+import { AuthHeader } from '~/components/layout/auth-header'
+import { GradientBg } from '~/components/layout/GradientBg'
+import { MobileShell } from '~/components/layout/mobile-shell'
+import { useIsMobile } from '~/hooks/use-media-query'
+import { Button } from '~/components/ui/button'
+import { Card } from '~/components/ui/card'
+import { Empty } from '~/components/ui/empty'
+import { Spinner } from '~/components/ui/spinner'
+import { PullToRefresh } from '~/components/ui/pull-to-refresh'
+import { MatchTierSection } from '~/components/matches/MatchTierSection'
+import { SavedMatchesSection } from '~/components/matches/SavedMatchesSection'
+import { GrowthAreas } from '~/components/matches/GrowthAreas'
 
 // Aggregate recommendations into growth areas
-function aggregateGrowthAreas(recommendations: Array<{ type: string; action: string }> | undefined) {
+function aggregateGrowthAreas(
+  recommendations: Array<{ type: string; action: string }> | undefined,
+) {
   if (!recommendations || !Array.isArray(recommendations)) {
-    return [];
+    return []
   }
 
   const byType: Record<string, Set<string>> = {
     skill: new Set(),
     experience: new Set(),
-  };
+  }
 
   for (const rec of recommendations) {
     // Skip "specific" type as those are per-match, not general growth areas
-    if (rec.type === "skill" || rec.type === "experience") {
-      byType[rec.type].add(rec.action);
+    if (rec.type === 'skill' || rec.type === 'experience') {
+      byType[rec.type].add(rec.action)
     }
   }
 
-  const areas: Array<{ theme: string; items: Array<string> }> = [];
+  const areas: Array<{ theme: string; items: Array<string> }> = []
 
   if (byType.skill.size > 0) {
-    areas.push({ theme: "Skills to build", items: [...byType.skill].slice(0, 5) });
+    areas.push({
+      theme: 'Skills to build',
+      items: [...byType.skill].slice(0, 5),
+    })
   }
   if (byType.experience.size > 0) {
-    areas.push({ theme: "Experience to gain", items: [...byType.experience].slice(0, 5) });
+    areas.push({
+      theme: 'Experience to gain',
+      items: [...byType.experience].slice(0, 5),
+    })
   }
 
-  return areas;
+  return areas
 }
 
-export const Route = createFileRoute("/matches/")({
+export const Route = createFileRoute('/matches/')({
   loader: async ({ context }) => {
     await context.queryClient.ensureQueryData(
-      convexQuery(api.matches.getMyMatches, {})
-    );
+      convexQuery(api.matches.getMyMatches, {}),
+    )
   },
   component: MatchesPage,
-});
+})
 
 function MatchesPage() {
-  const isMobile = useIsMobile();
-  const profile = useQuery(api.profiles.getOrCreateProfile);
-  const user = profile ? { name: profile.name || "User" } : null;
+  const isMobile = useIsMobile()
+  const profile = useQuery(api.profiles.getOrCreateProfile)
+  const user = profile ? { name: profile.name || 'User' } : null
 
   const pageContent = (
     <>
@@ -74,16 +88,14 @@ function MatchesPage() {
         <MatchesContent />
       </Authenticated>
     </>
-  );
+  )
 
   if (isMobile) {
     return (
       <MobileShell user={user}>
-        <GradientBg variant="subtle">
-          {pageContent}
-        </GradientBg>
+        <GradientBg variant="subtle">{pageContent}</GradientBg>
       </MobileShell>
-    );
+    )
   }
 
   return (
@@ -91,7 +103,7 @@ function MatchesPage() {
       <AuthHeader />
       {pageContent}
     </GradientBg>
-  );
+  )
 }
 
 function LoadingState() {
@@ -99,60 +111,66 @@ function LoadingState() {
     <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">
       <Spinner />
     </div>
-  );
+  )
 }
 
 function UnauthenticatedRedirect() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   useEffect(() => {
-    navigate({ to: "/login" });
-  }, [navigate]);
-  return <LoadingState />;
+    navigate({ to: '/login' })
+  }, [navigate])
+  return <LoadingState />
 }
 
 function MatchesContent() {
   // Data is synchronously available - preloaded by route loader
   const { data: matchesData } = useSuspenseQuery(
-    convexQuery(api.matches.getMyMatches, {})
-  );
-  const triggerComputation = useAction(api.matches.triggerMatchComputation);
-  const markViewed = useAction(api.matches.markMatchesViewed);
-  const [isComputing, setIsComputing] = useState(false);
-  const [computeError, setComputeError] = useState<string | null>(null);
+    convexQuery(api.matches.getMyMatches, {}),
+  )
+  const triggerComputation = useAction(api.matches.triggerMatchComputation)
+  const markViewed = useAction(api.matches.markMatchesViewed)
+  const [isComputing, setIsComputing] = useState(false)
+  const [computeError, setComputeError] = useState<string | null>(null)
 
   // Mark matches as viewed on mount
   useEffect(() => {
-    if (matchesData && !matchesData.needsProfile && !matchesData.needsComputation) {
-      markViewed().catch(console.error);
+    if (
+      matchesData &&
+      !matchesData.needsProfile &&
+      !matchesData.needsComputation
+    ) {
+      markViewed().catch(console.error)
     }
-  }, [matchesData?.needsComputation, matchesData?.needsProfile, markViewed]);
+  }, [matchesData?.needsComputation, matchesData?.needsProfile, markViewed])
 
   const handleCompute = async () => {
-    setIsComputing(true);
-    setComputeError(null);
+    setIsComputing(true)
+    setComputeError(null)
     try {
-      await triggerComputation();
+      await triggerComputation()
     } catch (err) {
-      setComputeError(err instanceof Error ? err.message : "Failed to compute matches");
+      setComputeError(
+        err instanceof Error ? err.message : 'Failed to compute matches',
+      )
     } finally {
-      setIsComputing(false);
+      setIsComputing(false)
     }
-  };
+  }
 
   // Auto-trigger computation if needed
   useEffect(() => {
     if (matchesData?.needsComputation && !isComputing) {
-      handleCompute();
+      handleCompute()
     }
-  }, [matchesData?.needsComputation, isComputing]);
+  }, [matchesData?.needsComputation, isComputing])
 
   // Aggregate growth areas from ALL matches (including dismissed) - React hooks rule
   const growthAreas = useMemo(() => {
-    return aggregateGrowthAreas(matchesData?.allRecommendations);
-  }, [matchesData?.allRecommendations]);
+    return aggregateGrowthAreas(matchesData?.allRecommendations)
+  }, [matchesData?.allRecommendations])
 
   if (matchesData === null) {
-    return <LoadingState />;
+    return <LoadingState />
   }
 
   // No profile yet
@@ -167,14 +185,15 @@ function MatchesContent() {
             Create Your Profile First
           </h1>
           <p className="text-muted-foreground mb-6">
-            Complete your profile to get matched with AI safety opportunities tailored to your background and goals.
+            Complete your profile to get matched with AI safety opportunities
+            tailored to your background and goals.
           </p>
           <Button asChild>
             <Link to="/profile/edit">Create Profile</Link>
           </Button>
         </Card>
       </main>
-    );
+    )
   }
 
   // Computing matches
@@ -194,7 +213,7 @@ function MatchesContent() {
           <Spinner />
         </Card>
       </main>
-    );
+    )
   }
 
   // Compute error
@@ -209,12 +228,13 @@ function MatchesContent() {
           <Button onClick={handleCompute}>Try Again</Button>
         </Card>
       </main>
-    );
+    )
   }
 
-  const { matches, savedMatches, computedAt } = matchesData;
-  const hasMatches = matches.great.length + matches.good.length + matches.exploring.length > 0;
-  const hasSavedMatches = savedMatches.length > 0;
+  const { matches, savedMatches, computedAt } = matchesData
+  const hasMatches =
+    matches.great.length + matches.good.length + matches.exploring.length > 0
+  const hasSavedMatches = savedMatches.length > 0
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -222,7 +242,9 @@ function MatchesContent() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
           <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-display font-semibold text-foreground">Your Matches</h1>
+            <h1 className="text-xl sm:text-2xl font-display font-semibold text-foreground">
+              Your Matches
+            </h1>
             <p className="text-muted-foreground mt-1">
               Opportunities matched to your profile and goals
             </p>
@@ -289,5 +311,5 @@ function MatchesContent() {
         </PullToRefresh>
       </div>
     </main>
-  );
+  )
 }

@@ -1,8 +1,8 @@
-import { X } from "lucide-react";
+import { X } from 'lucide-react'
 
 interface SkillChipProps {
-  skill: string;
-  onRemove: () => void;
+  skill: string
+  onRemove: () => void
 }
 
 export function SkillChip({ skill, onRemove }: SkillChipProps) {
@@ -18,5 +18,5 @@ export function SkillChip({ skill, onRemove }: SkillChipProps) {
         <X className="size-3.5" />
       </button>
     </span>
-  );
+  )
 }

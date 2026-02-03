@@ -1,12 +1,12 @@
-import { AlertCircle, Edit3, RotateCcw, Type } from "lucide-react";
-import { Button } from "~/components/ui/button";
+import { AlertCircle, Edit3, RotateCcw, Type } from 'lucide-react'
+import { Button } from '~/components/ui/button'
 
 interface ExtractionErrorProps {
-  error: string;
-  onRetry: () => void;
-  onPasteText: () => void;
-  onManualEntry: () => void;
-  canRetry: boolean;
+  error: string
+  onRetry: () => void
+  onPasteText: () => void
+  onManualEntry: () => void
+  canRetry: boolean
 }
 
 /**
@@ -46,5 +46,5 @@ export function ExtractionError({
         </Button>
       </div>
     </div>
-  );
+  )
 }

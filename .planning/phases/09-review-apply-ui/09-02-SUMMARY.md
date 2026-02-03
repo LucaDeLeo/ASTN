@@ -28,13 +28,13 @@ key-files:
     - src/components/profile/extraction/index.ts
 
 key-decisions:
-  - "Match ExtractionReview.tsx styling exactly for visual consistency"
-  - "CSS grid trick for smooth expand/collapse animation"
-  - "SkillsInput integration for skill editing (not inline editing like simple fields)"
+  - 'Match ExtractionReview.tsx styling exactly for visual consistency'
+  - 'CSS grid trick for smooth expand/collapse animation'
+  - 'SkillsInput integration for skill editing (not inline editing like simple fields)'
 
 patterns-established:
-  - "Status-based card styling: green-50/300 accepted, amber-50/300 edited, slate-50/200 rejected"
-  - "Expandable cards use grid-rows-[1fr]/grid-rows-[0fr] for smooth animation"
+  - 'Status-based card styling: green-50/300 accepted, amber-50/300 edited, slate-50/200 rejected'
+  - 'Expandable cards use grid-rows-[1fr]/grid-rows-[0fr] for smooth animation'
 
 # Metrics
 duration: 4min
@@ -54,6 +54,7 @@ completed: 2026-01-18
 - **Files modified:** 4
 
 ## Accomplishments
+
 - ExtractionFieldCard handles simple fields (name, location, email) with inline editing
 - ExpandableEntryCard shows collapsed summary for education/work, expands to full editable form
 - ResumeExtractionReview organizes all fields by section with SkillsInput integration
@@ -67,12 +68,14 @@ Each task was committed atomically:
 2. **Task 2: Create main review container with skills and footer** - `97ea55d` (feat)
 
 ## Files Created/Modified
+
 - `src/components/profile/extraction/ExtractionFieldCard.tsx` - Card component for simple fields with accept/reject/edit actions
 - `src/components/profile/extraction/ExpandableEntryCard.tsx` - Expandable card for education/work history entries
 - `src/components/profile/extraction/ResumeExtractionReview.tsx` - Main review container orchestrating all sections
 - `src/components/profile/extraction/index.ts` - Added exports for new components
 
 ## Decisions Made
+
 - Matched ExtractionReview.tsx styling exactly (green-50/300 accepted, amber-50/300 edited, slate-50/200 rejected)
 - Used CSS grid trick (grid-rows-[1fr]/grid-rows-[0fr]) for smooth expand/collapse animation
 - Skills section uses SkillsInput component instead of inline editing for taxonomy integration
@@ -91,10 +94,12 @@ None
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Review UI components ready for integration with extraction page
 - Next plan (09-03) will wire up the full page flow with mutations
 - Components follow existing patterns and can be used immediately
 
 ---
-*Phase: 09-review-apply-ui*
-*Completed: 2026-01-18*
+
+_Phase: 09-review-apply-ui_
+_Completed: 2026-01-18_

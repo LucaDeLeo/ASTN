@@ -32,11 +32,11 @@ key-files:
 
 key-decisions:
   - "Hide salary when 'Not Found' rather than show graceful fallback message"
-  - "Use after pseudo-element for navigation underline (Tailwind native)"
+  - 'Use after pseudo-element for navigation underline (Tailwind native)'
 
 patterns-established:
-  - "formatLocation: Call formatLocation() on all location strings from API sources"
-  - "Navigation activeProps: Use activeProps with after pseudo-element for underline indicator"
+  - 'formatLocation: Call formatLocation() on all location strings from API sources'
+  - 'Navigation activeProps: Use activeProps with after pseudo-element for underline indicator'
 
 # Metrics
 duration: 15min
@@ -56,6 +56,7 @@ completed: 2026-01-22
 - **Files modified:** 5
 
 ## Accomplishments
+
 - Created formatLocation utility that normalizes location strings (periods to commas)
 - Made entire MatchCard clickable while preserving unsave button functionality
 - Added visible underline indicators to navigation for active page
@@ -71,6 +72,7 @@ Each task was committed atomically:
 4. **Task 4: Add navigation active state indicators** - `e124e4a` (feat)
 
 ## Files Created/Modified
+
 - `src/lib/formatLocation.ts` - Location string normalization utility (periods to commas)
 - `src/components/matches/MatchCard.tsx` - Fully clickable card with preserved view transitions
 - `src/components/opportunities/opportunity-card.tsx` - Location formatting and salary filtering
@@ -78,6 +80,7 @@ Each task was committed atomically:
 - `src/components/layout/auth-header.tsx` - Navigation with activeProps underline indicators
 
 ## Decisions Made
+
 - **Hide vs replace salary**: Chose to completely hide salary when "Not Found" rather than showing "Salary not disclosed" - cleaner UX and matches existing pattern of conditional rendering
 - **Navigation indicator style**: Used after pseudo-element for underline (Tailwind native approach) rather than separate border element
 
@@ -86,16 +89,20 @@ Each task was committed atomically:
 None - plan executed exactly as written.
 
 ## Issues Encountered
+
 - Pre-existing uncommitted changes in opportunity-list.tsx caused initial lint failure (TypeScript cache issue) - resolved by re-running lint
 
 ## User Setup Required
+
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Location formatting utility available for any future components displaying locations
 - Navigation active state pattern established for any new nav items
 - Ready to proceed with Plan 02 (typography) or Plan 03 (empty states)
 
 ---
-*Phase: 26-ux-polish*
-*Completed: 2026-01-22*
+
+_Phase: 26-ux-polish_
+_Completed: 2026-01-22_

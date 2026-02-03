@@ -9,6 +9,7 @@
 This phase finalizes the visual system by implementing intentional dark mode with coral accent preservation, consistent focus states for accessibility, warm empty state treatments, and performance validation. The research covers three distinct domains that require coordinated implementation.
 
 The codebase currently has:
+
 - Dark mode tokens defined in `.dark` class (but using default gray palette, not coral-based)
 - Focus states using `focus-visible:ring-ring/50` pattern across shadcn/ui components
 - A basic `Empty` component in `src/components/ui/empty.tsx` with gray styling
@@ -20,26 +21,26 @@ The codebase currently has:
 
 ### Core (Already Installed)
 
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| Tailwind v4 | ^4.1.13 | CSS framework with `@theme inline` | Already configured with OKLCH tokens |
-| Radix UI | various | Accessible component primitives | Already used throughout UI components |
-| Lucide React | latest | Icon library | Already installed, can be used for empty states |
+| Library      | Version | Purpose                            | Why Standard                                    |
+| ------------ | ------- | ---------------------------------- | ----------------------------------------------- |
+| Tailwind v4  | ^4.1.13 | CSS framework with `@theme inline` | Already configured with OKLCH tokens            |
+| Radix UI     | various | Accessible component primitives    | Already used throughout UI components           |
+| Lucide React | latest  | Icon library                       | Already installed, can be used for empty states |
 
 ### Supporting (Needs Implementation)
 
-| Library | Purpose | When to Use |
-|---------|---------|-------------|
-| React Context | Theme state management | Built-in, no installation needed |
-| localStorage | Theme preference persistence | Browser API, no installation |
-| matchMedia | System preference detection | Browser API, no installation |
+| Library       | Purpose                      | When to Use                      |
+| ------------- | ---------------------------- | -------------------------------- |
+| React Context | Theme state management       | Built-in, no installation needed |
+| localStorage  | Theme preference persistence | Browser API, no installation     |
+| matchMedia    | System preference detection  | Browser API, no installation     |
 
 ### Alternatives Considered
 
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| Custom ThemeProvider | next-themes | next-themes is Next.js-specific; custom provider works with TanStack Start |
-| SVG illustrations | Lottie animations | Lottie adds bundle size; simple SVGs match "line art" requirement |
+| Instead of           | Could Use         | Tradeoff                                                                   |
+| -------------------- | ----------------- | -------------------------------------------------------------------------- |
+| Custom ThemeProvider | next-themes       | next-themes is Next.js-specific; custom provider works with TanStack Start |
+| SVG illustrations    | Lottie animations | Lottie adds bundle size; simple SVGs match "line art" requirement          |
 
 **Installation:** No new packages needed.
 
@@ -141,6 +142,7 @@ export const useTheme = () => {
 **When to use:** Replace current `.dark` block in app.css.
 
 Per CONTEXT.md decisions:
+
 - Soft dark base (#1a1a1a / `oklch(0.13 0 0)`) - charcoal gray, easier on eyes
 - Keep exact coral accent color - pops well on dark backgrounds
 - Warm-shifted neutrals instead of pure grays
@@ -149,8 +151,8 @@ Per CONTEXT.md decisions:
 /* Source: CONTEXT.md decisions + OKLCH color theory */
 .dark {
   /* Base backgrounds - soft charcoal, not OLED black */
-  --background: oklch(0.13 0.005 30);        /* Subtle warm undertone */
-  --foreground: oklch(0.93 0.01 90);         /* Warm off-white */
+  --background: oklch(0.13 0.005 30); /* Subtle warm undertone */
+  --foreground: oklch(0.93 0.01 90); /* Warm off-white */
 
   /* Card/popover - slightly elevated from background */
   --card: oklch(0.17 0.005 30);
@@ -159,7 +161,7 @@ Per CONTEXT.md decisions:
   --popover-foreground: oklch(0.93 0.01 90);
 
   /* Primary - KEEP coral accent (same as light mode) */
-  --primary: oklch(0.70 0.16 30);            /* Exact coral from light mode */
+  --primary: oklch(0.7 0.16 30); /* Exact coral from light mode */
   --primary-foreground: oklch(0.13 0.005 30);
 
   /* Secondary - warm dark gray */
@@ -175,24 +177,24 @@ Per CONTEXT.md decisions:
   --accent-foreground: oklch(0.93 0.01 90);
 
   /* Destructive - brighter in dark mode for visibility */
-  --destructive: oklch(0.65 0.20 25);
+  --destructive: oklch(0.65 0.2 25);
 
   /* Borders - subtle warm tint */
   --border: oklch(0.28 0.01 30);
   --input: oklch(0.22 0.01 30);
 
   /* Ring - coral for focus states */
-  --ring: oklch(0.70 0.16 30);
+  --ring: oklch(0.7 0.16 30);
 
   /* Sidebar - consistent with card */
   --sidebar: oklch(0.15 0.005 30);
   --sidebar-foreground: oklch(0.93 0.01 90);
-  --sidebar-primary: oklch(0.70 0.16 30);
+  --sidebar-primary: oklch(0.7 0.16 30);
   --sidebar-primary-foreground: oklch(0.13 0.005 30);
   --sidebar-accent: oklch(0.22 0.01 30);
   --sidebar-accent-foreground: oklch(0.93 0.01 90);
   --sidebar-border: oklch(0.28 0.01 30);
-  --sidebar-ring: oklch(0.70 0.16 30);
+  --sidebar-ring: oklch(0.7 0.16 30);
 }
 ```
 
@@ -202,6 +204,7 @@ Per CONTEXT.md decisions:
 **When to use:** All interactive elements (buttons, inputs, links, checkboxes, etc.).
 
 Per CONTEXT.md decisions:
+
 - Coral ring with soft glow - matches shadow aesthetic
 - Always visible focus - shows on keyboard navigation
 - 2px coral ring plus subtle coral glow effect
@@ -209,25 +212,26 @@ Per CONTEXT.md decisions:
 ```css
 /* Focus ring token - add to :root */
 :root {
-  --focus-ring: 0 0 0 2px oklch(0.70 0.16 30),
-                0 0 0 4px oklch(0.70 0.16 30 / 0.3);
+  --focus-ring:
+    0 0 0 2px oklch(0.7 0.16 30), 0 0 0 4px oklch(0.7 0.16 30 / 0.3);
 }
 
 .dark {
   /* Brighter ring in dark mode for contrast */
-  --focus-ring: 0 0 0 2px oklch(0.75 0.18 30),
-                0 0 0 4px oklch(0.75 0.18 30 / 0.4);
+  --focus-ring:
+    0 0 0 2px oklch(0.75 0.18 30), 0 0 0 4px oklch(0.75 0.18 30 / 0.4);
 }
 ```
 
 **Component pattern:**
+
 ```tsx
 // Update focus-visible classes
 // Before:
-"focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]'
 
 // After:
-"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background'
 ```
 
 ### Pattern 4: Warm Empty State Component
@@ -236,6 +240,7 @@ Per CONTEXT.md decisions:
 **When to use:** Replace current slate-colored empty states.
 
 Per CONTEXT.md decisions:
+
 - Playful tone - "Nothing here yet... but great things take time"
 - Custom SVG illustrations - bespoke, personality-forward
 - CTA only when actionable
@@ -243,13 +248,18 @@ Per CONTEXT.md decisions:
 ```tsx
 // Source: Design pattern research + CONTEXT.md requirements
 interface EmptyProps {
-  variant?: 'no-data' | 'no-results' | 'error' | 'success';
-  title?: string;
-  description?: string;
-  action?: React.ReactNode;
+  variant?: 'no-data' | 'no-results' | 'error' | 'success'
+  title?: string
+  description?: string
+  action?: React.ReactNode
 }
 
-function Empty({ variant = 'no-data', title, description, action }: EmptyProps) {
+function Empty({
+  variant = 'no-data',
+  title,
+  description,
+  action,
+}: EmptyProps) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <div className="mb-6 text-coral-400">
@@ -263,22 +273,22 @@ function Empty({ variant = 'no-data', title, description, action }: EmptyProps) 
       </p>
       {action && <div className="mt-6">{action}</div>}
     </div>
-  );
+  )
 }
 
 const defaultTitles = {
-  'no-data': "Nothing here yet",
-  'no-results': "No matches found",
-  'error': "Something went wrong",
-  'success': "All done!"
-};
+  'no-data': 'Nothing here yet',
+  'no-results': 'No matches found',
+  error: 'Something went wrong',
+  success: 'All done!',
+}
 
 const defaultDescriptions = {
-  'no-data': "Great things take time. Check back soon!",
-  'no-results': "Try adjusting your filters or search terms.",
-  'error': "We're looking into it. Please try again.",
-  'success': "You're all caught up."
-};
+  'no-data': 'Great things take time. Check back soon!',
+  'no-results': 'Try adjusting your filters or search terms.',
+  error: "We're looking into it. Please try again.",
+  success: "You're all caught up.",
+}
 ```
 
 ### Anti-Patterns to Avoid
@@ -290,70 +300,80 @@ const defaultDescriptions = {
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| System theme detection | Manual `matchMedia` polling | Single `matchMedia` check + event listener | Browser handles preference changes |
-| Theme persistence | Complex state management | localStorage + React Context | Simple, SSR-safe pattern |
-| Focus ring styling | Custom outline per component | Shared CSS custom property | Consistency, single source of truth |
-| Empty state illustrations | Complex SVG generation | Simple line-art SVGs with `currentColor` | Adapts to theme automatically |
+| Problem                   | Don't Build                  | Use Instead                                | Why                                 |
+| ------------------------- | ---------------------------- | ------------------------------------------ | ----------------------------------- |
+| System theme detection    | Manual `matchMedia` polling  | Single `matchMedia` check + event listener | Browser handles preference changes  |
+| Theme persistence         | Complex state management     | localStorage + React Context               | Simple, SSR-safe pattern            |
+| Focus ring styling        | Custom outline per component | Shared CSS custom property                 | Consistency, single source of truth |
+| Empty state illustrations | Complex SVG generation       | Simple line-art SVGs with `currentColor`   | Adapts to theme automatically       |
 
 **Key insight:** The theme system is well-solved by the shadcn/ui pattern. The coral-specific dark mode requires only updating CSS variables, not rebuilding infrastructure.
 
 ## Common Pitfalls
 
 ### Pitfall 1: Flash of Incorrect Theme (FOIT)
+
 **What goes wrong:** Page loads with light theme, then flashes to dark
 **Why it happens:** Theme state initializes after hydration
 **How to avoid:**
+
 - Add inline script in `<head>` to set theme class before first paint
 - Read localStorage synchronously before React hydration
-**Warning signs:** Visible flash on page load in dark mode
+  **Warning signs:** Visible flash on page load in dark mode
 
 ```html
 <!-- Add to __root.tsx head -->
 <script>
-  (function() {
-    const theme = localStorage.getItem('astn-theme');
-    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  ;(function () {
+    const theme = localStorage.getItem('astn-theme')
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
     if (theme === 'dark' || (!theme && systemDark)) {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add('dark')
     }
   })()
 </script>
 ```
 
 ### Pitfall 2: Focus Ring Inconsistency
+
 **What goes wrong:** Some components show coral ring, others show browser default
 **Why it happens:** Not updating all shadcn/ui components
 **How to avoid:**
+
 - Audit all interactive components (button, input, select, checkbox, switch, tabs, etc.)
 - Use find-and-replace for focus-visible patterns
 - Test with keyboard navigation through entire app
-**Warning signs:** Blue browser outline appearing on some elements
+  **Warning signs:** Blue browser outline appearing on some elements
 
 ### Pitfall 3: Empty State Duplication
+
 **What goes wrong:** Multiple inline empty states with inconsistent styling
 **Why it happens:** Empty states added ad-hoc in different files
 **How to avoid:**
+
 - Centralize in `Empty` component with variants
 - Search codebase for existing empty state patterns to migrate
-**Warning signs:** Different styling for "no data" messages across pages
+  **Warning signs:** Different styling for "no data" messages across pages
 
 ### Pitfall 4: Dark Mode Shadow Issues
+
 **What goes wrong:** Coral shadows invisible or harsh in dark mode
 **Why it happens:** Same shadow values don't work in both themes
 **How to avoid:**
+
 - Define separate shadow tokens for dark mode
 - Consider subtle glow effect instead of drop shadow
-**Warning signs:** Cards look flat or have jarring colored glow in dark mode
+  **Warning signs:** Cards look flat or have jarring colored glow in dark mode
 
 ### Pitfall 5: CLS from Theme Toggle
+
 **What goes wrong:** Layout shifts when switching themes
 **Why it happens:** Different font rendering or element sizing between themes
 **How to avoid:**
+
 - Ensure consistent dimensions regardless of theme
 - Test theme switching in Lighthouse/DevTools
-**Warning signs:** CLS > 0.1 in Core Web Vitals
+  **Warning signs:** CLS > 0.1 in Core Web Vitals
 
 ## Code Examples
 
@@ -361,15 +381,15 @@ const defaultDescriptions = {
 
 ```tsx
 // src/components/theme/theme-toggle.tsx
-import { Moon, Sun, Monitor } from "lucide-react"
-import { Button } from "~/components/ui/button"
+import { Moon, Sun, Monitor } from 'lucide-react'
+import { Button } from '~/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu"
-import { useTheme } from "./theme-provider"
+} from '~/components/ui/dropdown-menu'
+import { useTheme } from './theme-provider'
 
 export function ThemeToggle() {
   const { setTheme } = useTheme()
@@ -384,15 +404,15 @@ export function ThemeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
+        <DropdownMenuItem onClick={() => setTheme('light')}>
           <Sun className="mr-2 h-4 w-4" />
           Light
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
+        <DropdownMenuItem onClick={() => setTheme('dark')}>
           <Moon className="mr-2 h-4 w-4" />
           Dark
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
+        <DropdownMenuItem onClick={() => setTheme('system')}>
           <Monitor className="mr-2 h-4 w-4" />
           System
         </DropdownMenuItem>
@@ -410,7 +430,7 @@ function NoDataIllustration({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 120 120"
-      className={cn("h-24 w-24", className)}
+      className={cn('h-24 w-24', className)}
       fill="none"
       stroke="currentColor"
       strokeWidth="2"
@@ -423,7 +443,7 @@ function NoDataIllustration({ className }: { className?: string }) {
       <circle cx="60" cy="25" r="8" />
       <path d="M55 25 L65 25" />
     </svg>
-  );
+  )
 }
 ```
 
@@ -432,12 +452,12 @@ function NoDataIllustration({ className }: { className?: string }) {
 ```tsx
 // Before (standard shadcn)
 const buttonVariants = cva(
-  "... focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] ..."
+  '... focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] ...',
 )
 
 // After (coral with glow)
 const buttonVariants = cva(
-  "... focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background ..."
+  '... focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background ...',
 )
 ```
 
@@ -446,31 +466,36 @@ const buttonVariants = cva(
 ```css
 /* app.css - add to :root */
 :root {
-  --shadow-warm-sm: 0 1px 2px oklch(0.70 0.04 30 / 0.06);
-  --shadow-warm: 0 4px 12px oklch(0.70 0.06 30 / 0.08);
-  --shadow-warm-md: 0 8px 24px oklch(0.70 0.08 30 / 0.12);
-  --shadow-warm-lg: 0 12px 40px oklch(0.70 0.08 30 / 0.15);
+  --shadow-warm-sm: 0 1px 2px oklch(0.7 0.04 30 / 0.06);
+  --shadow-warm: 0 4px 12px oklch(0.7 0.06 30 / 0.08);
+  --shadow-warm-md: 0 8px 24px oklch(0.7 0.08 30 / 0.12);
+  --shadow-warm-lg: 0 12px 40px oklch(0.7 0.08 30 / 0.15);
 }
 
 .dark {
   /* Subtle glow effect in dark mode - Claude's discretion */
-  --shadow-warm-sm: 0 1px 3px oklch(0 0 0 / 0.3), 0 0 8px oklch(0.70 0.08 30 / 0.05);
-  --shadow-warm: 0 4px 12px oklch(0 0 0 / 0.4), 0 0 16px oklch(0.70 0.08 30 / 0.08);
-  --shadow-warm-md: 0 8px 24px oklch(0 0 0 / 0.5), 0 0 24px oklch(0.70 0.08 30 / 0.10);
-  --shadow-warm-lg: 0 12px 40px oklch(0 0 0 / 0.6), 0 0 32px oklch(0.70 0.08 30 / 0.12);
+  --shadow-warm-sm:
+    0 1px 3px oklch(0 0 0 / 0.3), 0 0 8px oklch(0.7 0.08 30 / 0.05);
+  --shadow-warm:
+    0 4px 12px oklch(0 0 0 / 0.4), 0 0 16px oklch(0.7 0.08 30 / 0.08);
+  --shadow-warm-md:
+    0 8px 24px oklch(0 0 0 / 0.5), 0 0 24px oklch(0.7 0.08 30 / 0.1);
+  --shadow-warm-lg:
+    0 12px 40px oklch(0 0 0 / 0.6), 0 0 32px oklch(0.7 0.08 30 / 0.12);
 }
 ```
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| `:focus` for all | `:focus-visible` for keyboard | Browser support 2022 | Better UX for mouse users |
-| HSL/RGB colors | OKLCH perceptual colors | Tailwind v4 2024 | More consistent dark mode |
-| `outline: none` | Custom focus ring | WCAG 2.4.7 awareness | Accessibility compliance |
-| Generic "No data" | Personality-driven empty states | UX research 2023+ | Better user engagement |
+| Old Approach      | Current Approach                | When Changed         | Impact                    |
+| ----------------- | ------------------------------- | -------------------- | ------------------------- |
+| `:focus` for all  | `:focus-visible` for keyboard   | Browser support 2022 | Better UX for mouse users |
+| HSL/RGB colors    | OKLCH perceptual colors         | Tailwind v4 2024     | More consistent dark mode |
+| `outline: none`   | Custom focus ring               | WCAG 2.4.7 awareness | Accessibility compliance  |
+| Generic "No data" | Personality-driven empty states | UX research 2023+    | Better user engagement    |
 
 **Current best practices:**
+
 - Use `:focus-visible` not `:focus` for keyboard-only indicators
 - OKLCH provides perceptually uniform color adjustments for dark mode
 - Empty states should guide users, not just inform them
@@ -497,42 +522,50 @@ const buttonVariants = cva(
 Per CONTEXT.md: "Performance first - disable or simplify animations if they hurt Core Web Vitals"
 
 **LCP Impact:**
+
 - Theme detection script should be minimal (<1KB)
 - No impact on font loading (already preloaded)
 - Empty state illustrations should be inline SVG (no network request)
 
 **CLS Prevention:**
+
 - Theme class applied before first paint prevents flash
 - `scrollbar-gutter: stable` already in place
 - No layout changes between themes
 
 **Animation Performance:**
+
 - Focus ring transitions use `transform` and `opacity` only
 - Theme toggle animation is CSS-only
 - Reduced motion respected via existing `@media (prefers-reduced-motion)` rules
 
 **Targets:**
+
 - LCP < 1.5s (CONTEXT.md target, stricter than 2.5s requirement)
 - CLS < 0.1 (maintain current)
 
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - shadcn/ui v4 dark mode documentation - Theme provider pattern
 - MDN `:focus-visible` documentation - Accessibility best practices
 - Tailwind v4 `@custom-variant dark` - Dark mode implementation
 - WCAG 2.4.7 Focus Visible guidelines - Accessibility requirements
 
 ### Secondary (MEDIUM confidence)
+
 - TanStack Router dark mode integration guide - Context pattern
 - CSS-Tricks focus-visible article - Implementation patterns
 
 ### Tertiary (LOW confidence)
+
 - Various design system empty state patterns (Pluralsight, Semi Design)
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Dark mode implementation: HIGH - shadcn/ui pattern is well-documented
 - Focus states: HIGH - WCAG guidelines are clear, `:focus-visible` is stable
 - Empty states: MEDIUM - Design is subjective, but patterns are established
@@ -542,5 +575,6 @@ Per CONTEXT.md: "Performance first - disable or simplify animations if they hurt
 **Valid until:** 2026-02-20 (30 days - stable domain, CSS standards)
 
 ---
-*Phase: 20-polish-integration*
-*Researcher: Claude (gsd-researcher)*
+
+_Phase: 20-polish-integration_
+_Researcher: Claude (gsd-researcher)_

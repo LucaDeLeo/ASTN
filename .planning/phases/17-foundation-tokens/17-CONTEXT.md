@@ -14,6 +14,7 @@ Establish the design system foundation — tokens, fonts, and CSS architecture t
 ## Implementation Decisions
 
 ### Color palette & warmth
+
 - Coral intensity: Subtle blush — barely-there warmth, mostly in shadows and tints, refined and almost neutral
 - Backgrounds: Cream paper — warm ivory like aged stationery with soft yellow undertone
 - Dark mode: Warm dark — deep charcoal with coral undertones (dark chocolate, not black coffee)
@@ -23,16 +24,19 @@ Establish the design system foundation — tokens, fonts, and CSS architecture t
 - Reference: Linear/Notion aesthetic — clean, minimal, warmth is subtle and professional
 
 ### Typography personality
+
 - Font pairing: Split personality — Lora (serif) for all headings, Plus Jakarta Sans for body text
 - Heading weight: Regular (400) — elegant and refined, let the serif shapes do the work
 - Body text: Balanced — comfortable reading with 1.5-1.6 line-height, 400 weight
 - Typographic scale: Clear hierarchy — obvious jumps between levels for easy scanning
 
 ### Token organization
+
 - Naming convention: Hybrid — raw scales as primitives (--coral-500), semantic tokens built on top (--color-accent)
 - Component tokens: Yes, explicit — named tokens per component type (--card-radius, --card-shadow, --button-padding)
 
 ### Animation foundations
+
 - Motion personality: Gentle & organic — soft easing, slightly slower, like natural materials settling
 - Default easing: Custom spring — slight overshoot and settle, organic with a playful edge
 - Duration range: 200-400ms — slightly leisurely, lets you appreciate the movement
@@ -42,6 +46,7 @@ Establish the design system foundation — tokens, fonts, and CSS architecture t
 - Reduced motion: Simplified — fade only, no movement, still has some polish
 
 ### Claude's Discretion
+
 - Shadow warmth intensity (how visible the coral tint is)
 - Tailwind integration scope (which tokens become utilities)
 - Spacing scale granularity (standard vs extended)
@@ -67,5 +72,5 @@ None — discussion stayed within phase scope
 
 ---
 
-*Phase: 17-foundation-tokens*
-*Context gathered: 2026-01-19*
+_Phase: 17-foundation-tokens_
+_Context gathered: 2026-01-19_

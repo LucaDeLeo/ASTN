@@ -1,17 +1,17 @@
-import * as React from "react"
-import { cn } from "~/lib/utils"
+import * as React from 'react'
+import { cn } from '~/lib/utils'
 
 type EmptyVariant =
-  | 'no-data'           // Generic fallback
-  | 'no-results'        // Search/filter returned nothing
-  | 'error'             // Something went wrong
-  | 'success'           // All done/completed
-  | 'no-matches'        // No opportunity matches yet
-  | 'no-opportunities'  // No opportunities available
-  | 'no-events'         // No upcoming events
+  | 'no-data' // Generic fallback
+  | 'no-results' // Search/filter returned nothing
+  | 'error' // Something went wrong
+  | 'success' // All done/completed
+  | 'no-matches' // No opportunity matches yet
+  | 'no-opportunities' // No opportunities available
+  | 'no-events' // No upcoming events
   | 'profile-incomplete' // Profile needs completion for matches
 
-interface EmptyProps extends React.ComponentProps<"div"> {
+interface EmptyProps extends React.ComponentProps<'div'> {
   variant?: EmptyVariant
   title?: string
   description?: string
@@ -19,25 +19,29 @@ interface EmptyProps extends React.ComponentProps<"div"> {
 }
 
 const defaultTitles: Record<EmptyVariant, string> = {
-  'no-data': "Nothing here yet",
-  'no-results': "No matches found",
-  'error': "Something went wrong",
-  'success': "All done!",
-  'no-matches': "No matches yet",
-  'no-opportunities': "No opportunities right now",
-  'no-events': "No upcoming events",
-  'profile-incomplete': "Complete your profile",
+  'no-data': 'Nothing here yet',
+  'no-results': 'No matches found',
+  error: 'Something went wrong',
+  success: 'All done!',
+  'no-matches': 'No matches yet',
+  'no-opportunities': 'No opportunities right now',
+  'no-events': 'No upcoming events',
+  'profile-incomplete': 'Complete your profile',
 }
 
 const defaultDescriptions: Record<EmptyVariant, string> = {
-  'no-data': "Great things take time. Check back soon!",
-  'no-results': "Try adjusting your filters or search terms.",
-  'error': "We're looking into it. Please try again.",
-  'success': "You're all caught up.",
-  'no-matches': "Complete your profile and we'll find opportunities that fit your skills and goals.",
-  'no-opportunities': "New AI Safety opportunities are added regularly. Check back soon!",
-  'no-events': "No events are scheduled yet. Follow organizations to get notified.",
-  'profile-incomplete': "Add your experience and goals to unlock personalized job matches.",
+  'no-data': 'Great things take time. Check back soon!',
+  'no-results': 'Try adjusting your filters or search terms.',
+  error: "We're looking into it. Please try again.",
+  success: "You're all caught up.",
+  'no-matches':
+    "Complete your profile and we'll find opportunities that fit your skills and goals.",
+  'no-opportunities':
+    'New AI Safety opportunities are added regularly. Check back soon!',
+  'no-events':
+    'No events are scheduled yet. Follow organizations to get notified.',
+  'profile-incomplete':
+    'Add your experience and goals to unlock personalized job matches.',
 }
 
 function Empty({
@@ -54,8 +58,8 @@ function Empty({
     return (
       <div
         className={cn(
-          "flex flex-col items-center justify-center text-center",
-          className
+          'flex flex-col items-center justify-center text-center',
+          className,
         )}
         {...props}
       >
@@ -68,8 +72,8 @@ function Empty({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center py-12 text-center",
-        className
+        'flex flex-col items-center justify-center py-12 text-center',
+        className,
       )}
       {...props}
     >
@@ -229,16 +233,21 @@ function EmptyIllustration({ variant }: { variant: EmptyVariant }) {
           <circle cx="60" cy="40" r="20" />
           <path d="M30 95 Q30 70 60 70 Q90 70 90 95" />
           <path d="M20 105 L100 105" strokeWidth="4" />
-          <path d="M20 105 L60 105" strokeWidth="4" stroke="currentColor" opacity="0.4" />
+          <path
+            d="M20 105 L60 105"
+            strokeWidth="4"
+            stroke="currentColor"
+            opacity="0.4"
+          />
         </svg>
       )
   }
 }
 
 // Compound components for backward compatibility
-function EmptyIcon({ className, ...props }: React.ComponentProps<"div">) {
+function EmptyIcon({ className, ...props }: React.ComponentProps<'div'>) {
   return (
-    <div className={cn("mb-4 text-coral-300", className)} {...props}>
+    <div className={cn('mb-4 text-coral-300', className)} {...props}>
       <svg
         viewBox="0 0 120 120"
         className="h-12 w-12"
@@ -257,18 +266,24 @@ function EmptyIcon({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function EmptyTitle({ className, ...props }: React.ComponentProps<"h3">) {
+function EmptyTitle({ className, ...props }: React.ComponentProps<'h3'>) {
   return (
     <h3
-      className={cn("text-lg font-semibold text-foreground font-display mb-1", className)}
+      className={cn(
+        'text-lg font-semibold text-foreground font-display mb-1',
+        className,
+      )}
       {...props}
     />
   )
 }
 
-function EmptyDescription({ className, ...props }: React.ComponentProps<"p">) {
+function EmptyDescription({ className, ...props }: React.ComponentProps<'p'>) {
   return (
-    <p className={cn("text-sm text-muted-foreground max-w-sm", className)} {...props} />
+    <p
+      className={cn('text-sm text-muted-foreground max-w-sm', className)}
+      {...props}
+    />
   )
 }
 

@@ -28,13 +28,13 @@ key-files:
     - convex/profiles.ts
 
 key-decisions:
-  - "Location discovery is opt-in (locationDiscoverable defaults to false)"
+  - 'Location discovery is opt-in (locationDiscoverable defaults to false)'
   - "Simple city parsing from 'City, Country' format for matching"
-  - "Global orgs shown to all users; local orgs only when location enabled"
+  - 'Global orgs shown to all users; local orgs only when location enabled'
 
 patterns-established:
-  - "Org discovery query respects privacy settings before using location data"
-  - "Suggestions exclude already-joined orgs via orgMemberships check"
+  - 'Org discovery query respects privacy settings before using location data'
+  - 'Suggestions exclude already-joined orgs via orgMemberships check'
 
 # Metrics
 duration: 2min
@@ -100,5 +100,6 @@ None - no external service configuration required.
 - Organizations have location data seeded; getSuggestedOrgs query ready for frontend consumption
 
 ---
-*Phase: 11-org-discovery*
-*Completed: 2026-01-19*
+
+_Phase: 11-org-discovery_
+_Completed: 2026-01-19_

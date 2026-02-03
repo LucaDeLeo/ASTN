@@ -26,9 +26,9 @@ key-files:
     - src-tauri/tauri.conf.json (identifier, developmentTeam)
 
 key-decisions:
-  - "Changed identifier from ai.astn.app to ai.astn.mobile"
-  - "Set developmentTeam to FB2HXC7FGF"
-  - "Document MetalToolchain workaround for Xcode 26"
+  - 'Changed identifier from ai.astn.app to ai.astn.mobile'
+  - 'Set developmentTeam to FB2HXC7FGF'
+  - 'Document MetalToolchain workaround for Xcode 26'
 
 duration: 45min
 completed: 2026-01-22
@@ -69,6 +69,7 @@ completed: 2026-01-22
 **Root Cause:** Xcode 26's MetalToolchain component adds search paths that don't contain Swift compatibility libraries.
 
 **Fix:** Run before building:
+
 ```bash
 xcodebuild -deleteComponent metalToolchain
 ```
@@ -81,14 +82,14 @@ xcodebuild -deleteComponent metalToolchain
 
 ## Verification Status
 
-| Check | Status |
-|-------|--------|
-| iOS project exists | ✓ |
-| App builds for simulator | ✓ |
-| App installs in simulator | ✓ |
-| App launches | ✓ |
-| WebView displays content | ✓ |
-| Full routes working | Pending (25-04) |
+| Check                     | Status          |
+| ------------------------- | --------------- |
+| iOS project exists        | ✓               |
+| App builds for simulator  | ✓               |
+| App installs in simulator | ✓               |
+| App launches              | ✓               |
+| WebView displays content  | ✓               |
+| Full routes working       | Pending (25-04) |
 
 ## Notes for Future Reference
 
@@ -102,5 +103,6 @@ xcodebuild -deleteComponent metalToolchain
 - Plan 25-04: SPA-compatible routes and OAuth deep links
 
 ---
-*Phase: 25-tauri-mobile-native-features*
-*Completed: 2026-01-22*
+
+_Phase: 25-tauri-mobile-native-features_
+_Completed: 2026-01-22_

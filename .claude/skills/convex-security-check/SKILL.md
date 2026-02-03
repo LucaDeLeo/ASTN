@@ -65,38 +65,41 @@ Use this checklist to quickly audit your Convex application's security:
 
 ```typescript
 // convex/auth.ts
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
-import { ConvexError } from "convex/values";
+import { query, mutation } from './_generated/server'
+import { v } from 'convex/values'
+import { ConvexError } from 'convex/values'
 
 // Helper to require authentication
 async function requireAuth(ctx: QueryCtx | MutationCtx) {
-  const identity = await ctx.auth.getUserIdentity();
+  const identity = await ctx.auth.getUserIdentity()
   if (!identity) {
-    throw new ConvexError("Authentication required");
+    throw new ConvexError('Authentication required')
   }
-  return identity;
+  return identity
 }
 
 // Secure query pattern
 export const getMyProfile = query({
   args: {},
-  returns: v.union(v.object({
-    _id: v.id("users"),
-    name: v.string(),
-    email: v.string(),
-  }), v.null()),
+  returns: v.union(
+    v.object({
+      _id: v.id('users'),
+      name: v.string(),
+      email: v.string(),
+    }),
+    v.null(),
+  ),
   handler: async (ctx) => {
-    const identity = await requireAuth(ctx);
-    
+    const identity = await requireAuth(ctx)
+
     return await ctx.db
-      .query("users")
-      .withIndex("by_tokenIdentifier", (q) => 
-        q.eq("tokenIdentifier", identity.tokenIdentifier)
+      .query('users')
+      .withIndex('by_tokenIdentifier', (q) =>
+        q.eq('tokenIdentifier', identity.tokenIdentifier),
       )
-      .unique();
+      .unique()
   },
-});
+})
 ```
 
 ### Function Exposure Check
@@ -105,28 +108,32 @@ export const getMyProfile = query({
 // PUBLIC - Exposed to clients (review carefully!)
 export const listPublicPosts = query({
   args: {},
-  returns: v.array(v.object({ /* ... */ })),
+  returns: v.array(
+    v.object({
+      /* ... */
+    }),
+  ),
   handler: async (ctx) => {
     // Anyone can call this - intentionally public
     return await ctx.db
-      .query("posts")
-      .withIndex("by_public", (q) => q.eq("isPublic", true))
-      .collect();
+      .query('posts')
+      .withIndex('by_public', (q) => q.eq('isPublic', true))
+      .collect()
   },
-});
+})
 
 // INTERNAL - Only callable from other Convex functions
 export const _updateUserCredits = internalMutation({
-  args: { userId: v.id("users"), amount: v.number() },
+  args: { userId: v.id('users'), amount: v.number() },
   returns: v.null(),
   handler: async (ctx, args) => {
     // This cannot be called directly from clients
     await ctx.db.patch(args.userId, {
       credits: args.amount,
-    });
-    return null;
+    })
+    return null
   },
-});
+})
 ```
 
 ### Argument Validation Check
@@ -137,32 +144,28 @@ export const createPost = mutation({
   args: {
     title: v.string(),
     content: v.string(),
-    category: v.union(
-      v.literal("tech"),
-      v.literal("news"),
-      v.literal("other")
-    ),
+    category: v.union(v.literal('tech'), v.literal('news'), v.literal('other')),
   },
-  returns: v.id("posts"),
+  returns: v.id('posts'),
   handler: async (ctx, args) => {
-    const identity = await requireAuth(ctx);
-    return await ctx.db.insert("posts", {
+    const identity = await requireAuth(ctx)
+    return await ctx.db.insert('posts', {
       ...args,
       authorId: identity.tokenIdentifier,
-    });
+    })
   },
-});
+})
 
 // BAD: Weak validation
 export const createPostUnsafe = mutation({
   args: {
     data: v.any(), // DANGEROUS: Allows any data
   },
-  returns: v.id("posts"),
+  returns: v.id('posts'),
   handler: async (ctx, args) => {
-    return await ctx.db.insert("posts", args.data);
+    return await ctx.db.insert('posts', args.data)
   },
-});
+})
 ```
 
 ### Row-Level Access Control Check
@@ -171,52 +174,52 @@ export const createPostUnsafe = mutation({
 // Verify ownership before update
 export const updateTask = mutation({
   args: {
-    taskId: v.id("tasks"),
+    taskId: v.id('tasks'),
     title: v.string(),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const identity = await requireAuth(ctx);
-    
-    const task = await ctx.db.get(args.taskId);
-    
+    const identity = await requireAuth(ctx)
+
+    const task = await ctx.db.get(args.taskId)
+
     // Check ownership
     if (!task || task.userId !== identity.tokenIdentifier) {
-      throw new ConvexError("Not authorized to update this task");
+      throw new ConvexError('Not authorized to update this task')
     }
-    
-    await ctx.db.patch(args.taskId, { title: args.title });
-    return null;
+
+    await ctx.db.patch(args.taskId, { title: args.title })
+    return null
   },
-});
+})
 
 // Verify ownership before delete
 export const deleteTask = mutation({
-  args: { taskId: v.id("tasks") },
+  args: { taskId: v.id('tasks') },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const identity = await requireAuth(ctx);
-    
-    const task = await ctx.db.get(args.taskId);
-    
+    const identity = await requireAuth(ctx)
+
+    const task = await ctx.db.get(args.taskId)
+
     if (!task || task.userId !== identity.tokenIdentifier) {
-      throw new ConvexError("Not authorized to delete this task");
+      throw new ConvexError('Not authorized to delete this task')
     }
-    
-    await ctx.db.delete(args.taskId);
-    return null;
+
+    await ctx.db.delete(args.taskId)
+    return null
   },
-});
+})
 ```
 
 ### Environment Variables Check
 
 ```typescript
 // convex/actions.ts
-"use node";
+'use node'
 
-import { action } from "./_generated/server";
-import { v } from "convex/values";
+import { action } from './_generated/server'
+import { v } from 'convex/values'
 
 export const sendEmail = action({
   args: {
@@ -227,29 +230,29 @@ export const sendEmail = action({
   returns: v.object({ success: v.boolean() }),
   handler: async (ctx, args) => {
     // Access API key from environment
-    const apiKey = process.env.RESEND_API_KEY;
-    
+    const apiKey = process.env.RESEND_API_KEY
+
     if (!apiKey) {
-      throw new Error("RESEND_API_KEY not configured");
+      throw new Error('RESEND_API_KEY not configured')
     }
-    
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
+
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
       headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: "noreply@example.com",
+        from: 'noreply@example.com',
         to: args.to,
         subject: args.subject,
         html: args.body,
       }),
-    });
-    
-    return { success: response.ok };
+    })
+
+    return { success: response.ok }
   },
-});
+})
 ```
 
 ## Examples
@@ -258,96 +261,100 @@ export const sendEmail = action({
 
 ```typescript
 // convex/secure.ts
-import { query, mutation, internalMutation } from "./_generated/server";
-import { v } from "convex/values";
-import { ConvexError } from "convex/values";
+import { query, mutation, internalMutation } from './_generated/server'
+import { v } from 'convex/values'
+import { ConvexError } from 'convex/values'
 
 // Authentication helper
 async function getAuthenticatedUser(ctx: QueryCtx | MutationCtx) {
-  const identity = await ctx.auth.getUserIdentity();
+  const identity = await ctx.auth.getUserIdentity()
   if (!identity) {
     throw new ConvexError({
-      code: "UNAUTHENTICATED",
-      message: "You must be logged in",
-    });
+      code: 'UNAUTHENTICATED',
+      message: 'You must be logged in',
+    })
   }
-  
+
   const user = await ctx.db
-    .query("users")
-    .withIndex("by_tokenIdentifier", (q) => 
-      q.eq("tokenIdentifier", identity.tokenIdentifier)
+    .query('users')
+    .withIndex('by_tokenIdentifier', (q) =>
+      q.eq('tokenIdentifier', identity.tokenIdentifier),
     )
-    .unique();
-    
+    .unique()
+
   if (!user) {
     throw new ConvexError({
-      code: "USER_NOT_FOUND",
-      message: "User profile not found",
-    });
+      code: 'USER_NOT_FOUND',
+      message: 'User profile not found',
+    })
   }
-  
-  return user;
+
+  return user
 }
 
 // Check admin role
 async function requireAdmin(ctx: QueryCtx | MutationCtx) {
-  const user = await getAuthenticatedUser(ctx);
-  
-  if (user.role !== "admin") {
+  const user = await getAuthenticatedUser(ctx)
+
+  if (user.role !== 'admin') {
     throw new ConvexError({
-      code: "FORBIDDEN",
-      message: "Admin access required",
-    });
+      code: 'FORBIDDEN',
+      message: 'Admin access required',
+    })
   }
-  
-  return user;
+
+  return user
 }
 
 // Public: List own tasks
 export const listMyTasks = query({
   args: {},
-  returns: v.array(v.object({
-    _id: v.id("tasks"),
-    title: v.string(),
-    completed: v.boolean(),
-  })),
+  returns: v.array(
+    v.object({
+      _id: v.id('tasks'),
+      title: v.string(),
+      completed: v.boolean(),
+    }),
+  ),
   handler: async (ctx) => {
-    const user = await getAuthenticatedUser(ctx);
-    
+    const user = await getAuthenticatedUser(ctx)
+
     return await ctx.db
-      .query("tasks")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .collect();
+      .query('tasks')
+      .withIndex('by_user', (q) => q.eq('userId', user._id))
+      .collect()
   },
-});
+})
 
 // Admin only: List all users
 export const listAllUsers = query({
   args: {},
-  returns: v.array(v.object({
-    _id: v.id("users"),
-    name: v.string(),
-    role: v.string(),
-  })),
+  returns: v.array(
+    v.object({
+      _id: v.id('users'),
+      name: v.string(),
+      role: v.string(),
+    }),
+  ),
   handler: async (ctx) => {
-    await requireAdmin(ctx);
-    
-    return await ctx.db.query("users").collect();
+    await requireAdmin(ctx)
+
+    return await ctx.db.query('users').collect()
   },
-});
+})
 
 // Internal: Update user role (never exposed)
 export const _setUserRole = internalMutation({
   args: {
-    userId: v.id("users"),
-    role: v.union(v.literal("user"), v.literal("admin")),
+    userId: v.id('users'),
+    role: v.union(v.literal('user'), v.literal('admin')),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.userId, { role: args.role });
-    return null;
+    await ctx.db.patch(args.userId, { role: args.role })
+    return null
   },
-});
+})
 ```
 
 ## Best Practices

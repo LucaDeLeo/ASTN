@@ -29,15 +29,15 @@ key-files:
     - src/routes/org/$slug/admin/members.tsx
 
 key-decisions:
-  - "Single-select filters for engagement, skills, location (not multi-select) for simplicity"
-  - "Client-side filtering via useMemo - appropriate for <500 member orgs"
-  - "25 members per page as default pagination size"
-  - "Page resets to 1 whenever filters change"
+  - 'Single-select filters for engagement, skills, location (not multi-select) for simplicity'
+  - 'Client-side filtering via useMemo - appropriate for <500 member orgs'
+  - '25 members per page as default pagination size'
+  - 'Page resets to 1 whenever filters change'
 
 patterns-established:
-  - "MemberFiltersType interface for reusable filter state"
-  - "handleFiltersChange pattern for filter + page reset"
-  - "Filter panel with horizontal flex-wrap layout"
+  - 'MemberFiltersType interface for reusable filter state'
+  - 'handleFiltersChange pattern for filter + page reset'
+  - 'Filter panel with horizontal flex-wrap layout'
 
 # Metrics
 duration: 4min
@@ -102,5 +102,5 @@ None - no external service configuration required.
 
 ---
 
-*Phase: 16-crm-dashboard-programs*
-*Completed: 2026-01-19*
+_Phase: 16-crm-dashboard-programs_
+_Completed: 2026-01-19_

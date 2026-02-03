@@ -24,8 +24,8 @@ affects: [future-milestones, maintenance]
 tech-stack:
   added: []
   patterns:
-    - "Cookie-based SSR theme detection for flash prevention"
-    - "Hydration warning suppression for theme elements"
+    - 'Cookie-based SSR theme detection for flash prevention'
+    - 'Hydration warning suppression for theme elements'
 
 key-files:
   created: []
@@ -34,14 +34,14 @@ key-files:
     - src/components/theme-toggle.tsx
 
 key-decisions:
-  - "Cookie-based SSR theme detection eliminates dark mode flash"
-  - "Hydration warnings suppressed for theme-related elements"
-  - "Ghost button variant gets explicit text-foreground color"
-  - "Theme script moved before HeadContent for earliest execution"
+  - 'Cookie-based SSR theme detection eliminates dark mode flash'
+  - 'Hydration warnings suppressed for theme-related elements'
+  - 'Ghost button variant gets explicit text-foreground color'
+  - 'Theme script moved before HeadContent for earliest execution'
 
 patterns-established:
-  - "SSR theme detection via cookies for flash-free theme persistence"
-  - "Visual verification checkpoint at end of major UI milestones"
+  - 'SSR theme detection via cookies for flash-free theme persistence'
+  - 'Visual verification checkpoint at end of major UI milestones'
 
 # Metrics
 duration: 15min
@@ -97,6 +97,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] Dark mode flash on page load**
+
 - **Found during:** Task 1 (Performance verification)
 - **Issue:** Initial page load showed light theme briefly before switching to dark theme from localStorage
 - **Fix:** Implemented multi-layer solution:
@@ -108,6 +109,7 @@ Each task was committed atomically:
 - **Committed in:** 4e7d0de, 003ecc9, aacab92, 661b846
 
 **2. [Rule 1 - Bug] Ghost button text invisible in dark mode**
+
 - **Found during:** Task 1 (Visual inspection)
 - **Issue:** Ghost variant buttons had no explicit text color, appeared invisible on some backgrounds
 - **Fix:** Added `text-foreground` class to ghost variant buttons
@@ -131,11 +133,13 @@ None - no external service configuration required.
 ## Next Phase Readiness
 
 **Phase 20 Complete:** All 3 plans executed successfully
+
 - 20-01: Theme system with dark mode toggle
 - 20-02: Focus states and empty states
 - 20-03: Performance verification and visual approval
 
 **v1.3 Visual Overhaul Milestone Complete:**
+
 - Phase 17: Design tokens, fonts, OKLCH color system
 - Phase 18: Warm backgrounds, coral shadows, typography
 - Phase 19: Motion system (hover, stagger, transitions)
@@ -144,5 +148,6 @@ None - no external service configuration required.
 **Next action:** `/gsd:complete-milestone` to archive v1.3 and prepare for next version.
 
 ---
-*Phase: 20-polish-integration*
-*Completed: 2026-01-20*
+
+_Phase: 20-polish-integration_
+_Completed: 2026-01-20_

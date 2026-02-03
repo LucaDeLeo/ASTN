@@ -30,14 +30,14 @@ key-files:
     - src/components/ui/button.tsx
 
 key-decisions:
-  - "Stagger cap at 9 items (450ms max delay) to prevent excessive wait times"
+  - 'Stagger cap at 9 items (450ms max delay) to prevent excessive wait times'
   - "Link variant exempt from squish (links shouldn't feel like buttons)"
-  - "Using animationFillMode: backwards to prevent flash before animation"
+  - 'Using animationFillMode: backwards to prevent flash before animation'
 
 patterns-established:
-  - "AnimatedCard: Wrap list items with index prop for staggered entrance"
-  - "Card hover: -translate-y-0.5 + shadow-warm-md for lift effect"
-  - "Button press: scale-[0.97] for tactile feedback"
+  - 'AnimatedCard: Wrap list items with index prop for staggered entrance'
+  - 'Card hover: -translate-y-0.5 + shadow-warm-md for lift effect'
+  - 'Button press: scale-[0.97] for tactile feedback'
 
 # Metrics
 duration: 2min
@@ -57,6 +57,7 @@ completed: 2026-01-20
 - **Files modified:** 3
 
 ## Accomplishments
+
 - Created AnimatedCard component with stagger delay capped at 9 items
 - Card lifts 2px on hover with shadow-warm-md intensification
 - Button squishes to 97% on press (link variant exempt)
@@ -71,11 +72,13 @@ Each task was committed atomically:
 3. **Task 3: Add press squish feedback to Button** - `f815c04` (feat)
 
 ## Files Created/Modified
+
 - `src/components/animation/AnimatedCard.tsx` - Entrance animation wrapper with stagger support
 - `src/components/ui/card.tsx` - Hover lift and shadow transition added
 - `src/components/ui/button.tsx` - Press squish feedback (except link variant)
 
 ## Decisions Made
+
 - Stagger capped at 9 items (450ms) to prevent long waits on large lists
 - Link variant uses active:scale-100 to override base squish (links shouldn't feel pressable like buttons)
 - Using animationFillMode: backwards prevents content flash before animation starts
@@ -93,10 +96,12 @@ None
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Core animation primitives ready for use in page layouts
 - AnimatedCard can wrap opportunity cards, profile sections
 - Card and Button feedback behaviors active throughout app
 
 ---
-*Phase: 19-motion-system*
-*Completed: 2026-01-20*
+
+_Phase: 19-motion-system_
+_Completed: 2026-01-20_

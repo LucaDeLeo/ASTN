@@ -18,18 +18,18 @@ affects: [25-02 (iOS), 25-03 (Android), 25-04 (OAuth deep links)]
 # Tech tracking
 tech-stack:
   added:
-    - "@tauri-apps/cli ^2.9.6"
-    - "@tauri-apps/api ^2.9.1"
-    - "@tauri-apps/plugin-deep-link ^2.4.6"
-    - "@tauri-apps/plugin-biometric ^2.3.2"
-    - "@tauri-apps/plugin-store ^2.4.2"
-    - "@tauri-apps/plugin-notification ^2.3.3"
-    - "@tauri-apps/plugin-os ^2.3.2"
-    - "tauri-plugin-deep-link (Rust)"
-    - "tauri-plugin-store (Rust)"
-    - "tauri-plugin-os (Rust)"
-    - "tauri-plugin-notification (Rust)"
-    - "tauri-plugin-biometric (Rust, mobile-only)"
+    - '@tauri-apps/cli ^2.9.6'
+    - '@tauri-apps/api ^2.9.1'
+    - '@tauri-apps/plugin-deep-link ^2.4.6'
+    - '@tauri-apps/plugin-biometric ^2.3.2'
+    - '@tauri-apps/plugin-store ^2.4.2'
+    - '@tauri-apps/plugin-notification ^2.3.3'
+    - '@tauri-apps/plugin-os ^2.3.2'
+    - 'tauri-plugin-deep-link (Rust)'
+    - 'tauri-plugin-store (Rust)'
+    - 'tauri-plugin-os (Rust)'
+    - 'tauri-plugin-notification (Rust)'
+    - 'tauri-plugin-biometric (Rust, mobile-only)'
   patterns:
     - Separate vite.config.tauri.ts for SPA builds (no SSR)
     - Platform detection via __TAURI_INTERNALS__ window property
@@ -50,15 +50,15 @@ key-files:
     - package.json
 
 key-decisions:
-  - "Use ai.astn.app as bundle identifier for iOS/Android"
-  - "astn:// deep link scheme for OAuth callbacks"
-  - "Separate SPA entry point (tauri-entry.tsx) to avoid TanStack Start SSR dependencies"
-  - "Window size 390x844 matches iPhone viewport for dev testing"
+  - 'Use ai.astn.app as bundle identifier for iOS/Android'
+  - 'astn:// deep link scheme for OAuth callbacks'
+  - 'Separate SPA entry point (tauri-entry.tsx) to avoid TanStack Start SSR dependencies'
+  - 'Window size 390x844 matches iPhone viewport for dev testing'
 
 patterns-established:
-  - "Tauri builds use vite.config.tauri.ts (SPA mode, no SSR)"
-  - "Platform detection via isTauri() before using Tauri APIs"
-  - "Mobile-only plugins wrapped in #[cfg(mobile)] in Rust"
+  - 'Tauri builds use vite.config.tauri.ts (SPA mode, no SSR)'
+  - 'Platform detection via isTauri() before using Tauri APIs'
+  - 'Mobile-only plugins wrapped in #[cfg(mobile)] in Rust'
 
 # Metrics
 duration: 5min
@@ -78,6 +78,7 @@ completed: 2026-01-22
 - **Files modified:** 9 (plus 22 generated icons/configs)
 
 ## Accomplishments
+
 - Tauri CLI v2.9.6 installed with all plugin packages
 - src-tauri/ project structure with Rust plugin initialization
 - SPA build producing static dist/ for WebView embedding
@@ -94,6 +95,7 @@ Each task was committed atomically:
 ## Files Created/Modified
 
 ### Created
+
 - `src-tauri/Cargo.toml` - Rust dependencies with mobile plugins
 - `src-tauri/tauri.conf.json` - App config with ai.astn.app identifier
 - `src-tauri/src/lib.rs` - Plugin initialization with mobile_entry_point
@@ -104,6 +106,7 @@ Each task was committed atomically:
 - `src/tauri-entry.tsx` - Client-only React entry (no SSR)
 
 ### Modified
+
 - `package.json` - Tauri CLI, plugins, and build scripts
 
 ## Decisions Made
@@ -118,6 +121,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Created minimal SPA entry point**
+
 - **Found during:** Task 3 (SPA Vite config verification)
 - **Issue:** Existing routes use TanStack Start `createServerFn` which fails in pure SPA build
 - **Fix:** Created `tauri-entry.tsx` with minimal Convex-connected app (placeholder UI)
@@ -131,23 +135,28 @@ Each task was committed atomically:
 **Impact on plan:** Required for build to work. Full route integration deferred to Plan 25-04 (OAuth Deep Link Integration) where SPA-compatible routes will be created.
 
 ## Issues Encountered
+
 - TanStack Start routes cannot be used directly in SPA builds due to server function dependencies
 - Workaround: Created minimal entry point; full route integration planned for 25-04
 
 ## User Setup Required
+
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Tauri CLI installed and functional
 - src-tauri/ ready for `tauri ios init` and `tauri android init`
 - SPA build produces valid dist/ for WebView embedding
 - Platform detection utilities available for conditional features
 
 **Next steps:**
+
 - Plan 25-02: iOS Build Setup (`tauri ios init`)
 - Plan 25-03: Android Build Setup (`tauri android init`)
 - Plan 25-04: OAuth Deep Link Integration (full route integration)
 
 ---
-*Phase: 25-tauri-mobile-native-features*
-*Completed: 2026-01-22*
+
+_Phase: 25-tauri-mobile-native-features_
+_Completed: 2026-01-22_

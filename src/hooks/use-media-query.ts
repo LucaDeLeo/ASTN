@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from 'react'
 
 export function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false)
@@ -8,13 +8,13 @@ export function useMediaQuery(query: string): boolean {
     setMatches(media.matches)
 
     const listener = (e: MediaQueryListEvent) => setMatches(e.matches)
-    media.addEventListener("change", listener)
-    return () => media.removeEventListener("change", listener)
+    media.addEventListener('change', listener)
+    return () => media.removeEventListener('change', listener)
   }, [query])
 
   return matches
 }
 
 // Convenience hooks matching Tailwind breakpoints
-export const useIsMobile = () => !useMediaQuery("(min-width: 768px)")
-export const useIsDesktop = () => useMediaQuery("(min-width: 768px)")
+export const useIsMobile = () => !useMediaQuery('(min-width: 768px)')
+export const useIsDesktop = () => useMediaQuery('(min-width: 768px)')

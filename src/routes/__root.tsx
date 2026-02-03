@@ -9,7 +9,6 @@ import { getRequest } from '@tanstack/react-start/server'
 import * as React from 'react'
 import { Toaster } from 'sonner'
 
-
 // Font preloads for FOIT/FOUT prevention
 import plusJakartaWoff2 from '@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2?url'
 import spaceGroteskWoff2 from '@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2?url'
@@ -19,15 +18,13 @@ import appCss from '~/styles/app.css?url'
 import { ThemeProvider } from '~/components/theme/theme-provider'
 
 // Server function to read theme from cookie for SSR
-const getThemeFromCookie = createServerFn({ method: 'GET' }).handler(
-  () => {
-    const request = getRequest()
-    const cookies = request.headers.get('cookie') || ''
-    const match = cookies.match(/astn-theme=([^;]+)/)
-    if (!match) return 'system'
-    return match[1] as 'dark' | 'light' | 'system'
-  }
-)
+const getThemeFromCookie = createServerFn({ method: 'GET' }).handler(() => {
+  const request = getRequest()
+  const cookies = request.headers.get('cookie') || ''
+  const match = cookies.match(/astn-theme=([^;]+)/)
+  if (!match) return 'system'
+  return match[1] as 'dark' | 'light' | 'system'
+})
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
@@ -137,7 +134,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     initialTheme === 'dark' ? 'dark' : initialTheme === 'light' ? 'light' : ''
 
   return (
-    <html lang="en" className={themeClass || undefined} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={themeClass || undefined}
+      suppressHydrationWarning
+    >
       <head suppressHydrationWarning>
         {/* Only inject script for system theme - dark/light are handled by SSR */}
         {initialTheme === 'system' && (

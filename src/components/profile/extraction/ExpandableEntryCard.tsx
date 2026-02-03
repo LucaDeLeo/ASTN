@@ -1,73 +1,73 @@
-import { useState } from "react";
-import { Check, ChevronDown, Pencil, X } from "lucide-react";
-import type { ExtractedData, ResumeReviewStatus } from "./types";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Card } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
-import { cn } from "~/lib/utils";
+import { useState } from 'react'
+import { Check, ChevronDown, Pencil, X } from 'lucide-react'
+import type { ExtractedData, ResumeReviewStatus } from './types'
+import { Button } from '~/components/ui/button'
+import { Input } from '~/components/ui/input'
+import { Card } from '~/components/ui/card'
+import { Badge } from '~/components/ui/badge'
+import { cn } from '~/lib/utils'
 
-type EducationEntry = NonNullable<ExtractedData["education"]>[0];
-type WorkHistoryEntry = NonNullable<ExtractedData["workHistory"]>[0];
+type EducationEntry = NonNullable<ExtractedData['education']>[0]
+type WorkHistoryEntry = NonNullable<ExtractedData['workHistory']>[0]
 
 interface ExpandableEntryCardProps {
-  type: "education" | "workHistory";
-  entry: EducationEntry | WorkHistoryEntry;
-  editedEntry?: EducationEntry | WorkHistoryEntry;
-  status: ResumeReviewStatus;
-  onAccept: () => void;
-  onReject: () => void;
-  onEdit: (entry: EducationEntry | WorkHistoryEntry) => void;
+  type: 'education' | 'workHistory'
+  entry: EducationEntry | WorkHistoryEntry
+  editedEntry?: EducationEntry | WorkHistoryEntry
+  status: ResumeReviewStatus
+  onAccept: () => void
+  onReject: () => void
+  onEdit: (entry: EducationEntry | WorkHistoryEntry) => void
 }
 
 /**
  * Format date range for work history
  */
 function formatWorkDateRange(entry: WorkHistoryEntry): string {
-  const parts: Array<string> = [];
+  const parts: Array<string> = []
   if (entry.startDate) {
-    parts.push(entry.startDate);
+    parts.push(entry.startDate)
   }
   if (entry.current) {
-    parts.push("Present");
+    parts.push('Present')
   } else if (entry.endDate) {
-    parts.push(entry.endDate);
+    parts.push(entry.endDate)
   }
-  return parts.length > 0 ? `(${parts.join(" - ")})` : "";
+  return parts.length > 0 ? `(${parts.join(' - ')})` : ''
 }
 
 /**
  * Format date range for education
  */
 function formatEducationDateRange(entry: EducationEntry): string {
-  const parts: Array<string> = [];
+  const parts: Array<string> = []
   if (entry.startYear) {
-    parts.push(String(entry.startYear));
+    parts.push(String(entry.startYear))
   }
   if (entry.current) {
-    parts.push("Present");
+    parts.push('Present')
   } else if (entry.endYear) {
-    parts.push(String(entry.endYear));
+    parts.push(String(entry.endYear))
   }
-  return parts.length > 0 ? `(${parts.join(" - ")})` : "";
+  return parts.length > 0 ? `(${parts.join(' - ')})` : ''
 }
 
 /**
  * Generate summary title for work history
  */
 function formatWorkTitle(entry: WorkHistoryEntry): string {
-  return `${entry.title} at ${entry.organization}`;
+  return `${entry.title} at ${entry.organization}`
 }
 
 /**
  * Generate summary title for education
  */
 function formatEducationTitle(entry: EducationEntry): string {
-  const parts: Array<string> = [];
-  if (entry.degree) parts.push(entry.degree);
-  if (entry.field) parts.push(`in ${entry.field}`);
-  parts.push(`at ${entry.institution}`);
-  return parts.join(" ");
+  const parts: Array<string> = []
+  if (entry.degree) parts.push(entry.degree)
+  if (entry.field) parts.push(`in ${entry.field}`)
+  parts.push(`at ${entry.institution}`)
+  return parts.join(' ')
 }
 
 export function ExpandableEntryCard({
@@ -79,38 +79,41 @@ export function ExpandableEntryCard({
   onReject,
   onEdit,
 }: ExpandableEntryCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [localEntry, setLocalEntry] = useState<EducationEntry | WorkHistoryEntry>(
-    editedEntry ?? entry
-  );
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [localEntry, setLocalEntry] = useState<
+    EducationEntry | WorkHistoryEntry
+  >(editedEntry ?? entry)
 
-  const currentEntry = editedEntry ?? entry;
-  const isEducation = type === "education";
+  const currentEntry = editedEntry ?? entry
+  const isEducation = type === 'education'
   const title = isEducation
     ? formatEducationTitle(currentEntry as EducationEntry)
-    : formatWorkTitle(currentEntry as WorkHistoryEntry);
+    : formatWorkTitle(currentEntry as WorkHistoryEntry)
   const dateRange = isEducation
     ? formatEducationDateRange(currentEntry as EducationEntry)
-    : formatWorkDateRange(currentEntry as WorkHistoryEntry);
+    : formatWorkDateRange(currentEntry as WorkHistoryEntry)
 
-  const handleFieldChange = (field: string, value: string | number | boolean) => {
-    const updated = { ...localEntry, [field]: value };
-    setLocalEntry(updated);
-    onEdit(updated);
-  };
+  const handleFieldChange = (
+    field: string,
+    value: string | number | boolean,
+  ) => {
+    const updated = { ...localEntry, [field]: value }
+    setLocalEntry(updated)
+    onEdit(updated)
+  }
 
   const handleToggleExpand = () => {
-    setIsExpanded(!isExpanded);
-  };
+    setIsExpanded(!isExpanded)
+  }
 
   return (
     <Card
       className={cn(
-        "transition-all duration-200 overflow-hidden shadow-sm",
-        status === "accepted" && "border-slate-300 bg-white",
-        status === "edited" && "border-amber-400 bg-amber-50",
-        status === "rejected" && "border-slate-300 bg-slate-100 opacity-60",
-        status === "pending" && "border-slate-300 bg-white"
+        'transition-all duration-200 overflow-hidden shadow-sm',
+        status === 'accepted' && 'border-slate-300 bg-white',
+        status === 'edited' && 'border-amber-400 bg-amber-50',
+        status === 'rejected' && 'border-slate-300 bg-slate-100 opacity-60',
+        status === 'pending' && 'border-slate-300 bg-white',
       )}
     >
       {/* Collapsed header */}
@@ -123,25 +126,25 @@ export function ExpandableEntryCard({
           <div className="flex items-center gap-2">
             <h4
               className={cn(
-                "font-medium truncate",
-                status === "rejected"
-                  ? "line-through text-slate-400"
-                  : "text-foreground"
+                'font-medium truncate',
+                status === 'rejected'
+                  ? 'line-through text-slate-400'
+                  : 'text-foreground',
               )}
             >
               {title}
             </h4>
-            {(status === "edited" || status === "rejected") && (
+            {(status === 'edited' || status === 'rejected') && (
               <Badge
-                variant={status === "rejected" ? "secondary" : "default"}
+                variant={status === 'rejected' ? 'secondary' : 'default'}
                 className={cn(
-                  "text-xs shrink-0",
-                  status === "edited" &&
-                    "bg-amber-100 text-amber-800 hover:bg-amber-100"
+                  'text-xs shrink-0',
+                  status === 'edited' &&
+                    'bg-amber-100 text-amber-800 hover:bg-amber-100',
                 )}
               >
-                {status === "rejected" && "Rejected"}
-                {status === "edited" && (
+                {status === 'rejected' && 'Rejected'}
+                {status === 'edited' && (
                   <>
                     <Pencil className="size-3 mr-1" /> Edited
                   </>
@@ -152,8 +155,8 @@ export function ExpandableEntryCard({
           {dateRange && (
             <span
               className={cn(
-                "text-sm",
-                status === "rejected" ? "text-slate-400" : "text-slate-500"
+                'text-sm',
+                status === 'rejected' ? 'text-slate-400' : 'text-slate-500',
               )}
             >
               {dateRange}
@@ -167,13 +170,13 @@ export function ExpandableEntryCard({
             variant="ghost"
             size="icon-sm"
             onClick={(e) => {
-              e.stopPropagation();
-              onAccept();
+              e.stopPropagation()
+              onAccept()
             }}
-            disabled={status === "accepted"}
+            disabled={status === 'accepted'}
             className={cn(
-              "text-slate-400 hover:text-green-600 hover:bg-green-50",
-              status === "accepted" && "text-green-600 bg-green-100"
+              'text-slate-400 hover:text-green-600 hover:bg-green-50',
+              status === 'accepted' && 'text-green-600 bg-green-100',
             )}
           >
             <Check className="size-4" />
@@ -182,21 +185,21 @@ export function ExpandableEntryCard({
             variant="ghost"
             size="icon-sm"
             onClick={(e) => {
-              e.stopPropagation();
-              onReject();
+              e.stopPropagation()
+              onReject()
             }}
-            disabled={status === "rejected"}
+            disabled={status === 'rejected'}
             className={cn(
-              "text-slate-400 hover:text-red-600 hover:bg-red-50",
-              status === "rejected" && "text-red-600 bg-red-100"
+              'text-slate-400 hover:text-red-600 hover:bg-red-50',
+              status === 'rejected' && 'text-red-600 bg-red-100',
             )}
           >
             <X className="size-4" />
           </Button>
           <ChevronDown
             className={cn(
-              "size-5 text-slate-400 transition-transform duration-200",
-              isExpanded && "rotate-180"
+              'size-5 text-slate-400 transition-transform duration-200',
+              isExpanded && 'rotate-180',
             )}
           />
         </div>
@@ -205,8 +208,8 @@ export function ExpandableEntryCard({
       {/* Expanded content */}
       <div
         className={cn(
-          "grid transition-all duration-200 ease-in-out",
-          isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+          'grid transition-all duration-200 ease-in-out',
+          isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
         )}
       >
         <div className="overflow-hidden">
@@ -226,12 +229,12 @@ export function ExpandableEntryCard({
         </div>
       </div>
     </Card>
-  );
+  )
 }
 
 interface EducationFieldsProps {
-  entry: EducationEntry;
-  onChange: (field: string, value: string | number | boolean) => void;
+  entry: EducationEntry
+  onChange: (field: string, value: string | number | boolean) => void
 }
 
 function EducationFields({ entry, onChange }: EducationFieldsProps) {
@@ -244,7 +247,7 @@ function EducationFields({ entry, onChange }: EducationFieldsProps) {
           </label>
           <Input
             value={entry.institution}
-            onChange={(e) => onChange("institution", e.target.value)}
+            onChange={(e) => onChange('institution', e.target.value)}
             className="h-9 text-sm"
           />
         </div>
@@ -253,8 +256,8 @@ function EducationFields({ entry, onChange }: EducationFieldsProps) {
             Degree
           </label>
           <Input
-            value={entry.degree ?? ""}
-            onChange={(e) => onChange("degree", e.target.value)}
+            value={entry.degree ?? ''}
+            onChange={(e) => onChange('degree', e.target.value)}
             placeholder="e.g., PhD, MSc, BSc"
             className="h-9 text-sm"
           />
@@ -265,8 +268,8 @@ function EducationFields({ entry, onChange }: EducationFieldsProps) {
           Field of Study
         </label>
         <Input
-          value={entry.field ?? ""}
-          onChange={(e) => onChange("field", e.target.value)}
+          value={entry.field ?? ''}
+          onChange={(e) => onChange('field', e.target.value)}
           placeholder="e.g., Computer Science, AI Safety"
           className="h-9 text-sm"
         />
@@ -278,9 +281,12 @@ function EducationFields({ entry, onChange }: EducationFieldsProps) {
           </label>
           <Input
             type="number"
-            value={entry.startYear ?? ""}
+            value={entry.startYear ?? ''}
             onChange={(e) =>
-              onChange("startYear", e.target.value ? parseInt(e.target.value) : "")
+              onChange(
+                'startYear',
+                e.target.value ? parseInt(e.target.value) : '',
+              )
             }
             placeholder="YYYY"
             className="h-9 text-sm"
@@ -292,9 +298,12 @@ function EducationFields({ entry, onChange }: EducationFieldsProps) {
           </label>
           <Input
             type="number"
-            value={entry.endYear ?? ""}
+            value={entry.endYear ?? ''}
             onChange={(e) =>
-              onChange("endYear", e.target.value ? parseInt(e.target.value) : "")
+              onChange(
+                'endYear',
+                e.target.value ? parseInt(e.target.value) : '',
+              )
             }
             placeholder="YYYY"
             disabled={entry.current}
@@ -306,7 +315,7 @@ function EducationFields({ entry, onChange }: EducationFieldsProps) {
             <input
               type="checkbox"
               checked={entry.current ?? false}
-              onChange={(e) => onChange("current", e.target.checked)}
+              onChange={(e) => onChange('current', e.target.checked)}
               className="rounded border-slate-300"
             />
             Current
@@ -314,12 +323,12 @@ function EducationFields({ entry, onChange }: EducationFieldsProps) {
         </div>
       </div>
     </>
-  );
+  )
 }
 
 interface WorkHistoryFieldsProps {
-  entry: WorkHistoryEntry;
-  onChange: (field: string, value: string | boolean) => void;
+  entry: WorkHistoryEntry
+  onChange: (field: string, value: string | boolean) => void
 }
 
 function WorkHistoryFields({ entry, onChange }: WorkHistoryFieldsProps) {
@@ -332,7 +341,7 @@ function WorkHistoryFields({ entry, onChange }: WorkHistoryFieldsProps) {
           </label>
           <Input
             value={entry.organization}
-            onChange={(e) => onChange("organization", e.target.value)}
+            onChange={(e) => onChange('organization', e.target.value)}
             className="h-9 text-sm"
           />
         </div>
@@ -342,7 +351,7 @@ function WorkHistoryFields({ entry, onChange }: WorkHistoryFieldsProps) {
           </label>
           <Input
             value={entry.title}
-            onChange={(e) => onChange("title", e.target.value)}
+            onChange={(e) => onChange('title', e.target.value)}
             className="h-9 text-sm"
           />
         </div>
@@ -354,8 +363,8 @@ function WorkHistoryFields({ entry, onChange }: WorkHistoryFieldsProps) {
           </label>
           <Input
             type="month"
-            value={entry.startDate ?? ""}
-            onChange={(e) => onChange("startDate", e.target.value)}
+            value={entry.startDate ?? ''}
+            onChange={(e) => onChange('startDate', e.target.value)}
             className="h-9 text-sm"
           />
         </div>
@@ -365,8 +374,8 @@ function WorkHistoryFields({ entry, onChange }: WorkHistoryFieldsProps) {
           </label>
           <Input
             type="month"
-            value={entry.endDate ?? ""}
-            onChange={(e) => onChange("endDate", e.target.value)}
+            value={entry.endDate ?? ''}
+            onChange={(e) => onChange('endDate', e.target.value)}
             disabled={entry.current}
             className="h-9 text-sm"
           />
@@ -376,7 +385,7 @@ function WorkHistoryFields({ entry, onChange }: WorkHistoryFieldsProps) {
             <input
               type="checkbox"
               checked={entry.current ?? false}
-              onChange={(e) => onChange("current", e.target.checked)}
+              onChange={(e) => onChange('current', e.target.checked)}
               className="rounded border-slate-300"
             />
             Current
@@ -388,23 +397,23 @@ function WorkHistoryFields({ entry, onChange }: WorkHistoryFieldsProps) {
           Description
         </label>
         <textarea
-          value={entry.description ?? ""}
+          value={entry.description ?? ''}
           onChange={(e) => {
-            onChange("description", e.target.value);
+            onChange('description', e.target.value)
             // Auto-resize
-            e.target.style.height = "auto";
-            e.target.style.height = e.target.scrollHeight + "px";
+            e.target.style.height = 'auto'
+            e.target.style.height = e.target.scrollHeight + 'px'
           }}
           onFocus={(e) => {
             // Auto-resize on focus
-            e.target.style.height = "auto";
-            e.target.style.height = e.target.scrollHeight + "px";
+            e.target.style.height = 'auto'
+            e.target.style.height = e.target.scrollHeight + 'px'
           }}
           ref={(el) => {
             // Auto-resize on mount
             if (el) {
-              el.style.height = "auto";
-              el.style.height = el.scrollHeight + "px";
+              el.style.height = 'auto'
+              el.style.height = el.scrollHeight + 'px'
             }
           }}
           placeholder="Describe your role and responsibilities..."
@@ -412,5 +421,5 @@ function WorkHistoryFields({ entry, onChange }: WorkHistoryFieldsProps) {
         />
       </div>
     </>
-  );
+  )
 }

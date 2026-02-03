@@ -1,17 +1,17 @@
-import * as React from "react"
-import { Link } from "@tanstack/react-router"
-import { useAuthActions } from "@convex-dev/auth/react"
-import { HelpCircle, LogOut, Menu, Shield, User } from "lucide-react"
+import * as React from 'react'
+import { Link } from '@tanstack/react-router'
+import { useAuthActions } from '@convex-dev/auth/react'
+import { HelpCircle, LogOut, Menu, Shield, User } from 'lucide-react'
 
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
-import { Button } from "~/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
+import { Button } from '~/components/ui/button'
 import {
   Sheet,
   SheetClose,
   SheetContent,
   SheetHeader,
   SheetTrigger,
-} from "~/components/ui/sheet"
+} from '~/components/ui/sheet'
 
 interface HamburgerMenuProps {
   user: {
@@ -60,9 +60,9 @@ export function HamburgerMenu({ user }: HamburgerMenuProps) {
                   ) : null}
                   <AvatarFallback className="bg-primary/10 text-primary">
                     {user.name
-                      .split(" ")
+                      .split(' ')
                       .map((n) => n[0])
-                      .join("")
+                      .join('')
                       .toUpperCase()
                       .slice(0, 2)}
                   </AvatarFallback>

@@ -32,13 +32,13 @@ key-files:
     - src/components/org/ExportButton.tsx
 
 key-decisions:
-  - "Profile name always visible (needed for identification per CONTEXT.md)"
-  - "Nested route under members directory for clean URL structure"
-  - "Engagement map passed to export function for O(1) lookup per member"
+  - 'Profile name always visible (needed for identification per CONTEXT.md)'
+  - 'Nested route under members directory for clean URL structure'
+  - 'Engagement map passed to export function for O(1) lookup per member'
 
 patterns-established:
-  - "Section visibility pattern: Eye/EyeOff icons to indicate hidden vs visible sections"
-  - "Type assertion pattern for Convex query results with discriminated unions"
+  - 'Section visibility pattern: Eye/EyeOff icons to indicate hidden vs visible sections'
+  - 'Type assertion pattern for Convex query results with discriminated unions'
 
 # Metrics
 duration: 6min
@@ -58,6 +58,7 @@ completed: 2026-01-19
 - **Files modified:** 3
 
 ## Accomplishments
+
 - Created member profile page route with full privacy support
 - Added clickable member names and "View Profile" action in directory
 - Enhanced CSV/JSON export with engagement level and override status columns
@@ -71,11 +72,13 @@ Each task was committed atomically:
 3. **Task 3: Enhance CSV export with engagement data** - `2ceb286` (feat)
 
 ## Files Created/Modified
+
 - `src/routes/org/$slug/admin/members/$userId.tsx` - Member profile page with privacy indicators, engagement card, attendance history
 - `src/routes/org/$slug/admin/members.tsx` - Added slug prop to MemberRow, clickable names, View Profile menu item
 - `src/components/org/ExportButton.tsx` - Added engagementData prop, engagement columns in CSV/JSON export
 
 ## Decisions Made
+
 - Profile name always visible to admins (per CONTEXT.md requirement for identification)
 - Used Eye/EyeOff icons to indicate visibility status per section
 - Type assertions used for Convex query results that have discriminated unions (restricted vs full profile)
@@ -94,10 +97,12 @@ None
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Member profile page complete and linked from directory
 - All CRM-related member views functional
 - Ready for 16-06 if needed, or phase completion
 
 ---
-*Phase: 16-crm-dashboard-programs*
-*Completed: 2026-01-19*
+
+_Phase: 16-crm-dashboard-programs_
+_Completed: 2026-01-19_

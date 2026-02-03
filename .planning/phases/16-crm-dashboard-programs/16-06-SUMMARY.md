@@ -2,7 +2,8 @@
 phase: 16-crm-dashboard-programs
 plan: 06
 subsystem: ui
-tags: [react, tanstack-router, programs, admin, enrollment, participant-tracking]
+tags:
+  [react, tanstack-router, programs, admin, enrollment, participant-tracking]
 
 # Dependency graph
 requires:
@@ -21,9 +22,9 @@ affects: [org-admin-dashboard]
 tech-stack:
   added: []
   patterns:
-    - "Status color mapping for program statuses"
-    - "Type labels for human-readable program types"
-    - "Participant attendance tracking with +/- buttons"
+    - 'Status color mapping for program statuses'
+    - 'Type labels for human-readable program types'
+    - 'Participant attendance tracking with +/- buttons'
 
 key-files:
   created:
@@ -35,14 +36,14 @@ key-files:
     - src/routes/org/$slug/admin/index.tsx
 
 key-decisions:
-  - "5-column quick actions grid in admin dashboard (expanded from 4)"
-  - "Status dropdown embedded in dropdown menu for compact UI"
-  - "Attendance tracking inline with +/- buttons for quick updates"
+  - '5-column quick actions grid in admin dashboard (expanded from 4)'
+  - 'Status dropdown embedded in dropdown menu for compact UI'
+  - 'Attendance tracking inline with +/- buttons for quick updates'
 
 patterns-established:
-  - "Program status colors: planning (slate), active (green), completed (blue), archived (gray)"
-  - "Program type labels mapping to human-readable names"
-  - "Participant status colors: enrolled (green), pending (amber), completed (blue), withdrawn/removed (slate)"
+  - 'Program status colors: planning (slate), active (green), completed (blue), archived (gray)'
+  - 'Program type labels mapping to human-readable names'
+  - 'Participant status colors: enrolled (green), pending (amber), completed (blue), withdrawn/removed (slate)'
 
 # Metrics
 duration: 5min
@@ -111,5 +112,6 @@ None - no external service configuration required.
 - Self-enrollment and approval workflows can be added in future phases
 
 ---
-*Phase: 16-crm-dashboard-programs*
-*Completed: 2026-01-19*
+
+_Phase: 16-crm-dashboard-programs_
+_Completed: 2026-01-19_

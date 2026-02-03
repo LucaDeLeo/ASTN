@@ -14,23 +14,27 @@ System extracts structured profile data (name, email, location, education, work 
 ## Implementation Decisions
 
 ### Extraction confidence
+
 - All extracted data requires user confirmation before being applied to profile
 - User can edit any extracted field during review (Phase 9)
 - No need for confidence thresholds or "needs review" flags — everything goes to user review anyway
 
 ### Error handling
+
 - Auto-retry 2-3x with backoff before surfacing errors to user
 - When all retries fail, offer full fallback menu: Try again, Paste text instead, Enter manually, Contact support
 - Don't pre-validate PDF text extraction — attempt extraction and let it fail naturally if no extractable content
 - Error messages show brief context with specific reason (e.g., "Couldn't read your document - file appears to be image-only") without technical jargon
 
 ### Processing feedback
+
 - Show progress stages during extraction: "Reading document..." → "Extracting info..." → "Matching skills..."
 - No time estimates — just stage names (extraction time varies too much)
 - No cancel button — extraction is fast enough (~5-10s) that waiting is simpler
 - Auto-navigate to review screen when extraction completes — seamless flow
 
 ### Claude's Discretion
+
 - How to handle partial data (e.g., work history with only year, no months)
 - How to handle multiple values found for single field (e.g., two emails)
 - Threshold for sparse document warnings
@@ -54,5 +58,5 @@ None — discussion stayed within phase scope.
 
 ---
 
-*Phase: 08-llm-extraction-core*
-*Context gathered: 2026-01-18*
+_Phase: 08-llm-extraction-core_
+_Context gathered: 2026-01-18_

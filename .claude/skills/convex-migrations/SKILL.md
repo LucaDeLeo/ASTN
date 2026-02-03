@@ -38,8 +38,8 @@ Start with optional fields, then backfill:
 ```typescript
 // Step 1: Add optional field to schema
 // convex/schema.ts
-import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
+import { defineSchema, defineTable } from 'convex/server'
+import { v } from 'convex/values'
 
 export default defineSchema({
   users: defineTable({
@@ -48,29 +48,29 @@ export default defineSchema({
     // New field - start as optional
     avatarUrl: v.optional(v.string()),
   }),
-});
+})
 ```
 
 ```typescript
 // Step 2: Update code to handle both cases
 // convex/users.ts
-import { query } from "./_generated/server";
-import { v } from "convex/values";
+import { query } from './_generated/server'
+import { v } from 'convex/values'
 
 export const getUser = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id('users') },
   returns: v.union(
     v.object({
-      _id: v.id("users"),
+      _id: v.id('users'),
       name: v.string(),
       email: v.string(),
       avatarUrl: v.union(v.string(), v.null()),
     }),
-    v.null()
+    v.null(),
   ),
   handler: async (ctx, args) => {
-    const user = await ctx.db.get(args.userId);
-    if (!user) return null;
+    const user = await ctx.db.get(args.userId)
+    if (!user) return null
 
     return {
       _id: user._id,
@@ -78,19 +78,19 @@ export const getUser = query({
       email: user.email,
       // Handle missing field gracefully
       avatarUrl: user.avatarUrl ?? null,
-    };
+    }
   },
-});
+})
 ```
 
 ```typescript
 // Step 3: Backfill existing documents
 // convex/migrations.ts
-import { internalMutation } from "./_generated/server";
-import { internal } from "./_generated/api";
-import { v } from "convex/values";
+import { internalMutation } from './_generated/server'
+import { internal } from './_generated/api'
+import { v } from 'convex/values'
 
-const BATCH_SIZE = 100;
+const BATCH_SIZE = 100
 
 export const backfillAvatarUrl = internalMutation({
   args: {
@@ -102,17 +102,17 @@ export const backfillAvatarUrl = internalMutation({
   }),
   handler: async (ctx, args) => {
     const result = await ctx.db
-      .query("users")
-      .paginate({ numItems: BATCH_SIZE, cursor: args.cursor ?? null });
+      .query('users')
+      .paginate({ numItems: BATCH_SIZE, cursor: args.cursor ?? null })
 
-    let processed = 0;
+    let processed = 0
     for (const user of result.page) {
       // Only update if field is missing
       if (user.avatarUrl === undefined) {
         await ctx.db.patch(user._id, {
           avatarUrl: generateDefaultAvatar(user.name),
-        });
-        processed++;
+        })
+        processed++
       }
     }
 
@@ -120,18 +120,18 @@ export const backfillAvatarUrl = internalMutation({
     if (!result.isDone) {
       await ctx.scheduler.runAfter(0, internal.migrations.backfillAvatarUrl, {
         cursor: result.continueCursor,
-      });
+      })
     }
 
     return {
       processed,
       hasMore: !result.isDone,
-    };
+    }
   },
-});
+})
 
 function generateDefaultAvatar(name: string): string {
-  return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`;
+  return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`
 }
 ```
 
@@ -144,7 +144,7 @@ export default defineSchema({
     email: v.string(),
     avatarUrl: v.string(), // Now required
   }),
-});
+})
 ```
 
 ### Removing Fields
@@ -161,10 +161,10 @@ export default defineSchema({
   posts: defineTable({
     title: v.string(),
     content: v.string(),
-    authorId: v.id("users"),
+    authorId: v.id('users'),
     // legacyField: v.optional(v.string()), // Remove this line
   }),
-});
+})
 
 // Step 3: Optionally clean up existing data
 // convex/migrations.ts
@@ -175,26 +175,32 @@ export const removeDeprecatedField = internalMutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     const result = await ctx.db
-      .query("posts")
-      .paginate({ numItems: 100, cursor: args.cursor ?? null });
+      .query('posts')
+      .paginate({ numItems: 100, cursor: args.cursor ?? null })
 
     for (const post of result.page) {
       // Use replace to remove the field entirely
-      const { legacyField, ...rest } = post as typeof post & { legacyField?: string };
+      const { legacyField, ...rest } = post as typeof post & {
+        legacyField?: string
+      }
       if (legacyField !== undefined) {
-        await ctx.db.replace(post._id, rest);
+        await ctx.db.replace(post._id, rest)
       }
     }
 
     if (!result.isDone) {
-      await ctx.scheduler.runAfter(0, internal.migrations.removeDeprecatedField, {
-        cursor: result.continueCursor,
-      });
+      await ctx.scheduler.runAfter(
+        0,
+        internal.migrations.removeDeprecatedField,
+        {
+          cursor: result.continueCursor,
+        },
+      )
     }
 
-    return null;
+    return null
   },
-});
+})
 ```
 
 ### Renaming Fields
@@ -209,26 +215,26 @@ export default defineSchema({
     userName: v.string(), // Old field
     displayName: v.optional(v.string()), // New field
   }),
-});
+})
 
 // Step 2: Update code to read from new field with fallback
 export const getUser = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id('users') },
   returns: v.object({
-    _id: v.id("users"),
+    _id: v.id('users'),
     displayName: v.string(),
   }),
   handler: async (ctx, args) => {
-    const user = await ctx.db.get(args.userId);
-    if (!user) throw new Error("User not found");
+    const user = await ctx.db.get(args.userId)
+    if (!user) throw new Error('User not found')
 
     return {
       _id: user._id,
       // Read new field, fall back to old
       displayName: user.displayName ?? user.userName,
-    };
+    }
   },
-});
+})
 
 // Step 3: Backfill to copy data
 export const backfillDisplayName = internalMutation({
@@ -236,26 +242,26 @@ export const backfillDisplayName = internalMutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     const result = await ctx.db
-      .query("users")
-      .paginate({ numItems: 100, cursor: args.cursor ?? null });
+      .query('users')
+      .paginate({ numItems: 100, cursor: args.cursor ?? null })
 
     for (const user of result.page) {
       if (user.displayName === undefined) {
         await ctx.db.patch(user._id, {
           displayName: user.userName,
-        });
+        })
       }
     }
 
     if (!result.isDone) {
       await ctx.scheduler.runAfter(0, internal.migrations.backfillDisplayName, {
         cursor: result.continueCursor,
-      });
+      })
     }
 
-    return null;
+    return null
   },
-});
+})
 
 // Step 4: After backfill, update schema to make new field required
 // and remove old field
@@ -264,7 +270,7 @@ export default defineSchema({
     // userName removed
     displayName: v.string(),
   }),
-});
+})
 ```
 
 ### Adding Indexes
@@ -277,14 +283,14 @@ Add indexes before using them in queries:
 export default defineSchema({
   posts: defineTable({
     title: v.string(),
-    authorId: v.id("users"),
+    authorId: v.id('users'),
     publishedAt: v.optional(v.number()),
     status: v.string(),
   })
-    .index("by_author", ["authorId"])
+    .index('by_author', ['authorId'])
     // New index
-    .index("by_status_and_published", ["status", "publishedAt"]),
-});
+    .index('by_status_and_published', ['status', 'publishedAt']),
+})
 
 // Step 2: Deploy schema change
 // Run: npx convex dev
@@ -292,19 +298,19 @@ export default defineSchema({
 // Step 3: Now use the index in queries
 export const getPublishedPosts = query({
   args: {},
-  returns: v.array(v.object({
-    _id: v.id("posts"),
-    title: v.string(),
-    publishedAt: v.number(),
-  })),
+  returns: v.array(
+    v.object({
+      _id: v.id('posts'),
+      title: v.string(),
+      publishedAt: v.number(),
+    }),
+  ),
   handler: async (ctx) => {
     const posts = await ctx.db
-      .query("posts")
-      .withIndex("by_status_and_published", (q) =>
-        q.eq("status", "published")
-      )
-      .order("desc")
-      .take(10);
+      .query('posts')
+      .withIndex('by_status_and_published', (q) => q.eq('status', 'published'))
+      .order('desc')
+      .take(10)
 
     return posts
       .filter((p) => p.publishedAt !== undefined)
@@ -312,9 +318,9 @@ export const getPublishedPosts = query({
         _id: p._id,
         title: p.title,
         publishedAt: p.publishedAt!,
-      }));
+      }))
   },
-});
+})
 ```
 
 ### Changing Field Types
@@ -332,7 +338,7 @@ export default defineSchema({
     priority: v.string(), // Old: "low", "medium", "high"
     priorityLevel: v.optional(v.number()), // New: 1, 2, 3
   }),
-});
+})
 
 // Step 2: Backfill with type conversion
 export const migratePriorityToNumber = internalMutation({
@@ -340,58 +346,62 @@ export const migratePriorityToNumber = internalMutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     const result = await ctx.db
-      .query("tasks")
-      .paginate({ numItems: 100, cursor: args.cursor ?? null });
+      .query('tasks')
+      .paginate({ numItems: 100, cursor: args.cursor ?? null })
 
     const priorityMap: Record<string, number> = {
       low: 1,
       medium: 2,
       high: 3,
-    };
+    }
 
     for (const task of result.page) {
       if (task.priorityLevel === undefined) {
         await ctx.db.patch(task._id, {
           priorityLevel: priorityMap[task.priority] ?? 1,
-        });
+        })
       }
     }
 
     if (!result.isDone) {
-      await ctx.scheduler.runAfter(0, internal.migrations.migratePriorityToNumber, {
-        cursor: result.continueCursor,
-      });
+      await ctx.scheduler.runAfter(
+        0,
+        internal.migrations.migratePriorityToNumber,
+        {
+          cursor: result.continueCursor,
+        },
+      )
     }
 
-    return null;
+    return null
   },
-});
+})
 
 // Step 3: Update code to use new field
 export const getTask = query({
-  args: { taskId: v.id("tasks") },
+  args: { taskId: v.id('tasks') },
   returns: v.object({
-    _id: v.id("tasks"),
+    _id: v.id('tasks'),
     title: v.string(),
     priorityLevel: v.number(),
   }),
   handler: async (ctx, args) => {
-    const task = await ctx.db.get(args.taskId);
-    if (!task) throw new Error("Task not found");
+    const task = await ctx.db.get(args.taskId)
+    if (!task) throw new Error('Task not found')
 
     const priorityMap: Record<string, number> = {
       low: 1,
       medium: 2,
       high: 3,
-    };
+    }
 
     return {
       _id: task._id,
       title: task.title,
       priorityLevel: task.priorityLevel ?? priorityMap[task.priority] ?? 1,
-    };
+    }
   },
-});
+})
 
 // Step 4: After backfill, update schema
 export default defineSchema({
@@ -400,7 +410,7 @@ export default defineSchema({
     // priority field removed
     priorityLevel: v.number(),
   }),
-});
+})
 ```
 
 ### Migration Runner Pattern
@@ -409,8 +419,8 @@ Create a reusable migration system:
 
 ```typescript
 // convex/schema.ts
-import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
+import { defineSchema, defineTable } from 'convex/server'
+import { v } from 'convex/values'
 
 export default defineSchema({
   migrations: defineTable({
@@ -418,23 +428,23 @@ export default defineSchema({
     startedAt: v.number(),
     completedAt: v.optional(v.number()),
     status: v.union(
-      v.literal("running"),
-      v.literal("completed"),
-      v.literal("failed")
+      v.literal('running'),
+      v.literal('completed'),
+      v.literal('failed'),
     ),
     error: v.optional(v.string()),
     processed: v.number(),
-  }).index("by_name", ["name"]),
+  }).index('by_name', ['name']),
 
   // Your other tables...
-});
+})
 ```
 
 ```typescript
 // convex/migrations.ts
-import { internalMutation, internalQuery } from "./_generated/server";
-import { internal } from "./_generated/api";
-import { v } from "convex/values";
+import { internalMutation, internalQuery } from './_generated/server'
+import { internal } from './_generated/api'
+import { v } from 'convex/values'
 
 // Check if migration has run
 export const hasMigrationRun = internalQuery({
@@ -442,143 +452,143 @@ export const hasMigrationRun = internalQuery({
   returns: v.boolean(),
   handler: async (ctx, args) => {
     const migration = await ctx.db
-      .query("migrations")
-      .withIndex("by_name", (q) => q.eq("name", args.name))
-      .first();
-    return migration?.status === "completed";
+      .query('migrations')
+      .withIndex('by_name', (q) => q.eq('name', args.name))
+      .first()
+    return migration?.status === 'completed'
   },
-});
+})
 
 // Start a migration
 export const startMigration = internalMutation({
   args: { name: v.string() },
-  returns: v.id("migrations"),
+  returns: v.id('migrations'),
   handler: async (ctx, args) => {
     // Check if already exists
     const existing = await ctx.db
-      .query("migrations")
-      .withIndex("by_name", (q) => q.eq("name", args.name))
-      .first();
+      .query('migrations')
+      .withIndex('by_name', (q) => q.eq('name', args.name))
+      .first()
 
     if (existing) {
-      if (existing.status === "completed") {
-        throw new Error(`Migration ${args.name} already completed`);
+      if (existing.status === 'completed') {
+        throw new Error(`Migration ${args.name} already completed`)
       }
-      if (existing.status === "running") {
-        throw new Error(`Migration ${args.name} already running`);
+      if (existing.status === 'running') {
+        throw new Error(`Migration ${args.name} already running`)
       }
       // Reset failed migration
       await ctx.db.patch(existing._id, {
-        status: "running",
+        status: 'running',
         startedAt: Date.now(),
         error: undefined,
         processed: 0,
-      });
-      return existing._id;
+      })
+      return existing._id
     }
 
-    return await ctx.db.insert("migrations", {
+    return await ctx.db.insert('migrations', {
       name: args.name,
       startedAt: Date.now(),
-      status: "running",
+      status: 'running',
       processed: 0,
-    });
+    })
   },
-});
+})
 
 // Update migration progress
 export const updateMigrationProgress = internalMutation({
   args: {
-    migrationId: v.id("migrations"),
+    migrationId: v.id('migrations'),
     processed: v.number(),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const migration = await ctx.db.get(args.migrationId);
-    if (!migration) return null;
+    const migration = await ctx.db.get(args.migrationId)
+    if (!migration) return null
 
     await ctx.db.patch(args.migrationId, {
       processed: migration.processed + args.processed,
-    });
+    })
 
-    return null;
+    return null
   },
-});
+})
 
 // Complete a migration
 export const completeMigration = internalMutation({
-  args: { migrationId: v.id("migrations") },
+  args: { migrationId: v.id('migrations') },
   returns: v.null(),
   handler: async (ctx, args) => {
     await ctx.db.patch(args.migrationId, {
-      status: "completed",
+      status: 'completed',
       completedAt: Date.now(),
-    });
-    return null;
+    })
+    return null
   },
-});
+})
 
 // Fail a migration
 export const failMigration = internalMutation({
   args: {
-    migrationId: v.id("migrations"),
+    migrationId: v.id('migrations'),
     error: v.string(),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
     await ctx.db.patch(args.migrationId, {
-      status: "failed",
+      status: 'failed',
       error: args.error,
-    });
-    return null;
+    })
+    return null
   },
-});
+})
 ```
 
 ```typescript
 // convex/migrations/addUserTimestamps.ts
-import { internalMutation } from "../_generated/server";
-import { internal } from "../_generated/api";
-import { v } from "convex/values";
+import { internalMutation } from '../_generated/server'
+import { internal } from '../_generated/api'
+import { v } from 'convex/values'
 
-const MIGRATION_NAME = "add_user_timestamps_v1";
-const BATCH_SIZE = 100;
+const MIGRATION_NAME = 'add_user_timestamps_v1'
+const BATCH_SIZE = 100
 
 export const run = internalMutation({
   args: {
-    migrationId: v.optional(v.id("migrations")),
+    migrationId: v.optional(v.id('migrations')),
     cursor: v.optional(v.string()),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
     // Initialize migration on first run
-    let migrationId = args.migrationId;
+    let migrationId = args.migrationId
     if (!migrationId) {
       const hasRun = await ctx.runQuery(internal.migrations.hasMigrationRun, {
         name: MIGRATION_NAME,
-      });
+      })
       if (hasRun) {
-        console.log(`Migration ${MIGRATION_NAME} already completed`);
-        return null;
+        console.log(`Migration ${MIGRATION_NAME} already completed`)
+        return null
       }
       migrationId = await ctx.runMutation(internal.migrations.startMigration, {
         name: MIGRATION_NAME,
-      });
+      })
     }
 
     try {
       const result = await ctx.db
-        .query("users")
-        .paginate({ numItems: BATCH_SIZE, cursor: args.cursor ?? null });
+        .query('users')
+        .paginate({ numItems: BATCH_SIZE, cursor: args.cursor ?? null })
 
-      let processed = 0;
+      let processed = 0
       for (const user of result.page) {
         if (user.createdAt === undefined) {
           await ctx.db.patch(user._id, {
             createdAt: user._creationTime,
             updatedAt: user._creationTime,
-          });
-          processed++;
+          })
+          processed++
         }
       }
 
@@ -586,31 +596,35 @@ export const run = internalMutation({
       await ctx.runMutation(internal.migrations.updateMigrationProgress, {
         migrationId,
         processed,
-      });
+      })
 
       // Continue or complete
       if (!result.isDone) {
-        await ctx.scheduler.runAfter(0, internal.migrations.addUserTimestamps.run, {
-          migrationId,
-          cursor: result.continueCursor,
-        });
+        await ctx.scheduler.runAfter(
+          0,
+          internal.migrations.addUserTimestamps.run,
+          {
+            migrationId,
+            cursor: result.continueCursor,
+          },
+        )
       } else {
         await ctx.runMutation(internal.migrations.completeMigration, {
           migrationId,
-        });
-        console.log(`Migration ${MIGRATION_NAME} completed`);
+        })
+        console.log(`Migration ${MIGRATION_NAME} completed`)
       }
     } catch (error) {
       await ctx.runMutation(internal.migrations.failMigration, {
         migrationId,
         error: String(error),
-      });
-      throw error;
+      })
+      throw error
     }
 
-    return null;
+    return null
   },
-});
+})
 ```
 
 ## Examples
@@ -619,8 +633,8 @@ export const run = internalMutation({
 
 ```typescript
 // convex/schema.ts
-import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
+import { defineSchema, defineTable } from 'convex/server'
+import { v } from 'convex/values'
 
 export default defineSchema({
   // Migration tracking
@@ -629,55 +643,57 @@ export default defineSchema({
     startedAt: v.number(),
     completedAt: v.optional(v.number()),
     status: v.union(
-      v.literal("running"),
-      v.literal("completed"),
-      v.literal("failed")
+      v.literal('running'),
+      v.literal('completed'),
+      v.literal('failed'),
     ),
     error: v.optional(v.string()),
     processed: v.number(),
-  }).index("by_name", ["name"]),
+  }).index('by_name', ['name']),
 
   // Users table with evolved schema
   users: defineTable({
     // Original fields
     name: v.string(),
     email: v.string(),
-    
+
     // Added in migration v1
     createdAt: v.optional(v.number()),
     updatedAt: v.optional(v.number()),
-    
+
     // Added in migration v2
     avatarUrl: v.optional(v.string()),
-    
+
     // Added in migration v3
-    settings: v.optional(v.object({
-      theme: v.string(),
-      notifications: v.boolean(),
-    })),
+    settings: v.optional(
+      v.object({
+        theme: v.string(),
+        notifications: v.boolean(),
+      }),
+    ),
   })
-    .index("by_email", ["email"])
-    .index("by_createdAt", ["createdAt"]),
+    .index('by_email', ['email'])
+    .index('by_createdAt', ['createdAt']),
 
   // Posts table with indexes for common queries
   posts: defineTable({
     title: v.string(),
     content: v.string(),
-    authorId: v.id("users"),
+    authorId: v.id('users'),
     status: v.union(
-      v.literal("draft"),
-      v.literal("published"),
-      v.literal("archived")
+      v.literal('draft'),
+      v.literal('published'),
+      v.literal('archived'),
     ),
     publishedAt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
-    .index("by_author", ["authorId"])
-    .index("by_status", ["status"])
-    .index("by_author_and_status", ["authorId", "status"])
-    .index("by_publishedAt", ["publishedAt"]),
-});
+    .index('by_author', ['authorId'])
+    .index('by_status', ['status'])
+    .index('by_author_and_status', ['authorId', 'status'])
+    .index('by_publishedAt', ['publishedAt']),
+})
 ```
 
 ## Best Practices

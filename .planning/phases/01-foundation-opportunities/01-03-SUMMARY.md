@@ -20,7 +20,12 @@ affects: [01-04, 02-profiles, 03-matching]
 # Tech tracking
 tech-stack:
   added: [algoliasearch, string-similarity-js]
-  patterns: [internal-action-for-external-apis, separate-node-actions-from-mutations, fuzzy-dedup-with-threshold]
+  patterns:
+    [
+      internal-action-for-external-apis,
+      separate-node-actions-from-mutations,
+      fuzzy-dedup-with-threshold,
+    ]
 
 key-files:
   created:
@@ -35,15 +40,15 @@ key-files:
     - bun.lock
 
 key-decisions:
-  - "Use internalAction for adapter functions to enable calling from sync orchestrator"
-  - "Separate Node.js actions from mutations (Convex requires mutations in non-Node runtime)"
-  - "Fuzzy match threshold 0.85 for titles, 0.8 for organizations"
-  - "Rate limiting: 1s between Algolia pages, 250ms between Airtable pages"
+  - 'Use internalAction for adapter functions to enable calling from sync orchestrator'
+  - 'Separate Node.js actions from mutations (Convex requires mutations in non-Node runtime)'
+  - 'Fuzzy match threshold 0.85 for titles, 0.8 for organizations'
+  - 'Rate limiting: 1s between Algolia pages, 250ms between Airtable pages'
 
 patterns-established:
-  - "Aggregation pattern: Node.js action fetches external API, returns normalized data"
-  - "Sync pattern: Parallel fetch sources, upsert with dedup, archive missing"
-  - "Dedup pattern: Check by sourceId first, then fuzzy match by org + title"
+  - 'Aggregation pattern: Node.js action fetches external API, returns normalized data'
+  - 'Sync pattern: Parallel fetch sources, upsert with dedup, archive missing'
+  - 'Dedup pattern: Check by sourceId first, then fuzzy match by org + title'
 
 # Metrics
 duration: 5min
@@ -63,6 +68,7 @@ completed: 2026-01-17
 - **Files created:** 6
 
 ## Accomplishments
+
 - 80K Hours adapter queries Algolia API for structured job data
 - aisafety.com adapter fetches from Airtable REST API
 - Sync orchestration fetches both sources in parallel
@@ -80,6 +86,7 @@ Each task was committed atomically:
 4. **Task 4: Set up cron job for daily sync** - `a7d0c7f` (feat)
 
 ## Files Created/Modified
+
 - `convex/aggregation/eightyK.ts` - 80K Hours Algolia adapter with pagination and normalization
 - `convex/aggregation/aisafety.ts` - aisafety.com Airtable adapter with pagination and normalization
 - `convex/aggregation/dedup.ts` - Fuzzy string matching for title and organization
@@ -88,6 +95,7 @@ Each task was committed atomically:
 - `convex/crons.ts` - Daily sync job definition
 
 ## Decisions Made
+
 - **Convex ESM import**: Used `import { algoliasearch } from "algoliasearch"` (not default import) for ESM compatibility
 - **Action/Mutation separation**: Convex Node.js actions cannot contain mutations in same file, so syncMutations.ts is separate from sync.ts
 - **Internal actions**: Changed adapters from public `action` to `internalAction` so sync.ts can call them
@@ -97,6 +105,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Fixed Algolia ESM import**
+
 - **Found during:** Task 1 (80K Hours adapter)
 - **Issue:** `import algoliasearch from "algoliasearch"` failed with "No matching export for default"
 - **Fix:** Changed to named import `import { algoliasearch } from "algoliasearch"`
@@ -105,6 +114,7 @@ Each task was committed atomically:
 - **Committed in:** eeda19b
 
 **2. [Rule 3 - Blocking] Separated Node.js actions from mutations**
+
 - **Found during:** Task 3 (Sync orchestration)
 - **Issue:** Convex error "Only actions can be defined in Node.js" when mutations were in same file as actions
 - **Fix:** Split mutations into syncMutations.ts, kept actions in sync.ts with "use node"
@@ -113,6 +123,7 @@ Each task was committed atomically:
 - **Committed in:** 4cc4354
 
 **3. [Rule 3 - Blocking] Changed adapters to internalAction**
+
 - **Found during:** Task 3 (Sync orchestration)
 - **Issue:** TypeScript error "Property 'eightyK' does not exist on type" because public actions not in internal API
 - **Fix:** Changed adapters from `action` to `internalAction` so they appear in `internal.aggregation.*`
@@ -126,6 +137,7 @@ Each task was committed atomically:
 **Impact on plan:** All fixes necessary for Convex runtime compatibility. No scope creep.
 
 ## Issues Encountered
+
 None beyond the blocking issues documented above.
 
 ## User Setup Required
@@ -148,11 +160,13 @@ AISAFETY_AIRTABLE_TABLE_NAME=Jobs
 **Verification:** Run `aggregation.sync.triggerSync` from Convex dashboard to test sync manually.
 
 ## Next Phase Readiness
+
 - Aggregation infrastructure complete
 - Ready for Phase 2 (User Profiles) - no blockers
 - Credentials needed from 80K Hours page source and aisafety.com team before sync will fetch data
 - Manual trigger available for testing once credentials are configured
 
 ---
-*Phase: 01-foundation-opportunities*
-*Completed: 2026-01-17*
+
+_Phase: 01-foundation-opportunities_
+_Completed: 2026-01-17_

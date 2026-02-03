@@ -1,58 +1,58 @@
-import { useMutation } from "convex/react";
-import { format } from "date-fns";
-import { Calendar, ExternalLink, MapPin, Video } from "lucide-react";
-import { useEffect, useRef } from "react";
-import { api } from "../../../convex/_generated/api";
-import type { Id } from "../../../convex/_generated/dataModel";
-import { Badge } from "~/components/ui/badge";
-import { Card } from "~/components/ui/card";
+import { useMutation } from 'convex/react'
+import { format } from 'date-fns'
+import { Calendar, ExternalLink, MapPin, Video } from 'lucide-react'
+import { useEffect, useRef } from 'react'
+import { api } from '../../../convex/_generated/api'
+import type { Id } from '../../../convex/_generated/dataModel'
+import { Badge } from '~/components/ui/badge'
+import { Card } from '~/components/ui/card'
 
 export interface EventCardProps {
   event: {
-    _id: Id<"events">;
-    title: string;
-    startAt: number;
-    endAt?: number;
-    location?: string;
-    isVirtual: boolean;
-    url: string;
-    coverUrl?: string;
+    _id: Id<'events'>
+    title: string
+    startAt: number
+    endAt?: number
+    location?: string
+    isVirtual: boolean
+    url: string
+    coverUrl?: string
     org: {
-      name: string;
-      slug?: string;
-      logoUrl?: string;
-    };
-  };
+      name: string
+      slug?: string
+      logoUrl?: string
+    }
+  }
 }
 
 export function EventCard({ event }: EventCardProps) {
-  const cardRef = useRef<HTMLAnchorElement>(null);
-  const hasRecorded = useRef(false);
-  const recordView = useMutation(api.notifications.mutations.recordEventView);
+  const cardRef = useRef<HTMLAnchorElement>(null)
+  const hasRecorded = useRef(false)
+  const recordView = useMutation(api.notifications.mutations.recordEventView)
 
   // Track event view when card becomes visible
   useEffect(() => {
-    const currentRef = cardRef.current;
-    if (!currentRef) return;
+    const currentRef = cardRef.current
+    if (!currentRef) return
 
     const observer = new IntersectionObserver(
       (entries) => {
-        const entry = entries[0];
+        const entry = entries[0]
         if (entry.isIntersecting && !hasRecorded.current) {
-          hasRecorded.current = true;
-          recordView({ eventId: event._id });
+          hasRecorded.current = true
+          recordView({ eventId: event._id })
         }
       },
-      { threshold: 0.5 }
-    );
+      { threshold: 0.5 },
+    )
 
-    observer.observe(currentRef);
+    observer.observe(currentRef)
 
-    return () => observer.disconnect();
-  }, [event._id, recordView]);
+    return () => observer.disconnect()
+  }, [event._id, recordView])
 
   // Format: "Fri, Jan 24 at 6:00 PM"
-  const formattedDate = format(event.startAt, "EEE, MMM d 'at' h:mm a");
+  const formattedDate = format(event.startAt, "EEE, MMM d 'at' h:mm a")
 
   return (
     <a
@@ -87,7 +87,9 @@ export function EventCard({ event }: EventCardProps) {
 
           {/* Content */}
           <div className="flex-1 min-w-0">
-            <h4 className="font-medium text-foreground truncate">{event.title}</h4>
+            <h4 className="font-medium text-foreground truncate">
+              {event.title}
+            </h4>
 
             {/* Date/time */}
             <p className="text-sm text-slate-600 mt-1">{formattedDate}</p>
@@ -116,5 +118,5 @@ export function EventCard({ event }: EventCardProps) {
         </div>
       </Card>
     </a>
-  );
+  )
 }

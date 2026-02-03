@@ -1,26 +1,31 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { AuthLoading, Authenticated, Unauthenticated, useQuery } from "convex/react";
-import { Calendar, MapPin, Settings } from "lucide-react";
-import { api } from "../../convex/_generated/api";
-import { AnimatedCard } from "~/components/animation/AnimatedCard";
-import { AuthHeader } from "~/components/layout/auth-header";
-import { GradientBg } from "~/components/layout/GradientBg";
-import { MobileShell } from "~/components/layout/mobile-shell";
-import { EventCard } from "~/components/events/EventCard";
-import { OrgCarousel } from "~/components/org/OrgCarousel";
-import { useIsMobile } from "~/hooks/use-media-query";
-import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
-import { Spinner } from "~/components/ui/spinner";
+import { Link, createFileRoute } from '@tanstack/react-router'
+import {
+  AuthLoading,
+  Authenticated,
+  Unauthenticated,
+  useQuery,
+} from 'convex/react'
+import { Calendar, MapPin, Settings } from 'lucide-react'
+import { api } from '../../convex/_generated/api'
+import { AnimatedCard } from '~/components/animation/AnimatedCard'
+import { AuthHeader } from '~/components/layout/auth-header'
+import { GradientBg } from '~/components/layout/GradientBg'
+import { MobileShell } from '~/components/layout/mobile-shell'
+import { EventCard } from '~/components/events/EventCard'
+import { OrgCarousel } from '~/components/org/OrgCarousel'
+import { useIsMobile } from '~/hooks/use-media-query'
+import { Button } from '~/components/ui/button'
+import { Card } from '~/components/ui/card'
+import { Spinner } from '~/components/ui/spinner'
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute('/')({
   component: Home,
-});
+})
 
 function Home() {
-  const isMobile = useIsMobile();
-  const profile = useQuery(api.profiles.getOrCreateProfile);
-  const user = profile ? { name: profile.name || "User" } : null;
+  const isMobile = useIsMobile()
+  const profile = useQuery(api.profiles.getOrCreateProfile)
+  const user = profile ? { name: profile.name || 'User' } : null
 
   const loadingContent = (
     <main className="container mx-auto px-4 py-16">
@@ -28,13 +33,11 @@ function Home() {
         <Spinner size="lg" />
       </div>
     </main>
-  );
+  )
 
   const pageContent = (
     <>
-      <AuthLoading>
-        {loadingContent}
-      </AuthLoading>
+      <AuthLoading>{loadingContent}</AuthLoading>
       <Unauthenticated>
         <LandingPage />
       </Unauthenticated>
@@ -42,16 +45,14 @@ function Home() {
         <Dashboard />
       </Authenticated>
     </>
-  );
+  )
 
   if (isMobile) {
     return (
       <MobileShell user={user}>
-        <GradientBg variant="subtle">
-          {pageContent}
-        </GradientBg>
+        <GradientBg variant="subtle">{pageContent}</GradientBg>
       </MobileShell>
-    );
+    )
   }
 
   return (
@@ -59,7 +60,7 @@ function Home() {
       <AuthHeader />
       {pageContent}
     </GradientBg>
-  );
+  )
 }
 
 function LandingPage() {
@@ -81,29 +82,29 @@ function LandingPage() {
         </Button>
       </div>
     </main>
-  );
+  )
 }
 
 function Dashboard() {
-  const suggestedOrgs = useQuery(api.orgs.discovery.getSuggestedOrgs);
-  const locationPrivacy = useQuery(api.profiles.getLocationPrivacy);
-  const dashboardEvents = useQuery(api.events.queries.getDashboardEvents);
+  const suggestedOrgs = useQuery(api.orgs.discovery.getSuggestedOrgs)
+  const locationPrivacy = useQuery(api.profiles.getLocationPrivacy)
+  const dashboardEvents = useQuery(api.events.queries.getDashboardEvents)
 
   // Determine if user has location discovery enabled
-  const locationEnabled = locationPrivacy?.locationDiscoverable ?? false;
+  const locationEnabled = locationPrivacy?.locationDiscoverable ?? false
 
   // Group user's org events by org for display
   const eventsByOrg = dashboardEvents?.userOrgEvents.reduce(
     (acc, event) => {
-      const orgName = event.org.name;
+      const orgName = event.org.name
       if (!acc[orgName]) {
-        acc[orgName] = [];
+        acc[orgName] = []
       }
-      acc[orgName].push(event);
-      return acc;
+      acc[orgName].push(event)
+      return acc
     },
-    {} as Record<string, typeof dashboardEvents.userOrgEvents | undefined>
-  );
+    {} as Record<string, typeof dashboardEvents.userOrgEvents | undefined>,
+  )
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -132,7 +133,9 @@ function Dashboard() {
         <h2 className="text-xl font-display font-semibold text-foreground mb-2">
           Upcoming Events
         </h2>
-        <p className="text-muted-foreground mb-4">Events from your organizations</p>
+        <p className="text-muted-foreground mb-4">
+          Events from your organizations
+        </p>
 
         {dashboardEvents === undefined ? (
           <div className="flex items-center justify-center py-8">
@@ -143,7 +146,7 @@ function Dashboard() {
           <div className="space-y-6">
             {eventsByOrg &&
               Object.entries(eventsByOrg).map(([orgName, events]) => {
-                if (!events) return null;
+                if (!events) return null
                 return (
                   <div key={orgName}>
                     <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wide mb-3">
@@ -162,7 +165,7 @@ function Dashboard() {
                       )}
                     </div>
                   </div>
-                );
+                )
               })}
           </div>
         ) : dashboardEvents.otherOrgEvents.length > 0 ? (
@@ -170,13 +173,13 @@ function Dashboard() {
           <div className="space-y-4">
             <Card className="p-4 text-center bg-slate-50">
               <p className="text-slate-600 text-sm">
-                No events from your organizations.{" "}
+                No events from your organizations.{' '}
                 <Link
                   to="/orgs"
                   className="text-primary hover:underline font-medium"
                 >
                   Join organizations
-                </Link>{" "}
+                </Link>{' '}
                 to see their events here.
               </p>
             </Card>
@@ -185,11 +188,13 @@ function Dashboard() {
                 Discover Events
               </h3>
               <div className="space-y-3">
-                {dashboardEvents.otherOrgEvents.slice(0, 3).map((event, index) => (
-                  <AnimatedCard key={event._id} index={index}>
-                    <EventCard event={event} />
-                  </AnimatedCard>
-                ))}
+                {dashboardEvents.otherOrgEvents
+                  .slice(0, 3)
+                  .map((event, index) => (
+                    <AnimatedCard key={event._id} index={index}>
+                      <EventCard event={event} />
+                    </AnimatedCard>
+                  ))}
               </div>
             </div>
           </div>
@@ -216,7 +221,7 @@ function Dashboard() {
         </Button>
       </section>
     </main>
-  );
+  )
 }
 
 function EmptyStatePrompt({ locationEnabled }: { locationEnabled: boolean }) {
@@ -231,10 +236,11 @@ function EmptyStatePrompt({ locationEnabled }: { locationEnabled: boolean }) {
           No organizations near you yet
         </h3>
         <p className="text-muted-foreground text-sm">
-          We are still growing our network. Check back later for organizations in your area.
+          We are still growing our network. Check back later for organizations
+          in your area.
         </p>
       </Card>
-    );
+    )
   }
 
   // User has not enabled location discovery
@@ -257,7 +263,7 @@ function EmptyStatePrompt({ locationEnabled }: { locationEnabled: boolean }) {
         </Link>
       </Button>
     </Card>
-  );
+  )
 }
 
 function EventsEmptyState() {
@@ -276,5 +282,5 @@ function EventsEmptyState() {
         <Link to="/orgs">Browse Organizations</Link>
       </Button>
     </Card>
-  );
+  )
 }

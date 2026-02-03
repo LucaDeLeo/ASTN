@@ -1,11 +1,11 @@
-"use node";
+'use node'
 
-import { v } from "convex/values";
-import Anthropic from "@anthropic-ai/sdk";
-import { action } from "../_generated/server";
-import { internal } from "../_generated/api";
-import { requireAuth } from "../lib/auth";
-import { FIELD_LIMITS } from "../lib/limits";
+import { v } from 'convex/values'
+import Anthropic from '@anthropic-ai/sdk'
+import { action } from '../_generated/server'
+import { internal } from '../_generated/api'
+import { requireAuth } from '../lib/auth'
+import { FIELD_LIMITS } from '../lib/limits'
 
 // Career coach system prompt
 const CAREER_COACH_PROMPT = `You are a friendly career coach helping someone build their AI safety career profile.
@@ -33,100 +33,108 @@ say something like "I think I have a good picture of your background now! Let me
 summarize what I've learned and we can update your profile."
 
 Current profile context:
-{profileContext}`;
+{profileContext}`
 
 // Message type from enrichmentMessages table
 interface EnrichmentMessage {
-  _id: string;
-  _creationTime: number;
-  profileId: string;
-  role: "user" | "assistant";
-  content: string;
-  createdAt: number;
+  _id: string
+  _creationTime: number
+  profileId: string
+  role: 'user' | 'assistant'
+  content: string
+  createdAt: number
 }
 
 // Send message action - calls Claude and persists messages
 export const sendMessage = action({
   args: {
-    profileId: v.id("profiles"),
+    profileId: v.id('profiles'),
     message: v.string(),
   },
   handler: async (
     ctx,
-    { profileId, message }
+    { profileId, message },
   ): Promise<{ message: string; shouldExtract: boolean }> => {
     // Auth check
-    const userId = await requireAuth(ctx);
+    const userId = await requireAuth(ctx)
 
     // Get existing conversation (from queries.ts)
     const messages: Array<EnrichmentMessage> = await ctx.runQuery(
       internal.enrichment.queries.getMessages,
-      { profileId }
-    );
+      { profileId },
+    )
 
     // Get profile for context (from queries.ts)
     const profile = await ctx.runQuery(
       internal.enrichment.queries.getProfileInternal,
-      { profileId }
-    );
+      { profileId },
+    )
 
     // Ownership check
     if (!profile || profile.userId !== userId) {
-      throw new Error("Not authorized");
+      throw new Error('Not authorized')
     }
 
     // Input length limit
     if (message.length > FIELD_LIMITS.chatMessage) {
-      throw new Error("Content too long to process");
+      throw new Error('Content too long to process')
     }
 
     // Build context string from profile
-    const contextParts: Array<string> = [];
-    if (profile.name) contextParts.push(`Name: ${profile.name}`);
-    if (profile.location) contextParts.push(`Location: ${profile.location}`);
-    if (profile.headline) contextParts.push(`Headline: ${profile.headline}`);
+    const contextParts: Array<string> = []
+    if (profile.name) contextParts.push(`Name: ${profile.name}`)
+    if (profile.location) contextParts.push(`Location: ${profile.location}`)
+    if (profile.headline) contextParts.push(`Headline: ${profile.headline}`)
     if (profile.skills && profile.skills.length > 0) {
-      contextParts.push(`Skills: ${profile.skills.join(", ")}`);
+      contextParts.push(`Skills: ${profile.skills.join(', ')}`)
     }
     if (profile.careerGoals) {
-      contextParts.push(`Career Goals: ${profile.careerGoals}`);
+      contextParts.push(`Career Goals: ${profile.careerGoals}`)
     }
     if (profile.aiSafetyInterests && profile.aiSafetyInterests.length > 0) {
       contextParts.push(
-        `AI Safety Interests: ${profile.aiSafetyInterests.join(", ")}`
-      );
+        `AI Safety Interests: ${profile.aiSafetyInterests.join(', ')}`,
+      )
     }
     // Include work history summary
     if (profile.workHistory && profile.workHistory.length > 0) {
       const workSummary = profile.workHistory
-        .map((w: { title: string; organization: string }) => `${w.title} at ${w.organization}`)
-        .join("; ");
-      contextParts.push(`Work History: ${workSummary}`);
+        .map(
+          (w: { title: string; organization: string }) =>
+            `${w.title} at ${w.organization}`,
+        )
+        .join('; ')
+      contextParts.push(`Work History: ${workSummary}`)
     }
     // Include education summary
     if (profile.education && profile.education.length > 0) {
       const eduSummary = profile.education
         .map((e: { degree?: string; field?: string; institution: string }) =>
-          e.degree ? `${e.degree}${e.field ? ` in ${e.field}` : ""} at ${e.institution}` : e.institution
+          e.degree
+            ? `${e.degree}${e.field ? ` in ${e.field}` : ''} at ${e.institution}`
+            : e.institution,
         )
-        .join("; ");
-      contextParts.push(`Education: ${eduSummary}`);
+        .join('; ')
+      contextParts.push(`Education: ${eduSummary}`)
     }
 
     let profileContext =
-      contextParts.length > 0 ? contextParts.join("\n") : "New profile (no data yet)";
+      contextParts.length > 0
+        ? contextParts.join('\n')
+        : 'New profile (no data yet)'
 
     // Truncate context if profile data is abnormally large
     if (profileContext.length > 50000) {
-      profileContext = profileContext.slice(0, 50000) + "\n[Profile context truncated]";
+      profileContext =
+        profileContext.slice(0, 50000) + '\n[Profile context truncated]'
     }
 
     // Save user message first
     await ctx.runMutation(internal.enrichment.queries.saveMessage, {
       profileId,
-      role: "user",
+      role: 'user',
       content: message,
-    });
+    })
 
     // Build messages array for Claude API
     const claudeMessages = [
@@ -134,41 +142,44 @@ export const sendMessage = action({
         role: m.role,
         content: m.content,
       })),
-      { role: "user" as const, content: message },
-    ];
+      { role: 'user' as const, content: message },
+    ]
 
     // Call Claude Haiku
-    const anthropic = new Anthropic();
+    const anthropic = new Anthropic()
     const response = await anthropic.messages.create({
-      model: "claude-haiku-4-5-20251001",
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 500,
-      system: CAREER_COACH_PROMPT.replace("{profileContext}", `<profile_data>\n${profileContext}\n</profile_data>`),
+      system: CAREER_COACH_PROMPT.replace(
+        '{profileContext}',
+        `<profile_data>\n${profileContext}\n</profile_data>`,
+      ),
       messages: claudeMessages,
-    });
+    })
 
     // Extract text response
     const assistantMessage =
-      response.content[0].type === "text" ? response.content[0].text : "";
+      response.content[0].type === 'text' ? response.content[0].text : ''
 
     // Save assistant message
     await ctx.runMutation(internal.enrichment.queries.saveMessage, {
       profileId,
-      role: "assistant",
+      role: 'assistant',
       content: assistantMessage,
-    });
+    })
 
     // Check if assistant is ready to extract (signaling summarization)
-    const lowerMessage = assistantMessage.toLowerCase();
+    const lowerMessage = assistantMessage.toLowerCase()
     const shouldExtract =
-      lowerMessage.includes("summarize") ||
-      lowerMessage.includes("update your profile") ||
-      lowerMessage.includes("good picture") ||
+      lowerMessage.includes('summarize') ||
+      lowerMessage.includes('update your profile') ||
+      lowerMessage.includes('good picture') ||
       lowerMessage.includes("what i've learned") ||
-      lowerMessage.includes("what i learned");
+      lowerMessage.includes('what i learned')
 
     return {
       message: assistantMessage,
       shouldExtract,
-    };
+    }
   },
-});
+})

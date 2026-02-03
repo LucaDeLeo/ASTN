@@ -2,7 +2,8 @@
 phase: 17-foundation-tokens
 plan: 02
 subsystem: ui
-tags: [css, tailwind, animation, fonts, preload, reduced-motion, easing, keyframes]
+tags:
+  [css, tailwind, animation, fonts, preload, reduced-motion, easing, keyframes]
 
 # Dependency graph
 requires:
@@ -20,10 +21,10 @@ affects: [18-page-layouts, 19-components, 20-polish]
 tech-stack:
   added: []
   patterns:
-    - "Font preloading via woff2?url imports"
-    - "Spring easing with slight overshoot for organic motion"
-    - "Reduced motion media query preserves fade animations"
-    - "@theme inline for Tailwind animation utility generation"
+    - 'Font preloading via woff2?url imports'
+    - 'Spring easing with slight overshoot for organic motion'
+    - 'Reduced motion media query preserves fade animations'
+    - '@theme inline for Tailwind animation utility generation'
 
 key-files:
   created: []
@@ -32,14 +33,14 @@ key-files:
     - src/routes/__root.tsx
 
 key-decisions:
-  - "Spring easing uses 1.56 y2 control point for subtle overshoot"
-  - "8px translateY offset for slide animations (subtle but intentional)"
-  - "Preload links positioned before stylesheet for browser prioritization"
+  - 'Spring easing uses 1.56 y2 control point for subtle overshoot'
+  - '8px translateY offset for slide animations (subtle but intentional)'
+  - 'Preload links positioned before stylesheet for browser prioritization'
 
 patterns-established:
   - "Font preloads use crossOrigin: 'anonymous' for CORS compliance"
-  - "Animation keyframes defined inside @theme inline block"
-  - "Reduced motion: disable all motion except fade for basic feedback"
+  - 'Animation keyframes defined inside @theme inline block'
+  - 'Reduced motion: disable all motion except fade for basic feedback'
 
 # Metrics
 duration: 4min
@@ -56,7 +57,7 @@ completed: 2026-01-20
 - **Started:** 2026-01-20T02:10:00Z
 - **Completed:** 2026-01-20T02:14:00Z
 - **Tasks:** 2
-- **Files modified:** 2 (src/styles/app.css, src/routes/__root.tsx)
+- **Files modified:** 2 (src/styles/app.css, src/routes/\_\_root.tsx)
 
 ## Accomplishments
 
@@ -71,7 +72,7 @@ completed: 2026-01-20
 Each task was committed atomically:
 
 1. **Task 1: Define animation tokens and keyframes** - `a9206f4` (feat)
-2. **Task 2: Add font preloading to __root.tsx** - `f64c374` (feat)
+2. **Task 2: Add font preloading to \_\_root.tsx** - `f64c374` (feat)
 
 ## Files Created/Modified
 
@@ -109,5 +110,6 @@ None - no external service configuration required.
 - Transform tokens (`--scale-press`, `--scale-hover`) ready for button interactions
 
 ---
-*Phase: 17-foundation-tokens*
-*Completed: 2026-01-20*
+
+_Phase: 17-foundation-tokens_
+_Completed: 2026-01-20_

@@ -1,5 +1,5 @@
-import { Link } from "@tanstack/react-router";
-import { Button } from "~/components/ui/button";
+import { Link } from '@tanstack/react-router'
+import { Button } from '~/components/ui/button'
 
 export function PublicHeader() {
   return (
@@ -21,5 +21,5 @@ export function PublicHeader() {
         </nav>
       </div>
     </header>
-  );
+  )
 }

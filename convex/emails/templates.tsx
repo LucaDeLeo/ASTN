@@ -1,4 +1,4 @@
-"use node";
+'use node'
 
 import {
   Body,
@@ -12,35 +12,35 @@ import {
   Section,
   Tailwind,
   Text,
-} from "@react-email/components";
-import { render } from "@react-email/render";
-import { format } from "date-fns";
+} from '@react-email/components'
+import { render } from '@react-email/render'
+import { format } from 'date-fns'
 
 // ASTN brand color (coral accent)
-const CORAL = "#FF6B4A";
+const CORAL = '#FF6B4A'
 
 // ===== Match Alert Email =====
 
 interface MatchAlertProps {
-  userName: string;
+  userName: string
   matches: Array<{
-    title: string;
-    org: string;
-    tier: string;
-    explanation: string;
-    recommendations: Array<string>;
-  }>;
+    title: string
+    org: string
+    tier: string
+    explanation: string
+    recommendations: Array<string>
+  }>
 }
 
 export function MatchAlertEmail({ userName, matches }: MatchAlertProps) {
-  const displayMatches = matches.slice(0, 5);
-  const hasMore = matches.length > 5;
+  const displayMatches = matches.slice(0, 5)
+  const hasMore = matches.length > 5
 
   return (
     <Html>
       <Head />
       <Preview>
-        {`${matches.length} new great-fit ${matches.length === 1 ? "opportunity" : "opportunities"} found for you on ASTN`}
+        {`${matches.length} new great-fit ${matches.length === 1 ? 'opportunity' : 'opportunities'} found for you on ASTN`}
       </Preview>
       <Tailwind>
         <Body className="bg-gray-100 font-sans">
@@ -61,8 +61,8 @@ export function MatchAlertEmail({ userName, matches }: MatchAlertProps) {
               Hi {userName},
             </Text>
             <Text className="text-gray-600 mb-6">
-              We found {matches.length} new great-fit{" "}
-              {matches.length === 1 ? "opportunity" : "opportunities"} that
+              We found {matches.length} new great-fit{' '}
+              {matches.length === 1 ? 'opportunity' : 'opportunities'} that
               match your profile and goals:
             </Text>
 
@@ -133,20 +133,20 @@ export function MatchAlertEmail({ userName, matches }: MatchAlertProps) {
         </Body>
       </Tailwind>
     </Html>
-  );
+  )
 }
 
 // ===== Weekly Digest Email =====
 
 interface WeeklyDigestProps {
-  userName: string;
-  newMatchesCount: number;
+  userName: string
+  newMatchesCount: number
   topOpportunities: Array<{
-    title: string;
-    org: string;
-    tier: string;
-  }>;
-  profileNudges: Array<string>;
+    title: string
+    org: string
+    tier: string
+  }>
+  profileNudges: Array<string>
 }
 
 export function WeeklyDigestEmail({
@@ -193,8 +193,8 @@ export function WeeklyDigestEmail({
               {newMatchesCount > 0 ? (
                 <>
                   <Text className="text-gray-700 mb-3">
-                    You have {newMatchesCount} new{" "}
-                    {newMatchesCount === 1 ? "match" : "matches"} waiting for
+                    You have {newMatchesCount} new{' '}
+                    {newMatchesCount === 1 ? 'match' : 'matches'} waiting for
                     you!
                   </Text>
                   {topOpportunities.length > 0 && (
@@ -277,35 +277,37 @@ export function WeeklyDigestEmail({
         </Body>
       </Tailwind>
     </Html>
-  );
+  )
 }
 
 // ===== Render Functions =====
 
-export async function renderMatchAlert(props: MatchAlertProps): Promise<string> {
-  return await render(<MatchAlertEmail {...props} />);
+export async function renderMatchAlert(
+  props: MatchAlertProps,
+): Promise<string> {
+  return await render(<MatchAlertEmail {...props} />)
 }
 
 export async function renderWeeklyDigest(
-  props: WeeklyDigestProps
+  props: WeeklyDigestProps,
 ): Promise<string> {
-  return await render(<WeeklyDigestEmail {...props} />);
+  return await render(<WeeklyDigestEmail {...props} />)
 }
 
 // ===== Event Digest Email =====
 
 interface EventDigestProps {
-  userName: string;
-  frequency: "daily" | "weekly";
+  userName: string
+  frequency: 'daily' | 'weekly'
   events: Array<{
-    title: string;
-    orgName: string;
-    startAt: number;
-    location?: string;
-    isVirtual: boolean;
-    url: string;
-    description?: string;
-  }>;
+    title: string
+    orgName: string
+    startAt: number
+    location?: string
+    isVirtual: boolean
+    url: string
+    description?: string
+  }>
 }
 
 export function EventDigestEmail({
@@ -314,27 +316,27 @@ export function EventDigestEmail({
   events,
 }: EventDigestProps) {
   // Group events by org using Map to avoid lint issues with Record indexing
-  const eventsByOrgMap = new Map<string, typeof events>();
+  const eventsByOrgMap = new Map<string, typeof events>()
   for (const event of events) {
-    const existing = eventsByOrgMap.get(event.orgName);
+    const existing = eventsByOrgMap.get(event.orgName)
     if (existing) {
-      existing.push(event);
+      existing.push(event)
     } else {
-      eventsByOrgMap.set(event.orgName, [event]);
+      eventsByOrgMap.set(event.orgName, [event])
     }
   }
-  const eventsByOrg = Object.fromEntries(eventsByOrgMap.entries());
+  const eventsByOrg = Object.fromEntries(eventsByOrgMap.entries())
 
   const introText =
-    frequency === "daily"
-      ? "Here are upcoming events from your organizations:"
-      : "Here's your weekly event roundup:";
+    frequency === 'daily'
+      ? 'Here are upcoming events from your organizations:'
+      : "Here's your weekly event roundup:"
 
   return (
     <Html>
       <Head />
       <Preview>
-        {frequency === "daily"
+        {frequency === 'daily'
           ? `${events.length} upcoming events from your organizations`
           : `Your weekly event roundup - ${events.length} upcoming events`}
       </Preview>
@@ -360,8 +362,8 @@ export function EventDigestEmail({
 
             {/* Events grouped by org */}
             {Object.entries(eventsByOrg).map(([orgName, orgEvents]) => {
-              const displayEvents = orgEvents.slice(0, 5);
-              const hasMore = orgEvents.length > 5;
+              const displayEvents = orgEvents.slice(0, 5)
+              const hasMore = orgEvents.length > 5
 
               return (
                 <Section key={orgName} className="mb-6">
@@ -381,15 +383,18 @@ export function EventDigestEmail({
                         {event.title}
                       </Text>
                       <Text className="text-gray-600 text-sm mb-1">
-                        {format(new Date(event.startAt), "EEE, MMM d 'at' h:mm a")}
+                        {format(
+                          new Date(event.startAt),
+                          "EEE, MMM d 'at' h:mm a",
+                        )}
                       </Text>
                       <Text className="text-gray-500 text-sm mb-2">
-                        {event.isVirtual ? "Online" : event.location || "TBD"}
+                        {event.isVirtual ? 'Online' : event.location || 'TBD'}
                       </Text>
                       {event.description && (
                         <Text className="text-gray-600 text-sm mb-3">
                           {event.description.slice(0, 100)}
-                          {event.description.length > 100 ? "..." : ""}
+                          {event.description.length > 100 ? '...' : ''}
                         </Text>
                       )}
                       <Button
@@ -407,7 +412,7 @@ export function EventDigestEmail({
                     </Text>
                   )}
                 </Section>
-              );
+              )
             })}
 
             <Hr className="my-6 border-gray-200" />
@@ -426,11 +431,11 @@ export function EventDigestEmail({
         </Body>
       </Tailwind>
     </Html>
-  );
+  )
 }
 
 export async function renderEventDigest(
-  props: EventDigestProps
+  props: EventDigestProps,
 ): Promise<string> {
-  return await render(<EventDigestEmail {...props} />);
+  return await render(<EventDigestEmail {...props} />)
 }

@@ -1,29 +1,35 @@
-import { useMutation, useQuery } from "convex/react";
-import { MapPin } from "lucide-react";
-import { toast } from "sonner";
-import { api } from "../../../convex/_generated/api";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Switch } from "~/components/ui/switch";
-import { Label } from "~/components/ui/label";
-import { Spinner } from "~/components/ui/spinner";
+import { useMutation, useQuery } from 'convex/react'
+import { MapPin } from 'lucide-react'
+import { toast } from 'sonner'
+import { api } from '../../../convex/_generated/api'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '~/components/ui/card'
+import { Switch } from '~/components/ui/switch'
+import { Label } from '~/components/ui/label'
+import { Spinner } from '~/components/ui/spinner'
 
 export function LocationPrivacyToggle() {
-  const locationPrivacy = useQuery(api.profiles.getLocationPrivacy);
-  const updateLocationPrivacy = useMutation(api.profiles.updateLocationPrivacy);
+  const locationPrivacy = useQuery(api.profiles.getLocationPrivacy)
+  const updateLocationPrivacy = useMutation(api.profiles.updateLocationPrivacy)
 
   const handleToggle = async (checked: boolean) => {
     try {
-      await updateLocationPrivacy({ locationDiscoverable: checked });
+      await updateLocationPrivacy({ locationDiscoverable: checked })
       toast.success(
         checked
-          ? "Location-based suggestions enabled"
-          : "Location-based suggestions disabled"
-      );
+          ? 'Location-based suggestions enabled'
+          : 'Location-based suggestions disabled',
+      )
     } catch (error) {
-      toast.error("Failed to update location privacy setting");
-      console.error("Failed to update location privacy:", error);
+      toast.error('Failed to update location privacy setting')
+      console.error('Failed to update location privacy:', error)
     }
-  };
+  }
 
   // Show loading state
   if (locationPrivacy === undefined) {
@@ -33,10 +39,10 @@ export function LocationPrivacyToggle() {
           <Spinner />
         </CardContent>
       </Card>
-    );
+    )
   }
 
-  const locationDiscoverable = locationPrivacy?.locationDiscoverable ?? false;
+  const locationDiscoverable = locationPrivacy?.locationDiscoverable ?? false
 
   return (
     <Card className="max-w-2xl">
@@ -82,5 +88,5 @@ export function LocationPrivacyToggle() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

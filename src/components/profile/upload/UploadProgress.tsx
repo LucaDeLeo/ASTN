@@ -1,9 +1,9 @@
-import { cn } from "~/lib/utils";
+import { cn } from '~/lib/utils'
 
 interface UploadProgressProps {
-  progress: number; // 0-100
-  status: "uploading" | "processing";
-  fileName?: string;
+  progress: number // 0-100
+  status: 'uploading' | 'processing'
+  fileName?: string
 }
 
 /**
@@ -21,15 +21,15 @@ export function UploadProgress({
   fileName,
 }: UploadProgressProps) {
   // Clamp progress to valid range
-  const clampedProgress = Math.min(100, Math.max(0, progress));
+  const clampedProgress = Math.min(100, Math.max(0, progress))
 
   // Status text based on current state
   const statusText =
-    status === "uploading"
+    status === 'uploading'
       ? fileName
         ? `Uploading ${fileName}...`
-        : "Uploading..."
-      : "Analyzing your resume...";
+        : 'Uploading...'
+      : 'Analyzing your resume...'
 
   return (
     <div className="w-full space-y-2">
@@ -37,8 +37,8 @@ export function UploadProgress({
       <div className="flex items-center justify-between text-sm">
         <span
           className={cn(
-            "text-muted-foreground",
-            status === "processing" && "animate-pulse-processing"
+            'text-muted-foreground',
+            status === 'processing' && 'animate-pulse-processing',
           )}
         >
           {statusText}
@@ -53,9 +53,9 @@ export function UploadProgress({
         {/* Progress bar fill */}
         <div
           className={cn(
-            "h-full rounded-full transition-all duration-500 ease-out",
-            status === "uploading" && "bg-primary",
-            status === "processing" && "bg-primary animate-pulse-processing"
+            'h-full rounded-full transition-all duration-500 ease-out',
+            status === 'uploading' && 'bg-primary',
+            status === 'processing' && 'bg-primary animate-pulse-processing',
           )}
           style={{ width: `${clampedProgress}%` }}
           role="progressbar"
@@ -65,5 +65,5 @@ export function UploadProgress({
         />
       </div>
     </div>
-  );
+  )
 }

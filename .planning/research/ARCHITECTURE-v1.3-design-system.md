@@ -11,6 +11,7 @@
 This document defines the architecture for systematically overhauling ASTN's visual design. The approach leverages Tailwind v4's CSS-first configuration with the `@theme` directive, extends shadcn/ui components through composition, and establishes a layered CSS architecture for design tokens, typography, and animation utilities.
 
 **Key architectural decisions:**
+
 1. **Tokens via `@theme` directive** - Not a separate tokens file, but inline in `app.css`
 2. **Fonts via Fontsource** - Self-hosted variable fonts with preload strategy
 3. **Animations via CSS keyframes** - Extended in `@theme`, supplemented by tw-animate-css
@@ -138,11 +139,21 @@ src/
   }
 
   /* Staggered delay utilities */
-  .stagger-1 { animation-delay: 50ms; }
-  .stagger-2 { animation-delay: 100ms; }
-  .stagger-3 { animation-delay: 150ms; }
-  .stagger-4 { animation-delay: 200ms; }
-  .stagger-5 { animation-delay: 250ms; }
+  .stagger-1 {
+    animation-delay: 50ms;
+  }
+  .stagger-2 {
+    animation-delay: 100ms;
+  }
+  .stagger-3 {
+    animation-delay: 150ms;
+  }
+  .stagger-4 {
+    animation-delay: 200ms;
+  }
+  .stagger-5 {
+    animation-delay: 250ms;
+  }
 }
 ```
 
@@ -155,6 +166,7 @@ src/
 The existing shadcn/ui components use Class Variance Authority (CVA). The architecture **extends** these patterns rather than replacing them.
 
 **Rationale:**
+
 - shadcn components are ejected into the codebase - they're our code to modify
 - CVA provides type-safe variant definitions
 - Tailwind classes compose well with existing patterns
@@ -187,7 +199,7 @@ export function AnimatedButton({
         entrance === 'fade' && 'animate-fade-in',
         entrance === 'scale' && 'animate-scale-in',
         entrance === 'slide' && 'animate-slide-up',
-        className
+        className,
       )}
       {...props}
     />
@@ -203,7 +215,7 @@ import { Card } from '~/components/ui/card'
 import { cn } from '~/lib/utils'
 
 interface AnimatedCardProps extends React.ComponentProps<typeof Card> {
-  index?: number  // For stagger calculation
+  index?: number // For stagger calculation
   interactive?: boolean
 }
 
@@ -225,10 +237,10 @@ export function AnimatedCard({
           'hover:shadow-lg',
           'hover:shadow-primary/5',
         ],
-        className
+        className,
       )}
       style={{
-        animationDelay: `${index * 50}ms`
+        animationDelay: `${index * 50}ms`,
       }}
       {...props}
     />
@@ -243,25 +255,23 @@ export function AnimatedCard({
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '~/lib/utils'
 
-const headingVariants = cva(
-  'font-display tracking-tight text-foreground',
-  {
-    variants: {
-      size: {
-        h1: 'text-4xl font-bold leading-tight md:text-5xl',
-        h2: 'text-3xl font-semibold leading-snug md:text-4xl',
-        h3: 'text-2xl font-semibold leading-snug',
-        h4: 'text-xl font-medium',
-      },
+const headingVariants = cva('font-display tracking-tight text-foreground', {
+  variants: {
+    size: {
+      h1: 'text-4xl font-bold leading-tight md:text-5xl',
+      h2: 'text-3xl font-semibold leading-snug md:text-4xl',
+      h3: 'text-2xl font-semibold leading-snug',
+      h4: 'text-xl font-medium',
     },
-    defaultVariants: {
-      size: 'h2',
-    },
-  }
-)
+  },
+  defaultVariants: {
+    size: 'h2',
+  },
+})
 
 interface HeadingProps
-  extends React.HTMLAttributes<HTMLHeadingElement>,
+  extends
+    React.HTMLAttributes<HTMLHeadingElement>,
     VariantProps<typeof headingVariants> {
   as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
 }
@@ -272,32 +282,24 @@ export function Heading({
   as: Tag = 'h2',
   ...props
 }: HeadingProps) {
-  return (
-    <Tag
-      className={cn(headingVariants({ size }), className)}
-      {...props}
-    />
-  )
+  return <Tag className={cn(headingVariants({ size }), className)} {...props} />
 }
 
-const textVariants = cva(
-  'font-body text-foreground',
-  {
-    variants: {
-      size: {
-        sm: 'text-sm',
-        base: 'text-base',
-        lg: 'text-lg',
-      },
-      muted: {
-        true: 'text-muted-foreground',
-      },
+const textVariants = cva('font-body text-foreground', {
+  variants: {
+    size: {
+      sm: 'text-sm',
+      base: 'text-base',
+      lg: 'text-lg',
     },
-    defaultVariants: {
-      size: 'base',
+    muted: {
+      true: 'text-muted-foreground',
     },
-  }
-)
+  },
+  defaultVariants: {
+    size: 'base',
+  },
+})
 
 export function Text({
   className,
@@ -305,12 +307,9 @@ export function Text({
   muted,
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement> &
-   VariantProps<typeof textVariants>) {
+  VariantProps<typeof textVariants>) {
   return (
-    <p
-      className={cn(textVariants({ size, muted }), className)}
-      {...props}
-    />
+    <p className={cn(textVariants({ size, muted }), className)} {...props} />
   )
 }
 ```
@@ -322,12 +321,14 @@ export function Text({
 ### Approach: Fontsource + Preload
 
 **Why Fontsource:**
+
 - Self-hosted fonts (no external requests to Google)
 - Tree-shakeable - only include weights you use
 - Variable font support
 - Works with Vite's static asset handling
 
 **Why Preload:**
+
 - Critical fonts load before render
 - Eliminates FOUT (Flash of Unstyled Text)
 - Works with TanStack Start's head management
@@ -348,11 +349,12 @@ bun add @fontsource-variable/dm-sans @fontsource/dm-mono
   font-style: normal;
   font-weight: 100 900;
   font-display: swap;
-  src: url('@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2') format('woff2-variations');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-                 U+02DC, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329,
-                 U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
-                 U+2215, U+FEFF, U+FFFD;
+  src: url('@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+2000-206F, U+2074,
+    U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 /* Monospace for display headings and code */
@@ -361,11 +363,12 @@ bun add @fontsource-variable/dm-sans @fontsource/dm-mono
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('@fontsource/dm-mono/files/dm-mono-latin-400-normal.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-                 U+02DC, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329,
-                 U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
-                 U+2215, U+FEFF, U+FFFD;
+  src: url('@fontsource/dm-mono/files/dm-mono-latin-400-normal.woff2')
+    format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+2000-206F, U+2074,
+    U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
@@ -373,11 +376,12 @@ bun add @fontsource-variable/dm-sans @fontsource/dm-mono
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url('@fontsource/dm-mono/files/dm-mono-latin-500-normal.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-                 U+02DC, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329,
-                 U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
-                 U+2215, U+FEFF, U+FFFD;
+  src: url('@fontsource/dm-mono/files/dm-mono-latin-500-normal.woff2')
+    format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+2000-206F, U+2074,
+    U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 ```
 
@@ -409,7 +413,9 @@ export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
 }>()({
   head: () => ({
-    meta: [/* existing */],
+    meta: [
+      /* existing */
+    ],
     links: [
       // Font preloads - critical for preventing FOUT
       {
@@ -488,13 +494,21 @@ export default defineConfig({
 
 /* Keyframe definitions */
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes slide-up {
@@ -577,17 +591,23 @@ export default defineConfig({
   /* Animation utilities - makes these available as Tailwind classes */
   --animate-fade-in: fade-in var(--duration-normal) var(--ease-out) forwards;
   --animate-fade-out: fade-out var(--duration-fast) var(--ease-in) forwards;
-  --animate-slide-up: slide-up var(--duration-normal) var(--ease-out-expo) forwards;
-  --animate-slide-down: slide-down var(--duration-normal) var(--ease-out-expo) forwards;
-  --animate-scale-in: scale-in var(--duration-normal) var(--ease-spring) forwards;
-  --animate-card-enter: card-enter var(--duration-slow) var(--ease-out-expo) backwards;
-  --animate-page-enter: page-enter var(--duration-normal) var(--ease-out) forwards;
+  --animate-slide-up: slide-up var(--duration-normal) var(--ease-out-expo)
+    forwards;
+  --animate-slide-down: slide-down var(--duration-normal) var(--ease-out-expo)
+    forwards;
+  --animate-scale-in: scale-in var(--duration-normal) var(--ease-spring)
+    forwards;
+  --animate-card-enter: card-enter var(--duration-slow) var(--ease-out-expo)
+    backwards;
+  --animate-page-enter: page-enter var(--duration-normal) var(--ease-out)
+    forwards;
 }
 ```
 
 ### tw-animate-css Integration
 
 The project already includes `tw-animate-css`. This provides:
+
 - `animate-in` / `animate-out` utilities
 - `fade-in` / `fade-out` modifiers
 - `slide-in-from-*` / `slide-out-to-*` directional animations
@@ -623,7 +643,7 @@ export function GradientBg({
   variant = 'default',
   noise = true,
   className,
-  children
+  children,
 }: GradientBgProps) {
   return (
     <div className={cn('relative min-h-screen', className)}>
@@ -631,9 +651,12 @@ export function GradientBg({
       <div
         className={cn(
           'absolute inset-0 -z-10',
-          variant === 'default' && 'bg-gradient-to-b from-background via-background to-muted/30',
-          variant === 'warm' && 'bg-[radial-gradient(ellipse_at_top,oklch(0.98_0.02_30),oklch(0.96_0.01_30)_70%,oklch(0.94_0.02_30))]',
-          variant === 'cool' && 'bg-[radial-gradient(ellipse_at_top,oklch(0.98_0.01_240),oklch(0.96_0.005_240)_70%)]',
+          variant === 'default' &&
+            'bg-gradient-to-b from-background via-background to-muted/30',
+          variant === 'warm' &&
+            'bg-[radial-gradient(ellipse_at_top,oklch(0.98_0.02_30),oklch(0.96_0.01_30)_70%,oklch(0.94_0.02_30))]',
+          variant === 'cool' &&
+            'bg-[radial-gradient(ellipse_at_top,oklch(0.98_0.01_240),oklch(0.96_0.005_240)_70%)]',
           variant === 'subtle' && 'bg-gray-50 dark:bg-gray-950',
         )}
       />
@@ -689,7 +712,7 @@ export function GradientBg({
     ellipse at center,
     oklch(0.15 0 0) 0%,
     oklch(0.12 0.02 30) 70%,
-    oklch(0.10 0.03 30) 100%
+    oklch(0.1 0.03 30) 100%
   );
 
   --gradient-subtle: linear-gradient(
@@ -807,10 +830,11 @@ Phase 4: Page Updates
 **When:** Any visual property that should be consistent across the app.
 
 **Example:**
+
 ```css
 /* Define once in tokens */
 :root {
-  --shadow-card-hover: 0 8px 30px oklch(0.70 0.08 30 / 0.15);
+  --shadow-card-hover: 0 8px 30px oklch(0.7 0.08 30 / 0.15);
 }
 
 /* Use in components */
@@ -826,6 +850,7 @@ Phase 4: Page Updates
 **When:** All animations.
 
 **Example:**
+
 ```css
 .animate-card-enter {
   /* Static fallback - visible immediately */
@@ -850,6 +875,7 @@ Phase 4: Page Updates
 **When:** Any component with multiple visual variations.
 
 **Example:**
+
 ```tsx
 const cardVariants = cva(
   'rounded-lg border bg-card text-card-foreground shadow-sm',
@@ -868,7 +894,7 @@ const cardVariants = cva(
       interactive: false,
       elevated: false,
     },
-  }
+  },
 )
 ```
 
@@ -901,7 +927,9 @@ const cardVariants = cva(
 
 // GOOD - create wrapper in src/components/design/
 export function AnimatedButton(props) {
-  return <Button className={cn('animate-scale-in', props.className)} {...props} />
+  return (
+    <Button className={cn('animate-scale-in', props.className)} {...props} />
+  )
 }
 ```
 
@@ -921,12 +949,12 @@ export function AnimatedButton(props) {
 
 ## Scalability Considerations
 
-| Concern | At Current Scale | At 100+ Pages | At Design System Library |
-|---------|------------------|---------------|--------------------------|
-| Token organization | Single files per concern | Split by feature area | Package per domain |
-| Font loading | Preload critical fonts | Dynamic font subsetting | Font CDN with fallbacks |
-| Animation | CSS keyframes | Consider Motion library | Shared animation configs |
-| Component variants | CVA in components | Extract to shared variants file | Design token package |
+| Concern            | At Current Scale         | At 100+ Pages                   | At Design System Library |
+| ------------------ | ------------------------ | ------------------------------- | ------------------------ |
+| Token organization | Single files per concern | Split by feature area           | Package per domain       |
+| Font loading       | Preload critical fonts   | Dynamic font subsetting         | Font CDN with fallbacks  |
+| Animation          | CSS keyframes            | Consider Motion library         | Shared animation configs |
+| Component variants | CVA in components        | Extract to shared variants file | Design token package     |
 
 ---
 

@@ -29,9 +29,9 @@ key-files:
     - convex/profiles.ts
 
 key-decisions:
-  - "Used Phase 05 VERIFICATION.md as template for Phase 04 documentation"
-  - "Added loading state to Create Invite Link button for UX feedback"
-  - "Removed profiles.getById since ctx.db.get() is preferred for internal use"
+  - 'Used Phase 05 VERIFICATION.md as template for Phase 04 documentation'
+  - 'Added loading state to Create Invite Link button for UX feedback'
+  - 'Removed profiles.getById since ctx.db.get() is preferred for internal use'
 
 patterns-established: []
 
@@ -91,11 +91,11 @@ None - plan executed exactly as written.
 
 This plan addressed 3 gaps from v1-MILESTONE-AUDIT.md:
 
-| Gap | Status | Evidence |
-|-----|--------|----------|
-| Missing Phase 04 VERIFICATION.md | CLOSED | File created with 184 lines |
+| Gap                                | Status | Evidence                                   |
+| ---------------------------------- | ------ | ------------------------------------------ |
+| Missing Phase 04 VERIFICATION.md   | CLOSED | File created with 184 lines                |
 | Create Invite Link button disabled | CLOSED | Button now calls createInviteLink mutation |
-| Unused profiles.getById query | CLOSED | Dead code removed |
+| Unused profiles.getById query      | CLOSED | Dead code removed                          |
 
 ## User Setup Required
 
@@ -108,5 +108,6 @@ None - no external service configuration required.
 - Ready for pilot launch
 
 ---
-*Phase: 06-polish-tech-debt*
-*Completed: 2026-01-18*
+
+_Phase: 06-polish-tech-debt_
+_Completed: 2026-01-18_

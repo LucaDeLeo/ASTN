@@ -1,17 +1,17 @@
-import { v } from "convex/values";
-import { internalMutation, mutation } from "../_generated/server";
-import { auth } from "../auth";
-import type { Id } from "../_generated/dataModel";
-import type { MutationCtx } from "../_generated/server";
+import { v } from 'convex/values'
+import { internalMutation, mutation } from '../_generated/server'
+import { auth } from '../auth'
+import type { Id } from '../_generated/dataModel'
+import type { MutationCtx } from '../_generated/server'
 
 // Level validator for Convex
 const levelValidator = v.union(
-  v.literal("highly_engaged"),
-  v.literal("moderate"),
-  v.literal("at_risk"),
-  v.literal("new"),
-  v.literal("inactive")
-);
+  v.literal('highly_engaged'),
+  v.literal('moderate'),
+  v.literal('at_risk'),
+  v.literal('new'),
+  v.literal('inactive'),
+)
 
 /**
  * Save engagement score (upsert)
@@ -20,7 +20,7 @@ const levelValidator = v.union(
 export const saveEngagementScore = internalMutation({
   args: {
     userId: v.string(),
-    orgId: v.id("organizations"),
+    orgId: v.id('organizations'),
     level: levelValidator,
     adminExplanation: v.string(),
     userExplanation: v.string(),
@@ -34,28 +34,38 @@ export const saveEngagementScore = internalMutation({
     modelVersion: v.string(),
   },
   handler: async (ctx, args) => {
-    const { userId, orgId, level, adminExplanation, userExplanation, signals, modelVersion } = args;
+    const {
+      userId,
+      orgId,
+      level,
+      adminExplanation,
+      userExplanation,
+      signals,
+      modelVersion,
+    } = args
 
     // Check if engagement record exists
     const existing = await ctx.db
-      .query("memberEngagement")
-      .withIndex("by_user_org", (q) => q.eq("userId", userId).eq("orgId", orgId))
-      .first();
+      .query('memberEngagement')
+      .withIndex('by_user_org', (q) =>
+        q.eq('userId', userId).eq('orgId', orgId),
+      )
+      .first()
 
     if (existing) {
       // Update existing record (preserve override if set)
-      await ctx.db.patch("memberEngagement", existing._id, {
+      await ctx.db.patch('memberEngagement', existing._id, {
         level,
         adminExplanation,
         userExplanation,
         signals,
         computedAt: Date.now(),
         modelVersion,
-      });
-      return existing._id;
+      })
+      return existing._id
     } else {
       // Insert new record
-      return await ctx.db.insert("memberEngagement", {
+      return await ctx.db.insert('memberEngagement', {
         userId,
         orgId,
         level,
@@ -64,56 +74,53 @@ export const saveEngagementScore = internalMutation({
         signals,
         computedAt: Date.now(),
         modelVersion,
-      });
+      })
     }
   },
-});
+})
 
 /**
  * Clear expired override from engagement record
  * Called during computation when override has expired
  */
 export const clearExpiredOverride = internalMutation({
-  args: { engagementId: v.id("memberEngagement") },
+  args: { engagementId: v.id('memberEngagement') },
   handler: async (ctx, { engagementId }) => {
-    const engagement = await ctx.db.get("memberEngagement", engagementId);
-    if (!engagement) return;
+    const engagement = await ctx.db.get('memberEngagement', engagementId)
+    if (!engagement) return
 
     // Only clear if override exists and has an expiry
     if (engagement.override && engagement.override.expiresAt) {
       // Remove override by setting to undefined
-      await ctx.db.patch("memberEngagement", engagementId, {
+      await ctx.db.patch('memberEngagement', engagementId, {
         override: undefined,
-      });
+      })
     }
   },
-});
+})
 
 // Helper: Require current user is an admin of the given org
-async function requireOrgAdmin(
-  ctx: MutationCtx,
-  orgId: Id<"organizations">
-) {
-  const userId = await auth.getUserId(ctx);
+async function requireOrgAdmin(ctx: MutationCtx, orgId: Id<'organizations'>) {
+  const userId = await auth.getUserId(ctx)
   if (!userId) {
-    throw new Error("Not authenticated");
+    throw new Error('Not authenticated')
   }
 
   const membership = await ctx.db
-    .query("orgMemberships")
-    .withIndex("by_user", (q) => q.eq("userId", userId))
-    .filter((q) => q.eq(q.field("orgId"), orgId))
-    .first();
+    .query('orgMemberships')
+    .withIndex('by_user', (q) => q.eq('userId', userId))
+    .filter((q) => q.eq(q.field('orgId'), orgId))
+    .first()
 
   if (!membership) {
-    throw new Error("Not a member of this organization");
+    throw new Error('Not a member of this organization')
   }
 
-  if (membership.role !== "admin") {
-    throw new Error("Admin access required");
+  if (membership.role !== 'admin') {
+    throw new Error('Admin access required')
   }
 
-  return membership;
+  return membership
 }
 
 /**
@@ -122,44 +129,44 @@ async function requireOrgAdmin(
  */
 export const overrideEngagement = mutation({
   args: {
-    engagementId: v.id("memberEngagement"),
+    engagementId: v.id('memberEngagement'),
     newLevel: levelValidator,
     notes: v.string(), // Required per CONTEXT.md
     expiresAt: v.optional(v.number()),
   },
   handler: async (ctx, { engagementId, newLevel, notes, expiresAt }) => {
     // Get the engagement record to verify orgId
-    const engagement = await ctx.db.get("memberEngagement", engagementId);
+    const engagement = await ctx.db.get('memberEngagement', engagementId)
     if (!engagement) {
-      throw new Error("Engagement record not found");
+      throw new Error('Engagement record not found')
     }
 
     // Verify admin access
-    const adminMembership = await requireOrgAdmin(ctx, engagement.orgId);
+    const adminMembership = await requireOrgAdmin(ctx, engagement.orgId)
 
     // Validate notes (required)
     if (!notes.trim()) {
-      throw new Error("Notes are required for engagement overrides");
+      throw new Error('Notes are required for engagement overrides')
     }
 
     // Record previous level (could be from override or computed)
-    const previousLevel = engagement.override?.level || engagement.level;
+    const previousLevel = engagement.override?.level || engagement.level
 
     // Save to history before update
-    await ctx.db.insert("engagementOverrideHistory", {
+    await ctx.db.insert('engagementOverrideHistory', {
       engagementId,
       userId: engagement.userId,
       orgId: engagement.orgId,
       previousLevel,
       newLevel,
       notes,
-      action: "override",
+      action: 'override',
       performedBy: adminMembership._id,
       performedAt: Date.now(),
-    });
+    })
 
     // Update engagement with override
-    await ctx.db.patch("memberEngagement", engagementId, {
+    await ctx.db.patch('memberEngagement', engagementId, {
       override: {
         level: newLevel,
         notes,
@@ -167,51 +174,51 @@ export const overrideEngagement = mutation({
         overriddenAt: Date.now(),
         expiresAt,
       },
-    });
+    })
 
-    return { success: true };
+    return { success: true }
   },
-});
+})
 
 /**
  * Clear an engagement override (admin only)
  * Member returns to computed level
  */
 export const clearOverride = mutation({
-  args: { engagementId: v.id("memberEngagement") },
+  args: { engagementId: v.id('memberEngagement') },
   handler: async (ctx, { engagementId }) => {
     // Get the engagement record to verify orgId
-    const engagement = await ctx.db.get("memberEngagement", engagementId);
+    const engagement = await ctx.db.get('memberEngagement', engagementId)
     if (!engagement) {
-      throw new Error("Engagement record not found");
+      throw new Error('Engagement record not found')
     }
 
     // Verify admin access
-    const adminMembership = await requireOrgAdmin(ctx, engagement.orgId);
+    const adminMembership = await requireOrgAdmin(ctx, engagement.orgId)
 
     // Only proceed if there's an override to clear
     if (!engagement.override) {
-      throw new Error("No override to clear");
+      throw new Error('No override to clear')
     }
 
     // Save to history
-    await ctx.db.insert("engagementOverrideHistory", {
+    await ctx.db.insert('engagementOverrideHistory', {
       engagementId,
       userId: engagement.userId,
       orgId: engagement.orgId,
       previousLevel: engagement.override.level,
       newLevel: engagement.level, // Reverting to computed level
-      notes: "Override cleared",
-      action: "clear",
+      notes: 'Override cleared',
+      action: 'clear',
       performedBy: adminMembership._id,
       performedAt: Date.now(),
-    });
+    })
 
     // Remove override
-    await ctx.db.patch("memberEngagement", engagementId, {
+    await ctx.db.patch('memberEngagement', engagementId, {
       override: undefined,
-    });
+    })
 
-    return { success: true };
+    return { success: true }
   },
-});
+})

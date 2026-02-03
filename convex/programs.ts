@@ -208,21 +208,9 @@ export const updateProgram = mutation({
     await requireOrgAdmin(ctx, program.orgId)
 
     const patchData: Record<string, unknown> = { updatedAt: Date.now() }
-
-    if (updates.name !== undefined) patchData.name = updates.name
-    if (updates.description !== undefined)
-      patchData.description = updates.description
-    if (updates.status !== undefined) patchData.status = updates.status
-    if (updates.startDate !== undefined) patchData.startDate = updates.startDate
-    if (updates.endDate !== undefined) patchData.endDate = updates.endDate
-    if (updates.enrollmentMethod !== undefined)
-      patchData.enrollmentMethod = updates.enrollmentMethod
-    if (updates.maxParticipants !== undefined)
-      patchData.maxParticipants = updates.maxParticipants
-    if (updates.completionCriteria !== undefined)
-      patchData.completionCriteria = updates.completionCriteria
-    if (updates.linkedEventIds !== undefined)
-      patchData.linkedEventIds = updates.linkedEventIds
+    for (const [key, value] of Object.entries(updates)) {
+      patchData[key] = value
+    }
 
     await ctx.db.patch('programs', programId, patchData)
 

@@ -1,13 +1,13 @@
-import { stringSimilarity } from "string-similarity-js";
+import { stringSimilarity } from 'string-similarity-js'
 
 // Threshold for fuzzy matching (0.7 = 70% similarity)
-export const SIMILARITY_THRESHOLD = 0.7;
+export const SIMILARITY_THRESHOLD = 0.7
 
 // Skill from taxonomy
 interface TaxonomySkill {
-  name: string;
-  category: string;
-  aliases?: Array<string>;
+  name: string
+  category: string
+  aliases?: Array<string>
 }
 
 /**
@@ -24,37 +24,37 @@ interface TaxonomySkill {
  */
 export function matchSkillsToTaxonomy(
   rawSkills: Array<string>,
-  taxonomySkills: Array<TaxonomySkill>
+  taxonomySkills: Array<TaxonomySkill>,
 ): Array<string> {
-  const matched = new Set<string>();
+  const matched = new Set<string>()
 
   for (const rawSkill of rawSkills) {
-    const rawLower = rawSkill.toLowerCase().trim();
-    if (!rawLower) continue;
+    const rawLower = rawSkill.toLowerCase().trim()
+    if (!rawLower) continue
 
     for (const taxSkill of taxonomySkills) {
       // Skip if already matched
-      if (matched.has(taxSkill.name)) continue;
+      if (matched.has(taxSkill.name)) continue
 
       // Priority 1: Exact match (case-insensitive)
       if (taxSkill.name.toLowerCase() === rawLower) {
-        matched.add(taxSkill.name);
-        continue;
+        matched.add(taxSkill.name)
+        continue
       }
 
       // Priority 2: Alias match
       if (taxSkill.aliases?.some((alias) => alias.toLowerCase() === rawLower)) {
-        matched.add(taxSkill.name);
-        continue;
+        matched.add(taxSkill.name)
+        continue
       }
 
       // Priority 3: Fuzzy match
-      const similarity = stringSimilarity(rawSkill, taxSkill.name);
+      const similarity = stringSimilarity(rawSkill, taxSkill.name)
       if (similarity >= SIMILARITY_THRESHOLD) {
-        matched.add(taxSkill.name);
+        matched.add(taxSkill.name)
       }
     }
   }
 
-  return Array.from(matched);
+  return Array.from(matched)
 }

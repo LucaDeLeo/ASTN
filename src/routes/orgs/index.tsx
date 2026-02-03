@@ -1,37 +1,36 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
-import { Building2 } from "lucide-react";
-import { useMemo, useState } from "react";
-import { api } from "../../../convex/_generated/api";
-import type { Id } from "../../../convex/_generated/dataModel";
-import { AuthHeader } from "~/components/layout/auth-header";
-import { GradientBg } from "~/components/layout/GradientBg";
-import { OrgCard } from "~/components/org/OrgCard";
-import { OrgFilters } from "~/components/org/OrgFilters";
-import { OrgMap } from "~/components/org/OrgMap";
-import { Spinner } from "~/components/ui/spinner";
+import { createFileRoute } from '@tanstack/react-router'
+import { useQuery } from 'convex/react'
+import { Building2 } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { api } from '../../../convex/_generated/api'
+import type { Id } from '../../../convex/_generated/dataModel'
+import { AuthHeader } from '~/components/layout/auth-header'
+import { GradientBg } from '~/components/layout/GradientBg'
+import { OrgCard } from '~/components/org/OrgCard'
+import { OrgFilters } from '~/components/org/OrgFilters'
+import { OrgMap } from '~/components/org/OrgMap'
+import { Spinner } from '~/components/ui/spinner'
 
-export const Route = createFileRoute("/orgs/")({
+export const Route = createFileRoute('/orgs/')({
   component: OrgBrowsePage,
-});
+})
 
 function OrgBrowsePage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [country, setCountry] = useState<string | undefined>();
-  const [selectedOrgId, setSelectedOrgId] = useState<Id<"organizations"> | null>(
-    null
-  );
+  const [searchQuery, setSearchQuery] = useState('')
+  const [country, setCountry] = useState<string | undefined>()
+  const [selectedOrgId, setSelectedOrgId] =
+    useState<Id<'organizations'> | null>(null)
 
   // Debounced search - only query when search is 2+ chars or empty
-  const effectiveSearch = searchQuery.length >= 2 ? searchQuery : undefined;
+  const effectiveSearch = searchQuery.length >= 2 ? searchQuery : undefined
 
   const orgs = useQuery(api.orgs.discovery.getAllOrgs, {
     country,
     searchQuery: effectiveSearch,
-  });
+  })
 
   // Memoize orgs for map to avoid re-renders
-  const orgsForMap = useMemo(() => orgs ?? [], [orgs]);
+  const orgsForMap = useMemo(() => orgs ?? [], [orgs])
 
   return (
     <GradientBg variant="subtle">
@@ -78,8 +77,8 @@ function OrgBrowsePage() {
                   key={org._id}
                   className={`transition-colors rounded-lg ${
                     selectedOrgId === org._id
-                      ? "ring-2 ring-primary ring-offset-2"
-                      : ""
+                      ? 'ring-2 ring-primary ring-offset-2'
+                      : ''
                   }`}
                   onClick={() => setSelectedOrgId(org._id)}
                 >
@@ -91,7 +90,7 @@ function OrgBrowsePage() {
         </div>
       </main>
     </GradientBg>
-  );
+  )
 }
 
 function EmptyState({ hasFilters }: { hasFilters: boolean }) {
@@ -101,13 +100,13 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
         <Building2 className="size-8 text-coral-400" />
       </div>
       <h3 className="text-lg font-display font-medium text-foreground mb-2">
-        {hasFilters ? "No organizations found" : "No organizations yet"}
+        {hasFilters ? 'No organizations found' : 'No organizations yet'}
       </h3>
       <p className="text-muted-foreground">
         {hasFilters
-          ? "Try adjusting your filters or search query"
-          : "Organizations will appear here once added"}
+          ? 'Try adjusting your filters or search query'
+          : 'Organizations will appear here once added'}
       </p>
     </div>
-  );
+  )
 }

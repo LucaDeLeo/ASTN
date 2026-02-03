@@ -1,4 +1,4 @@
-import { cn } from "~/lib/utils"
+import { cn } from '~/lib/utils'
 
 interface AnimatedCardProps {
   index: number
@@ -14,16 +14,20 @@ interface AnimatedCardProps {
  * @param children - Content to animate
  * @param className - Additional classes to merge
  */
-export function AnimatedCard({ index, children, className }: AnimatedCardProps) {
+export function AnimatedCard({
+  index,
+  children,
+  className,
+}: AnimatedCardProps) {
   return (
     <div
       className={cn(
-        "animate-in fade-in slide-in-from-bottom-2 duration-300",
-        className
+        'animate-in fade-in slide-in-from-bottom-2 duration-300',
+        className,
       )}
       style={{
         animationDelay: `${Math.min(index, 9) * 50}ms`,
-        animationFillMode: "backwards",
+        animationFillMode: 'backwards',
       }}
     >
       {children}

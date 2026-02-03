@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback } from 'react'
 
 /**
  * Haptic feedback patterns using the Vibration API.
@@ -10,15 +10,15 @@ import { useCallback } from "react";
 export function useHaptic() {
   const vibrate = useCallback((pattern: number | Array<number>) => {
     // Feature detection - Safari doesn't support Vibration API
-    if ("vibrate" in navigator) {
+    if ('vibrate' in navigator) {
       try {
-        navigator.vibrate(pattern);
+        navigator.vibrate(pattern)
       } catch {
         // Silently fail if vibration blocked by browser policy
       }
     }
     // Silent no-op on unsupported browsers
-  }, []);
+  }, [])
 
   return {
     /** Light tap feedback - 10ms */
@@ -35,5 +35,5 @@ export function useHaptic() {
 
     /** Custom pattern - array of on/off durations in ms */
     custom: vibrate,
-  };
+  }
 }

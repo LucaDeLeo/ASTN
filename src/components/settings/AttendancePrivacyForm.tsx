@@ -1,73 +1,73 @@
-import { useMutation, useQuery } from "convex/react";
-import { useEffect, useState } from "react";
-import { Building2, CalendarCheck, Eye } from "lucide-react";
-import { toast } from "sonner";
-import { api } from "../../../convex/_generated/api";
+import { useMutation, useQuery } from 'convex/react'
+import { useEffect, useState } from 'react'
+import { Building2, CalendarCheck, Eye } from 'lucide-react'
+import { toast } from 'sonner'
+import { api } from '../../../convex/_generated/api'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "~/components/ui/card";
-import { Switch } from "~/components/ui/switch";
-import { Label } from "~/components/ui/label";
-import { Button } from "~/components/ui/button";
-import { Spinner } from "~/components/ui/spinner";
+} from '~/components/ui/card'
+import { Switch } from '~/components/ui/switch'
+import { Label } from '~/components/ui/label'
+import { Button } from '~/components/ui/button'
+import { Spinner } from '~/components/ui/spinner'
 
 export function AttendancePrivacyForm() {
   const privacyDefaults = useQuery(
-    api.attendance.queries.getAttendancePrivacyDefaults
-  );
+    api.attendance.queries.getAttendancePrivacyDefaults,
+  )
   const updatePrivacy = useMutation(
-    api.attendance.mutations.updateAttendancePrivacy
-  );
+    api.attendance.mutations.updateAttendancePrivacy,
+  )
 
-  const [showOnProfile, setShowOnProfile] = useState(true);
-  const [showToOtherOrgs, setShowToOtherOrgs] = useState(false);
-  const [hasChanges, setHasChanges] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [showOnProfile, setShowOnProfile] = useState(true)
+  const [showToOtherOrgs, setShowToOtherOrgs] = useState(false)
+  const [hasChanges, setHasChanges] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   // Sync local state with loaded preferences
   useEffect(() => {
     if (privacyDefaults) {
-      setShowOnProfile(privacyDefaults.showOnProfile);
-      setShowToOtherOrgs(privacyDefaults.showToOtherOrgs);
-      setHasChanges(false);
+      setShowOnProfile(privacyDefaults.showOnProfile)
+      setShowToOtherOrgs(privacyDefaults.showToOtherOrgs)
+      setHasChanges(false)
     }
-  }, [privacyDefaults]);
+  }, [privacyDefaults])
 
   const handleShowOnProfileChange = (checked: boolean) => {
-    setShowOnProfile(checked);
-    setHasChanges(true);
+    setShowOnProfile(checked)
+    setHasChanges(true)
     // If hiding from profile, also hide from other orgs
     if (!checked) {
-      setShowToOtherOrgs(false);
+      setShowToOtherOrgs(false)
     }
-  };
+  }
 
   const handleShowToOtherOrgsChange = (checked: boolean) => {
-    setShowToOtherOrgs(checked);
-    setHasChanges(true);
-  };
+    setShowToOtherOrgs(checked)
+    setHasChanges(true)
+  }
 
   const handleSave = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
       await updatePrivacy({
         showOnProfile,
         showToOtherOrgs,
         updateExisting: true, // Apply to existing records too
-      });
-      setHasChanges(false);
-      toast.success("Attendance privacy settings saved");
+      })
+      setHasChanges(false)
+      toast.success('Attendance privacy settings saved')
     } catch (error) {
-      toast.error("Failed to save attendance privacy settings");
-      console.error("Failed to update attendance privacy:", error);
+      toast.error('Failed to save attendance privacy settings')
+      console.error('Failed to update attendance privacy:', error)
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   // Show loading state
   if (privacyDefaults === undefined) {
@@ -77,7 +77,7 @@ export function AttendancePrivacyForm() {
           <Spinner />
         </CardContent>
       </Card>
-    );
+    )
   }
 
   return (
@@ -157,7 +157,7 @@ export function AttendancePrivacyForm() {
                 Saving...
               </>
             ) : (
-              "Save Changes"
+              'Save Changes'
             )}
           </Button>
           {hasChanges && (
@@ -168,5 +168,5 @@ export function AttendancePrivacyForm() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

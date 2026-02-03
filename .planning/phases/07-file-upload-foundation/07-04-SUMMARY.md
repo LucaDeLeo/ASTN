@@ -29,13 +29,13 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Soft character limit warning at 10k chars (non-blocking)"
-  - "Collapsible by default, expands on click with animation"
-  - "Added test route for manual verification"
+  - 'Soft character limit warning at 10k chars (non-blocking)'
+  - 'Collapsible by default, expands on click with animation'
+  - 'Added test route for manual verification'
 
 patterns-established:
-  - "Text fallback pattern: collapsed link -> expand with textarea"
-  - "Barrel exports for component groups"
+  - 'Text fallback pattern: collapsed link -> expand with textarea'
+  - 'Barrel exports for component groups'
 
 # Metrics
 duration: 18min
@@ -103,5 +103,6 @@ None - no external service configuration required.
 - Test route can be removed after development is complete
 
 ---
-*Phase: 07-file-upload-foundation*
-*Completed: 2026-01-18*
+
+_Phase: 07-file-upload-foundation_
+_Completed: 2026-01-18_

@@ -33,12 +33,12 @@ key-files:
     - src/routes/settings/index.tsx
 
 key-decisions:
-  - "Weekly digest as default frequency per CONTEXT.md"
-  - "1 day + 1 hour before as default reminders per CONTEXT.md"
-  - "Org muting stored as mutedOrgIds array (orgs with switch OFF)"
+  - 'Weekly digest as default frequency per CONTEXT.md'
+  - '1 day + 1 hour before as default reminders per CONTEXT.md'
+  - 'Org muting stored as mutedOrgIds array (orgs with switch OFF)'
 
 patterns-established:
-  - "Event notification preferences follow existing notificationPreferences pattern on profiles"
+  - 'Event notification preferences follow existing notificationPreferences pattern on profiles'
 
 # Metrics
 duration: 4min
@@ -103,5 +103,6 @@ None - no external service configuration required.
 - Ready for Plan 02 to implement notification delivery (crons, digests, reminders)
 
 ---
-*Phase: 13-event-notifications*
-*Completed: 2026-01-19*
+
+_Phase: 13-event-notifications_
+_Completed: 2026-01-19_

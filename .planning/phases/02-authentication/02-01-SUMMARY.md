@@ -33,12 +33,12 @@ key-files:
     - convex/auth.ts
 
 key-decisions:
-  - "Password rules: 8+ chars, lowercase, uppercase, number"
-  - "OAuth providers: Google + GitHub (most common for developer/researcher audience)"
+  - 'Password rules: 8+ chars, lowercase, uppercase, number'
+  - 'OAuth providers: Google + GitHub (most common for developer/researcher audience)'
 
 patterns-established:
-  - "ConvexAuthProvider wraps entire app in router.tsx"
-  - "Password validation throws ConvexError with user-friendly messages"
+  - 'ConvexAuthProvider wraps entire app in router.tsx'
+  - 'Password validation throws ConvexError with user-friendly messages'
 
 # Metrics
 duration: 12min
@@ -98,6 +98,7 @@ None.
 ## User Setup Required
 
 OAuth credentials were configured externally by the user:
+
 - AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET via Google Cloud Console
 - AUTH_GITHUB_ID and AUTH_GITHUB_SECRET via GitHub Developer Settings
 - All credentials verified present in Convex environment
@@ -109,5 +110,6 @@ OAuth credentials were configured externally by the user:
 - ConvexAuthProvider enables useAuthActions, useConvexAuth hooks for 02-02
 
 ---
-*Phase: 02-authentication*
-*Completed: 2026-01-17*
+
+_Phase: 02-authentication_
+_Completed: 2026-01-17_
