@@ -6,15 +6,18 @@ import {
   Calendar,
   Download,
   FolderPlus,
+  MapPin,
   Settings,
   Shield,
   UserPlus,
   Users,
+  Wrench,
 } from 'lucide-react'
 import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { OrgStats } from '~/components/org/OrgStats'
+import { OnboardingChecklist } from '~/components/org/OnboardingChecklist'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { Button } from '~/components/ui/button'
 import { Spinner } from '~/components/ui/spinner'
@@ -149,6 +152,9 @@ function OrgAdminDashboard() {
             </p>
           </div>
 
+          {/* Onboarding Checklist */}
+          <OnboardingChecklist orgId={org._id} orgSlug={slug} />
+
           {/* Quick Stats Cards */}
           <div className="grid gap-4 sm:grid-cols-4 mb-8">
             <Card>
@@ -228,7 +234,7 @@ function OrgAdminDashboard() {
           </div>
 
           {/* Quick Actions */}
-          <div className="grid gap-4 sm:grid-cols-5 mb-8">
+          <div className="grid gap-4 sm:grid-cols-4 lg:grid-cols-7 mb-8">
             <Button asChild className="h-auto py-4">
               <Link to="/org/$slug/admin/members" params={{ slug }}>
                 <Users className="size-5 mr-2" />
@@ -246,9 +252,16 @@ function OrgAdminDashboard() {
             <InviteLinkButton orgId={org._id} />
 
             <Button variant="outline" className="h-auto py-4" asChild>
-              <Link to="/org/$slug/admin/members" params={{ slug }}>
-                <Download className="size-5 mr-2" />
-                Export Data
+              <Link to="/org/$slug/admin/setup" params={{ slug }}>
+                <Wrench className="size-5 mr-2" />
+                Setup
+              </Link>
+            </Button>
+
+            <Button variant="outline" className="h-auto py-4" asChild>
+              <Link to="/org/$slug/admin/space" params={{ slug }}>
+                <MapPin className="size-5 mr-2" />
+                Co-working
               </Link>
             </Button>
 
@@ -256,6 +269,13 @@ function OrgAdminDashboard() {
               <Link to="/org/$slug/admin/settings" params={{ slug }}>
                 <Settings className="size-5 mr-2" />
                 Settings
+              </Link>
+            </Button>
+
+            <Button variant="outline" className="h-auto py-4" asChild>
+              <Link to="/org/$slug/admin/members" params={{ slug }}>
+                <Download className="size-5 mr-2" />
+                Export
               </Link>
             </Button>
           </div>
