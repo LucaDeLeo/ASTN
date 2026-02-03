@@ -34,8 +34,9 @@ jobs:
 
       - name: Test
         run: |
-          if find . -name "*.test.ts" -o -name "*.spec.ts" | grep -q .; then
+          TEST_FILES=$(find src convex -name "*.test.ts" -o -name "*.spec.ts" 2>/dev/null || true)
+          if [ -n "$TEST_FILES" ]; then
             bun test
           else
-            echo "No test files found, skipping tests"
+            echo "No test files found in src/ or convex/, skipping tests"
           fi
