@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** v1.5 Org Onboarding & Co-working -- Phase 32 in progress
+**Current focus:** v1.5 Org Onboarding & Co-working -- Phase 32 complete
 
 ## Current Position
 
 Phase: 32 of 34 (Member Booking + Consent + Attendee View)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-02-03 -- Completed 32-01-PLAN.md (Schema + Backend - Member Booking)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-02-03 -- Completed 32-02-PLAN.md (Member Booking UI + Attendee View)
 
-Progress: [███████████░░░░░░░░░] 55% (32-01 complete)
+Progress: [████████████░░░░░░░░] 60% (phase 32 complete)
 
 ## Milestone History
 
@@ -25,7 +25,7 @@ Progress: [███████████░░░░░░░░░] 55% (32
 - v2.0 Mobile + Tauri (partial) - Phases 21-23, 26 complete (16 plans). Phase 25 deferred.
 - v1.4 Hardening - 3 phases (27-29), 9 plans - shipped 2026-02-02
 
-**Total:** 29 phases, 94 plans across 5 shipped milestones + partial v2.0
+**Total:** 29 phases, 96 plans across 5 shipped milestones + partial v2.0
 
 ## Accumulated Decisions
 
@@ -40,13 +40,14 @@ Progress: [███████████░░░░░░░░░] 55% (32
 | Soft capacity warnings without blocking                        | 32-01 | Allows admin flexibility for overbooking if needed     |
 | Consent required for booking                                   | 32-01 | consentToProfileSharing must be true to create booking |
 | Profile subset for attendees: name, headline, skills only      | 32-01 | Minimal PII exposure for attendee visibility           |
+| react-day-picker v9 with custom DayButton                      | 32-02 | Availability indicators via green/yellow/red dots      |
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 95
-- Total execution time: ~20.7 hours (across all milestones)
+- Total plans completed: 96
+- Total execution time: ~20.9 hours (across all milestones)
 
 ## Pending Todos
 
@@ -63,11 +64,11 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Completed 32-01-PLAN.md (Schema + Backend - Member Booking)
+Stopped at: Completed 32-02-PLAN.md (Member Booking UI + Attendee View)
 Resume file: None
-Next action: Execute 32-02-PLAN.md (Member Booking UI + Attendee View)
+Next action: Plan phase 33 (Guest Booking Flow) or continue milestone
 
 ---
 
 _State initialized: 2026-01-17_
-_Last updated: 2026-02-03 -- 32-01 complete_
+_Last updated: 2026-02-03 -- 32-02 complete, phase 32 complete_
