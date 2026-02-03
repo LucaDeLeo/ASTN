@@ -7,12 +7,12 @@
 
 ### Org Onboarding
 
-- [ ] **ORGON-01**: Org can submit application to join ASTN (name, description, city/country, website, contact person, reason for joining)
-- [ ] **ORGON-02**: ASTN platform admin can view pending org applications in a review queue
-- [ ] **ORGON-03**: ASTN platform admin can approve or reject org applications with a reason
-- [ ] **ORGON-04**: Rejected applicant sees rejection reason; approved applicant receives notification with link to configure
-- [ ] **ORGON-05**: Applicant can check application status (pending/approved/rejected) at a stable URL
-- [ ] **ORGON-06**: Duplicate org detection prevents the same org from applying twice
+- [x] **ORGON-01**: Org can submit application to join ASTN (name, description, city/country, website, contact person, reason for joining)
+- [x] **ORGON-02**: ASTN platform admin can view pending org applications in a review queue
+- [x] **ORGON-03**: ASTN platform admin can approve or reject org applications with a reason
+- [x] **ORGON-04**: Rejected applicant sees rejection reason; approved applicant receives notification with link to configure
+- [x] **ORGON-05**: Applicant can check application status (pending/approved/rejected) at a stable URL
+- [x] **ORGON-06**: Duplicate org detection prevents the same org from applying twice
 - [ ] **ORGON-07**: Approved org admin completes self-configuration wizard (logo, description, space config, invite link generation)
 - [ ] **ORGON-08**: Org admin sees progressive onboarding checklist showing setup completion progress
 - [ ] **ORGON-09**: Org admin can bulk-invite initial members via email during setup
@@ -83,12 +83,12 @@ Deferred to later milestones:
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ORGON-01 | Phase 30 | Pending |
-| ORGON-02 | Phase 30 | Pending |
-| ORGON-03 | Phase 30 | Pending |
-| ORGON-04 | Phase 30 | Pending |
-| ORGON-05 | Phase 30 | Pending |
-| ORGON-06 | Phase 30 | Pending |
+| ORGON-01 | Phase 30 | Complete |
+| ORGON-02 | Phase 30 | Complete |
+| ORGON-03 | Phase 30 | Complete |
+| ORGON-04 | Phase 30 | Complete |
+| ORGON-05 | Phase 30 | Complete |
+| ORGON-06 | Phase 30 | Complete |
 | ORGON-07 | Phase 31 | Pending |
 | ORGON-08 | Phase 31 | Pending |
 | ORGON-09 | Phase 31 | Pending |
@@ -127,4 +127,4 @@ Deferred to later milestones:
 
 ---
 *Requirements defined: 2026-02-03*
-*Last updated: 2026-02-03 -- phase mappings added after roadmap creation*
+*Last updated: 2026-02-03 -- Phase 30 requirements (ORGON-01 to ORGON-06) marked Complete*

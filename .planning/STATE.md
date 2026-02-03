@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 Phase: 30 of 34 (Platform Admin + Org Application)
 Plan: 2 of 2 in current phase
 Status: Phase complete
-Last activity: 2026-02-03 -- Completed 30-02-PLAN.md (Frontend -- Application Form, Status Page, Admin Review Queue)
+Last activity: 2026-02-03 -- Phase 30 verified (5/5 must-haves passed after gap fixes)
 
 Progress: [██████████] 100% (phase 30)
 
@@ -34,7 +34,7 @@ Progress: [██████████] 100% (phase 30)
 | Platform admin is separate `platformAdmins` table | 30-01 | Clean separation from org-level admin role |
 | Slug generation with db uniqueness in `convex/lib/slug.ts` | 30-01 | Reusable utility, appends -2, -3 for collisions |
 | Case-insensitive normalized org name for duplicate detection | 30-01 | Checks both organizations and orgApplications tables |
-| Pre-fill applicant name/email from profile query | 30-02 | Better UX, reduces friction for authenticated users |
+| Pre-fill applicant name from profile, email from auth identity | 30-02 | Profile has no email field; auth identity does |
 | Desktop table + mobile card list for admin review queue | 30-02 | Responsive pattern matching existing member list |
 | Rejection reason minimum 10 characters | 30-02 | Ensures meaningful feedback to applicants |
 
@@ -60,11 +60,11 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Completed 30-02-PLAN.md (Frontend -- Application Form, Status Page, Admin Review Queue)
+Stopped at: Phase 30 complete and verified (5/5 must-haves)
 Resume file: None
-Next action: Plan Phase 31 (Org Self-Configuration + Space Definition)
+Next action: `/gsd:plan-phase 31` to plan Org Self-Configuration + Space Definition
 
 ---
 
 _State initialized: 2026-01-17_
-_Last updated: 2026-02-03 -- Completed 30-02-PLAN.md_
+_Last updated: 2026-02-03 -- Phase 30 complete and verified_
