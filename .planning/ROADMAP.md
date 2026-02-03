@@ -22,7 +22,7 @@ Enable orgs to self-onboard through an application flow, configure co-working sp
 | 31 - Org Self-Configuration + Space Definition | Approved orgs configure themselves and define space      | 2 plans | 4 (ORGON-07 to ORGON-09, COWRK-01) |
 | 32 - Member Booking + Consent + Attendee View  | Members book spots and see who else is coming            | 2 plans | 7 (COWRK-02 to COWRK-08)           |
 | 33 - Guest Access + Visit Applications         | Non-members apply for visits; guest-to-member conversion | 3 plans | 10 (GUEST-01 to GUEST-10)          |
-| 34 - Admin Dashboard + Stats                   | Org admins manage bookings, guests, and utilization      | TBD     | 9 (ADMIN-01 to ADMIN-09)           |
+| 34 - Admin Dashboard + Stats                   | Org admins manage bookings, guests, and utilization      | 4 plans | 9 (ADMIN-01 to ADMIN-09)           |
 
 ### Phase 34: Admin Dashboard + Stats
 
@@ -30,9 +30,12 @@ Enable orgs to self-onboard through an application flow, configure co-working sp
 
 **Plans:**
 
-- TBD
+- [ ] 34-01-PLAN.md — Backend admin queries and mutations for booking management
+- [ ] 34-02-PLAN.md — Bookings admin page with today/calendar/list/history views
+- [ ] 34-03-PLAN.md — Manual booking dialog and CSV export components
+- [ ] 34-04-PLAN.md — Dashboard stats integration and full feature wiring
 
 ---
 
 _Roadmap created: 2026-01-20_
-_Last updated: 2026-02-03 -- Phase 33 complete (21/21 must-haves verified)_
+_Last updated: 2026-02-03 -- Phase 34 planned (4 plans in 3 waves)_
