@@ -83,48 +83,48 @@ Deferred to later milestones:
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ORGON-01 | — | Pending |
-| ORGON-02 | — | Pending |
-| ORGON-03 | — | Pending |
-| ORGON-04 | — | Pending |
-| ORGON-05 | — | Pending |
-| ORGON-06 | — | Pending |
-| ORGON-07 | — | Pending |
-| ORGON-08 | — | Pending |
-| ORGON-09 | — | Pending |
-| COWRK-01 | — | Pending |
-| COWRK-02 | — | Pending |
-| COWRK-03 | — | Pending |
-| COWRK-04 | — | Pending |
-| COWRK-05 | — | Pending |
-| COWRK-06 | — | Pending |
-| COWRK-07 | — | Pending |
-| COWRK-08 | — | Pending |
-| GUEST-01 | — | Pending |
-| GUEST-02 | — | Pending |
-| GUEST-03 | — | Pending |
-| GUEST-04 | — | Pending |
-| GUEST-05 | — | Pending |
-| GUEST-06 | — | Pending |
-| GUEST-07 | — | Pending |
-| GUEST-08 | — | Pending |
-| GUEST-09 | — | Pending |
-| GUEST-10 | — | Pending |
-| ADMIN-01 | — | Pending |
-| ADMIN-02 | — | Pending |
-| ADMIN-03 | — | Pending |
-| ADMIN-04 | — | Pending |
-| ADMIN-05 | — | Pending |
-| ADMIN-06 | — | Pending |
-| ADMIN-07 | — | Pending |
-| ADMIN-08 | — | Pending |
-| ADMIN-09 | — | Pending |
+| ORGON-01 | Phase 30 | Pending |
+| ORGON-02 | Phase 30 | Pending |
+| ORGON-03 | Phase 30 | Pending |
+| ORGON-04 | Phase 30 | Pending |
+| ORGON-05 | Phase 30 | Pending |
+| ORGON-06 | Phase 30 | Pending |
+| ORGON-07 | Phase 31 | Pending |
+| ORGON-08 | Phase 31 | Pending |
+| ORGON-09 | Phase 31 | Pending |
+| COWRK-01 | Phase 31 | Pending |
+| COWRK-02 | Phase 32 | Pending |
+| COWRK-03 | Phase 32 | Pending |
+| COWRK-04 | Phase 32 | Pending |
+| COWRK-05 | Phase 32 | Pending |
+| COWRK-06 | Phase 32 | Pending |
+| COWRK-07 | Phase 32 | Pending |
+| COWRK-08 | Phase 32 | Pending |
+| GUEST-01 | Phase 33 | Pending |
+| GUEST-02 | Phase 33 | Pending |
+| GUEST-03 | Phase 33 | Pending |
+| GUEST-04 | Phase 33 | Pending |
+| GUEST-05 | Phase 33 | Pending |
+| GUEST-06 | Phase 33 | Pending |
+| GUEST-07 | Phase 33 | Pending |
+| GUEST-08 | Phase 33 | Pending |
+| GUEST-09 | Phase 33 | Pending |
+| GUEST-10 | Phase 33 | Pending |
+| ADMIN-01 | Phase 34 | Pending |
+| ADMIN-02 | Phase 34 | Pending |
+| ADMIN-03 | Phase 34 | Pending |
+| ADMIN-04 | Phase 34 | Pending |
+| ADMIN-05 | Phase 34 | Pending |
+| ADMIN-06 | Phase 34 | Pending |
+| ADMIN-07 | Phase 34 | Pending |
+| ADMIN-08 | Phase 34 | Pending |
+| ADMIN-09 | Phase 34 | Pending |
 
 **Coverage:**
 - v1.5 requirements: 36 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 36
+- Mapped to phases: 36
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-03*
-*Last updated: 2026-02-03 after initial definition*
+*Last updated: 2026-02-03 -- phase mappings added after roadmap creation*
