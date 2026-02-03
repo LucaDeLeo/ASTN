@@ -624,9 +624,25 @@ ${inviteUrl}`
                         </Button>
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground">
-                        No active invite link. Generate one below.
-                      </p>
+                      <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground">
+                          No active invite link.
+                        </p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={async () => {
+                            try {
+                              await getOrCreateInviteLink({ orgId: org._id })
+                              toast.success('Invite link created!')
+                            } catch (error) {
+                              toast.error('Failed to create invite link')
+                            }
+                          }}
+                        >
+                          Generate Invite Link
+                        </Button>
+                      </div>
                     )}
                   </div>
 

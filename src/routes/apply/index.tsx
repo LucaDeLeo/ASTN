@@ -119,7 +119,6 @@ function ApplicationForm() {
   const [city, setCity] = useState('')
   const [country, setCountry] = useState('')
   const [website, setWebsite] = useState('')
-  const [reasonForJoining, setReasonForJoining] = useState('')
   const [applicantName, setApplicantName] = useState('')
   const [applicantEmail, setApplicantEmail] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -147,7 +146,6 @@ function ApplicationForm() {
     description.trim() &&
     city.trim() &&
     country.trim() &&
-    reasonForJoining.trim() &&
     applicantName.trim() &&
     applicantEmail.trim()
 
@@ -163,7 +161,6 @@ function ApplicationForm() {
         city: city.trim(),
         country: country.trim(),
         website: website.trim() || undefined,
-        reasonForJoining: reasonForJoining.trim(),
         applicantName: applicantName.trim(),
         applicantEmail: applicantEmail.trim(),
       })
@@ -248,21 +245,6 @@ function ApplicationForm() {
               onChange={(e) => setWebsite(e.target.value)}
               placeholder="https://example.org"
               type="url"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="reasonForJoining">
-              Why do you want to join ASTN?{' '}
-              <span className="text-destructive">*</span>
-            </Label>
-            <Textarea
-              id="reasonForJoining"
-              value={reasonForJoining}
-              onChange={(e) => setReasonForJoining(e.target.value)}
-              placeholder="Tell us about your goals and how ASTN can help your organization..."
-              rows={4}
-              required
             />
           </div>
 

@@ -5,7 +5,6 @@ import {
   Building2,
   Calendar,
   CalendarCheck,
-  Download,
   FolderPlus,
   MapPin,
   Settings,
@@ -241,7 +240,7 @@ function OrgAdminDashboard() {
           </div>
 
           {/* Quick Actions */}
-          <div className="grid gap-4 sm:grid-cols-4 lg:grid-cols-7 mb-8">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
             <Button asChild className="h-auto py-4">
               <Link to="/org/$slug/admin/members" params={{ slug }}>
                 <Users className="size-5 mr-2" />
@@ -283,13 +282,6 @@ function OrgAdminDashboard() {
               <Link to="/org/$slug/admin/settings" params={{ slug }}>
                 <Settings className="size-5 mr-2" />
                 Settings
-              </Link>
-            </Button>
-
-            <Button variant="outline" className="h-auto py-4" asChild>
-              <Link to="/org/$slug/admin/members" params={{ slug }}>
-                <Download className="size-5 mr-2" />
-                Export
               </Link>
             </Button>
           </div>

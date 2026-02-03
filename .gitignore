@@ -26,3 +26,4 @@ node_modules
 /playwright/.cache/
 
 app.config.timestamp_*.js
+vite.config.timestamp_*.js
