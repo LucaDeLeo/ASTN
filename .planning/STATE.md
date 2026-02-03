@@ -51,6 +51,9 @@ Progress: [███████████████████░] 95% (Ph
 | Expandable custom field responses                              | 33-03 | Reduces visual clutter in approval queue                |
 | Cursor-based pagination for admin booking queries              | 34-01 | Efficient pagination using booking ID as cursor         |
 | Combined queries + mutations in spaceBookings/admin.ts         | 34-01 | Follows orgs/admin.ts nested folder pattern             |
+| Admin calendar shows all dates (past + future)                 | 34-02 | Unlike member calendar which disables past dates        |
+| History defaults to last 30 days with all statuses             | 34-02 | Reasonable default for admin review                     |
+| Booking list groups by date with badge count                   | 34-02 | Clearer organization for multiple bookings per day      |
 | Time options 6 AM to 10 PM in 30-min increments                | 34-03 | Standard coworking hours for booking time selectors     |
 | BookingCard status badges with color variants by status        | 34-03 | Visual distinction: confirmed=green, pending=amber, etc |
 
