@@ -3,6 +3,7 @@ import {
   Bell,
   Building2,
   Calendar,
+  CalendarCheck,
   HelpCircle,
   RefreshCw,
   XCircle,
@@ -22,6 +23,7 @@ interface Notification {
     | 'attendance_prompt'
     | 'org_application_approved'
     | 'org_application_rejected'
+    | 'booking_confirmed'
   title: string
   body: string
   actionUrl?: string
@@ -44,6 +46,7 @@ const typeIcons: Record<Notification['type'], typeof Calendar> = {
   attendance_prompt: HelpCircle,
   org_application_approved: Building2,
   org_application_rejected: XCircle,
+  booking_confirmed: CalendarCheck,
 }
 
 export function NotificationList({

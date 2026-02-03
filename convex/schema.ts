@@ -319,6 +319,43 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index('by_org', ['orgId']),
 
+  // Space bookings (Phase 32)
+  spaceBookings: defineTable({
+    spaceId: v.id('coworkingSpaces'),
+    userId: v.string(),
+
+    // Date and time
+    date: v.string(), // ISO date string e.g. "2026-02-15"
+    startMinutes: v.number(), // Minutes from midnight (e.g., 600 = 10:00 AM)
+    endMinutes: v.number(), // Minutes from midnight (e.g., 900 = 3:00 PM)
+
+    // Booking type (member now, guest in Phase 33)
+    bookingType: v.union(v.literal('member'), v.literal('guest')),
+
+    // Status: members auto-confirm, guests go through approval
+    status: v.union(
+      v.literal('confirmed'),
+      v.literal('cancelled'),
+      v.literal('pending'), // For guests (Phase 33)
+      v.literal('rejected'), // For guests (Phase 33)
+    ),
+
+    // Optional tags
+    workingOn: v.optional(v.string()), // Max 140 chars, enforced in mutation
+    interestedInMeeting: v.optional(v.string()), // Max 140 chars
+
+    // Consent for attendee visibility (required for booking)
+    consentToProfileSharing: v.boolean(),
+
+    // Metadata
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    cancelledAt: v.optional(v.number()),
+  })
+    .index('by_space_date', ['spaceId', 'date'])
+    .index('by_user', ['userId'])
+    .index('by_space_user', ['spaceId', 'userId']),
+
   // Match results (per CONTEXT.md: tier labels, not percentages)
   matches: defineTable({
     profileId: v.id('profiles'),
@@ -505,9 +542,11 @@ export default defineSchema({
       v.literal('attendance_prompt'),
       v.literal('org_application_approved'),
       v.literal('org_application_rejected'),
+      v.literal('booking_confirmed'),
     ),
     eventId: v.optional(v.id('events')),
     orgId: v.optional(v.id('organizations')),
+    spaceBookingId: v.optional(v.id('spaceBookings')),
     applicationId: v.optional(v.id('orgApplications')),
     title: v.string(),
     body: v.string(),
