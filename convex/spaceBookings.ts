@@ -270,7 +270,7 @@ export const getMyBookings = query({
   },
 })
 
-// Get attendees for a date with consented profile data
+// Get attendees for a date with consented profile data (GUEST-06: includes guests)
 export const getBookingAttendees = query({
   args: {
     spaceId: v.id('coworkingSpaces'),
@@ -293,9 +293,38 @@ export const getBookingAttendees = query({
       )
       .collect()
 
-    // Fetch profile data for each booking
+    // Fetch profile data for each booking (members from profiles, guests from guestProfiles)
     const attendees = await Promise.all(
       bookings.map(async (booking) => {
+        const isGuest = booking.bookingType === 'guest'
+
+        if (isGuest) {
+          // Fetch from guestProfiles
+          const guestProfile = await ctx.db
+            .query('guestProfiles')
+            .withIndex('by_user', (q) => q.eq('userId', booking.userId))
+            .first()
+
+          return {
+            bookingId: booking._id,
+            userId: booking.userId,
+            date: booking.date,
+            startMinutes: booking.startMinutes,
+            endMinutes: booking.endMinutes,
+            workingOn: booking.workingOn,
+            interestedInMeeting: booking.interestedInMeeting,
+            isGuest: true,
+            profile: guestProfile
+              ? {
+                  name: guestProfile.name,
+                  headline: guestProfile.title ?? guestProfile.organization,
+                  skills: [] as Array<string>,
+                }
+              : null,
+          }
+        }
+
+        // Member booking - fetch from profiles
         const profile = await ctx.db
           .query('profiles')
           .withIndex('by_user', (q) => q.eq('userId', booking.userId))
@@ -309,6 +338,7 @@ export const getBookingAttendees = query({
           endMinutes: booking.endMinutes,
           workingOn: booking.workingOn,
           interestedInMeeting: booking.interestedInMeeting,
+          isGuest: false,
           profile: profile
             ? {
                 name: profile.name,

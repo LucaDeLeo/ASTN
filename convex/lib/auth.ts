@@ -1,5 +1,6 @@
 import { auth } from '../auth'
 import type { ActionCtx, MutationCtx, QueryCtx } from '../_generated/server'
+import type { Doc, Id } from '../_generated/dataModel'
 
 /**
  * Require the current user to be authenticated.
@@ -90,4 +91,36 @@ export async function isPlatformAdmin(
     .first()
 
   return !!admin
+}
+
+/**
+ * Require the current user to be an admin of the org that owns a specific space.
+ * Returns userId, space document, and membership document.
+ *
+ * Use this for space-level admin operations (e.g., approving guest visits).
+ */
+export async function requireSpaceAdmin(
+  ctx: QueryCtx | MutationCtx,
+  spaceId: Id<'coworkingSpaces'>,
+): Promise<{
+  userId: string
+  space: Doc<'coworkingSpaces'>
+  membership: Doc<'orgMemberships'>
+}> {
+  const userId = await requireAuth(ctx)
+
+  const space = await ctx.db.get('coworkingSpaces', spaceId)
+  if (!space) throw new Error('Space not found')
+
+  const membership = await ctx.db
+    .query('orgMemberships')
+    .withIndex('by_user', (q) => q.eq('userId', userId))
+    .filter((q) => q.eq(q.field('orgId'), space.orgId))
+    .first()
+
+  if (!membership || membership.role !== 'admin') {
+    throw new Error('Not authorized - must be org admin')
+  }
+
+  return { userId, space, membership }
 }
