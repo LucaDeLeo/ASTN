@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 ## Current Position
 
 Phase: 30 of 34 (Platform Admin + Org Application)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-02-03 -- v1.5 roadmap created (5 phases, 36 requirements mapped)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-02-03 -- Completed 30-01-PLAN.md (Schema + Auth + Org Applications Backend)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█████░░░░░] 50% (phase 30)
 
 ## Milestone History
 
@@ -27,11 +27,19 @@ Progress: [░░░░░░░░░░] 0%
 
 **Total:** 29 phases, 92 plans across 5 shipped milestones + partial v2.0
 
+## Accumulated Decisions
+
+| Decision | Phase | Rationale |
+|----------|-------|-----------|
+| Platform admin is separate `platformAdmins` table | 30-01 | Clean separation from org-level admin role |
+| Slug generation with db uniqueness in `convex/lib/slug.ts` | 30-01 | Reusable utility, appends -2, -3 for collisions |
+| Case-insensitive normalized org name for duplicate detection | 30-01 | Checks both organizations and orgApplications tables |
+
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 92
+- Total plans completed: 93
 - Total execution time: ~20.5 hours (across all milestones)
 
 ## Pending Todos
@@ -48,11 +56,11 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: v1.5 roadmap created -- 5 phases (30-34), 36 requirements mapped
+Stopped at: Completed 30-01-PLAN.md (Schema + Auth + Org Applications Backend)
 Resume file: None
-Next action: `/gsd:plan-phase 30` to plan Platform Admin + Org Application
+Next action: Execute 30-02-PLAN.md (frontend routes for org application)
 
 ---
 
 _State initialized: 2026-01-17_
-_Last updated: 2026-02-03 -- v1.5 roadmap created_
+_Last updated: 2026-02-03 -- Completed 30-01-PLAN.md_
