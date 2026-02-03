@@ -1,35 +1,35 @@
-import { useEffect, useState } from "react";
-import { Check, X } from "lucide-react";
-import type { Doc } from "../../../../../convex/_generated/dataModel";
-import { Textarea } from "~/components/ui/textarea";
-import { Label } from "~/components/ui/label";
-import { Badge } from "~/components/ui/badge";
+import { useEffect, useId, useState } from 'react'
+import { Check, X } from 'lucide-react'
+import type { Doc } from '../../../../../convex/_generated/dataModel'
+import { Textarea } from '~/components/ui/textarea'
+import { Label } from '~/components/ui/label'
+import { Badge } from '~/components/ui/badge'
 
 interface GoalsStepProps {
-  profile: Doc<"profiles"> | null;
-  saveField: (field: string, value: unknown) => void;
-  saveFieldImmediate: (field: string, value: unknown) => Promise<void>;
-  isSaving: boolean;
-  lastSaved: Date | null;
+  profile: Doc<'profiles'> | null
+  saveField: (field: string, value: unknown) => void
+  saveFieldImmediate: (field: string, value: unknown) => Promise<void>
+  isSaving: boolean
+  lastSaved: Date | null
 }
 
 // Pre-defined AI safety interest areas
 const AI_SAFETY_AREAS = [
-  "Alignment Research",
-  "Interpretability",
-  "AI Governance",
-  "AI Policy",
-  "Technical Safety",
-  "Robustness",
-  "AI Ethics",
-  "Scalable Oversight",
-  "Red Teaming",
-  "Deceptive Alignment",
-  "Value Learning",
-  "Multi-Agent Safety",
-  "Existential Risk",
-  "Constitutional AI",
-];
+  'Alignment Research',
+  'Interpretability',
+  'AI Governance',
+  'AI Policy',
+  'Technical Safety',
+  'Robustness',
+  'AI Ethics',
+  'Scalable Oversight',
+  'Red Teaming',
+  'Deceptive Alignment',
+  'Value Learning',
+  'Multi-Agent Safety',
+  'Existential Risk',
+  'Constitutional AI',
+]
 
 export function GoalsStep({
   profile,
@@ -38,28 +38,32 @@ export function GoalsStep({
   isSaving,
   lastSaved,
 }: GoalsStepProps) {
-  const [careerGoals, setCareerGoals] = useState(profile?.careerGoals ?? "");
-  const [seeking, setSeeking] = useState(profile?.seeking ?? "");
+  const id = useId()
+  const interestsHelpId = `${id}-interests-help`
+  const seekingHelpId = `${id}-seeking-help`
+
+  const [careerGoals, setCareerGoals] = useState(profile?.careerGoals ?? '')
+  const [seeking, setSeeking] = useState(profile?.seeking ?? '')
   const [selectedInterests, setSelectedInterests] = useState<Array<string>>(
-    profile?.aiSafetyInterests ?? []
-  );
+    profile?.aiSafetyInterests ?? [],
+  )
 
   // Sync local state with profile when it changes
   useEffect(() => {
     if (profile) {
-      setCareerGoals(profile.careerGoals ?? "");
-      setSeeking(profile.seeking ?? "");
-      setSelectedInterests(profile.aiSafetyInterests ?? []);
+      setCareerGoals(profile.careerGoals ?? '')
+      setSeeking(profile.seeking ?? '')
+      setSelectedInterests(profile.aiSafetyInterests ?? [])
     }
-  }, [profile]);
+  }, [profile])
 
   const toggleInterest = (interest: string) => {
     const newInterests = selectedInterests.includes(interest)
       ? selectedInterests.filter((i) => i !== interest)
-      : [...selectedInterests, interest];
-    setSelectedInterests(newInterests);
-    saveFieldImmediate("aiSafetyInterests", newInterests);
-  };
+      : [...selectedInterests, interest]
+    setSelectedInterests(newInterests)
+    saveFieldImmediate('aiSafetyInterests', newInterests)
+  }
 
   return (
     <div className="space-y-6">
@@ -74,14 +78,14 @@ export function GoalsStep({
       <div className="grid gap-6">
         <div className="grid gap-2">
           <Label htmlFor="careerGoals">
-            What are your career goals in AI safety?{" "}
+            What are your career goals in AI safety?{' '}
             <span className="text-red-500">*</span>
           </Label>
           <Textarea
             id="careerGoals"
             value={careerGoals}
             onChange={(e) => setCareerGoals(e.target.value)}
-            onBlur={() => saveField("careerGoals", careerGoals)}
+            onBlur={() => saveField('careerGoals', careerGoals)}
             placeholder="Describe your long-term career aspirations. What kind of impact do you want to have? What problems do you want to work on?"
             rows={4}
           />
@@ -89,28 +93,33 @@ export function GoalsStep({
 
         <div className="grid gap-3">
           <Label>Which areas of AI safety interest you most?</Label>
-          <p className="text-xs text-slate-500">
+          <p id={interestsHelpId} className="text-xs text-slate-500">
             Select all that apply. This helps us recommend relevant
             opportunities.
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div
+            className="flex flex-wrap gap-2"
+            role="group"
+            aria-describedby={interestsHelpId}
+            aria-label="AI safety interest areas"
+          >
             {AI_SAFETY_AREAS.map((area) => {
-              const isSelected = selectedInterests.includes(area);
+              const isSelected = selectedInterests.includes(area)
               return (
                 <Badge
                   key={area}
-                  variant={isSelected ? "default" : "outline"}
+                  variant={isSelected ? 'default' : 'outline'}
                   className={`cursor-pointer transition-colors ${
                     isSelected
-                      ? "bg-primary hover:bg-primary/90"
-                      : "hover:bg-slate-100"
+                      ? 'bg-primary hover:bg-primary/90'
+                      : 'hover:bg-slate-100'
                   }`}
                   onClick={() => toggleInterest(area)}
                 >
                   {area}
                   {isSelected && <X className="size-3 ml-1" />}
                 </Badge>
-              );
+              )
             })}
           </div>
         </div>
@@ -121,11 +130,12 @@ export function GoalsStep({
             id="seeking"
             value={seeking}
             onChange={(e) => setSeeking(e.target.value)}
-            onBlur={() => saveField("seeking", seeking)}
+            onBlur={() => saveField('seeking', seeking)}
             placeholder="Are you looking for full-time roles, research positions, fellowships, mentorship, collaborators, or something else?"
             rows={3}
+            aria-describedby={seekingHelpId}
           />
-          <p className="text-xs text-slate-500">
+          <p id={seekingHelpId} className="text-xs text-slate-500">
             Be specific about the type of opportunities, timeline, and any
             constraints (e.g., location, visa requirements)
           </p>
@@ -144,5 +154,5 @@ export function GoalsStep({
         ) : null}
       </div>
     </div>
-  );
+  )
 }

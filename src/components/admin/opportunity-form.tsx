@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useMutation } from '@tanstack/react-query'
 import { useConvexMutation } from '@convex-dev/react-query'
@@ -57,6 +57,8 @@ export function OpportunityForm({
   mode: 'create' | 'edit'
 }) {
   const navigate = useNavigate()
+  const id = useId()
+  const requirementsHelpId = `${id}-requirements-help`
 
   const createMutationFn = useConvexMutation(api.admin.createOpportunity)
   const { mutateAsync: createOpportunity, isPending: isCreating } = useMutation(
@@ -205,7 +207,7 @@ export function OpportunityForm({
               setFormData({ ...formData, roleType: value })
             }
           >
-            <SelectTrigger>
+            <SelectTrigger aria-label="Role Type">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -225,7 +227,7 @@ export function OpportunityForm({
               setFormData({ ...formData, experienceLevel: value })
             }
           >
-            <SelectTrigger>
+            <SelectTrigger aria-label="Experience Level">
               <SelectValue placeholder="Select level" />
             </SelectTrigger>
             <SelectContent>
@@ -265,7 +267,11 @@ export function OpportunityForm({
             'PhD in ML or equivalent\n3+ years experience\nStrong communication skills'
           }
           rows={4}
+          aria-describedby={requirementsHelpId}
         />
+        <p id={requirementsHelpId} className="text-xs text-muted-foreground">
+          Enter each requirement on a separate line
+        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">

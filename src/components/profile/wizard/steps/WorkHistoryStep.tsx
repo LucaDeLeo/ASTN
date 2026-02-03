@@ -1,51 +1,51 @@
-import { useEffect, useState } from "react";
-import { Check, Plus, Trash2 } from "lucide-react";
-import type { Doc } from "../../../../../convex/_generated/dataModel";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Textarea } from "~/components/ui/textarea";
-import { Checkbox } from "~/components/ui/checkbox";
-import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
+import { useEffect, useId, useState } from 'react'
+import { Check, Plus, Trash2 } from 'lucide-react'
+import type { Doc } from '../../../../../convex/_generated/dataModel'
+import { Input } from '~/components/ui/input'
+import { Label } from '~/components/ui/label'
+import { Textarea } from '~/components/ui/textarea'
+import { Checkbox } from '~/components/ui/checkbox'
+import { Button } from '~/components/ui/button'
+import { Card } from '~/components/ui/card'
 
 interface WorkEntry {
-  organization: string;
-  title: string;
-  startDate?: number;
-  endDate?: number;
-  current?: boolean;
-  description?: string;
+  organization: string
+  title: string
+  startDate?: number
+  endDate?: number
+  current?: boolean
+  description?: string
 }
 
 interface WorkHistoryStepProps {
-  profile: Doc<"profiles"> | null;
-  saveFieldImmediate: (field: string, value: unknown) => Promise<void>;
-  isSaving: boolean;
-  lastSaved: Date | null;
+  profile: Doc<'profiles'> | null
+  saveFieldImmediate: (field: string, value: unknown) => Promise<void>
+  isSaving: boolean
+  lastSaved: Date | null
 }
 
 const createEmptyEntry = (): WorkEntry => ({
-  organization: "",
-  title: "",
+  organization: '',
+  title: '',
   startDate: undefined,
   endDate: undefined,
   current: false,
-  description: "",
-});
+  description: '',
+})
 
 // Helper to format date input value (YYYY-MM)
 const formatDateForInput = (timestamp?: number): string => {
-  if (!timestamp) return "";
-  const date = new Date(timestamp);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-};
+  if (!timestamp) return ''
+  const date = new Date(timestamp)
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+}
 
 // Helper to parse date input value to timestamp
 const parseDateInput = (value: string): number | undefined => {
-  if (!value) return undefined;
-  const [year, month] = value.split("-").map(Number);
-  return new Date(year, month - 1, 1).getTime();
-};
+  if (!value) return undefined
+  const [year, month] = value.split('-').map(Number)
+  return new Date(year, month - 1, 1).getTime()
+}
 
 export function WorkHistoryStep({
   profile,
@@ -53,56 +53,65 @@ export function WorkHistoryStep({
   isSaving,
   lastSaved,
 }: WorkHistoryStepProps) {
+  const id = useId()
+  const sectionHelpId = `${id}-section-help`
+
   const [entries, setEntries] = useState<Array<WorkEntry>>(
-    profile?.workHistory ?? []
-  );
+    profile?.workHistory ?? [],
+  )
 
   // Sync local state with profile when it changes
   useEffect(() => {
     if (profile?.workHistory) {
-      setEntries(profile.workHistory);
+      setEntries(profile.workHistory)
     }
-  }, [profile?.workHistory]);
+  }, [profile?.workHistory])
 
   const addEntry = () => {
-    setEntries([...entries, createEmptyEntry()]);
-  };
+    setEntries([...entries, createEmptyEntry()])
+  }
 
   const removeEntry = (index: number) => {
-    const newEntries = entries.filter((_, i) => i !== index);
-    setEntries(newEntries);
+    const newEntries = entries.filter((_, i) => i !== index)
+    setEntries(newEntries)
     // Save immediately when removing
     saveFieldImmediate(
-      "workHistory",
-      newEntries.filter((e) => e.organization.trim() !== "" || e.title.trim() !== "")
-    );
-  };
+      'workHistory',
+      newEntries.filter(
+        (e) => e.organization.trim() !== '' || e.title.trim() !== '',
+      ),
+    )
+  }
 
-  const updateEntry = (index: number, field: keyof WorkEntry, value: unknown) => {
-    const newEntries = [...entries];
-    newEntries[index] = { ...newEntries[index], [field]: value };
-    setEntries(newEntries);
-  };
+  const updateEntry = (
+    index: number,
+    field: keyof WorkEntry,
+    value: unknown,
+  ) => {
+    const newEntries = [...entries]
+    newEntries[index] = { ...newEntries[index], [field]: value }
+    setEntries(newEntries)
+  }
 
   const handleBlur = () => {
     // Only save entries that have at least organization or title
     const validEntries = entries.filter(
-      (e) => e.organization.trim() !== "" || e.title.trim() !== ""
-    );
-    saveFieldImmediate("workHistory", validEntries);
-  };
+      (e) => e.organization.trim() !== '' || e.title.trim() !== '',
+    )
+    saveFieldImmediate('workHistory', validEntries)
+  }
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold text-foreground">Work History</h2>
-        <p className="text-sm text-slate-500 mt-1">
+        <p id={sectionHelpId} className="text-sm text-slate-500 mt-1">
           Add your professional experience. Include relevant positions in AI
           safety, research, tech, or related fields.
         </p>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4" aria-describedby={sectionHelpId}>
         {entries.length === 0 ? (
           <Card className="p-6 text-center">
             <p className="text-slate-500 mb-4">No work history entries yet</p>
@@ -136,7 +145,9 @@ export function WorkHistoryStep({
                   <Input
                     id={`title-${index}`}
                     value={entry.title}
-                    onChange={(e) => updateEntry(index, "title", e.target.value)}
+                    onChange={(e) =>
+                      updateEntry(index, 'title', e.target.value)
+                    }
                     onBlur={handleBlur}
                     placeholder="e.g., Research Scientist"
                   />
@@ -150,7 +161,7 @@ export function WorkHistoryStep({
                     id={`organization-${index}`}
                     value={entry.organization}
                     onChange={(e) =>
-                      updateEntry(index, "organization", e.target.value)
+                      updateEntry(index, 'organization', e.target.value)
                     }
                     onBlur={handleBlur}
                     placeholder="e.g., Anthropic"
@@ -167,8 +178,8 @@ export function WorkHistoryStep({
                       onChange={(e) =>
                         updateEntry(
                           index,
-                          "startDate",
-                          parseDateInput(e.target.value)
+                          'startDate',
+                          parseDateInput(e.target.value),
                         )
                       }
                       onBlur={handleBlur}
@@ -183,8 +194,8 @@ export function WorkHistoryStep({
                       onChange={(e) =>
                         updateEntry(
                           index,
-                          "endDate",
-                          parseDateInput(e.target.value)
+                          'endDate',
+                          parseDateInput(e.target.value),
                         )
                       }
                       onBlur={handleBlur}
@@ -198,17 +209,21 @@ export function WorkHistoryStep({
                     id={`current-${index}`}
                     checked={entry.current ?? false}
                     onCheckedChange={(checked) => {
-                      updateEntry(index, "current", checked);
+                      updateEntry(index, 'current', checked)
                       // Save immediately when toggling current
-                      const newEntries = [...entries];
-                      newEntries[index] = { ...newEntries[index], current: !!checked };
+                      const newEntries = [...entries]
+                      newEntries[index] = {
+                        ...newEntries[index],
+                        current: !!checked,
+                      }
                       saveFieldImmediate(
-                        "workHistory",
+                        'workHistory',
                         newEntries.filter(
                           (e) =>
-                            e.organization.trim() !== "" || e.title.trim() !== ""
-                        )
-                      );
+                            e.organization.trim() !== '' ||
+                            e.title.trim() !== '',
+                        ),
+                      )
                     }}
                   />
                   <Label
@@ -223,9 +238,9 @@ export function WorkHistoryStep({
                   <Label htmlFor={`description-${index}`}>Description</Label>
                   <Textarea
                     id={`description-${index}`}
-                    value={entry.description ?? ""}
+                    value={entry.description ?? ''}
                     onChange={(e) =>
-                      updateEntry(index, "description", e.target.value)
+                      updateEntry(index, 'description', e.target.value)
                     }
                     onBlur={handleBlur}
                     placeholder="Describe your role and key accomplishments..."
@@ -257,5 +272,5 @@ export function WorkHistoryStep({
         ) : null}
       </div>
     </div>
-  );
+  )
 }
