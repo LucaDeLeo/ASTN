@@ -21,11 +21,10 @@ export async function generateSlug(
     .replace(/[\s-]+/g, '-') // Replace spaces and hyphens with single hyphen
     .replace(/^-+|-+$/g, '') // Trim leading/trailing hyphens
 
-  // Check for uniqueness
+  // Check for uniqueness (limit iterations to prevent infinite loop)
   let slug = baseSlug
-  let counter = 1
 
-  while (true) {
+  for (let counter = 1; counter <= 1000; counter++) {
     const existing = await ctx.db
       .query('organizations')
       .withIndex('by_slug', (q) => q.eq('slug', slug))
@@ -35,7 +34,9 @@ export async function generateSlug(
       return slug
     }
 
-    counter++
-    slug = `${baseSlug}-${counter}`
+    slug = `${baseSlug}-${counter + 1}`
   }
+
+  // Fallback: append timestamp if somehow 1000 variants exist
+  return `${baseSlug}-${Date.now()}`
 }
