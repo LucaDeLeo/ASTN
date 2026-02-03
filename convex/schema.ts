@@ -218,12 +218,26 @@ export default defineSchema({
     name: v.string(),
     slug: v.optional(v.string()),
     logoUrl: v.optional(v.string()),
+    logoStorageId: v.optional(v.id('_storage')), // Convex storage reference for uploaded logo
     description: v.optional(v.string()), // Brief org description for display
     city: v.optional(v.string()), // e.g., "Buenos Aires", "San Francisco"
     country: v.optional(v.string()), // e.g., "Argentina", "United States"
     coordinates: v.optional(v.object({ lat: v.number(), lng: v.number() })), // For map display
     isGlobal: v.optional(v.boolean()), // True for orgs without specific location
     memberCount: v.optional(v.number()), // Denormalized for display
+
+    // Phase 31: Self-configuration fields
+    contactEmail: v.optional(v.string()),
+    website: v.optional(v.string()),
+    socialLinks: v.optional(
+      v.array(
+        v.object({
+          platform: v.string(), // "twitter", "linkedin", "github", "discord", etc.
+          url: v.string(),
+        }),
+      ),
+    ),
+    hasCoworkingSpace: v.optional(v.boolean()), // Denormalized flag for quick checks
 
     // Lu.ma integration for events
     lumaCalendarUrl: v.optional(v.string()), // Public calendar URL (e.g., "https://lu.ma/baish") for embed
@@ -261,6 +275,49 @@ export default defineSchema({
   })
     .index('by_token', ['token'])
     .index('by_org', ['orgId']),
+
+  // Co-working spaces (Phase 31)
+  coworkingSpaces: defineTable({
+    orgId: v.id('organizations'),
+    name: v.string(), // e.g., "Main Co-working Space"
+    capacity: v.number(), // Max people per day
+    timezone: v.string(), // IANA timezone, e.g., "America/Argentina/Buenos_Aires"
+
+    // Operating hours: array of 7 objects (0=Sunday through 6=Saturday)
+    operatingHours: v.array(
+      v.object({
+        dayOfWeek: v.number(), // 0-6 (Sunday-Saturday)
+        openMinutes: v.number(), // Minutes from midnight (e.g., 540 = 9:00 AM)
+        closeMinutes: v.number(), // Minutes from midnight (e.g., 1080 = 6:00 PM)
+        isClosed: v.boolean(), // True if closed this day
+      }),
+    ),
+
+    // Guest access configuration
+    guestAccessEnabled: v.boolean(), // Whether guests can apply to visit
+
+    // Custom visit application fields (Phase 33 renders these)
+    customVisitFields: v.optional(
+      v.array(
+        v.object({
+          fieldId: v.string(), // Unique ID for this field (e.g., "project", "dietary")
+          label: v.string(), // Display label
+          type: v.union(
+            v.literal('text'),
+            v.literal('textarea'),
+            v.literal('select'),
+            v.literal('checkbox'),
+          ),
+          required: v.boolean(),
+          options: v.optional(v.array(v.string())), // For select type
+          placeholder: v.optional(v.string()),
+        }),
+      ),
+    ),
+
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index('by_org', ['orgId']),
 
   // Match results (per CONTEXT.md: tier labels, not percentages)
   matches: defineTable({

@@ -320,3 +320,239 @@ export const getLumaConfig = query({
     }
   },
 })
+
+// ============================================
+// Phase 31: Org Self-Configuration
+// ============================================
+
+// Get full org profile for admin setup page
+export const getOrgProfile = query({
+  args: { orgId: v.id('organizations') },
+  handler: async (ctx, { orgId }) => {
+    await requireOrgAdmin(ctx, orgId)
+
+    const org = await ctx.db.get('organizations', orgId)
+    if (!org) {
+      throw new Error('Organization not found')
+    }
+
+    // If logoStorageId exists, resolve the URL
+    let resolvedLogoUrl = org.logoUrl ?? null
+    if (org.logoStorageId) {
+      const url = await ctx.storage.getUrl(org.logoStorageId)
+      if (url) resolvedLogoUrl = url
+    }
+
+    return {
+      ...org,
+      resolvedLogoUrl,
+    }
+  },
+})
+
+// Update org profile fields (self-configuration)
+export const updateOrgProfile = mutation({
+  args: {
+    orgId: v.id('organizations'),
+    description: v.optional(v.string()),
+    contactEmail: v.optional(v.string()),
+    website: v.optional(v.string()),
+    socialLinks: v.optional(
+      v.array(
+        v.object({
+          platform: v.string(),
+          url: v.string(),
+        }),
+      ),
+    ),
+  },
+  handler: async (ctx, { orgId, ...updates }) => {
+    await requireOrgAdmin(ctx, orgId)
+
+    const org = await ctx.db.get('organizations', orgId)
+    if (!org) {
+      throw new Error('Organization not found')
+    }
+
+    // Build patch object, only including provided fields
+    const patch: Record<string, unknown> = {}
+    if (updates.description !== undefined) patch.description = updates.description
+    if (updates.contactEmail !== undefined)
+      patch.contactEmail = updates.contactEmail
+    if (updates.website !== undefined) patch.website = updates.website
+    if (updates.socialLinks !== undefined)
+      patch.socialLinks = updates.socialLinks
+
+    if (Object.keys(patch).length > 0) {
+      await ctx.db.patch('organizations', orgId, patch)
+    }
+
+    return { success: true }
+  },
+})
+
+// Save uploaded org logo
+export const saveOrgLogo = mutation({
+  args: {
+    orgId: v.id('organizations'),
+    storageId: v.id('_storage'),
+  },
+  handler: async (ctx, { orgId, storageId }) => {
+    await requireOrgAdmin(ctx, orgId)
+
+    const org = await ctx.db.get('organizations', orgId)
+    if (!org) {
+      throw new Error('Organization not found')
+    }
+
+    // Delete old logo from storage if it exists
+    if (org.logoStorageId) {
+      await ctx.storage.delete(org.logoStorageId)
+    }
+
+    // Resolve the URL for the new logo
+    const logoUrl = await ctx.storage.getUrl(storageId)
+
+    // Update org with new logo
+    await ctx.db.patch('organizations', orgId, {
+      logoStorageId: storageId,
+      logoUrl: logoUrl ?? undefined,
+    })
+
+    return { success: true, logoUrl }
+  },
+})
+
+// Remove org logo
+export const removeOrgLogo = mutation({
+  args: {
+    orgId: v.id('organizations'),
+  },
+  handler: async (ctx, { orgId }) => {
+    await requireOrgAdmin(ctx, orgId)
+
+    const org = await ctx.db.get('organizations', orgId)
+    if (!org) {
+      throw new Error('Organization not found')
+    }
+
+    // Delete from storage if it exists
+    if (org.logoStorageId) {
+      await ctx.storage.delete(org.logoStorageId)
+    }
+
+    await ctx.db.patch('organizations', orgId, {
+      logoStorageId: undefined,
+      logoUrl: undefined,
+    })
+
+    return { success: true }
+  },
+})
+
+// Get onboarding progress for the org (computed from field completeness)
+export const getOnboardingProgress = query({
+  args: { orgId: v.id('organizations') },
+  handler: async (ctx, { orgId }) => {
+    await requireOrgAdmin(ctx, orgId)
+
+    const org = await ctx.db.get('organizations', orgId)
+    if (!org) {
+      throw new Error('Organization not found')
+    }
+
+    // Check for invite link
+    const inviteLinks = await ctx.db
+      .query('orgInviteLinks')
+      .withIndex('by_org', (q) => q.eq('orgId', orgId))
+      .collect()
+    const hasActiveInviteLink = inviteLinks.some(
+      (link) => !link.expiresAt || link.expiresAt > Date.now(),
+    )
+
+    // Check for co-working space
+    const space = await ctx.db
+      .query('coworkingSpaces')
+      .withIndex('by_org', (q) => q.eq('orgId', orgId))
+      .first()
+
+    const steps = [
+      {
+        id: 'logo',
+        label: 'Upload organization logo',
+        complete: Boolean(org.logoStorageId || org.logoUrl),
+        route: 'setup',
+      },
+      {
+        id: 'description',
+        label: 'Add organization description',
+        complete: Boolean(org.description && org.description.trim().length > 0),
+        route: 'setup',
+      },
+      {
+        id: 'contact',
+        label: 'Set contact email',
+        complete: Boolean(org.contactEmail),
+        route: 'setup',
+      },
+      {
+        id: 'invite',
+        label: 'Create an invite link for members',
+        complete: hasActiveInviteLink,
+        route: 'setup',
+      },
+      {
+        id: 'space',
+        label: 'Configure co-working space',
+        complete: Boolean(space),
+        route: 'space',
+      },
+    ]
+
+    const completedCount = steps.filter((s) => s.complete).length
+    const percentage = Math.round((completedCount / steps.length) * 100)
+
+    return {
+      steps,
+      completedCount,
+      totalCount: steps.length,
+      percentage,
+      isComplete: completedCount === steps.length,
+    }
+  },
+})
+
+// Ensure an active invite link exists and return it (for bulk invite flow)
+export const getOrCreateInviteLink = mutation({
+  args: {
+    orgId: v.id('organizations'),
+  },
+  handler: async (ctx, { orgId }) => {
+    const adminMembership = await requireOrgAdmin(ctx, orgId)
+
+    // Check for existing active link
+    const existingLinks = await ctx.db
+      .query('orgInviteLinks')
+      .withIndex('by_org', (q) => q.eq('orgId', orgId))
+      .collect()
+    const now = Date.now()
+    const activeLink = existingLinks.find(
+      (link) => !link.expiresAt || link.expiresAt > now,
+    )
+
+    if (activeLink) {
+      return { token: activeLink.token }
+    }
+
+    // Create a new invite link
+    const token = crypto.randomUUID()
+    await ctx.db.insert('orgInviteLinks', {
+      orgId,
+      token,
+      createdBy: adminMembership._id,
+      createdAt: now,
+    })
+
+    return { token }
+  },
+})
