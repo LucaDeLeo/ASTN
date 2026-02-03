@@ -1,26 +1,27 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { AuthLoading, Authenticated, useQuery } from "convex/react";
-import { Building2, Calendar, Settings, Users } from "lucide-react";
-import { api } from "../../../../convex/_generated/api";
-import type { Id } from "../../../../convex/_generated/dataModel";
-import { AuthHeader } from "~/components/layout/auth-header";
-import { MemberDirectory } from "~/components/org/MemberDirectory";
-import { Card } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { Spinner } from "~/components/ui/spinner";
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { AuthLoading, Authenticated, useQuery } from 'convex/react'
+import { Building2, Calendar, Settings, Users } from 'lucide-react'
+import { api } from '../../../../convex/_generated/api'
+import type { Id } from '../../../../convex/_generated/dataModel'
+import { AuthHeader } from '~/components/layout/auth-header'
+import { GradientBg } from '~/components/layout/GradientBg'
+import { MemberDirectory } from '~/components/org/MemberDirectory'
+import { Card } from '~/components/ui/card'
+import { Badge } from '~/components/ui/badge'
+import { Button } from '~/components/ui/button'
+import { Spinner } from '~/components/ui/spinner'
 
-export const Route = createFileRoute("/org/$slug/")({
+export const Route = createFileRoute('/org/$slug/')({
   component: OrgDirectoryPage,
-});
+})
 
 function OrgDirectoryPage() {
-  const { slug } = Route.useParams();
-  const org = useQuery(api.orgs.directory.getOrgBySlug, { slug });
+  const { slug } = Route.useParams()
+  const org = useQuery(api.orgs.directory.getOrgBySlug, { slug })
 
   if (org === undefined) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <GradientBg>
         <AuthHeader />
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-5xl mx-auto">
@@ -30,13 +31,13 @@ function OrgDirectoryPage() {
             </div>
           </div>
         </main>
-      </div>
-    );
+      </GradientBg>
+    )
   }
 
   if (org === null) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <GradientBg>
         <AuthHeader />
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-lg mx-auto text-center py-12">
@@ -54,12 +55,12 @@ function OrgDirectoryPage() {
             </Button>
           </div>
         </main>
-      </div>
-    );
+      </GradientBg>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <GradientBg>
       <AuthHeader />
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-5xl mx-auto">
@@ -67,24 +68,24 @@ function OrgDirectoryPage() {
           <MemberDirectory orgId={org._id} />
         </div>
       </main>
-    </div>
-  );
+    </GradientBg>
+  )
 }
 
 interface OrgHeaderProps {
   org: {
-    _id: Id<"organizations">;
-    name: string;
-    slug?: string;
-    logoUrl?: string;
-    lumaCalendarUrl?: string;
-  };
+    _id: Id<'organizations'>
+    name: string
+    slug?: string
+    logoUrl?: string
+    lumaCalendarUrl?: string
+  }
 }
 
 function OrgHeader({ org }: OrgHeaderProps) {
   const memberCount = useQuery(api.orgs.directory.getMemberCount, {
     orgId: org._id,
-  });
+  })
 
   return (
     <Card className="p-4 sm:p-6 mb-6">
@@ -102,13 +103,15 @@ function OrgHeader({ org }: OrgHeaderProps) {
             </div>
           )}
           <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">{org.name}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">
+              {org.name}
+            </h1>
             <div className="flex items-center gap-2 mt-1 text-slate-500 text-sm">
               <Users className="size-4 shrink-0" />
               <span>
                 {memberCount === undefined
-                  ? "..."
-                  : `${memberCount} member${memberCount === 1 ? "" : "s"}`}
+                  ? '...'
+                  : `${memberCount} member${memberCount === 1 ? '' : 's'}`}
               </span>
             </div>
           </div>
@@ -134,29 +137,29 @@ function OrgHeader({ org }: OrgHeaderProps) {
         </div>
       </div>
     </Card>
-  );
+  )
 }
 
 interface MembershipStatusProps {
-  orgId: Id<"organizations">;
-  orgSlug?: string;
+  orgId: Id<'organizations'>
+  orgSlug?: string
 }
 
 function MembershipStatus({ orgId, orgSlug }: MembershipStatusProps) {
-  const membership = useQuery(api.orgs.membership.getMembership, { orgId });
+  const membership = useQuery(api.orgs.membership.getMembership, { orgId })
 
   if (membership === undefined) {
-    return <Spinner className="size-5" />;
+    return <Spinner className="size-5" />
   }
 
   if (membership === null) {
-    return null;
+    return null
   }
 
   return (
     <div className="flex items-center gap-2">
       <Badge variant="secondary">Member</Badge>
-      {membership.role === "admin" && orgSlug && (
+      {membership.role === 'admin' && orgSlug && (
         <Button variant="outline" size="sm" asChild>
           <Link to="/org/$slug/admin" params={{ slug: orgSlug }}>
             <Settings className="size-4 mr-1" />
@@ -165,5 +168,5 @@ function MembershipStatus({ orgId, orgSlug }: MembershipStatusProps) {
         </Button>
       )}
     </div>
-  );
+  )
 }

@@ -17,6 +17,7 @@ import {
 import { api } from '../../../convex/_generated/api'
 import { UnauthenticatedRedirect } from '~/components/auth/unauthenticated-redirect'
 import { AuthHeader } from '~/components/layout/auth-header'
+import { GradientBg } from '~/components/layout/GradientBg'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Card } from '~/components/ui/card'
@@ -28,7 +29,7 @@ export const Route = createFileRoute('/profile/attendance')({
 
 function AttendanceHistoryPage() {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <GradientBg>
       <AuthHeader />
       <AuthLoading>
         <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">
@@ -41,7 +42,7 @@ function AttendanceHistoryPage() {
       <Authenticated>
         <AttendanceContent />
       </Authenticated>
-    </div>
+    </GradientBg>
   )
 }
 

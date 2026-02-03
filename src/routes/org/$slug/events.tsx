@@ -1,24 +1,25 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
-import { Building2, Calendar, ExternalLink } from "lucide-react";
-import { api } from "../../../../convex/_generated/api";
-import { AuthHeader } from "~/components/layout/auth-header";
-import { LumaEmbed } from "~/components/events/LumaEmbed";
-import { Card } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { useQuery } from 'convex/react'
+import { Building2, Calendar, ExternalLink } from 'lucide-react'
+import { api } from '../../../../convex/_generated/api'
+import { AuthHeader } from '~/components/layout/auth-header'
+import { GradientBg } from '~/components/layout/GradientBg'
+import { LumaEmbed } from '~/components/events/LumaEmbed'
+import { Card } from '~/components/ui/card'
+import { Button } from '~/components/ui/button'
 
-export const Route = createFileRoute("/org/$slug/events")({
+export const Route = createFileRoute('/org/$slug/events')({
   component: OrgEventsPage,
-});
+})
 
 function OrgEventsPage() {
-  const { slug } = Route.useParams();
-  const org = useQuery(api.orgs.directory.getOrgBySlug, { slug });
+  const { slug } = Route.useParams()
+  const org = useQuery(api.orgs.directory.getOrgBySlug, { slug })
 
   // Loading state
   if (org === undefined) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <GradientBg>
         <AuthHeader />
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
@@ -28,14 +29,14 @@ function OrgEventsPage() {
             </div>
           </div>
         </main>
-      </div>
-    );
+      </GradientBg>
+    )
   }
 
   // Not found state
   if (org === null) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <GradientBg>
         <AuthHeader />
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-lg mx-auto text-center py-12">
@@ -53,12 +54,12 @@ function OrgEventsPage() {
             </Button>
           </div>
         </main>
-      </div>
-    );
+      </GradientBg>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <GradientBg>
       <AuthHeader />
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
@@ -127,6 +128,6 @@ function OrgEventsPage() {
           )}
         </div>
       </main>
-    </div>
-  );
+    </GradientBg>
+  )
 }

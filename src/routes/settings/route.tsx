@@ -8,6 +8,7 @@ import {
 import { api } from '../../../convex/_generated/api'
 import { UnauthenticatedRedirect } from '~/components/auth/unauthenticated-redirect'
 import { AuthHeader } from '~/components/layout/auth-header'
+import { GradientBg } from '~/components/layout/GradientBg'
 import { MobileShell } from '~/components/layout/mobile-shell'
 import { useIsMobile } from '~/hooks/use-media-query'
 import { Spinner } from '~/components/ui/spinner'
@@ -29,7 +30,7 @@ function SettingsLayout() {
 
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <GradientBg>
         <AuthLoading>
           <AuthHeader />
           {loadingContent}
@@ -43,12 +44,12 @@ function SettingsLayout() {
             <Outlet />
           </MobileShell>
         </Authenticated>
-      </div>
+      </GradientBg>
     )
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <GradientBg>
       <AuthHeader />
       <AuthLoading>{loadingContent}</AuthLoading>
       <Unauthenticated>
@@ -57,6 +58,6 @@ function SettingsLayout() {
       <Authenticated>
         <Outlet />
       </Authenticated>
-    </div>
+    </GradientBg>
   )
 }
