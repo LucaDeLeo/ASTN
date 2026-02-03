@@ -16,15 +16,24 @@
 
 Enable orgs to self-onboard through an application flow, configure co-working spaces, and provide member booking + guest visit management.
 
-| Phase | Goal | Requirements |
-|-------|------|--------------|
-| ✅ 30 - Platform Admin + Org Application | Orgs apply to join ASTN; platform admins approve | 6 (ORGON-01 to ORGON-06) |
-| 31 - Org Self-Configuration + Space Definition | Approved orgs configure themselves and define space | 4 (ORGON-07 to ORGON-09, COWRK-01) |
-| 32 - Member Booking + Consent + Attendee View | Members book spots and see who else is coming | 7 (COWRK-02 to COWRK-08) |
-| 33 - Guest Access + Visit Applications | Non-members apply for visits; guest-to-member conversion | 10 (GUEST-01 to GUEST-10) |
-| 34 - Admin Dashboard + Stats | Org admins manage bookings, guests, and utilization | 9 (ADMIN-01 to ADMIN-09) |
+| Phase                                             | Goal                                                     | Plans   | Requirements                       |
+| ------------------------------------------------- | -------------------------------------------------------- | ------- | ---------------------------------- |
+| ✅ 30 - Platform Admin + Org Application          | Orgs apply to join ASTN; platform admins approve         | 2 plans | 6 (ORGON-01 to ORGON-06)           |
+| ✅ 31 - Org Self-Configuration + Space Definition | Approved orgs configure themselves and define space      | 2 plans | 4 (ORGON-07 to ORGON-09, COWRK-01) |
+| 32 - Member Booking + Consent + Attendee View     | Members book spots and see who else is coming            | 2 plans | 7 (COWRK-02 to COWRK-08)           |
+| 33 - Guest Access + Visit Applications            | Non-members apply for visits; guest-to-member conversion | TBD     | 10 (GUEST-01 to GUEST-10)          |
+| 34 - Admin Dashboard + Stats                      | Org admins manage bookings, guests, and utilization      | TBD     | 9 (ADMIN-01 to ADMIN-09)           |
+
+### Phase 32: Member Booking + Consent + Attendee View
+
+**Goal:** Members can book a co-working spot for any day with flexible hours, see who else is booked (with consent-based profile visibility), and manage their upcoming bookings.
+
+**Plans:**
+
+- [ ] 32-01-PLAN.md — Schema + Backend: spaceBookings table, booking mutations, attendee queries
+- [ ] 32-02-PLAN.md — Frontend: booking page with calendar, my bookings, attendee view
 
 ---
 
 _Roadmap created: 2026-01-20_
-_Last updated: 2026-02-03 -- Phase 30 (Platform Admin + Org Application) complete_
+_Last updated: 2026-02-03 -- Phase 32 (Member Booking + Consent + Attendee View) planned_
