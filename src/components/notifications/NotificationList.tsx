@@ -4,8 +4,10 @@ import {
   Building2,
   Calendar,
   CalendarCheck,
+  CheckCircle,
   HelpCircle,
   RefreshCw,
+  UserPlus,
   XCircle,
 } from 'lucide-react'
 import { useMutation } from 'convex/react'
@@ -24,6 +26,9 @@ interface Notification {
     | 'org_application_approved'
     | 'org_application_rejected'
     | 'booking_confirmed'
+    | 'guest_visit_approved'
+    | 'guest_visit_rejected'
+    | 'guest_visit_pending'
   title: string
   body: string
   actionUrl?: string
@@ -47,6 +52,9 @@ const typeIcons: Record<Notification['type'], typeof Calendar> = {
   org_application_approved: Building2,
   org_application_rejected: XCircle,
   booking_confirmed: CalendarCheck,
+  guest_visit_approved: CheckCircle,
+  guest_visit_rejected: XCircle,
+  guest_visit_pending: UserPlus,
 }
 
 export function NotificationList({
