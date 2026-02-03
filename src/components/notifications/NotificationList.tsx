@@ -1,5 +1,12 @@
 import { formatDistanceToNow } from 'date-fns'
-import { Bell, Calendar, HelpCircle, RefreshCw } from 'lucide-react'
+import {
+  Bell,
+  Building2,
+  Calendar,
+  HelpCircle,
+  RefreshCw,
+  XCircle,
+} from 'lucide-react'
 import { useMutation } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
@@ -8,7 +15,13 @@ import { AttendancePrompt } from '~/components/attendance'
 
 interface Notification {
   _id: Id<'notifications'>
-  type: 'event_new' | 'event_reminder' | 'event_updated' | 'attendance_prompt'
+  type:
+    | 'event_new'
+    | 'event_reminder'
+    | 'event_updated'
+    | 'attendance_prompt'
+    | 'org_application_approved'
+    | 'org_application_rejected'
   title: string
   body: string
   actionUrl?: string
@@ -24,11 +37,13 @@ interface NotificationListProps {
   onDismiss?: (notificationId: Id<'notifications'>) => void
 }
 
-const typeIcons = {
+const typeIcons: Record<Notification['type'], typeof Calendar> = {
   event_new: Calendar,
   event_reminder: Bell,
   event_updated: RefreshCw,
   attendance_prompt: HelpCircle,
+  org_application_approved: Building2,
+  org_application_rejected: XCircle,
 }
 
 export function NotificationList({
