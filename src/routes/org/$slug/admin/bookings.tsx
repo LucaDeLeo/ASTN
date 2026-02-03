@@ -7,13 +7,17 @@ import {
   CalendarDays,
   Clock,
   History,
+  Plus,
   Shield,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { useState } from 'react'
 import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 import { AuthHeader } from '~/components/layout/auth-header'
+import { AddBookingDialog } from '~/components/org/AddBookingDialog'
 import { AdminBookingCalendar } from '~/components/org/BookingCalendar'
+import { BookingExportButton } from '~/components/org/BookingExportButton'
 import { BookingHistory } from '~/components/org/BookingHistory'
 import { BookingList } from '~/components/org/BookingList'
 import { TodayBookings } from '~/components/org/TodayBookings'
@@ -147,23 +151,34 @@ function BookingsAdminPage() {
     )
   }
 
-  return <BookingsAdminContent org={org} space={space} slug={slug} />
+  return (
+    <BookingsAdminContent org={org} space={space} slug={slug} orgId={org._id} />
+  )
 }
 
 interface BookingsAdminContentProps {
   org: { name: string }
+  orgId: Id<'organizations'>
   space: { _id: string; name: string; capacity: number }
   slug: string
 }
 
-function BookingsAdminContent({ org, space, slug }: BookingsAdminContentProps) {
+function BookingsAdminContent({
+  org,
+  orgId,
+  space,
+  slug,
+}: BookingsAdminContentProps) {
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<
     Date | undefined
   >()
+  const [addBookingOpen, setAddBookingOpen] = useState(false)
 
-  // Date range for upcoming bookings (next 30 days)
+  // Date ranges
   const today = new Date()
-  const upcomingStartDate = format(today, 'yyyy-MM-dd')
+  const todayStr = format(today, 'yyyy-MM-dd')
+  const thirtyDaysAgo = format(addDays(today, -30), 'yyyy-MM-dd')
+  const upcomingStartDate = todayStr
   const upcomingEndDate = format(addDays(today, 30), 'yyyy-MM-dd')
 
   // Type assertion for space ID
@@ -202,6 +217,30 @@ function BookingsAdminContent({ org, space, slug }: BookingsAdminContentProps) {
               View and manage space bookings for {space.name}
             </p>
           </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-2 mb-6">
+            <Button onClick={() => setAddBookingOpen(true)}>
+              <Plus className="size-4 mr-2" />
+              Add Booking
+            </Button>
+            <BookingExportButton
+              spaceId={spaceId}
+              orgSlug={slug}
+              startDate={thirtyDaysAgo}
+              endDate={todayStr}
+            />
+          </div>
+
+          <AddBookingDialog
+            spaceId={spaceId}
+            orgId={orgId}
+            open={addBookingOpen}
+            onOpenChange={setAddBookingOpen}
+            onSuccess={() => {
+              toast.success('Booking created')
+            }}
+          />
 
           <Tabs defaultValue="today">
             <TabsList>
