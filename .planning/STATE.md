@@ -44,6 +44,9 @@ Progress: [█████████████████░░░] 85% (Ph
 | Inline guest profile creation in mutations                     | 33-01 | Convex runMutation cannot call internal mutations      |
 | Guest profiles preserved after member conversion               | 33-01 | Audit trail for visit history                          |
 | requireSpaceAdmin helper for space-level admin checks          | 33-01 | Consistent auth pattern for space operations           |
+| GuestSignupForm defaults to Create Account tab                 | 33-02 | Most guests are new users                              |
+| Pre-fill guest form from existing guestProfile                 | 33-02 | Returning guests have faster submission                |
+| Generic auth errors in guest signup                            | 33-02 | Avoid revealing account existence                      |
 | Client-side guest grouping in history view                     | 33-03 | Simpler than server-side aggregation for this use case |
 | Expandable custom field responses                              | 33-03 | Reduces visual clutter in approval queue               |
 
