@@ -1,44 +1,51 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
-import { Building2, FolderPlus, Plus, Shield } from "lucide-react";
-import { useState } from "react";
-import { api } from "../../../../../../convex/_generated/api";
-import { AuthHeader } from "~/components/layout/auth-header";
-import { ProgramCard } from "~/components/programs/ProgramCard";
-import { CreateProgramDialog } from "~/components/programs/CreateProgramDialog";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { useQuery } from 'convex/react'
+import { Building2, FolderPlus, Plus, Shield } from 'lucide-react'
+import { useState } from 'react'
+import { api } from '../../../../../../convex/_generated/api'
+import { AuthHeader } from '~/components/layout/auth-header'
+import { ProgramCard } from '~/components/programs/ProgramCard'
+import { CreateProgramDialog } from '~/components/programs/CreateProgramDialog'
+import { Button } from '~/components/ui/button'
+import { Card, CardContent } from '~/components/ui/card'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select";
-import { Spinner } from "~/components/ui/spinner";
+} from '~/components/ui/select'
+import { Spinner } from '~/components/ui/spinner'
 
-export const Route = createFileRoute("/org/$slug/admin/programs/")({
+export const Route = createFileRoute('/org/$slug/admin/programs/')({
   component: ProgramsListPage,
-});
+})
 
 function ProgramsListPage() {
-  const { slug } = Route.useParams();
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const { slug } = Route.useParams()
+  const [statusFilter, setStatusFilter] = useState<string>('all')
 
-  const org = useQuery(api.orgs.directory.getOrgBySlug, { slug });
+  const org = useQuery(api.orgs.directory.getOrgBySlug, { slug })
   const membership = useQuery(
     api.orgs.membership.getMembership,
-    org ? { orgId: org._id } : "skip"
-  );
+    org ? { orgId: org._id } : 'skip',
+  )
   const programs = useQuery(
     api.programs.getOrgPrograms,
-    org && membership?.role === "admin"
+    org && membership?.role === 'admin'
       ? {
           orgId: org._id,
-          status: statusFilter !== "all" ? (statusFilter as "planning" | "active" | "completed" | "archived") : undefined,
+          status:
+            statusFilter !== 'all'
+              ? (statusFilter as
+                  | 'planning'
+                  | 'active'
+                  | 'completed'
+                  | 'archived')
+              : undefined,
         }
-      : "skip"
-  );
+      : 'skip',
+  )
 
   // Loading
   if (org === undefined || membership === undefined) {
@@ -58,7 +65,7 @@ function ProgramsListPage() {
           </div>
         </main>
       </div>
-    );
+    )
   }
 
   if (org === null) {
@@ -68,31 +75,37 @@ function ProgramsListPage() {
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-lg mx-auto text-center py-12">
             <Building2 className="size-16 text-slate-300 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-foreground mb-4">Organization Not Found</h1>
+            <h1 className="text-2xl font-display text-foreground mb-4">
+              Organization Not Found
+            </h1>
             <Button asChild>
               <Link to="/">Go Home</Link>
             </Button>
           </div>
         </main>
       </div>
-    );
+    )
   }
 
-  if (!membership || membership.role !== "admin") {
+  if (!membership || membership.role !== 'admin') {
     return (
       <div className="min-h-screen bg-slate-50">
         <AuthHeader />
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-lg mx-auto text-center py-12">
             <Shield className="size-16 text-slate-300 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-foreground mb-4">Admin Access Required</h1>
+            <h1 className="text-2xl font-display text-foreground mb-4">
+              Admin Access Required
+            </h1>
             <Button asChild>
-              <Link to="/org/$slug" params={{ slug }}>Back to Organization</Link>
+              <Link to="/org/$slug" params={{ slug }}>
+                Back to Organization
+              </Link>
             </Button>
           </div>
         </main>
       </div>
-    );
+    )
   }
 
   return (
@@ -103,11 +116,19 @@ function ProgramsListPage() {
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-2 text-slate-500 text-sm mb-2">
-              <Link to="/org/$slug" params={{ slug }} className="hover:text-slate-700 transition-colors">
+              <Link
+                to="/org/$slug"
+                params={{ slug }}
+                className="hover:text-slate-700 transition-colors"
+              >
                 {org.name}
               </Link>
               <span>/</span>
-              <Link to="/org/$slug/admin" params={{ slug }} className="hover:text-slate-700 transition-colors">
+              <Link
+                to="/org/$slug/admin"
+                params={{ slug }}
+                className="hover:text-slate-700 transition-colors"
+              >
                 Admin
               </Link>
               <span>/</span>
@@ -115,7 +136,9 @@ function ProgramsListPage() {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Programs</h1>
+                <h1 className="text-2xl font-display text-foreground">
+                  Programs
+                </h1>
                 <p className="text-slate-600 mt-1">
                   Manage reading groups, fellowships, and other activities
                 </p>
@@ -158,12 +181,14 @@ function ProgramsListPage() {
               <CardContent className="py-12 text-center">
                 <FolderPlus className="size-12 text-slate-300 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-foreground mb-2">
-                  {statusFilter === "all" ? "No programs yet" : `No ${statusFilter} programs`}
+                  {statusFilter === 'all'
+                    ? 'No programs yet'
+                    : `No ${statusFilter} programs`}
                 </h3>
                 <p className="text-slate-500 text-sm mb-4">
                   Create a program to track member participation in activities
                 </p>
-                {statusFilter === "all" && (
+                {statusFilter === 'all' && (
                   <CreateProgramDialog
                     orgId={org._id}
                     trigger={
@@ -186,5 +211,5 @@ function ProgramsListPage() {
         </div>
       </main>
     </div>
-  );
+  )
 }

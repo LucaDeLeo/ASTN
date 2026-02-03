@@ -102,7 +102,7 @@ function InvalidTokenMessage({ message }: { message: string }) {
       <div className="size-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
         <Link2Off className="size-8 text-red-500" />
       </div>
-      <h1 className="text-2xl font-bold text-foreground mb-4">
+      <h1 className="text-2xl font-display text-foreground mb-4">
         Invalid Invite Link
       </h1>
       <p className="text-slate-600">{message}</p>
@@ -118,7 +118,7 @@ function SignInPrompt({ orgName }: { orgName: string }) {
       <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
         <Building2 className="size-8 text-primary" />
       </div>
-      <h1 className="text-2xl font-bold text-foreground mb-2">
+      <h1 className="text-2xl font-display text-foreground mb-2">
         Join {orgName}
       </h1>
       <p className="text-slate-600 mb-6">
@@ -157,7 +157,7 @@ function JoinForm({ token, orgId, orgName, orgSlug }: JoinFormProps) {
         <div className="size-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
           <Building2 className="size-8 text-green-600" />
         </div>
-        <h1 className="text-2xl font-bold text-foreground mb-2">
+        <h1 className="text-2xl font-display text-foreground mb-2">
           Already a Member
         </h1>
         <p className="text-slate-600 mb-6">
@@ -207,7 +207,7 @@ function JoinForm({ token, orgId, orgName, orgSlug }: JoinFormProps) {
         <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
           <Building2 className="size-8 text-primary" />
         </div>
-        <h1 className="text-2xl font-bold text-foreground mb-2">
+        <h1 className="text-2xl font-display text-foreground mb-2">
           Join {orgName}
         </h1>
         <p className="text-slate-600">

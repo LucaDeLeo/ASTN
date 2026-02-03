@@ -74,7 +74,7 @@ function AttendanceContent() {
             <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center">
               <CalendarCheck className="size-5 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="text-2xl font-display text-foreground">
               Attendance History
             </h1>
           </div>

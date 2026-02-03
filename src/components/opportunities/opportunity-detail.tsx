@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from '@tanstack/react-router'
 import {
   Banknote,
   Briefcase,
@@ -7,50 +7,63 @@ import {
   Clock,
   ExternalLink,
   MapPin,
-} from "lucide-react";
-import { format, formatDistanceToNow } from "date-fns";
-import type { Id } from "../../../convex/_generated/dataModel";
-import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { formatLocation } from "~/lib/formatLocation";
+} from 'lucide-react'
+import { format, formatDistanceToNow } from 'date-fns'
+import type { Id } from '../../../convex/_generated/dataModel'
+import { Button } from '~/components/ui/button'
+import { Badge } from '~/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
+import { formatLocation } from '~/lib/formatLocation'
 
 type Opportunity = {
-  _id: Id<"opportunities">;
-  title: string;
-  organization: string;
-  organizationLogoUrl?: string;
-  location: string;
-  isRemote: boolean;
-  roleType: string;
-  experienceLevel?: string;
-  description: string;
-  requirements?: Array<string>;
-  salaryRange?: string;
-  deadline?: number;
-  sourceUrl: string;
-  source: "80k_hours" | "aisafety_com" | "manual";
-  alternateSources?: Array<{ sourceId: string; source: string; sourceUrl: string }>;
-  lastVerified: number;
-  createdAt: number;
-};
+  _id: Id<'opportunities'>
+  title: string
+  organization: string
+  organizationLogoUrl?: string
+  location: string
+  isRemote: boolean
+  roleType: string
+  experienceLevel?: string
+  description: string
+  requirements?: Array<string>
+  salaryRange?: string
+  deadline?: number
+  sourceUrl: string
+  source: '80k_hours' | 'aisafety_com' | 'manual'
+  alternateSources?: Array<{
+    sourceId: string
+    source: string
+    sourceUrl: string
+  }>
+  lastVerified: number
+  createdAt: number
+}
 
 const SOURCE_NAMES: Record<string, string> = {
-  "80k_hours": "80,000 Hours",
-  aisafety_com: "aisafety.com",
-  manual: "Direct submission",
-};
+  '80k_hours': '80,000 Hours',
+  aisafety_com: 'aisafety.com',
+  manual: 'Direct submission',
+}
 
 const ROLE_TYPE_COLORS: Record<string, string> = {
-  research: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
-  engineering: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-  operations: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
-  policy: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
-  other: "bg-muted text-muted-foreground",
-};
+  research:
+    'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+  engineering:
+    'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+  operations:
+    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  policy:
+    'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+  other: 'bg-muted text-muted-foreground',
+}
 
-export function OpportunityDetail({ opportunity }: { opportunity: Opportunity }) {
-  const roleColorClass = ROLE_TYPE_COLORS[opportunity.roleType] || ROLE_TYPE_COLORS.other;
+export function OpportunityDetail({
+  opportunity,
+}: {
+  opportunity: Opportunity
+}) {
+  const roleColorClass =
+    ROLE_TYPE_COLORS[opportunity.roleType] || ROLE_TYPE_COLORS.other
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -73,8 +86,8 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
               <div className="min-w-0">
                 <h1
-                  style={{ viewTransitionName: "opportunity-title" }}
-                  className="text-xl sm:text-2xl font-bold text-foreground font-mono break-words"
+                  style={{ viewTransitionName: 'opportunity-title' }}
+                  className="text-xl sm:text-2xl font-display text-foreground break-words"
                 >
                   {opportunity.title}
                 </h1>
@@ -82,7 +95,9 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
                   {opportunity.organization}
                 </p>
               </div>
-              <Badge className={`${roleColorClass} capitalize rounded-sm shrink-0 self-start`}>
+              <Badge
+                className={`${roleColorClass} capitalize rounded-sm shrink-0 self-start`}
+              >
                 {opportunity.roleType}
               </Badge>
             </div>
@@ -90,9 +105,13 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4 text-muted-foreground text-sm sm:text-base">
               <span className="flex items-center gap-1.5">
                 <MapPin className="w-4 h-4 shrink-0" />
-                <span className="truncate max-w-[200px]">{formatLocation(opportunity.location)}</span>
+                <span className="truncate max-w-[200px]">
+                  {formatLocation(opportunity.location)}
+                </span>
                 {opportunity.isRemote && (
-                  <Badge variant="outline" className="ml-1 rounded-sm shrink-0">Remote</Badge>
+                  <Badge variant="outline" className="ml-1 rounded-sm shrink-0">
+                    Remote
+                  </Badge>
                 )}
               </span>
 
@@ -100,22 +119,23 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
                 <span className="flex items-center gap-1.5">
                   <Briefcase className="w-4 h-4 shrink-0" />
                   {opportunity.experienceLevel.charAt(0).toUpperCase() +
-                    opportunity.experienceLevel.slice(1)}{" "}
+                    opportunity.experienceLevel.slice(1)}{' '}
                   level
                 </span>
               )}
 
-              {opportunity.salaryRange && opportunity.salaryRange !== "Not Found" && (
-                <span className="flex items-center gap-1.5">
-                  <Banknote className="w-4 h-4 shrink-0" />
-                  {opportunity.salaryRange}
-                </span>
-              )}
+              {opportunity.salaryRange &&
+                opportunity.salaryRange !== 'Not Found' && (
+                  <span className="flex items-center gap-1.5">
+                    <Banknote className="w-4 h-4 shrink-0" />
+                    {opportunity.salaryRange}
+                  </span>
+                )}
 
               {opportunity.deadline && (
                 <span className="flex items-center gap-1.5">
                   <Clock className="w-4 h-4 shrink-0" />
-                  Deadline: {format(opportunity.deadline, "MMM d, yyyy")}
+                  Deadline: {format(opportunity.deadline, 'MMM d, yyyy')}
                 </span>
               )}
             </div>
@@ -143,7 +163,7 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
         </CardHeader>
         <CardContent>
           <div className="prose prose-neutral dark:prose-invert max-w-none">
-            {opportunity.description.split("\n").map((paragraph, i) => (
+            {opportunity.description.split('\n').map((paragraph, i) => (
               <p key={i}>{paragraph}</p>
             ))}
           </div>
@@ -172,8 +192,10 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
           <div className="flex items-center gap-1 font-mono">
             <Calendar className="w-4 h-4 shrink-0" />
             <span>
-              Last verified:{" "}
-              {formatDistanceToNow(opportunity.lastVerified, { addSuffix: true })}
+              Last verified:{' '}
+              {formatDistanceToNow(opportunity.lastVerified, {
+                addSuffix: true,
+              })}
             </span>
           </div>
 
@@ -188,23 +210,24 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
               {SOURCE_NAMES[opportunity.source] || opportunity.source}
             </a>
 
-            {opportunity.alternateSources && opportunity.alternateSources.length > 0 && (
-              <>
-                <span className="text-muted-foreground/50">|</span>
-                <span>Also on:</span>
-                {opportunity.alternateSources.map((alt, i) => (
-                  <a
-                    key={i}
-                    href={alt.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    {SOURCE_NAMES[alt.source] || alt.source}
-                  </a>
-                ))}
-              </>
-            )}
+            {opportunity.alternateSources &&
+              opportunity.alternateSources.length > 0 && (
+                <>
+                  <span className="text-muted-foreground/50">|</span>
+                  <span>Also on:</span>
+                  {opportunity.alternateSources.map((alt, i) => (
+                    <a
+                      key={i}
+                      href={alt.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      {SOURCE_NAMES[alt.source] || alt.source}
+                    </a>
+                  ))}
+                </>
+              )}
           </div>
         </div>
       </div>
@@ -212,9 +235,11 @@ export function OpportunityDetail({ opportunity }: { opportunity: Opportunity })
       {/* Back link */}
       <div className="mt-8">
         <Button variant="outline" asChild className="rounded-sm">
-          <Link to="/opportunities" viewTransition>Back to all opportunities</Link>
+          <Link to="/opportunities" viewTransition>
+            Back to all opportunities
+          </Link>
         </Button>
       </div>
     </div>
-  );
+  )
 }

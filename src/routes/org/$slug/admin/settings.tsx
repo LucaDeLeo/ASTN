@@ -1,47 +1,53 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
-import { Building2, Loader2, Save, Shield } from "lucide-react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { api } from "../../../../../convex/_generated/api";
-import { AuthHeader } from "~/components/layout/auth-header";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Spinner } from "~/components/ui/spinner";
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { useMutation, useQuery } from 'convex/react'
+import { Building2, Loader2, Save, Shield } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
+import { api } from '../../../../../convex/_generated/api'
+import { AuthHeader } from '~/components/layout/auth-header'
+import { Button } from '~/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '~/components/ui/card'
+import { Input } from '~/components/ui/input'
+import { Label } from '~/components/ui/label'
+import { Spinner } from '~/components/ui/spinner'
 
-export const Route = createFileRoute("/org/$slug/admin/settings")({
+export const Route = createFileRoute('/org/$slug/admin/settings')({
   component: OrgAdminSettings,
-});
+})
 
 function OrgAdminSettings() {
-  const { slug } = Route.useParams();
+  const { slug } = Route.useParams()
 
-  const org = useQuery(api.orgs.directory.getOrgBySlug, { slug });
+  const org = useQuery(api.orgs.directory.getOrgBySlug, { slug })
   const membership = useQuery(
     api.orgs.membership.getMembership,
-    org ? { orgId: org._id } : "skip"
-  );
+    org ? { orgId: org._id } : 'skip',
+  )
   const lumaConfig = useQuery(
     api.orgs.admin.getLumaConfig,
-    org && membership?.role === "admin" ? { orgId: org._id } : "skip"
-  );
+    org && membership?.role === 'admin' ? { orgId: org._id } : 'skip',
+  )
 
   // Form state
-  const [lumaCalendarUrl, setLumaCalendarUrl] = useState("");
-  const [lumaApiKey, setLumaApiKey] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
+  const [lumaCalendarUrl, setLumaCalendarUrl] = useState('')
+  const [lumaApiKey, setLumaApiKey] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
 
-  const updateLumaConfig = useMutation(api.orgs.admin.updateLumaConfig);
+  const updateLumaConfig = useMutation(api.orgs.admin.updateLumaConfig)
 
   // Populate form when config loads
   useEffect(() => {
     if (lumaConfig) {
-      setLumaCalendarUrl(lumaConfig.lumaCalendarUrl || "");
-      setLumaApiKey(lumaConfig.lumaApiKey || "");
+      setLumaCalendarUrl(lumaConfig.lumaCalendarUrl || '')
+      setLumaApiKey(lumaConfig.lumaApiKey || '')
     }
-  }, [lumaConfig]);
+  }, [lumaConfig])
 
   // Loading state
   if (org === undefined || membership === undefined) {
@@ -57,7 +63,7 @@ function OrgAdminSettings() {
           </div>
         </main>
       </div>
-    );
+    )
   }
 
   // Org not found
@@ -70,7 +76,7 @@ function OrgAdminSettings() {
             <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
               <Building2 className="size-8 text-slate-400" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground mb-4">
+            <h1 className="text-2xl font-display text-foreground mb-4">
               Organization Not Found
             </h1>
             <Button asChild>
@@ -79,11 +85,11 @@ function OrgAdminSettings() {
           </div>
         </main>
       </div>
-    );
+    )
   }
 
   // Not an admin
-  if (!membership || membership.role !== "admin") {
+  if (!membership || membership.role !== 'admin') {
     return (
       <div className="min-h-screen bg-slate-50">
         <AuthHeader />
@@ -92,7 +98,7 @@ function OrgAdminSettings() {
             <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
               <Shield className="size-8 text-slate-400" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground mb-4">
+            <h1 className="text-2xl font-display text-foreground mb-4">
               Admin Access Required
             </h1>
             <Button asChild>
@@ -103,27 +109,27 @@ function OrgAdminSettings() {
           </div>
         </main>
       </div>
-    );
+    )
   }
 
   const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
+    e.preventDefault()
+    setIsSaving(true)
 
     try {
       await updateLumaConfig({
         orgId: org._id,
         lumaCalendarUrl: lumaCalendarUrl.trim() || undefined,
         lumaApiKey: lumaApiKey.trim() || undefined,
-      });
-      toast.success("Settings saved successfully");
+      })
+      toast.success('Settings saved successfully')
     } catch (error) {
-      console.error("Failed to save settings:", error);
-      toast.error("Failed to save settings. Please try again.");
+      console.error('Failed to save settings:', error)
+      toast.error('Failed to save settings. Please try again.')
     } finally {
-      setIsSaving(false);
+      setIsSaving(false)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -151,7 +157,7 @@ function OrgAdminSettings() {
               <span>/</span>
               <span className="text-slate-700">Settings</span>
             </div>
-            <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+            <h1 className="text-2xl font-display text-foreground">Settings</h1>
             <p className="text-slate-600 mt-1">
               Configure integrations and organization settings
             </p>
@@ -162,7 +168,8 @@ function OrgAdminSettings() {
             <CardHeader>
               <CardTitle>Lu.ma Events Integration</CardTitle>
               <CardDescription>
-                Connect your lu.ma calendar to display events on your organization page
+                Connect your lu.ma calendar to display events on your
+                organization page
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -182,7 +189,8 @@ function OrgAdminSettings() {
                       onChange={(e) => setLumaCalendarUrl(e.target.value)}
                     />
                     <p className="text-sm text-slate-500">
-                      Your public lu.ma calendar URL (e.g., https://lu.ma/your-calendar)
+                      Your public lu.ma calendar URL (e.g.,
+                      https://lu.ma/your-calendar)
                     </p>
                   </div>
 
@@ -196,7 +204,8 @@ function OrgAdminSettings() {
                       onChange={(e) => setLumaApiKey(e.target.value)}
                     />
                     <p className="text-sm text-slate-500">
-                      Optional - enables event display on dashboard. Requires Luma Plus subscription.
+                      Optional - enables event display on dashboard. Requires
+                      Luma Plus subscription.
                     </p>
                   </div>
 
@@ -229,5 +238,5 @@ function OrgAdminSettings() {
         </div>
       </main>
     </div>
-  );
+  )
 }
