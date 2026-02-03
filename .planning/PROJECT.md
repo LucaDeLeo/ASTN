@@ -8,13 +8,27 @@ A career command center for AI safety talent. Individuals maintain living profil
 
 Individuals get enough value from smart matching + recommendations that they keep profiles fresh -- this is the flywheel that makes everything else work.
 
+## Current Milestone: v1.5 Org Onboarding & Co-working
+
+**Goal:** Enable orgs to self-onboard through an application flow, and provide native co-working space management so members can book desks and see who's around.
+
+**Target features:**
+- Org application + ASTN admin approval + org self-configuration (location, homepage, admins)
+- Co-working space definition (capacity, operating hours) with custom visit application forms
+- Member direct booking with flexible hours ("10am-3pm"), soft capacity warnings
+- Lightweight guest access: quick account → visit application → org approval → temporary access
+- Guest visit info pre-fills ASTN profile if they later choose to create one
+- Explicit consent: booking a visit means attendees that day can see your profile
+- Admin dashboard: bookings calendar, attendance history, utilization stats
+- One-off daily bookings only (no recurring for now)
+
 ## Current State
 
 **Shipped:** v1.4 Hardening (2026-02-02)
 
 v1.4 closed all security vulnerabilities, bugs, performance issues, and code quality gaps from the comprehensive codebase review. Authentication hardened across all endpoints, OAuth secured with PKCE S256, LLM calls defended against prompt injection, CI pipeline and pre-commit hooks established, all known bugs fixed, N+1 queries eliminated, accessibility improved (WCAG 2.1 forms), and visual polish completed.
 
-**No active milestone.** Run `/gsd:new-milestone` to start the next one.
+**Active milestone:** v1.5 Org Onboarding & Co-working
 
 **Tech stack:** Convex + TanStack Start + React 19 + shadcn/ui + Claude Sonnet 4.5/Haiku 4.5
 
@@ -156,4 +170,4 @@ v1.4 closed all security vulnerabilities, bugs, performance issues, and code qua
 
 ---
 
-_Last updated: 2026-02-02 -- v1.4 Hardening shipped and archived_
+_Last updated: 2026-02-03 -- v1.5 Org Onboarding & Co-working milestone started_
