@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** v1.5 Org Onboarding & Co-working -- Phase 30 complete
+**Current focus:** v1.5 Org Onboarding & Co-working -- Phase 32 in progress
 
 ## Current Position
 
-Phase: 30 of 34 (Platform Admin + Org Application)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-02-03 -- Phase 30 verified (5/5 must-haves passed after gap fixes)
+Phase: 32 of 34 (Member Booking + Consent + Attendee View)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-02-03 -- Completed 32-01-PLAN.md (Schema + Backend - Member Booking)
 
-Progress: [██████████] 100% (phase 30)
+Progress: [███████████░░░░░░░░░] 55% (32-01 complete)
 
 ## Milestone History
 
@@ -29,21 +29,24 @@ Progress: [██████████] 100% (phase 30)
 
 ## Accumulated Decisions
 
-| Decision | Phase | Rationale |
-|----------|-------|-----------|
-| Platform admin is separate `platformAdmins` table | 30-01 | Clean separation from org-level admin role |
-| Slug generation with db uniqueness in `convex/lib/slug.ts` | 30-01 | Reusable utility, appends -2, -3 for collisions |
-| Case-insensitive normalized org name for duplicate detection | 30-01 | Checks both organizations and orgApplications tables |
-| Pre-fill applicant name from profile, email from auth identity | 30-02 | Profile has no email field; auth identity does |
-| Desktop table + mobile card list for admin review queue | 30-02 | Responsive pattern matching existing member list |
-| Rejection reason minimum 10 characters | 30-02 | Ensures meaningful feedback to applicants |
+| Decision                                                       | Phase | Rationale                                              |
+| -------------------------------------------------------------- | ----- | ------------------------------------------------------ |
+| Platform admin is separate `platformAdmins` table              | 30-01 | Clean separation from org-level admin role             |
+| Slug generation with db uniqueness in `convex/lib/slug.ts`     | 30-01 | Reusable utility, appends -2, -3 for collisions        |
+| Case-insensitive normalized org name for duplicate detection   | 30-01 | Checks both organizations and orgApplications tables   |
+| Pre-fill applicant name from profile, email from auth identity | 30-02 | Profile has no email field; auth identity does         |
+| Desktop table + mobile card list for admin review queue        | 30-02 | Responsive pattern matching existing member list       |
+| Rejection reason minimum 10 characters                         | 30-02 | Ensures meaningful feedback to applicants              |
+| Soft capacity warnings without blocking                        | 32-01 | Allows admin flexibility for overbooking if needed     |
+| Consent required for booking                                   | 32-01 | consentToProfileSharing must be true to create booking |
+| Profile subset for attendees: name, headline, skills only      | 32-01 | Minimal PII exposure for attendee visibility           |
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 94
-- Total execution time: ~20.6 hours (across all milestones)
+- Total plans completed: 95
+- Total execution time: ~20.7 hours (across all milestones)
 
 ## Pending Todos
 
@@ -60,11 +63,11 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Phase 30 complete and verified (5/5 must-haves)
+Stopped at: Completed 32-01-PLAN.md (Schema + Backend - Member Booking)
 Resume file: None
-Next action: `/gsd:plan-phase 31` to plan Org Self-Configuration + Space Definition
+Next action: Execute 32-02-PLAN.md (Member Booking UI + Attendee View)
 
 ---
 
 _State initialized: 2026-01-17_
-_Last updated: 2026-02-03 -- Phase 30 complete and verified_
+_Last updated: 2026-02-03 -- 32-01 complete_
