@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 ## Current Position
 
 Phase: 34 of 34 (Admin Dashboard & Polish)
-Plan: 1 of 4 in current phase
+Plan: 3 of 4 in current phase
 Status: In progress
-Last activity: 2026-02-03 -- Completed 34-01-PLAN.md (Admin Booking Backend)
+Last activity: 2026-02-03 -- Completed 34-03-PLAN.md (Admin Booking Components)
 
-Progress: [██████████████████░░] 90% (Phase 34 plan 1 of 4 complete)
+Progress: [███████████████████░] 95% (Phase 34 plan 3 of 4 complete)
 
 ## Milestone History
 
@@ -25,39 +25,41 @@ Progress: [██████████████████░░] 90% (Ph
 - v2.0 Mobile + Tauri (partial) - Phases 21-23, 26 complete (16 plans). Phase 25 deferred.
 - v1.4 Hardening - 3 phases (27-29), 9 plans - shipped 2026-02-02
 
-**Total:** 29 phases, 100 plans across 5 shipped milestones + partial v2.0
+**Total:** 29 phases, 103 plans across 5 shipped milestones + partial v2.0
 
 ## Accumulated Decisions
 
-| Decision                                                       | Phase | Rationale                                              |
-| -------------------------------------------------------------- | ----- | ------------------------------------------------------ |
-| Platform admin is separate `platformAdmins` table              | 30-01 | Clean separation from org-level admin role             |
-| Slug generation with db uniqueness in `convex/lib/slug.ts`     | 30-01 | Reusable utility, appends -2, -3 for collisions        |
-| Case-insensitive normalized org name for duplicate detection   | 30-01 | Checks both organizations and orgApplications tables   |
-| Pre-fill applicant name from profile, email from auth identity | 30-02 | Profile has no email field; auth identity does         |
-| Desktop table + mobile card list for admin review queue        | 30-02 | Responsive pattern matching existing member list       |
-| Rejection reason minimum 10 characters                         | 30-02 | Ensures meaningful feedback to applicants              |
-| Soft capacity warnings without blocking                        | 32-01 | Allows admin flexibility for overbooking if needed     |
-| Consent required for booking                                   | 32-01 | consentToProfileSharing must be true to create booking |
-| Profile subset for attendees: name, headline, skills only      | 32-01 | Minimal PII exposure for attendee visibility           |
-| react-day-picker v9 with custom DayButton                      | 32-02 | Availability indicators via green/yellow/red dots      |
-| Inline guest profile creation in mutations                     | 33-01 | Convex runMutation cannot call internal mutations      |
-| Guest profiles preserved after member conversion               | 33-01 | Audit trail for visit history                          |
-| requireSpaceAdmin helper for space-level admin checks          | 33-01 | Consistent auth pattern for space operations           |
-| GuestSignupForm defaults to Create Account tab                 | 33-02 | Most guests are new users                              |
-| Pre-fill guest form from existing guestProfile                 | 33-02 | Returning guests have faster submission                |
-| Generic auth errors in guest signup                            | 33-02 | Avoid revealing account existence                      |
-| Client-side guest grouping in history view                     | 33-03 | Simpler than server-side aggregation for this use case |
-| Expandable custom field responses                              | 33-03 | Reduces visual clutter in approval queue               |
-| Cursor-based pagination for admin booking queries              | 34-01 | Efficient pagination using booking ID as cursor        |
-| Combined queries + mutations in spaceBookings/admin.ts         | 34-01 | Follows orgs/admin.ts nested folder pattern            |
+| Decision                                                       | Phase | Rationale                                               |
+| -------------------------------------------------------------- | ----- | ------------------------------------------------------- |
+| Platform admin is separate `platformAdmins` table              | 30-01 | Clean separation from org-level admin role              |
+| Slug generation with db uniqueness in `convex/lib/slug.ts`     | 30-01 | Reusable utility, appends -2, -3 for collisions         |
+| Case-insensitive normalized org name for duplicate detection   | 30-01 | Checks both organizations and orgApplications tables    |
+| Pre-fill applicant name from profile, email from auth identity | 30-02 | Profile has no email field; auth identity does          |
+| Desktop table + mobile card list for admin review queue        | 30-02 | Responsive pattern matching existing member list        |
+| Rejection reason minimum 10 characters                         | 30-02 | Ensures meaningful feedback to applicants               |
+| Soft capacity warnings without blocking                        | 32-01 | Allows admin flexibility for overbooking if needed      |
+| Consent required for booking                                   | 32-01 | consentToProfileSharing must be true to create booking  |
+| Profile subset for attendees: name, headline, skills only      | 32-01 | Minimal PII exposure for attendee visibility            |
+| react-day-picker v9 with custom DayButton                      | 32-02 | Availability indicators via green/yellow/red dots       |
+| Inline guest profile creation in mutations                     | 33-01 | Convex runMutation cannot call internal mutations       |
+| Guest profiles preserved after member conversion               | 33-01 | Audit trail for visit history                           |
+| requireSpaceAdmin helper for space-level admin checks          | 33-01 | Consistent auth pattern for space operations            |
+| GuestSignupForm defaults to Create Account tab                 | 33-02 | Most guests are new users                               |
+| Pre-fill guest form from existing guestProfile                 | 33-02 | Returning guests have faster submission                 |
+| Generic auth errors in guest signup                            | 33-02 | Avoid revealing account existence                       |
+| Client-side guest grouping in history view                     | 33-03 | Simpler than server-side aggregation for this use case  |
+| Expandable custom field responses                              | 33-03 | Reduces visual clutter in approval queue                |
+| Cursor-based pagination for admin booking queries              | 34-01 | Efficient pagination using booking ID as cursor         |
+| Combined queries + mutations in spaceBookings/admin.ts         | 34-01 | Follows orgs/admin.ts nested folder pattern             |
+| Time options 6 AM to 10 PM in 30-min increments                | 34-03 | Standard coworking hours for booking time selectors     |
+| BookingCard status badges with color variants by status        | 34-03 | Visual distinction: confirmed=green, pending=amber, etc |
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 100
-- Total execution time: ~21.3 hours (across all milestones)
+- Total plans completed: 103
+- Total execution time: ~21.4 hours (across all milestones)
 
 ## Pending Todos
 
@@ -74,11 +76,11 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Completed 34-01-PLAN.md (Admin Booking Backend)
+Stopped at: Completed 34-03-PLAN.md (Admin Booking Components)
 Resume file: None
-Next action: Execute 34-02-PLAN.md (Admin Booking Dashboard UI)
+Next action: Execute 34-04-PLAN.md (Admin Dashboard Integration)
 
 ---
 
 _State initialized: 2026-01-17_
-_Last updated: 2026-02-03 -- Phase 34 plan 1 complete_
+_Last updated: 2026-02-03 -- Phase 34 plan 3 complete_
