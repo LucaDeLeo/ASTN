@@ -1,34 +1,52 @@
-import { Link } from "@tanstack/react-router";
-import { Building2, Calendar, MapPin, Users } from "lucide-react";
-import type { Id } from "../../../convex/_generated/dataModel";
-import { Card } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
+import { Link, useNavigate } from '@tanstack/react-router'
+import { Building2, Calendar, MapPin, Users } from 'lucide-react'
+import type { Id } from '../../../convex/_generated/dataModel'
+import { Card } from '~/components/ui/card'
+import { Button } from '~/components/ui/button'
 
 export interface OrgCardProps {
   org: {
-    _id: Id<"organizations">;
-    name: string;
-    slug?: string;
-    logoUrl?: string;
-    description?: string;
-    city?: string;
-    country?: string;
-    memberCount?: number;
-    upcomingEventCount?: number;
-  };
-  variant?: "carousel" | "list";
+    _id: Id<'organizations'>
+    name: string
+    slug?: string
+    logoUrl?: string
+    description?: string
+    city?: string
+    country?: string
+    memberCount?: number
+    upcomingEventCount?: number
+  }
+  variant?: 'carousel' | 'list'
 }
 
-export function OrgCard({ org, variant = "carousel" }: OrgCardProps) {
-  const location = [org.city, org.country].filter(Boolean).join(", ");
-  const slug = org.slug ?? org._id;
+export function OrgCard({ org, variant = 'carousel' }: OrgCardProps) {
+  const location = [org.city, org.country].filter(Boolean).join(', ')
+  const slug = org.slug ?? org._id
+  const navigate = useNavigate()
+
+  const handleNavigate = () => {
+    navigate({ to: '/org/$slug', params: { slug } })
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      handleNavigate()
+    }
+  }
 
   return (
     <Card
+      role="link"
+      tabIndex={0}
+      aria-label={org.name}
+      onClick={handleNavigate}
+      onKeyDown={handleKeyDown}
       className={
-        variant === "carousel"
-          ? "w-72 p-4 flex flex-col"
-          : "w-full p-4 flex flex-col"
+        (variant === 'carousel'
+          ? 'w-72 p-4 flex flex-col'
+          : 'w-full p-4 flex flex-col') +
+        ' cursor-pointer hover:shadow-md transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
       }
     >
       {/* Logo and name */}
@@ -68,7 +86,7 @@ export function OrgCard({ org, variant = "carousel" }: OrgCardProps) {
           <div className="flex items-center gap-1">
             <Users className="size-3.5" />
             <span>
-              {org.memberCount} {org.memberCount === 1 ? "member" : "members"}
+              {org.memberCount} {org.memberCount === 1 ? 'member' : 'members'}
             </span>
           </div>
         )}
@@ -76,19 +94,25 @@ export function OrgCard({ org, variant = "carousel" }: OrgCardProps) {
           <div className="flex items-center gap-1">
             <Calendar className="size-3.5" />
             <span>
-              {org.upcomingEventCount} upcoming{" "}
-              {org.upcomingEventCount === 1 ? "event" : "events"}
+              {org.upcomingEventCount} upcoming{' '}
+              {org.upcomingEventCount === 1 ? 'event' : 'events'}
             </span>
           </div>
         )}
       </div>
 
-      {/* Action button */}
-      <Button asChild variant="outline" size="sm" className="w-full mt-auto">
-        <Link to="/org/$slug" params={{ slug }}>
+      {/* Action button - not a separate tab stop since card handles navigation */}
+      <Button
+        asChild
+        variant="outline"
+        size="sm"
+        className="w-full mt-auto"
+        tabIndex={-1}
+      >
+        <Link to="/org/$slug" params={{ slug }} tabIndex={-1}>
           View Organization
         </Link>
       </Button>
     </Card>
-  );
+  )
 }
