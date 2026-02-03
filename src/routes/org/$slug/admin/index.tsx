@@ -4,6 +4,7 @@ import { useState } from 'react'
 import {
   Building2,
   Calendar,
+  CalendarCheck,
   Download,
   FolderPlus,
   MapPin,
@@ -16,8 +17,10 @@ import {
 import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 import { AuthHeader } from '~/components/layout/auth-header'
-import { OrgStats } from '~/components/org/OrgStats'
+import { GuestConversionCard } from '~/components/org/GuestConversionCard'
 import { OnboardingChecklist } from '~/components/org/OnboardingChecklist'
+import { OrgStats } from '~/components/org/OrgStats'
+import { SpaceUtilizationCard } from '~/components/org/SpaceUtilizationCard'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { Button } from '~/components/ui/button'
 import { Spinner } from '~/components/ui/spinner'
@@ -51,6 +54,10 @@ function OrgAdminDashboard() {
     org && membership?.role === 'admin'
       ? { orgId: org._id, timeRange }
       : 'skip',
+  )
+  const space = useQuery(
+    api.coworkingSpaces.getSpaceByOrg,
+    org && membership?.role === 'admin' ? { orgId: org._id } : 'skip',
   )
 
   // Loading state
@@ -266,6 +273,13 @@ function OrgAdminDashboard() {
             </Button>
 
             <Button variant="outline" className="h-auto py-4" asChild>
+              <Link to="/org/$slug/admin/bookings" params={{ slug }}>
+                <CalendarCheck className="size-5 mr-2" />
+                Bookings
+              </Link>
+            </Button>
+
+            <Button variant="outline" className="h-auto py-4" asChild>
               <Link to="/org/$slug/admin/settings" params={{ slug }}>
                 <Settings className="size-5 mr-2" />
                 Settings
@@ -279,6 +293,29 @@ function OrgAdminDashboard() {
               </Link>
             </Button>
           </div>
+
+          {/* Co-working Statistics */}
+          {space && (
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground">
+                    Co-working Statistics
+                  </h2>
+                  <p className="text-sm text-slate-500">
+                    Space utilization and guest conversion tracking
+                  </p>
+                </div>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <SpaceUtilizationCard
+                  spaceId={space._id}
+                  spaceName={space.name}
+                />
+                <GuestConversionCard spaceId={space._id} />
+              </div>
+            </div>
+          )}
 
           {/* Statistics Section Header with Time Range Selector */}
           <div className="flex items-center justify-between mb-6">
