@@ -347,6 +347,11 @@ export default defineSchema({
     // Consent for attendee visibility (required for booking)
     consentToProfileSharing: v.boolean(),
 
+    // Guest approval fields (Phase 33)
+    approvedBy: v.optional(v.id('orgMemberships')),
+    approvedAt: v.optional(v.number()),
+    rejectionReason: v.optional(v.string()),
+
     // Metadata
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -543,6 +548,9 @@ export default defineSchema({
       v.literal('org_application_approved'),
       v.literal('org_application_rejected'),
       v.literal('booking_confirmed'),
+      v.literal('guest_visit_approved'),
+      v.literal('guest_visit_rejected'),
+      v.literal('guest_visit_pending'),
     ),
     eventId: v.optional(v.id('events')),
     orgId: v.optional(v.id('organizations')),
@@ -795,4 +803,39 @@ export default defineSchema({
     .index('by_org', ['orgId'])
     .index('by_program_status', ['programId', 'status'])
     .index('by_user_org', ['userId', 'orgId']),
+
+  // Guest profiles (Phase 33) - lightweight accounts for visitors
+  guestProfiles: defineTable({
+    userId: v.string(),
+    name: v.string(),
+    email: v.string(),
+
+    // Optional contact info
+    phone: v.optional(v.string()),
+    organization: v.optional(v.string()),
+    title: v.optional(v.string()),
+
+    // Visit tracking
+    visitCount: v.number(),
+    firstVisitDate: v.optional(v.string()), // ISO date
+    lastVisitDate: v.optional(v.string()), // ISO date
+
+    // Conversion tracking (GUEST-08)
+    becameMember: v.boolean(),
+    becameMemberAt: v.optional(v.number()),
+    convertedToProfileId: v.optional(v.id('profiles')),
+
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_user', ['userId'])
+    .index('by_email', ['email']),
+
+  // Visit application responses (Phase 33) - custom form field answers
+  visitApplicationResponses: defineTable({
+    spaceBookingId: v.id('spaceBookings'),
+    fieldId: v.string(),
+    value: v.string(),
+    createdAt: v.number(),
+  }).index('by_booking', ['spaceBookingId']),
 })
