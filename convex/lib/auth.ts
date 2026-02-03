@@ -44,3 +44,50 @@ export async function requireAnyOrgAdmin(
 
   return userId
 }
+
+/**
+ * Require the current user to be a platform admin.
+ * Throws "Not authenticated" if no valid session exists.
+ * Throws "Platform admin access required" if user is not a platform admin.
+ *
+ * Use this for platform-wide admin endpoints (e.g., reviewing org applications).
+ */
+export async function requirePlatformAdmin(
+  ctx: QueryCtx | MutationCtx,
+): Promise<string> {
+  const userId = await auth.getUserId(ctx)
+  if (!userId) {
+    throw new Error('Not authenticated')
+  }
+
+  const admin = await ctx.db
+    .query('platformAdmins')
+    .withIndex('by_user', (q) => q.eq('userId', userId))
+    .first()
+
+  if (!admin) {
+    throw new Error('Platform admin access required')
+  }
+
+  return userId
+}
+
+/**
+ * Check if the current user is a platform admin (non-throwing).
+ * Returns false if not authenticated or not a platform admin.
+ *
+ * Use this for frontend gating (show/hide admin UI elements).
+ */
+export async function isPlatformAdmin(
+  ctx: QueryCtx | MutationCtx,
+): Promise<boolean> {
+  const userId = await auth.getUserId(ctx)
+  if (!userId) return false
+
+  const admin = await ctx.db
+    .query('platformAdmins')
+    .withIndex('by_user', (q) => q.eq('userId', userId))
+    .first()
+
+  return !!admin
+}
