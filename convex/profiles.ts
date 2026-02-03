@@ -1,4 +1,5 @@
 import { v } from 'convex/values'
+import { internal } from './_generated/api'
 import { mutation, query } from './_generated/server'
 import { auth } from './auth'
 
@@ -98,6 +99,12 @@ export const create = mutation({
       userId,
       createdAt: now,
       updatedAt: now,
+    })
+
+    // Mark guest as having become a member (if they were a guest)
+    await ctx.scheduler.runAfter(0, internal.guestProfiles.markGuestAsMember, {
+      userId,
+      profileId,
     })
 
     return profileId
@@ -287,6 +294,13 @@ export const updateNotificationPreferences = mutation({
         updatedAt: now,
       })
       profile = (await ctx.db.get('profiles', profileId))!
+
+      // Mark guest as having become a member (if they were a guest)
+      await ctx.scheduler.runAfter(
+        0,
+        internal.guestProfiles.markGuestAsMember,
+        { userId, profileId },
+      )
     }
 
     // Update notification preferences
@@ -419,6 +433,13 @@ export const applyExtractedProfile = mutation({
         updatedAt: now,
       })
       profile = (await ctx.db.get('profiles', profileId))!
+
+      // Mark guest as having become a member (if they were a guest)
+      await ctx.scheduler.runAfter(
+        0,
+        internal.guestProfiles.markGuestAsMember,
+        { userId, profileId },
+      )
     }
 
     // Build updates object with only provided fields

@@ -1,16 +1,9 @@
 import { v } from 'convex/values'
 import { internal } from './_generated/api'
 import { mutation, query } from './_generated/server'
+import { isValidDateString, validateBookingTime } from './lib/bookingValidation'
 import { requireAuth, requireSpaceAdmin } from './lib/auth'
 import type { Id } from './_generated/dataModel'
-
-// Validate ISO date string format (YYYY-MM-DD)
-function isValidDateString(date: string): boolean {
-  const regex = /^\d{4}-\d{2}-\d{2}$/
-  if (!regex.test(date)) return false
-  const parsed = new Date(date)
-  return !isNaN(parsed.getTime())
-}
 
 // ---------- Mutations ----------
 
@@ -75,6 +68,18 @@ export const submitVisitApplication = mutation({
       throw new Error('End time must be after start time')
     }
 
+    // Validate against operating hours and past dates
+    const validation = validateBookingTime(
+      date,
+      startMinutes,
+      endMinutes,
+      space.operatingHours,
+      space.timezone,
+    )
+    if (!validation.valid) {
+      throw new Error(validation.reason)
+    }
+
     // Validate required custom fields
     const customFields = space.customVisitFields ?? []
     const requiredFields = customFields.filter((f) => f.required)
@@ -84,6 +89,10 @@ export const submitVisitApplication = mutation({
       )
       if (!response || !response.value.trim()) {
         throw new Error(`Field "${field.label}" is required`)
+      }
+      // For checkbox type, value must be 'true' (not just non-empty 'false')
+      if (field.type === 'checkbox' && response.value !== 'true') {
+        throw new Error(`Field "${field.label}" must be checked`)
       }
     }
 
