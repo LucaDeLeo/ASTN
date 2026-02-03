@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** v1.5 Org Onboarding & Co-working -- Phase 33 complete
+**Current focus:** v1.5 Org Onboarding & Co-working -- Phase 34 in progress
 
 ## Current Position
 
-Phase: 33 of 34 (Guest Access + Visit Applications)
-Plan: 3 of 3 in current phase
-Status: Phase complete
-Last activity: 2026-02-03 -- Completed 33-03-PLAN.md (Admin Guest Management UI)
+Phase: 34 of 34 (Admin Dashboard & Polish)
+Plan: 1 of 4 in current phase
+Status: In progress
+Last activity: 2026-02-03 -- Completed 34-01-PLAN.md (Admin Booking Backend)
 
-Progress: [█████████████████░░░] 85% (Phase 33 complete)
+Progress: [██████████████████░░] 90% (Phase 34 plan 1 of 4 complete)
 
 ## Milestone History
 
@@ -25,7 +25,7 @@ Progress: [█████████████████░░░] 85% (Ph
 - v2.0 Mobile + Tauri (partial) - Phases 21-23, 26 complete (16 plans). Phase 25 deferred.
 - v1.4 Hardening - 3 phases (27-29), 9 plans - shipped 2026-02-02
 
-**Total:** 29 phases, 99 plans across 5 shipped milestones + partial v2.0
+**Total:** 29 phases, 100 plans across 5 shipped milestones + partial v2.0
 
 ## Accumulated Decisions
 
@@ -49,13 +49,15 @@ Progress: [█████████████████░░░] 85% (Ph
 | Generic auth errors in guest signup                            | 33-02 | Avoid revealing account existence                      |
 | Client-side guest grouping in history view                     | 33-03 | Simpler than server-side aggregation for this use case |
 | Expandable custom field responses                              | 33-03 | Reduces visual clutter in approval queue               |
+| Cursor-based pagination for admin booking queries              | 34-01 | Efficient pagination using booking ID as cursor        |
+| Combined queries + mutations in spaceBookings/admin.ts         | 34-01 | Follows orgs/admin.ts nested folder pattern            |
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 99
-- Total execution time: ~21.2 hours (across all milestones)
+- Total plans completed: 100
+- Total execution time: ~21.3 hours (across all milestones)
 
 ## Pending Todos
 
@@ -72,11 +74,11 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Completed 33-03-PLAN.md (Admin Guest Management UI)
+Stopped at: Completed 34-01-PLAN.md (Admin Booking Backend)
 Resume file: None
-Next action: Execute Phase 34 (Polish & Launch Prep)
+Next action: Execute 34-02-PLAN.md (Admin Booking Dashboard UI)
 
 ---
 
 _State initialized: 2026-01-17_
-_Last updated: 2026-02-03 -- Phase 33 complete_
+_Last updated: 2026-02-03 -- Phase 34 plan 1 complete_
