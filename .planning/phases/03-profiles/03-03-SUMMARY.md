@@ -18,7 +18,7 @@ affects: [matching, recommendations, profile-completeness]
 
 # Tech tracking
 tech-stack:
-  added: ["@anthropic-ai/sdk"]
+  added: ['@anthropic-ai/sdk']
   patterns:
     - Convex actions for LLM API calls (Node.js runtime)
     - Separate queries file for non-Node functions
@@ -39,16 +39,16 @@ key-files:
     - package.json
 
 key-decisions:
-  - "Claude Haiku 4.5 for both conversation and extraction (fast, cost-effective)"
-  - "Separate Node.js file for actions, regular file for queries/mutations"
-  - "Career coach tone: warm, exploratory, not interrogative"
-  - "shouldExtract flag triggered by LLM signaling phrases"
-  - "Extraction uses tool_choice forced to extract_profile_info"
+  - 'Claude Haiku 4.5 for both conversation and extraction (fast, cost-effective)'
+  - 'Separate Node.js file for actions, regular file for queries/mutations'
+  - 'Career coach tone: warm, exploratory, not interrogative'
+  - 'shouldExtract flag triggered by LLM signaling phrases'
+  - 'Extraction uses tool_choice forced to extract_profile_info'
 
 patterns-established:
-  - "useEnrichment hook: manages chat state, extraction, and review flow"
-  - "EnrichmentChat component: scrolling messages with typing indicator"
-  - "ExtractionReview component: per-field accept/reject/edit controls"
+  - 'useEnrichment hook: manages chat state, extraction, and review flow'
+  - 'EnrichmentChat component: scrolling messages with typing indicator'
+  - 'ExtractionReview component: per-field accept/reject/edit controls'
 
 # Metrics
 duration: 8min
@@ -68,6 +68,7 @@ completed: 2026-01-18
 - **Files modified:** 10
 
 ## Accomplishments
+
 - LLM conversation with career coach persona using Claude Haiku 4.5
 - Message persistence to enrichmentMessages table with real-time sync
 - Structured extraction using Claude tool use with extract_profile_info tool
@@ -85,6 +86,7 @@ Each task was committed atomically:
 2. **Task 2: EnrichmentStep UI with chat and extraction review** - `689f2a3` (feat)
 
 ## Files Created/Modified
+
 - `convex/enrichment/conversation.ts` - sendMessage action with Claude Haiku, career coach system prompt
 - `convex/enrichment/queries.ts` - getMessages, getMessagesPublic, saveMessage for message persistence
 - `convex/enrichment/extraction.ts` - extractFromConversation action using Claude tool use
@@ -96,6 +98,7 @@ Each task was committed atomically:
 - `package.json` - Added @anthropic-ai/sdk dependency
 
 ## Decisions Made
+
 - Used Claude Haiku 4.5 (claude-haiku-4-5-20250514) for both conversation and extraction - fast and cost-effective
 - Separated Node.js actions from queries/mutations per Convex runtime requirements
 - Career coach prompt emphasizes warm, exploratory tone - not interrogative
@@ -108,6 +111,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Installed Anthropic SDK with --legacy-peer-deps**
+
 - **Found during:** Task 1 (dependency installation)
 - **Issue:** npm peer dependency conflict with existing @auth/core version
 - **Fix:** Used `npm install @anthropic-ai/sdk --legacy-peer-deps`
@@ -116,6 +120,7 @@ Each task was committed atomically:
 - **Committed in:** d5f0a1d (Task 1 commit)
 
 **2. [Rule 3 - Blocking] Split Node.js action from queries/mutations**
+
 - **Found during:** Task 1 (Convex compilation)
 - **Issue:** Convex "use node" runtime only allows actions, not queries/mutations
 - **Fix:** Created separate queries.ts file for getMessages, saveMessage
@@ -129,6 +134,7 @@ Each task was committed atomically:
 **Impact on plan:** Both fixes necessary for Convex runtime compatibility. No scope creep.
 
 ## Issues Encountered
+
 - TypeScript circular reference errors in conversation.ts - resolved by adding explicit type annotations
 - Linter auto-modified some file references which required verification
 
@@ -142,11 +148,13 @@ Each task was committed atomically:
 4. Verify: Test the enrichment conversation in the wizard
 
 ## Next Phase Readiness
+
 - Enrichment conversation fully functional
 - Profile completeness now tracks hasEnrichmentConversation
 - Ready for smart matching integration (Phase 4)
 - Skills and interests populated from enrichment available for matching
 
 ---
-*Phase: 03-profiles*
-*Completed: 2026-01-18*
+
+_Phase: 03-profiles_
+_Completed: 2026-01-18_

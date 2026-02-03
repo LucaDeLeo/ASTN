@@ -19,8 +19,8 @@ affects: [12-02 (org event pages), 12-03 (dashboard events)]
 tech-stack:
   added: []
   patterns:
-    - "Lu.ma API integration pattern with pagination and rate limiting"
-    - "Cron job staggering (7 AM after 6 AM opportunity sync)"
+    - 'Lu.ma API integration pattern with pagination and rate limiting'
+    - 'Cron job staggering (7 AM after 6 AM opportunity sync)'
 
 key-files:
   created:
@@ -34,14 +34,14 @@ key-files:
     - convex/crons.ts
 
 key-decisions:
-  - "Lu.ma API key is per-calendar, implicitly identifies which calendar to fetch"
-  - "Sync window: 30 days past to 90 days future"
-  - "1 second delay between orgs during full sync to avoid rate limits"
-  - "200ms delay between pagination pages as rate limit protection"
+  - 'Lu.ma API key is per-calendar, implicitly identifies which calendar to fetch'
+  - 'Sync window: 30 days past to 90 days future'
+  - '1 second delay between orgs during full sync to avoid rate limits'
+  - '200ms delay between pagination pages as rate limit protection'
 
 patterns-established:
-  - "Event sync pattern: runFullEventSync iterates orgs, calls syncOrgEvents per org"
-  - "Upsert by external ID pattern: check by_luma_id index, patch if exists, insert if not"
+  - 'Event sync pattern: runFullEventSync iterates orgs, calls syncOrgEvents per org'
+  - 'Upsert by external ID pattern: check by_luma_id index, patch if exists, insert if not'
 
 # Metrics
 duration: 3min
@@ -97,6 +97,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 2 - Missing Critical] Added orgs/queries.ts with getById internal query**
+
 - **Found during:** Task 2 (Creating sync actions)
 - **Issue:** syncOrgEvents needed to fetch org by ID but no internal query existed
 - **Fix:** Created convex/orgs/queries.ts with getById internal query
@@ -129,5 +130,6 @@ None - plan executed smoothly.
 - Ready for Plan 03: Dashboard event aggregation across orgs
 
 ---
-*Phase: 12-event-management*
-*Completed: 2026-01-19*
+
+_Phase: 12-event-management_
+_Completed: 2026-01-19_

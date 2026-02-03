@@ -16,6 +16,7 @@ Users can review, edit, and confirm extracted data before it saves to their prof
 ## Implementation Decisions
 
 ### Preview Layout
+
 - Follow existing pattern: card-based rows per field group with accept (✓), reject (✗), edit (✏) icons
 - Multi-entry fields (work history, education): expandable cards
   - Collapsed state shows: title + organization + dates (e.g., "Software Engineer at Anthropic (2022-2024)")
@@ -23,23 +24,27 @@ Users can review, edit, and confirm extracted data before it saves to their prof
 - Sections organized to match profile form order (Basic Info, Education, Work History, Skills, etc.)
 
 ### Inline Editing
+
 - Trigger: click pencil icon (matches existing pattern)
 - Complex fields (work entries): expand in place, fields become editable inline
 - Skill tags: reuse existing profile skill picker component
 - Edits auto-save on blur (no explicit save/cancel buttons)
 
 ### Gap Communication
+
 - Missing fields shown with placeholder (e.g., "<Not found>") — visible but clearly empty
 - Completeness indicator: field counter only (e.g., "8 of 12 fields extracted") — matches existing pattern
 - Low-confidence extractions: visual indicator to distinguish from high-confidence (subtle badge or color)
 - After apply: auto-redirect to enrichment chat for remaining gaps
 
 ### Confirmation Flow
+
 - Individual field control: accept/reject per field, then "Apply Selected" (matches existing pattern)
 - No undo after applying — user can edit profile normally afterward
 - After apply: show success state with "Continue to enrichment" button
 
 ### Claude's Discretion
+
 - Container approach (wizard step vs dedicated page) — determine based on existing patterns
 - Merge strategy when user has existing profile data — determine appropriate approach
 - Exact visual treatment of low-confidence indicator
@@ -65,5 +70,5 @@ None — discussion stayed within phase scope
 
 ---
 
-*Phase: 09-review-apply-ui*
-*Context gathered: 2026-01-18*
+_Phase: 09-review-apply-ui_
+_Context gathered: 2026-01-18_

@@ -25,13 +25,13 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Used XHR instead of fetch for upload progress (fetch lacks upload.onprogress)"
-  - "Discriminated union for type-safe state transitions"
-  - "Keep file reference on error to enable retry without re-selecting"
+  - 'Used XHR instead of fetch for upload progress (fetch lacks upload.onprogress)'
+  - 'Discriminated union for type-safe state transitions'
+  - 'Keep file reference on error to enable retry without re-selecting'
 
 patterns-established:
-  - "Upload state machine: idle -> selected -> uploading -> success/error"
-  - "Retry pattern: error -> selected (preserves file)"
+  - 'Upload state machine: idle -> selected -> uploading -> success/error'
+  - 'Retry pattern: error -> selected (preserves file)'
 
 # Metrics
 duration: 4min
@@ -94,5 +94,6 @@ None - no external service configuration required.
 - No blockers for next plan
 
 ---
-*Phase: 07-file-upload-foundation*
-*Completed: 2026-01-18*
+
+_Phase: 07-file-upload-foundation_
+_Completed: 2026-01-18_

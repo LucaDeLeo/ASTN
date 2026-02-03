@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from 'react'
 import {
   ChevronDown,
   ChevronUp,
@@ -6,65 +6,65 @@ import {
   MessageSquare,
   PenLine,
   Upload,
-} from "lucide-react";
-import { cn } from "~/lib/utils";
-import { Card } from "~/components/ui/card";
+} from 'lucide-react'
+import { cn } from '~/lib/utils'
+import { Card } from '~/components/ui/card'
 
-type EntryPoint = "upload" | "paste" | "manual" | "chat";
+type EntryPoint = 'upload' | 'paste' | 'manual' | 'chat'
 
 interface EntryPointSelectorProps {
-  onSelect: (entryPoint: EntryPoint) => void;
-  disabled?: boolean;
+  onSelect: (entryPoint: EntryPoint) => void
+  disabled?: boolean
   /** Slot rendered directly below the upload option (before other options) */
-  uploadSlot?: React.ReactNode;
+  uploadSlot?: React.ReactNode
 }
 
 interface EntryOption {
-  id: EntryPoint;
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  description: string;
-  isPrimary?: boolean;
+  id: EntryPoint
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  description: string
+  isPrimary?: boolean
 }
 
 const ENTRY_OPTIONS: Array<EntryOption> = [
   {
-    id: "upload",
+    id: 'upload',
     icon: Upload,
-    label: "Upload your resume",
+    label: 'Upload your resume',
     description: "We'll extract your info automatically",
     isPrimary: true,
   },
   {
-    id: "chat",
+    id: 'chat',
     icon: MessageSquare,
-    label: "Chat with AI",
+    label: 'Chat with AI',
     description: "Answer questions and we'll build your profile for you",
   },
   {
-    id: "paste",
+    id: 'paste',
     icon: ClipboardPaste,
-    label: "Paste text",
-    description: "Copy from LinkedIn or your resume",
+    label: 'Paste text',
+    description: 'Copy from LinkedIn or your resume',
   },
   {
-    id: "manual",
+    id: 'manual',
     icon: PenLine,
-    label: "Fill out manually",
-    description: "Enter your information step by step",
+    label: 'Fill out manually',
+    description: 'Enter your information step by step',
   },
-];
+]
 
 function LinkedInPdfTip() {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false)
 
   return (
     <div className="ml-12 mt-2">
       <button
         type="button"
         onClick={(e) => {
-          e.stopPropagation();
-          setIsExpanded(!isExpanded);
+          e.stopPropagation()
+          setIsExpanded(!isExpanded)
         }}
         className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
       >
@@ -83,7 +83,7 @@ function LinkedInPdfTip() {
         </div>
       )}
     </div>
-  );
+  )
 }
 
 export function EntryPointSelector({
@@ -92,31 +92,31 @@ export function EntryPointSelector({
   uploadSlot,
 }: EntryPointSelectorProps) {
   // Split options: upload first, then others
-  const uploadOption = ENTRY_OPTIONS.find((o) => o.id === "upload")!;
-  const otherOptions = ENTRY_OPTIONS.filter((o) => o.id !== "upload");
+  const uploadOption = ENTRY_OPTIONS.find((o) => o.id === 'upload')!
+  const otherOptions = ENTRY_OPTIONS.filter((o) => o.id !== 'upload')
 
   const renderOptionCard = (option: EntryOption) => {
-    const Icon = option.icon;
-    const isPrimary = option.isPrimary;
+    const Icon = option.icon
+    const isPrimary = option.isPrimary
 
     return (
       <Card
         onClick={() => !disabled && onSelect(option.id)}
         className={cn(
-          "cursor-pointer transition-all py-4",
-          disabled && "opacity-50 cursor-not-allowed",
+          'cursor-pointer transition-all py-4',
+          disabled && 'opacity-50 cursor-not-allowed',
           isPrimary
-            ? "border-primary bg-primary/5 hover:bg-primary/10 hover:border-primary/80"
-            : "hover:bg-slate-50 hover:border-slate-300"
+            ? 'border-primary bg-primary/5 hover:bg-primary/10 hover:border-primary/80'
+            : 'hover:bg-slate-50 hover:border-slate-300',
         )}
       >
         <div className="flex items-center gap-4 px-4">
           <div
             className={cn(
-              "flex size-10 shrink-0 items-center justify-center rounded-lg",
+              'flex size-10 shrink-0 items-center justify-center rounded-lg',
               isPrimary
-                ? "bg-primary/10 text-primary"
-                : "bg-slate-100 text-slate-600"
+                ? 'bg-primary/10 text-primary'
+                : 'bg-slate-100 text-slate-600',
             )}
           >
             <Icon className="size-5" />
@@ -124,8 +124,8 @@ export function EntryPointSelector({
           <div className="flex-1 min-w-0">
             <div
               className={cn(
-                "font-medium",
-                isPrimary ? "text-primary" : "text-foreground"
+                'font-medium',
+                isPrimary ? 'text-primary' : 'text-foreground',
               )}
             >
               {option.label}
@@ -141,8 +141,8 @@ export function EntryPointSelector({
           )}
         </div>
       </Card>
-    );
-  };
+    )
+  }
 
   return (
     <div className="space-y-3">
@@ -160,5 +160,5 @@ export function EntryPointSelector({
         <div key={option.id}>{renderOptionCard(option)}</div>
       ))}
     </div>
-  );
+  )
 }

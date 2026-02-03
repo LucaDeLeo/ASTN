@@ -18,8 +18,8 @@ affects: [22-02, 22-03, 22-04] # MobileShell, TabBar, Header components will use
 tech-stack:
   added: []
   patterns:
-    - "Safe area CSS custom properties with env() fallbacks"
-    - "Semantic utility classes for mobile-specific layout"
+    - 'Safe area CSS custom properties with env() fallbacks'
+    - 'Semantic utility classes for mobile-specific layout'
 
 key-files:
   created: []
@@ -29,13 +29,13 @@ key-files:
     - src/styles/app.css
 
 key-decisions:
-  - "Used viewport-fit=cover to enable safe area reporting without forcing full-screen"
-  - "Set apple-mobile-web-app-status-bar-style=default to follow system light/dark"
-  - "Created pb-safe-bottom and tab-bar-safe utility classes rather than inline styles"
+  - 'Used viewport-fit=cover to enable safe area reporting without forcing full-screen'
+  - 'Set apple-mobile-web-app-status-bar-style=default to follow system light/dark'
+  - 'Created pb-safe-bottom and tab-bar-safe utility classes rather than inline styles'
 
 patterns-established:
-  - "Safe area: Use --safe-area-inset-* CSS variables for notched device padding"
-  - "Tab bar height: Use --tab-bar-height (4rem) for consistent spacing calculations"
+  - 'Safe area: Use --safe-area-inset-* CSS variables for notched device padding'
+  - 'Tab bar height: Use --tab-bar-height (4rem) for consistent spacing calculations'
 
 # Metrics
 duration: 5min
@@ -70,7 +70,7 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `src/routes/__root.tsx` - Added viewport-fit=cover and apple-mobile-web-app-* meta tags
+- `src/routes/__root.tsx` - Added viewport-fit=cover and apple-mobile-web-app-\* meta tags
 - `public/site.webmanifest` - Set name, short_name, and start_url for PWA identity
 - `src/styles/app.css` - Added safe area CSS custom properties and utility classes
 
@@ -99,5 +99,6 @@ None - no external service configuration required.
 - PWA manifest configured for standalone mode testing
 
 ---
-*Phase: 22-mobile-navigation*
-*Completed: 2026-01-21*
+
+_Phase: 22-mobile-navigation_
+_Completed: 2026-01-21_

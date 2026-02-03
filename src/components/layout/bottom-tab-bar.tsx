@@ -1,52 +1,57 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { Briefcase, Home, Settings, Target, User } from "lucide-react";
+import { Link, useRouterState } from '@tanstack/react-router'
+import { Briefcase, Home, Settings, Target, User } from 'lucide-react'
 
 interface TabConfig {
-  to: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  exact: boolean;
+  to: string
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  exact: boolean
 }
 
 const tabs: Array<TabConfig> = [
-  { to: "/", label: "Home", icon: Home, exact: true },
-  { to: "/opportunities", label: "Opportunities", icon: Briefcase, exact: false },
-  { to: "/matches", label: "Matches", icon: Target, exact: false },
-  { to: "/profile", label: "Profile", icon: User, exact: false },
-  { to: "/settings", label: "Settings", icon: Settings, exact: false },
-];
+  { to: '/', label: 'Home', icon: Home, exact: true },
+  {
+    to: '/opportunities',
+    label: 'Opportunities',
+    icon: Briefcase,
+    exact: false,
+  },
+  { to: '/matches', label: 'Matches', icon: Target, exact: false },
+  { to: '/profile', label: 'Profile', icon: User, exact: false },
+  { to: '/settings', label: 'Settings', icon: Settings, exact: false },
+]
 
 export function BottomTabBar() {
-  const routerState = useRouterState();
-  const currentPath = routerState.location.pathname;
+  const routerState = useRouterState()
+  const currentPath = routerState.location.pathname
 
   const isActive = (tab: TabConfig): boolean => {
     if (tab.exact) {
-      return currentPath === tab.to;
+      return currentPath === tab.to
     }
-    return currentPath === tab.to || currentPath.startsWith(`${tab.to}/`);
-  };
+    return currentPath === tab.to || currentPath.startsWith(`${tab.to}/`)
+  }
 
   const handleClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
-    tab: TabConfig
+    tab: TabConfig,
   ) => {
     if (isActive(tab)) {
-      e.preventDefault();
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      e.preventDefault()
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  };
+  }
 
   return (
     <nav
       className="shrink-0 border-t bg-background"
-      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       role="navigation"
       aria-label="Main navigation"
     >
       <div className="flex items-stretch h-16">
         {tabs.map((tab) => {
-          const Icon = tab.icon;
+          const Icon = tab.icon
           return (
             <Link
               key={tab.to}
@@ -56,15 +61,15 @@ export function BottomTabBar() {
               className="flex flex-1 flex-col items-center justify-center gap-1 min-h-[44px] py-2 text-muted-foreground transition-colors"
               activeProps={{
                 className:
-                  "flex flex-1 flex-col items-center justify-center gap-1 min-h-[44px] py-2 text-primary font-semibold transition-colors",
+                  'flex flex-1 flex-col items-center justify-center gap-1 min-h-[44px] py-2 text-primary font-semibold transition-colors',
               }}
             >
               <Icon className="size-5" />
               <span className="text-xs">{tab.label}</span>
             </Link>
-          );
+          )
         })}
       </div>
     </nav>
-  );
+  )
 }

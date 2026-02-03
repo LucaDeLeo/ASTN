@@ -9,6 +9,7 @@
 This phase applies the design tokens established in Phase 17 across all pages and components to transform the app from generic shadcn/ui styling to a warm, memorable visual identity. The research focused on understanding what exists (tokens, pages, components) and what needs to change.
 
 Phase 17 successfully established:
+
 - Warm color palette: cream (4 steps), coral (10 steps), teal accent (2 steps)
 - Typography: Plus Jakarta Sans (body), Lora (headings), fluid type scale
 - Animation tokens: 4 keyframes, 6 easing functions, 4 durations
@@ -22,54 +23,58 @@ The current state shows most pages use `bg-slate-50` backgrounds, gray shadows, 
 
 ### Design Tokens Available (from Phase 17)
 
-| Token Category | Values | Tailwind Class |
-|----------------|--------|----------------|
-| Cream colors | cream-50, cream-100, cream-200, cream-300 | `bg-cream-50`, etc. |
-| Coral colors | coral-50 through coral-900 | `bg-coral-500`, etc. |
-| Teal accent | teal-500, teal-600 | `bg-teal-500`, etc. |
-| Font display | Lora Variable | `font-display` |
-| Font body | Plus Jakarta Sans Variable | `font-body` |
-| Animations | fade-in, slide-up, slide-down, scale-in | `animate-fade-in`, etc. |
-| Easing | spring, gentle, in, out, in-out | `ease-spring`, etc. |
+| Token Category | Values                                    | Tailwind Class          |
+| -------------- | ----------------------------------------- | ----------------------- |
+| Cream colors   | cream-50, cream-100, cream-200, cream-300 | `bg-cream-50`, etc.     |
+| Coral colors   | coral-50 through coral-900                | `bg-coral-500`, etc.    |
+| Teal accent    | teal-500, teal-600                        | `bg-teal-500`, etc.     |
+| Font display   | Lora Variable                             | `font-display`          |
+| Font body      | Plus Jakarta Sans Variable                | `font-body`             |
+| Animations     | fade-in, slide-up, slide-down, scale-in   | `animate-fade-in`, etc. |
+| Easing         | spring, gentle, in, out, in-out           | `ease-spring`, etc.     |
 
 ### Pages Requiring Visual Polish
 
-| Page | File | Current Background | Shadows | Typography |
-|------|------|-------------------|---------|------------|
-| Home | `src/routes/index.tsx` | `bg-background` | Gray (via Card) | `font-mono` headers |
-| Login | `src/routes/login.tsx` | Warm gradient (already done) | Coral-tinted | `font-mono` |
-| Profile View | `src/routes/profile/index.tsx` | `bg-slate-50` | Gray | `font-bold` |
-| Profile Edit | `src/routes/profile/edit.tsx` | `bg-slate-50` | Gray | `font-bold` |
-| Matches List | `src/routes/matches/index.tsx` | `bg-slate-50` | Gray | `font-bold` |
-| Match Detail | `src/routes/matches/$id.tsx` | `bg-slate-50` | Gray | `font-bold` |
-| Opportunities List | `src/routes/opportunities/index.tsx` | `bg-slate-50` | Gray | `font-bold` |
-| Opportunity Detail | `src/routes/opportunities/$id.tsx` | `bg-slate-50` | Gray | `font-mono` |
-| Admin Dashboard | `src/routes/admin/index.tsx` | `bg-slate-50` (via route.tsx) | Gray | `font-bold` |
-| Organizations | `src/routes/orgs/index.tsx` | `bg-slate-50` | Gray | `font-bold` |
+| Page               | File                                 | Current Background            | Shadows         | Typography          |
+| ------------------ | ------------------------------------ | ----------------------------- | --------------- | ------------------- |
+| Home               | `src/routes/index.tsx`               | `bg-background`               | Gray (via Card) | `font-mono` headers |
+| Login              | `src/routes/login.tsx`               | Warm gradient (already done)  | Coral-tinted    | `font-mono`         |
+| Profile View       | `src/routes/profile/index.tsx`       | `bg-slate-50`                 | Gray            | `font-bold`         |
+| Profile Edit       | `src/routes/profile/edit.tsx`        | `bg-slate-50`                 | Gray            | `font-bold`         |
+| Matches List       | `src/routes/matches/index.tsx`       | `bg-slate-50`                 | Gray            | `font-bold`         |
+| Match Detail       | `src/routes/matches/$id.tsx`         | `bg-slate-50`                 | Gray            | `font-bold`         |
+| Opportunities List | `src/routes/opportunities/index.tsx` | `bg-slate-50`                 | Gray            | `font-bold`         |
+| Opportunity Detail | `src/routes/opportunities/$id.tsx`   | `bg-slate-50`                 | Gray            | `font-mono`         |
+| Admin Dashboard    | `src/routes/admin/index.tsx`         | `bg-slate-50` (via route.tsx) | Gray            | `font-bold`         |
+| Organizations      | `src/routes/orgs/index.tsx`          | `bg-slate-50`                 | Gray            | `font-bold`         |
 
 ### Current Shadow Pattern (to replace)
 
 The Card component uses shadcn default shadow:
+
 ```tsx
 // Current: Generic gray shadow
-className="shadow-sm"
+className = 'shadow-sm'
 ```
 
 The login card already has warm shadow:
+
 ```tsx
 // Target: Coral-tinted shadow
-className="shadow-[0_8px_30px_oklch(0.70_0.08_30/0.15)]"
+className = 'shadow-[0_8px_30px_oklch(0.70_0.08_30/0.15)]'
 ```
 
 ### Current Background Pattern (to replace)
 
 Most pages use:
+
 ```tsx
 // Current: Flat gray
-className="min-h-screen bg-slate-50"
+className = 'min-h-screen bg-slate-50'
 ```
 
 Login page already has gradient:
+
 ```tsx
 // Target: Warm gradient with noise texture
 style={{
@@ -102,15 +107,15 @@ src/
 ```tsx
 // Source: Based on existing login.tsx pattern
 interface GradientBgProps {
-  variant?: 'radial' | 'linear' | 'subtle';
-  children: React.ReactNode;
-  className?: string;
+  variant?: 'radial' | 'linear' | 'subtle'
+  children: React.ReactNode
+  className?: string
 }
 
 export function GradientBg({
   variant = 'radial',
   children,
-  className
+  className,
 }: GradientBgProps) {
   const gradientStyle = {
     radial: `radial-gradient(ellipse at center,
@@ -122,15 +127,15 @@ export function GradientBg({
       oklch(0.96 0.02 30) 100%)`,
     subtle: `linear-gradient(180deg,
       oklch(0.99 0.01 90) 0%,
-      oklch(0.97 0.015 85) 100%)`
-  };
+      oklch(0.97 0.015 85) 100%)`,
+  }
 
   // Noise texture SVG (2-4% opacity per ATMO-05)
-  const noise = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E")`;
+  const noise = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E")`
 
   return (
     <div
-      className={cn("min-h-screen", className)}
+      className={cn('min-h-screen', className)}
       style={{
         background: gradientStyle[variant],
         backgroundImage: `${gradientStyle[variant]}, ${noise}`,
@@ -138,7 +143,7 @@ export function GradientBg({
     >
       {children}
     </div>
-  );
+  )
 }
 ```
 
@@ -148,22 +153,25 @@ export function GradientBg({
 **Implementation options:**
 
 Option A: CSS custom property (recommended for global consistency):
+
 ```css
 /* In app.css */
---shadow-warm-sm: 0 1px 2px oklch(0.70 0.04 30 / 0.06);
---shadow-warm: 0 4px 12px oklch(0.70 0.06 30 / 0.08);
---shadow-warm-md: 0 8px 24px oklch(0.70 0.08 30 / 0.12);
---shadow-warm-lg: 0 12px 40px oklch(0.70 0.08 30 / 0.15);
+--shadow-warm-sm: 0 1px 2px oklch(0.7 0.04 30 / 0.06);
+--shadow-warm: 0 4px 12px oklch(0.7 0.06 30 / 0.08);
+--shadow-warm-md: 0 8px 24px oklch(0.7 0.08 30 / 0.12);
+--shadow-warm-lg: 0 12px 40px oklch(0.7 0.08 30 / 0.15);
 ```
 
 Option B: Tailwind arbitrary value (per-component):
+
 ```tsx
-className="shadow-[0_4px_12px_oklch(0.70_0.06_30/0.08)]"
+className = 'shadow-[0_4px_12px_oklch(0.70_0.06_30/0.08)]'
 ```
 
 ### Pattern 3: Page Background Hierarchy
 
 Per CONTEXT.md decisions:
+
 - **List pages:** Warm cards on light cream background
 - **Detail pages:** Claude's discretion for header prominence
 - **Admin pages:** Dot grid pattern for visual differentiation
@@ -196,6 +204,7 @@ Per CONTEXT.md decisions:
 ### Pattern 4: Typography Application (TYPO-06)
 
 **Heading hierarchy:**
+
 ```tsx
 // Page titles - Lora, larger
 <h1 className="font-display text-3xl font-semibold text-foreground">
@@ -229,43 +238,48 @@ Per CONTEXT.md: "Compact & dense - information-forward, minimal wasted space"
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Noise texture | Canvas-based generator | SVG data URL inline | Better performance, no JS, works with SSR |
-| Gradient backgrounds | Multiple div layers | CSS background-image with multiple values | Single DOM element, proper stacking |
-| Warm shadows | Filter-based color shift | OKLCH color in box-shadow | Direct color control, no filter overhead |
-| Font loading | Manual fetch/inject | @fontsource-variable packages | Already set up in Phase 17, handles FOIT/FOUT |
+| Problem              | Don't Build              | Use Instead                               | Why                                           |
+| -------------------- | ------------------------ | ----------------------------------------- | --------------------------------------------- |
+| Noise texture        | Canvas-based generator   | SVG data URL inline                       | Better performance, no JS, works with SSR     |
+| Gradient backgrounds | Multiple div layers      | CSS background-image with multiple values | Single DOM element, proper stacking           |
+| Warm shadows         | Filter-based color shift | OKLCH color in box-shadow                 | Direct color control, no filter overhead      |
+| Font loading         | Manual fetch/inject      | @fontsource-variable packages             | Already set up in Phase 17, handles FOIT/FOUT |
 
 ## Common Pitfalls
 
 ### Pitfall 1: Inconsistent Token Usage
-**What goes wrong:** Mixing old slate-* colors with new cream-* tokens
+
+**What goes wrong:** Mixing old slate-_ colors with new cream-_ tokens
 **Why it happens:** Copying existing code that uses slate palette
 **How to avoid:** Search-and-replace slate-50 with cream-50, slate-100 with cream-100
 **Warning signs:** Visual inconsistency between pages, some warm some gray
 
 ### Pitfall 2: Shadow Color Space Issues
+
 **What goes wrong:** Coral tint looks different across browsers
 **Why it happens:** Using HSL or RGB instead of OKLCH
 **How to avoid:** Use OKLCH for all coral shadow colors (already established in tokens)
 **Warning signs:** Safari showing different shadow tint than Chrome
 
 ### Pitfall 3: Breaking Card Component Consumers
+
 **What goes wrong:** Changing Card defaults breaks existing layouts
 **Why it happens:** Components rely on current shadow/padding
 **How to avoid:** Add new shadow as variant or additional class, don't replace default immediately
 **Warning signs:** Spacing/shadow changes in unexpected places
 
 ### Pitfall 4: Noise Texture Performance
+
 **What goes wrong:** Page feels slow, especially on resize
 **Why it happens:** Using CSS filter instead of static SVG
 **How to avoid:** Use inline SVG data URL (as in login.tsx), not filter
 **Warning signs:** DevTools shows repaint on scroll
 
 ### Pitfall 5: Typography Font Loading Regression
+
 **What goes wrong:** FOIT returns (text invisible during load)
 **Why it happens:** Adding font-display classes without verifying preload still works
-**How to avoid:** Phase 17 already handles this; don't change __root.tsx preload config
+**How to avoid:** Phase 17 already handles this; don't change \_\_root.tsx preload config
 **Warning signs:** Flash of invisible text on first load
 
 ## Code Examples
@@ -273,6 +287,7 @@ Problems that look simple but have existing solutions:
 ### Example 1: Converting a Page Background
 
 **Before:**
+
 ```tsx
 function MatchesPage() {
   return (
@@ -280,13 +295,14 @@ function MatchesPage() {
       <AuthHeader />
       {/* ... */}
     </div>
-  );
+  )
 }
 ```
 
 **After:**
+
 ```tsx
-import { GradientBg } from "~/components/layout/GradientBg";
+import { GradientBg } from '~/components/layout/GradientBg'
 
 function MatchesPage() {
   return (
@@ -294,18 +310,20 @@ function MatchesPage() {
       <AuthHeader />
       {/* ... */}
     </GradientBg>
-  );
+  )
 }
 ```
 
 ### Example 2: Applying Warm Shadow to Cards
 
 **Before:**
+
 ```tsx
 <Card className="p-4 hover:shadow-md transition-shadow">
 ```
 
 **After:**
+
 ```tsx
 <Card className="p-4 shadow-warm hover:shadow-warm-md transition-shadow">
 ```
@@ -313,12 +331,14 @@ function MatchesPage() {
 ### Example 3: Typography Hierarchy
 
 **Before:**
+
 ```tsx
 <h1 className="text-2xl font-bold text-slate-900">Your Matches</h1>
 <p className="text-slate-500 mt-1">Opportunities matched to your profile</p>
 ```
 
 **After:**
+
 ```tsx
 <h1 className="font-display text-2xl font-semibold text-foreground">Your Matches</h1>
 <p className="font-body text-muted-foreground mt-1">Opportunities matched to your profile</p>
@@ -334,12 +354,12 @@ function AdminLayout() {
       style={{
         backgroundImage: `radial-gradient(circle, oklch(0.7 0.05 30 / 0.15) 1px, transparent 1px)`,
         backgroundSize: '24px 24px',
-        backgroundColor: 'var(--cream-50)'
+        backgroundColor: 'var(--cream-50)',
       }}
     >
       {/* Admin content */}
     </div>
-  );
+  )
 }
 ```
 
@@ -347,48 +367,50 @@ function AdminLayout() {
 
 ### High Priority (Core Infrastructure)
 
-| File | Changes |
-|------|---------|
-| `src/styles/app.css` | Add warm shadow tokens to `:root` |
+| File                                   | Changes                                    |
+| -------------------------------------- | ------------------------------------------ |
+| `src/styles/app.css`                   | Add warm shadow tokens to `:root`          |
 | `src/components/layout/GradientBg.tsx` | **CREATE** - Reusable background component |
-| `src/components/ui/card.tsx` | Add warm shadow variant |
+| `src/components/ui/card.tsx`           | Add warm shadow variant                    |
 
 ### Medium Priority (Main Pages)
 
-| File | Changes |
-|------|---------|
-| `src/routes/index.tsx` | Apply GradientBg, update typography |
-| `src/routes/profile/index.tsx` | bg-slate-50 -> GradientBg, typography |
-| `src/routes/profile/edit.tsx` | bg-slate-50 -> GradientBg, typography |
-| `src/routes/matches/index.tsx` | bg-slate-50 -> GradientBg, card shadows |
-| `src/routes/matches/$id.tsx` | bg-slate-50 -> GradientBg, typography |
-| `src/routes/opportunities/index.tsx` | bg-slate-50 -> GradientBg |
-| `src/routes/opportunities/$id.tsx` | bg-slate-50 -> GradientBg, typography |
-| `src/routes/orgs/index.tsx` | bg-slate-50 -> GradientBg |
-| `src/routes/admin/route.tsx` | Apply dot grid pattern |
-| `src/routes/admin/index.tsx` | Update card shadows |
+| File                                 | Changes                                 |
+| ------------------------------------ | --------------------------------------- |
+| `src/routes/index.tsx`               | Apply GradientBg, update typography     |
+| `src/routes/profile/index.tsx`       | bg-slate-50 -> GradientBg, typography   |
+| `src/routes/profile/edit.tsx`        | bg-slate-50 -> GradientBg, typography   |
+| `src/routes/matches/index.tsx`       | bg-slate-50 -> GradientBg, card shadows |
+| `src/routes/matches/$id.tsx`         | bg-slate-50 -> GradientBg, typography   |
+| `src/routes/opportunities/index.tsx` | bg-slate-50 -> GradientBg               |
+| `src/routes/opportunities/$id.tsx`   | bg-slate-50 -> GradientBg, typography   |
+| `src/routes/orgs/index.tsx`          | bg-slate-50 -> GradientBg               |
+| `src/routes/admin/route.tsx`         | Apply dot grid pattern                  |
+| `src/routes/admin/index.tsx`         | Update card shadows                     |
 
 ### Lower Priority (Components)
 
-| File | Changes |
-|------|---------|
-| `src/components/layout/auth-header.tsx` | Warm styling for header |
-| `src/components/matches/MatchCard.tsx` | Warm shadow, typography |
-| `src/components/opportunities/opportunity-card.tsx` | Warm shadow, remove font-mono |
-| `src/components/opportunities/opportunity-detail.tsx` | Typography updates |
-| `src/components/org/OrgCard.tsx` | Warm shadow |
+| File                                                  | Changes                       |
+| ----------------------------------------------------- | ----------------------------- |
+| `src/components/layout/auth-header.tsx`               | Warm styling for header       |
+| `src/components/matches/MatchCard.tsx`                | Warm shadow, typography       |
+| `src/components/opportunities/opportunity-card.tsx`   | Warm shadow, remove font-mono |
+| `src/components/opportunities/opportunity-detail.tsx` | Typography updates            |
+| `src/components/org/OrgCard.tsx`                      | Warm shadow                   |
 
 ## Border Radius System (COMP-01)
 
 Current tokens in app.css:
+
 ```css
---radius: 0.625rem;  /* 10px base */
---radius-lg: var(--radius);  /* 10px */
---radius-xl: calc(var(--radius) + 4px);  /* 14px */
---radius-2xl: calc(var(--radius) + 8px);  /* 18px */
+--radius: 0.625rem; /* 10px base */
+--radius-lg: var(--radius); /* 10px */
+--radius-xl: calc(var(--radius) + 4px); /* 14px */
+--radius-2xl: calc(var(--radius) + 8px); /* 18px */
 ```
 
 Recommendation: Use 12-16px as base for cards per requirement:
+
 - Cards: `rounded-xl` (14px) or `rounded-2xl` (18px)
 - Buttons: `rounded-lg` (10px) - keep current
 - Badges: `rounded-md` or `rounded-lg`
@@ -409,16 +431,19 @@ Recommendation: Use 12-16px as base for cards per requirement:
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - `src/styles/app.css` - All Phase 17 tokens verified present
 - `src/routes/login.tsx` - Reference implementation for warm treatment
 - `.planning/phases/17-foundation-tokens/17-VERIFICATION.md` - Token verification
 
 ### Secondary (MEDIUM confidence)
+
 - `.planning/phases/18-core-visual-polish/18-CONTEXT.md` - User decisions locked
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Token availability: HIGH - Verified in app.css
 - Pattern recommendations: HIGH - Based on existing login.tsx implementation
 - Page modifications: HIGH - All pages read and analyzed
@@ -428,5 +453,6 @@ Recommendation: Use 12-16px as base for cards per requirement:
 **Valid until:** 2026-02-19 (tokens stable, no external dependencies)
 
 ---
-*Phase: 18-core-visual-polish*
-*Researcher: Claude (gsd-researcher)*
+
+_Phase: 18-core-visual-polish_
+_Researcher: Claude (gsd-researcher)_

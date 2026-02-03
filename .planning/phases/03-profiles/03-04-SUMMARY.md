@@ -36,13 +36,13 @@ key-files:
 
 key-decisions:
   - "Default visibility defaults to 'connections' (balanced privacy)"
-  - "Section visibility inherits from default unless overridden"
-  - "18 AI safety organizations seeded on first access"
-  - "Complete Profile button with success animation replaces standard navigation"
+  - 'Section visibility inherits from default unless overridden'
+  - '18 AI safety organizations seeded on first access'
+  - 'Complete Profile button with success animation replaces standard navigation'
 
 patterns-established:
-  - "Radio card selection: Large clickable cards with icon, title, description"
-  - "Chip selector pattern: Search + browse hybrid for selecting multiple items"
+  - 'Radio card selection: Large clickable cards with icon, title, description'
+  - 'Chip selector pattern: Search + browse hybrid for selecting multiple items'
   - "Visibility inheritance: Section shows 'Use default (X)' when not overridden"
 
 # Metrics
@@ -63,6 +63,7 @@ completed: 2026-01-18
 - **Files modified:** 6
 
 ## Accomplishments
+
 - Organizations table seeded with 18 AI safety organizations
 - Privacy step replaces placeholder with full controls
 - Default visibility selection with radio cards (Public, Connections, Private)
@@ -78,6 +79,7 @@ Each task was committed atomically:
 2. **Task 2: PrivacyStep with visibility controls and org hiding** - `557f6fc` (feat)
 
 ## Files Created/Modified
+
 - `convex/schema.ts` - Added organizations table with by_name and search_name indexes
 - `convex/organizations.ts` - Seed data, list, search, and ensureSeeded action
 - `src/components/profile/privacy/SectionVisibility.tsx` - Visibility dropdown per section
@@ -86,6 +88,7 @@ Each task was committed atomically:
 - `src/components/profile/wizard/ProfileWizard.tsx` - Pass props to PrivacyStep, hide nav on last step
 
 ## Decisions Made
+
 - Default visibility defaults to "connections" for balanced privacy
 - Section visibility shows effective state when using default
 - Organizations seeded lazily on first access to OrgSelector
@@ -97,6 +100,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Fixed Node.js runtime query issue in enrichment/conversation.ts**
+
 - **Found during:** Task 1 (Convex schema deployment)
 - **Issue:** Pre-existing `getMessages` query in "use node" file - queries can't be in Node.js runtime
 - **Fix:** Moved queries and mutations to separate enrichment/queries.ts file, updated references
@@ -110,6 +114,7 @@ Each task was committed atomically:
 **Impact on plan:** Blocking issue in pre-existing code required fix before schema could deploy. No scope creep.
 
 ## Issues Encountered
+
 - TypeScript circular reference errors on action return types - resolved by adding explicit return type annotations
 - Pre-existing vite.config.ts TypeScript error (unrelated to plan)
 
@@ -118,11 +123,13 @@ Each task was committed atomically:
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Privacy controls complete and functional
 - Profile wizard now has all steps implemented (basic, education, work, goals, skills, enrichment, privacy)
 - Ready for Phase 4 (Matching) when all profile phases complete
 - Organizations table ready for expansion in Phase 5
 
 ---
-*Phase: 03-profiles*
-*Completed: 2026-01-18*
+
+_Phase: 03-profiles_
+_Completed: 2026-01-18_

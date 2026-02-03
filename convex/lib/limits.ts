@@ -14,13 +14,13 @@ export const FIELD_LIMITS = {
   chatMessage: 5000,
   // Document text extraction
   documentText: 100000,
-} as const;
+} as const
 
 export function validateFieldLength(
   value: string | undefined,
-  field: keyof typeof FIELD_LIMITS
+  field: keyof typeof FIELD_LIMITS,
 ): void {
   if (value && value.length > FIELD_LIMITS[field]) {
-    throw new Error("Content too long to process");
+    throw new Error('Content too long to process')
   }
 }

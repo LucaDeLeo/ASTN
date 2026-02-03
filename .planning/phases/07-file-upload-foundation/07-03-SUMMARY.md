@@ -34,13 +34,13 @@ key-files:
 
 key-decisions:
   - "Used Sparkles icon for reveal animation - playful 'excited to receive' feeling"
-  - "Reveal animation 200ms with scale+translate for bouncy effect"
-  - "Processing pulse at 1.5s infinite - slower than upload for visual distinction"
+  - 'Reveal animation 200ms with scale+translate for bouncy effect'
+  - 'Processing pulse at 1.5s infinite - slower than upload for visual distinction'
 
 patterns-established:
-  - "Drag-drop zones: use react-dropzone with isDragActive/isDragReject states"
-  - "File validation errors: shake animation + inline message, not modal"
-  - "Progress bars: 500ms transition duration minimum for visibility"
+  - 'Drag-drop zones: use react-dropzone with isDragActive/isDragReject states'
+  - 'File validation errors: shake animation + inline message, not modal'
+  - 'Progress bars: 500ms transition duration minimum for visibility'
 
 # Metrics
 duration: 8min
@@ -109,5 +109,6 @@ None - no external service configuration required.
 - TextPasteZone component still needed (Phase 07-04) for paste fallback
 
 ---
-*Phase: 07-file-upload-foundation*
-*Completed: 2026-01-18*
+
+_Phase: 07-file-upload-foundation_
+_Completed: 2026-01-18_

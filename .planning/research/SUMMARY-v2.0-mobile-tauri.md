@@ -20,12 +20,14 @@ Research confidence is HIGH for responsive patterns (well-documented, mature eco
 The existing ASTN stack requires no changes for responsive web. For Tauri integration, add the Tauri CLI, API bridge, and selected plugins.
 
 **Keep (no changes):**
+
 - **TanStack Start:** Keep SSR for web; add SPA mode build config for Tauri
 - **Convex:** Real-time backend works unchanged in Tauri WebView (WebSocket-based)
 - **Tailwind v4:** Already mobile-first with fluid typography in place
 - **shadcn/ui:** Components are responsive-ready; need mobile dialog patterns
 
 **Add for Tauri:**
+
 - **@tauri-apps/cli + api:** Core Tauri tooling (v2.1.x)
 - **tauri-plugin-http:** Convex API access
 - **tauri-plugin-deep-link:** OAuth callback handling
@@ -37,6 +39,7 @@ The existing ASTN stack requires no changes for responsive web. For Tauri integr
 ### Expected Features
 
 **Must have (table stakes):**
+
 - Responsive layouts across all routes (no horizontal scroll, 44px touch targets)
 - Bottom tab bar navigation (Home, Opportunities, Matches, Events, Profile)
 - Safe area handling for notches/home indicators
@@ -45,12 +48,14 @@ The existing ASTN stack requires no changes for responsive web. For Tauri integr
 - App Store compliance (privacy policy, screenshots, metadata)
 
 **Should have (differentiators):**
+
 - Push notifications for new matches (critical for app store approval)
 - Offline opportunity browsing (demonstrates native value)
 - Haptic feedback on key actions
 - Biometric authentication for quick access
 
 **Defer (v2.1+):**
+
 - Swipe-to-save opportunity browsing
 - Background sync
 - Event check-in / peer discovery
@@ -61,12 +66,14 @@ The existing ASTN stack requires no changes for responsive web. For Tauri integr
 The architecture follows a **dual-build strategy**: SSR for web deployment, prerendering for Tauri. A new `ResponsiveShell` component handles layout switching between desktop (current header nav) and mobile (bottom tab bar). Platform detection via `window.__TAURI__` enables conditional behavior.
 
 **Major components:**
+
 1. **ResponsiveShell:** Layout wrapper that renders DesktopNav or MobileBottomNav based on breakpoint
 2. **MobileBottomNav:** Fixed bottom tab bar with 5 primary destinations, safe-area-aware
 3. **MobileTopBar:** Simplified header with hamburger menu for secondary nav
 4. **Platform utilities:** `isTauri()`, `getPlatform()` for conditional feature enabling
 
 **Structural changes:**
+
 - Refactor `auth-header.tsx` to `DesktopNav.tsx`
 - Add `useMediaQuery` hook for breakpoint detection
 - Create `vite.config.tauri.ts` for static builds
@@ -89,30 +96,35 @@ The architecture follows a **dual-build strategy**: SSR for web deployment, prer
 Based on research, the recommended phase structure is:
 
 ### Phase 1: Responsive Foundation
+
 **Rationale:** Must work in browsers before wrapping with Tauri. Responsive CSS directly benefits Tauri since it renders the same web content.
 **Delivers:** Mobile-first responsive layouts, useMediaQuery hook, component audit
 **Addresses:** Fluid layouts, touch targets, form usability, performance baseline
 **Avoids:** Desktop-first shrinking (#1), touch target violations (#3), form disasters (#7)
 
 ### Phase 2: Mobile Navigation System
+
 **Rationale:** Navigation architecture is prerequisite for native-feeling mobile experience. Must be complete before Tauri integration.
 **Delivers:** ResponsiveShell, MobileBottomNav, MobileTopBar, safe area CSS
 **Addresses:** Bottom tab bar, hamburger secondary nav, safe areas
 **Avoids:** Safe area neglect (#4), navigation pattern mismatch (#6), fixed positioning chaos (#5)
 
 ### Phase 3: Tauri Desktop Integration
+
 **Rationale:** Validate Tauri integration on desktop before adding mobile complexity. Desktop has simpler build chain and faster iteration.
 **Delivers:** Tauri project setup, SPA build config, Convex connectivity, platform detection
 **Uses:** @tauri-apps/cli, vite.config.tauri.ts, platform.ts utilities
 **Avoids:** Server function incompatibility (#2), plugin capability issues (#12)
 
 ### Phase 4: Tauri Mobile + Native Features
+
 **Rationale:** Mobile targets (iOS/Android) after desktop Tauri works. Add native features that justify app store presence.
 **Delivers:** iOS/Android builds, deep link auth, push notifications, offline support
 **Addresses:** Push notifications (differentiator), biometric auth, offline browsing
 **Avoids:** Guideline 4.2 rejection (#16), plugin incompatibility (#12), filesystem bugs (#9)
 
 ### Phase 5: App Store Submission
+
 **Rationale:** Separate submission phase because it requires manual first upload, specific assets, and compliance checks.
 **Delivers:** TestFlight/Play Store beta releases, store assets, privacy manifests
 **Addresses:** App Store requirements (iOS + Android), beta testing (50-100 pilot users)
@@ -128,22 +140,24 @@ Based on research, the recommended phase structure is:
 ### Research Flags
 
 Phases likely needing deeper research during planning:
+
 - **Phase 4:** OAuth flow in Tauri WebView needs prototype testing. Push notification plugin end-to-end flow needs validation on physical devices. Offline sync strategy with Convex may need separate research.
 - **Phase 5:** App signing, provisioning profiles, and store listing requirements are documented but complex. May need domain-specific research.
 
 Phases with standard patterns (skip research-phase):
+
 - **Phase 1:** Responsive web patterns are well-documented. Tailwind v4 docs sufficient.
 - **Phase 2:** Bottom tab bar and safe areas are standard mobile patterns. No research needed.
 - **Phase 3:** Tauri desktop integration is straightforward. Community template exists.
 
 ## Confidence Assessment
 
-| Area | Confidence | Notes |
-|------|------------|-------|
-| Stack | HIGH | Existing stack is validated; Tauri additions are documented |
-| Features | HIGH | Mobile responsive and app store requirements are well-documented |
+| Area         | Confidence  | Notes                                                                        |
+| ------------ | ----------- | ---------------------------------------------------------------------------- |
+| Stack        | HIGH        | Existing stack is validated; Tauri additions are documented                  |
+| Features     | HIGH        | Mobile responsive and app store requirements are well-documented             |
 | Architecture | MEDIUM-HIGH | Dual-build strategy is logical; Convex+Tauri integration tested by community |
-| Pitfalls | HIGH | GitHub issues verified; app store rejections well-documented |
+| Pitfalls     | HIGH        | GitHub issues verified; app store rejections well-documented                 |
 
 **Overall confidence:** MEDIUM-HIGH
 
@@ -164,6 +178,7 @@ Phases with standard patterns (skip research-phase):
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - Tauri v2 Official Docs (v2.tauri.app) — mobile setup, plugins, configuration
 - TanStack Start Docs (tanstack.com/start) — SPA mode documentation
 - Apple Human Interface Guidelines — tab bars, touch targets, safe areas
@@ -171,15 +186,18 @@ Phases with standard patterns (skip research-phase):
 - Tailwind CSS v4 Docs — responsive utilities, container queries
 
 ### Secondary (MEDIUM confidence)
+
 - kvnxiao/tauri-tanstack-start-react-template — community template for TanStack Start + Tauri
 - Convex Discord — Tauri integration discussions, OAuth considerations
 - GitHub Issues (tauri-apps/tauri) — #12276 (filesystem), #14233 (Xcode), #11089 (entitlements), #12260 (capabilities)
 - tauri-plugin-notifications (GitHub) — community push notification plugin
 
 ### Tertiary (needs validation)
+
 - Convex + Tauri OAuth flow — community reports it works but needs testing
 - Push notification end-to-end reliability — limited production usage data
 
 ---
-*Research completed: 2026-01-20*
-*Ready for roadmap: yes*
+
+_Research completed: 2026-01-20_
+_Ready for roadmap: yes_

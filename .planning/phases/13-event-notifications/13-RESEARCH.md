@@ -17,26 +17,30 @@ The primary technical challenge is adding event-specific notification preference
 The established libraries/tools for this domain are already installed in the project:
 
 ### Core (Already Installed)
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| `@convex-dev/resend` | ^0.2.3 | Email delivery via Resend | Already configured, proven patterns in codebase |
-| `@react-email/components` | ^1.0.4 | Email templating with React | Already used for match alerts and weekly digest |
-| `@react-email/render` | ^2.0.2 | Render React email to HTML | Already imported in templates.tsx |
-| `sonner` | ^2.0.7 | Toast notifications | Already configured in `__root.tsx` with `<Toaster position="top-right" richColors />` |
-| `date-fns` | ^4.1.0 | Date formatting | Already used for event date formatting |
-| `date-fns-tz` | ^3.2.0 | Timezone handling | Already used in email batch processing |
-| `convex/server` cronJobs | built-in | Scheduled jobs | Already configured for match alerts and weekly digest |
+
+| Library                   | Version  | Purpose                     | Why Standard                                                                          |
+| ------------------------- | -------- | --------------------------- | ------------------------------------------------------------------------------------- |
+| `@convex-dev/resend`      | ^0.2.3   | Email delivery via Resend   | Already configured, proven patterns in codebase                                       |
+| `@react-email/components` | ^1.0.4   | Email templating with React | Already used for match alerts and weekly digest                                       |
+| `@react-email/render`     | ^2.0.2   | Render React email to HTML  | Already imported in templates.tsx                                                     |
+| `sonner`                  | ^2.0.7   | Toast notifications         | Already configured in `__root.tsx` with `<Toaster position="top-right" richColors />` |
+| `date-fns`                | ^4.1.0   | Date formatting             | Already used for event date formatting                                                |
+| `date-fns-tz`             | ^3.2.0   | Timezone handling           | Already used in email batch processing                                                |
+| `convex/server` cronJobs  | built-in | Scheduled jobs              | Already configured for match alerts and weekly digest                                 |
 
 ### Supporting (Already Installed)
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| `lucide-react` | ^0.562.0 | Icons (Bell, Calendar, etc.) | UI components |
-| `@radix-ui/react-dropdown-menu` | ^2.1.16 | Notification dropdown | Bell icon notification center |
+
+| Library                         | Version  | Purpose                      | When to Use                   |
+| ------------------------------- | -------- | ---------------------------- | ----------------------------- |
+| `lucide-react`                  | ^0.562.0 | Icons (Bell, Calendar, etc.) | UI components                 |
+| `@radix-ui/react-dropdown-menu` | ^2.1.16  | Notification dropdown        | Bell icon notification center |
 
 ### No New Dependencies Required
+
 Per CONTEXT.md decision: "Zero new npm dependencies - existing stack handles everything"
 
 **Installation:**
+
 ```bash
 # No installation needed - all dependencies already present
 ```
@@ -44,6 +48,7 @@ Per CONTEXT.md decision: "Zero new npm dependencies - existing stack handles eve
 ## Architecture Patterns
 
 ### Recommended Project Structure
+
 ```
 convex/
 ├── emails/
@@ -66,18 +71,20 @@ src/
 ```
 
 ### Pattern 1: Schema Extension for Event Notifications
+
 **What:** Add event notification preferences to profiles schema
 **When to use:** User preference storage
 **Example:**
+
 ```typescript
 // Source: Existing notificationPreferences pattern in schema.ts
 eventNotificationPreferences: v.optional(
   v.object({
     frequency: v.union(
-      v.literal("all"),
-      v.literal("daily"),
-      v.literal("weekly"),
-      v.literal("none")
+      v.literal('all'),
+      v.literal('daily'),
+      v.literal('weekly'),
+      v.literal('none'),
     ),
     eventTypes: v.optional(v.array(v.string())), // Filter by event type
     reminderTiming: v.optional(
@@ -85,69 +92,74 @@ eventNotificationPreferences: v.optional(
         oneWeekBefore: v.boolean(),
         oneDayBefore: v.boolean(),
         oneHourBefore: v.boolean(),
-      })
+      }),
     ),
-    mutedOrgIds: v.optional(v.array(v.id("organizations"))), // Per-org muting
-  })
+    mutedOrgIds: v.optional(v.array(v.id('organizations'))), // Per-org muting
+  }),
 )
 ```
 
 ### Pattern 2: In-App Notifications Table
+
 **What:** Store persisted notifications for bell icon dropdown
 **When to use:** Notifications that persist beyond toast dismissal
 **Example:**
+
 ```typescript
 // Source: Standard pattern for notification systems
 notifications: defineTable({
   userId: v.string(),
   type: v.union(
-    v.literal("event_new"),
-    v.literal("event_reminder"),
-    v.literal("event_updated")
+    v.literal('event_new'),
+    v.literal('event_reminder'),
+    v.literal('event_updated'),
   ),
-  eventId: v.optional(v.id("events")),
-  orgId: v.optional(v.id("organizations")),
+  eventId: v.optional(v.id('events')),
+  orgId: v.optional(v.id('organizations')),
   title: v.string(),
   body: v.string(),
   actionUrl: v.optional(v.string()),
   read: v.boolean(),
   createdAt: v.number(),
 })
-  .index("by_user", ["userId"])
-  .index("by_user_read", ["userId", "read"])
+  .index('by_user', ['userId'])
+  .index('by_user_read', ['userId', 'read'])
 ```
 
 ### Pattern 3: Scheduled Reminders with ctx.scheduler
+
 **What:** Schedule reminder notifications at specific times before events
 **When to use:** Event reminders (1 week, 1 day, 1 hour before)
 **Example:**
+
 ```typescript
 // Source: https://docs.convex.dev/scheduling/scheduled-functions
 export const scheduleEventReminders = mutation({
-  args: { eventId: v.id("events"), userId: v.string() },
+  args: { eventId: v.id('events'), userId: v.string() },
   handler: async (ctx, { eventId, userId }) => {
-    const event = await ctx.db.get("events", eventId);
-    if (!event) return;
+    const event = await ctx.db.get('events', eventId)
+    if (!event) return
 
-    const profile = await ctx.db.query("profiles")
-      .withIndex("by_user", q => q.eq("userId", userId))
-      .first();
+    const profile = await ctx.db
+      .query('profiles')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .first()
 
-    const prefs = profile?.eventNotificationPreferences?.reminderTiming;
-    if (!prefs) return;
+    const prefs = profile?.eventNotificationPreferences?.reminderTiming
+    if (!prefs) return
 
-    const now = Date.now();
-    const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
-    const ONE_DAY = 24 * 60 * 60 * 1000;
-    const ONE_HOUR = 60 * 60 * 1000;
+    const now = Date.now()
+    const ONE_WEEK = 7 * 24 * 60 * 60 * 1000
+    const ONE_DAY = 24 * 60 * 60 * 1000
+    const ONE_HOUR = 60 * 60 * 1000
 
     // Schedule 1 week before
     if (prefs.oneWeekBefore && event.startAt - ONE_WEEK > now) {
       await ctx.scheduler.runAt(
         event.startAt - ONE_WEEK,
         internal.notifications.scheduler.sendReminder,
-        { eventId, userId, timing: "1_week" }
-      );
+        { eventId, userId, timing: '1_week' },
+      )
     }
 
     // Schedule 1 day before
@@ -155,8 +167,8 @@ export const scheduleEventReminders = mutation({
       await ctx.scheduler.runAt(
         event.startAt - ONE_DAY,
         internal.notifications.scheduler.sendReminder,
-        { eventId, userId, timing: "1_day" }
-      );
+        { eventId, userId, timing: '1_day' },
+      )
     }
 
     // Schedule 1 hour before
@@ -164,17 +176,19 @@ export const scheduleEventReminders = mutation({
       await ctx.scheduler.runAt(
         event.startAt - ONE_HOUR,
         internal.notifications.scheduler.sendReminder,
-        { eventId, userId, timing: "1_hour" }
-      );
+        { eventId, userId, timing: '1_hour' },
+      )
     }
   },
-});
+})
 ```
 
 ### Pattern 4: Notification Bell Component
+
 **What:** Bell icon with unread count badge and dropdown
 **When to use:** Header navigation for in-app notifications
 **Example:**
+
 ```typescript
 // Source: shadcn/ui Popover + existing Button patterns
 import { Bell } from "lucide-react";
@@ -206,9 +220,11 @@ export function NotificationBell() {
 ```
 
 ### Pattern 5: Batch Email Processing (Existing Pattern)
+
 **What:** Process digest emails in batches to avoid timeouts
 **When to use:** Daily/weekly digest sending
 **Example:**
+
 ```typescript
 // Source: convex/emails/batchActions.ts (existing pattern)
 const BATCH_SIZE = 10;
@@ -232,6 +248,7 @@ for (let i = 0; i < users.length; i += BATCH_SIZE) {
 ```
 
 ### Anti-Patterns to Avoid
+
 - **Sending immediately on "All" frequency:** Always apply rate limiting (max 5 per hour per user) to prevent notification fatigue
 - **Fetching events individually:** Batch-fetch events for all users in a digest run, don't query per-user
 - **Blocking UI on notification writes:** Use fire-and-forget pattern for creating in-app notifications
@@ -241,70 +258,81 @@ for (let i = 0; i < users.length; i += BATCH_SIZE) {
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Email templating | Raw HTML strings | `@react-email/components` | Already configured, type-safe, Tailwind support |
-| Toast notifications | Custom toast system | `sonner` (already installed) | Already configured in `__root.tsx` |
-| Timezone handling | Manual UTC offset math | `date-fns-tz` (already installed) | Handles DST, IANA timezones properly |
-| Scheduled jobs | Manual setTimeout/polling | `ctx.scheduler.runAt()` | Atomic with mutations, survives restarts |
-| Cron jobs | External cron service | `convex/server` cronJobs | Already working for match alerts |
-| Email delivery | SMTP configuration | `@convex-dev/resend` | Already configured with idempotency |
-| Batch processing | Custom queue | Convex action with batch loops | Pattern already proven in batchActions.ts |
+| Problem             | Don't Build               | Use Instead                       | Why                                             |
+| ------------------- | ------------------------- | --------------------------------- | ----------------------------------------------- |
+| Email templating    | Raw HTML strings          | `@react-email/components`         | Already configured, type-safe, Tailwind support |
+| Toast notifications | Custom toast system       | `sonner` (already installed)      | Already configured in `__root.tsx`              |
+| Timezone handling   | Manual UTC offset math    | `date-fns-tz` (already installed) | Handles DST, IANA timezones properly            |
+| Scheduled jobs      | Manual setTimeout/polling | `ctx.scheduler.runAt()`           | Atomic with mutations, survives restarts        |
+| Cron jobs           | External cron service     | `convex/server` cronJobs          | Already working for match alerts                |
+| Email delivery      | SMTP configuration        | `@convex-dev/resend`              | Already configured with idempotency             |
+| Batch processing    | Custom queue              | Convex action with batch loops    | Pattern already proven in batchActions.ts       |
 
 **Key insight:** The codebase already has working email + scheduling infrastructure. This phase extends existing patterns rather than building new foundations.
 
 ## Common Pitfalls
 
 ### Pitfall 1: Notification Fatigue from "All" Frequency
+
 **What goes wrong:** Users enabling "All" get spammed when orgs create many events
 **Why it happens:** No rate limiting on immediate notifications
 **How to avoid:**
+
 - Implement per-user rate limiting: max 5 notifications per hour
 - If limit exceeded, batch remaining into next hour
 - Show in-app count but don't toast for every notification
-**Warning signs:** Users disabling notifications entirely, complaints about spam
+  **Warning signs:** Users disabling notifications entirely, complaints about spam
 
 ### Pitfall 2: Duplicate Reminders After Event Reschedule
+
 **What goes wrong:** Event time changes but old reminder still fires at wrong time
 **Why it happens:** Scheduled functions weren't cancelled when event updated
 **How to avoid:**
+
 - Store scheduled function IDs in a tracking table
 - On event update/delete, cancel all scheduled reminders
 - Re-schedule with new times if event still active
-**Warning signs:** Users getting reminders for cancelled events, wrong timing
+  **Warning signs:** Users getting reminders for cancelled events, wrong timing
 
 ### Pitfall 3: Digest Email Timeout
+
 **What goes wrong:** Processing many users in weekly digest causes action timeout
 **Why it happens:** Convex actions have 10-minute timeout limit
 **How to avoid:**
+
 - Use BATCH_SIZE = 10 (already established pattern)
 - For very large user bases, chain multiple actions
 - Consider fan-out pattern: schedule individual send actions
-**Warning signs:** Incomplete digest sends, action failures in logs
+  **Warning signs:** Incomplete digest sends, action failures in logs
 
 ### Pitfall 4: Missing Event View Tracking for Reminders
+
 **What goes wrong:** Can't send reminders to users who "viewed" an event
 **Why it happens:** No tracking of which users viewed which events
 **How to avoid:**
+
 - Add `eventViews` table: `{ userId, eventId, viewedAt }`
 - Record view on event detail page load
 - Query this table when scheduling reminders
-**Warning signs:** Reminders only going to explicitly subscribed users
+  **Warning signs:** Reminders only going to explicitly subscribed users
 
 ### Pitfall 5: Timezone Confusion in Digest Timing
+
 **What goes wrong:** Daily digest arrives at wrong local time for users
 **Why it happens:** Running single cron job without timezone awareness
 **How to avoid:**
+
 - Use existing pattern: hourly cron checks which timezones hit target hour
 - See `getUsersForMatchAlertBatch` in `convex/emails/send.ts`
 - Convert UTC to user timezone before comparison
-**Warning signs:** Users in wrong timezone getting digests at odd hours
+  **Warning signs:** Users in wrong timezone getting digests at odd hours
 
 ## Code Examples
 
 Verified patterns from official sources and existing codebase:
 
 ### Event Digest Email Template
+
 ```typescript
 // Source: Existing pattern in convex/emails/templates.tsx
 import {
@@ -403,6 +431,7 @@ export async function renderEventDigest(props: EventDigestProps): Promise<string
 ```
 
 ### Cron Job for Daily Event Digest
+
 ```typescript
 // Source: Existing crons.ts pattern
 // Add to convex/crons.ts
@@ -410,44 +439,46 @@ export async function renderEventDigest(props: EventDigestProps): Promise<string
 // Run hourly to process daily digest for each timezone's target hour
 // Target: 9 AM local time (reasonable morning hour)
 crons.hourly(
-  "send-daily-event-digest",
+  'send-daily-event-digest',
   { minuteUTC: 30 }, // Offset from match alerts at :00
   internal.emails.batchActions.processDailyEventDigestBatch,
-  {}
-);
+  {},
+)
 ```
 
 ### Toast Notification for New Events (In-App)
+
 ```typescript
 // Source: Existing sonner usage pattern
-import { toast } from "sonner";
+import { toast } from 'sonner'
 
 // When creating in-app notification, also show toast for immediate feedback
 export function showEventNotificationToast(event: {
-  title: string;
-  orgName: string;
-  url: string;
+  title: string
+  orgName: string
+  url: string
 }) {
   toast.success(`New event from ${event.orgName}`, {
     description: event.title,
     action: {
-      label: "View",
-      onClick: () => window.open(event.url, "_blank"),
+      label: 'View',
+      onClick: () => window.open(event.url, '_blank'),
     },
     duration: 5000, // 5 seconds
-  });
+  })
 }
 ```
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| Polling for notifications | Convex real-time subscriptions | Native to Convex | In-app notifications update instantly |
-| External email queue (SQS) | `@convex-dev/resend` component | Convex components | Simpler architecture, idempotency built-in |
-| Manual cron with external scheduler | `convex/server` cronJobs | Native to Convex | No infrastructure to manage |
+| Old Approach                        | Current Approach               | When Changed      | Impact                                     |
+| ----------------------------------- | ------------------------------ | ----------------- | ------------------------------------------ |
+| Polling for notifications           | Convex real-time subscriptions | Native to Convex  | In-app notifications update instantly      |
+| External email queue (SQS)          | `@convex-dev/resend` component | Convex components | Simpler architecture, idempotency built-in |
+| Manual cron with external scheduler | `convex/server` cronJobs       | Native to Convex  | No infrastructure to manage                |
 
 **Deprecated/outdated:**
+
 - Direct Resend SDK usage: Use `@convex-dev/resend` wrapper for idempotency
 - Node.js `setTimeout` for delayed tasks: Use `ctx.scheduler.runAt()` instead
 
@@ -473,21 +504,25 @@ Things that couldn't be fully resolved:
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - Existing codebase: `convex/emails/`, `convex/crons.ts`, `src/routes/__root.tsx` (Toaster)
 - Convex Scheduled Functions: https://docs.convex.dev/scheduling/scheduled-functions
 - @convex-dev/resend: https://www.convex.dev/components/resend
 - sonner documentation: https://github.com/emilkowalski/sonner
 
 ### Secondary (MEDIUM confidence)
+
 - React Email components: https://react.email/docs/introduction
 - date-fns-tz: https://github.com/marnusw/date-fns-tz
 
 ### Tertiary (LOW confidence)
+
 - Notification center UI patterns: Community examples (patterns verified against shadcn/ui)
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - All libraries already installed and working in codebase
 - Architecture: HIGH - Extends proven patterns from existing email/cron infrastructure
 - Pitfalls: HIGH - Based on existing batchActions.ts patterns and Convex documentation

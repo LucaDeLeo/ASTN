@@ -18,12 +18,14 @@ The primary risk is scope creep disguised as "polish" and the "big bang" redesig
 ### Recommended Stack
 
 **Core technologies:**
+
 - **Plus Jakarta Sans (Variable):** Primary font - geometric-humanist hybrid with rounded terminals conveys warmth while remaining professional. Avoids the "default React app" feel of Inter.
 - **Lora (Variable):** Optional serif accent for quotes/testimonials - calligraphic roots with brushed curves.
 - **Motion (motion/react):** Animation library - the clear market leader for React, declarative API, built-in stagger/layout/exit animations.
 - **Tailwind v4 @theme:** CSS-first design tokens - no JS config needed, tokens become utilities automatically.
 
 **What to avoid:**
+
 - Inter/Roboto (generic, cold)
 - GSAP (overkill, licensing concerns)
 - CSS-in-JS for animations (performance overhead)
@@ -32,6 +34,7 @@ The primary risk is scope creep disguised as "polish" and the "big bang" redesig
 ### Expected Features
 
 **Must have (table stakes):**
+
 - Custom display font (headings) - system fonts signal lack of investment
 - Warm off-white backgrounds - pure white feels clinical
 - Generous rounded corners (12-16px) - sharp corners feel corporate
@@ -40,6 +43,7 @@ The primary risk is scope creep disguised as "polish" and the "big bang" redesig
 - Coral-tinted shadows instead of gray
 
 **Should have (differentiators):**
+
 - Staggered card entrance animations
 - Noise/grain texture overlay (2-4% opacity)
 - Page transitions
@@ -47,6 +51,7 @@ The primary risk is scope creep disguised as "polish" and the "big bang" redesig
 - Personalized greetings and conversational microcopy
 
 **Defer (v2+):**
+
 - Custom spot illustrations for empty states (high effort)
 - Animated backgrounds (slow-moving gradients)
 - Scroll-triggered content reveals
@@ -57,6 +62,7 @@ The primary risk is scope creep disguised as "polish" and the "big bang" redesig
 The architecture extends shadcn/ui through composition rather than modification. Design tokens live in CSS via Tailwind v4's `@theme` directive, organized into modular files (`tokens/colors.css`, `tokens/typography.css`, `tokens/animations.css`). New design-enhanced components (AnimatedCard, GradientBg, Typography) wrap existing shadcn primitives, preserving future update compatibility.
 
 **Major components:**
+
 1. **Token layer** (`src/styles/tokens/`) - color, typography, animation CSS custom properties
 2. **Design components** (`src/components/design/`) - AnimatedCard, GradientBg, Heading/Text
 3. **Background system** - reusable gradient + noise patterns via GradientBg component
@@ -78,12 +84,14 @@ The architecture extends shadcn/ui through composition rather than modification.
 Based on research, suggested phase structure:
 
 ### Phase 1: Foundation & Tokens
+
 **Rationale:** Typography and color affect every component - they must be stable before any visual changes. Research strongly emphasizes "token-first" approach.
 **Delivers:** Design token system, font installation, app.css refactoring
 **Addresses:** Custom typography (table stakes), token consistency
 **Avoids:** Pitfall #6 (inconsistent token application), Pitfall #5 (breaking shadcn patterns)
 
 Key deliverables:
+
 - Install Plus Jakarta Sans + Lora via Fontsource
 - Create `tokens/colors.css` with coral spectrum + warm neutrals
 - Create `tokens/typography.css` with fluid scale
@@ -92,12 +100,14 @@ Key deliverables:
 - Add font preloads to `__root.tsx`
 
 ### Phase 2: Core Visual Polish
+
 **Rationale:** After tokens are stable, apply them consistently across existing components. This is where the visual transformation happens.
 **Delivers:** Warm backgrounds, updated shadows, rounded corners, typography application
 **Addresses:** Off-white backgrounds, coral shadows, generous whitespace
 **Avoids:** Pitfall #7 (dark mode afterthought), Pitfall #11 (border radius inconsistency)
 
 Key deliverables:
+
 - Apply warm gradient backgrounds (extend login page pattern)
 - Add noise texture overlay
 - Update all shadows to use coral tint
@@ -105,12 +115,14 @@ Key deliverables:
 - Update typography across pages
 
 ### Phase 3: Motion System
+
 **Rationale:** Animation must be added after layout/sizing is stable. Performance-critical phase requiring careful testing.
 **Delivers:** Card animations, hover effects, page transitions
 **Addresses:** Entrance animations (differentiator), hover feedback (table stakes)
 **Avoids:** Pitfall #3 (animation jank), Pitfall #13 (timing inconsistency)
 
 Key deliverables:
+
 - Create AnimatedCard component with stagger support
 - Add hover lift effects to all cards
 - Implement page transitions (TanStack Router)
@@ -118,12 +130,14 @@ Key deliverables:
 - Create reusable animation variants
 
 ### Phase 4: Polish & Integration
+
 **Rationale:** Final refinements after core system is stable. Testing and consistency verification.
 **Delivers:** Dark mode fixes, accessibility audit, performance verification
 **Addresses:** Focus states, dark mode contrast, responsive typography
 **Avoids:** Pitfall #10 (lost focus states), Pitfall #8 (background performance)
 
 Key deliverables:
+
 - Dark mode color refinement (intentional coral, not just inverted)
 - Focus state audit (`:focus-visible` on all interactive elements)
 - Performance testing (mobile, Core Web Vitals)
@@ -139,21 +153,23 @@ Key deliverables:
 ### Research Flags
 
 Phases likely needing deeper research during planning:
+
 - **Phase 3 (Motion):** TanStack Router page transition integration is less documented. May need experimentation with AnimatePresence placement.
 
 Phases with standard patterns (skip research-phase):
+
 - **Phase 1 (Foundation):** Fontsource + Tailwind v4 @theme extremely well documented.
 - **Phase 2 (Visual Polish):** CSS gradient/shadow/radius are standard patterns.
 - **Phase 4 (Polish):** Accessibility testing has established tooling.
 
 ## Confidence Assessment
 
-| Area | Confidence | Notes |
-|------|------------|-------|
-| Stack | HIGH | Plus Jakarta Sans and Motion are well-documented, verified in official docs |
-| Features | HIGH | Multiple 2026 trend sources aligned on "warm & human" aesthetic |
-| Architecture | HIGH | Tailwind v4 @theme and shadcn composition patterns verified in official docs |
-| Pitfalls | HIGH | Multiple authoritative sources (Smashing Magazine, Evil Martians, etc.) |
+| Area         | Confidence | Notes                                                                        |
+| ------------ | ---------- | ---------------------------------------------------------------------------- |
+| Stack        | HIGH       | Plus Jakarta Sans and Motion are well-documented, verified in official docs  |
+| Features     | HIGH       | Multiple 2026 trend sources aligned on "warm & human" aesthetic              |
+| Architecture | HIGH       | Tailwind v4 @theme and shadcn composition patterns verified in official docs |
+| Pitfalls     | HIGH       | Multiple authoritative sources (Smashing Magazine, Evil Martians, etc.)      |
 
 **Overall confidence:** HIGH
 
@@ -166,12 +182,14 @@ Phases with standard patterns (skip research-phase):
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - Fontsource documentation: fontsource.org/docs/getting-started
 - Motion documentation: motion.dev/docs/react-quick-start
 - Tailwind v4 @theme: tailwindcss.com/docs/functions-and-directives
 - shadcn/ui Tailwind v4 migration: ui.shadcn.com/docs/tailwind-v4
 
 ### Secondary (MEDIUM confidence)
+
 - BB Creative Co "Design Trends for 2026: Warm, Human & Just a Little Bit Clever"
 - Elementor "Web Design Trends to Expect in 2026"
 - Envato Elements "Cute and Cozy Fonts: The Warm Typography Trend for 2026"
@@ -180,9 +198,11 @@ Phases with standard patterns (skip research-phase):
 - Jono Alderson "You're Loading Fonts Wrong"
 
 ### Tertiary (LOW confidence)
+
 - Design Systems Collective "Retrofitting a Design System" - conceptual patterns, not ASTN-specific
 - Various Medium articles on animation performance
 
 ---
-*Research completed: 2026-01-19*
-*Ready for roadmap: yes*
+
+_Research completed: 2026-01-19_
+_Ready for roadmap: yes_

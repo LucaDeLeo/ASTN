@@ -1,6 +1,6 @@
-import { v } from "convex/values";
-import { mutation } from "./_generated/server";
-import { requireAnyOrgAdmin } from "./lib/auth";
+import { v } from 'convex/values'
+import { mutation } from './_generated/server'
+import { requireAnyOrgAdmin } from './lib/auth'
 
 // Create a new opportunity (manual entry)
 export const createOpportunity = mutation({
@@ -19,27 +19,27 @@ export const createOpportunity = mutation({
     sourceUrl: v.string(),
   },
   handler: async (ctx, args) => {
-    await requireAnyOrgAdmin(ctx);
+    await requireAnyOrgAdmin(ctx)
 
-    const now = Date.now();
-    const sourceId = `manual-${crypto.randomUUID()}`;
+    const now = Date.now()
+    const sourceId = `manual-${crypto.randomUUID()}`
 
-    return await ctx.db.insert("opportunities", {
+    return await ctx.db.insert('opportunities', {
       ...args,
       sourceId,
-      source: "manual",
-      status: "active",
+      source: 'manual',
+      status: 'active',
       lastVerified: now,
       createdAt: now,
       updatedAt: now,
-    });
+    })
   },
-});
+})
 
 // Update an existing opportunity
 export const updateOpportunity = mutation({
   args: {
-    id: v.id("opportunities"),
+    id: v.id('opportunities'),
     title: v.optional(v.string()),
     organization: v.optional(v.string()),
     organizationLogoUrl: v.optional(v.string()),
@@ -52,44 +52,46 @@ export const updateOpportunity = mutation({
     salaryRange: v.optional(v.string()),
     deadline: v.optional(v.number()),
     sourceUrl: v.optional(v.string()),
-    status: v.optional(v.union(v.literal("active"), v.literal("archived"))),
+    status: v.optional(v.union(v.literal('active'), v.literal('archived'))),
   },
   handler: async (ctx, args) => {
-    await requireAnyOrgAdmin(ctx);
+    await requireAnyOrgAdmin(ctx)
 
-    const { id, ...updates } = args;
+    const { id, ...updates } = args
 
     // Remove undefined values (runtime filter for optional args)
     const cleanUpdates = Object.fromEntries(
-      Object.entries(updates as Record<string, unknown>).filter(([_, value]) => value !== undefined)
-    );
+      Object.entries(updates as Record<string, unknown>).filter(
+        ([_, value]) => value !== undefined,
+      ),
+    )
 
-    await ctx.db.patch("opportunities", id, {
+    await ctx.db.patch('opportunities', id, {
       ...cleanUpdates,
       updatedAt: Date.now(),
-    });
+    })
 
-    return await ctx.db.get("opportunities", id);
+    return await ctx.db.get('opportunities', id)
   },
-});
+})
 
 // Delete an opportunity
 export const deleteOpportunity = mutation({
-  args: { id: v.id("opportunities") },
+  args: { id: v.id('opportunities') },
   handler: async (ctx, args) => {
-    await requireAnyOrgAdmin(ctx);
-    await ctx.db.delete("opportunities", args.id);
+    await requireAnyOrgAdmin(ctx)
+    await ctx.db.delete('opportunities', args.id)
   },
-});
+})
 
 // Archive an opportunity (soft delete)
 export const archiveOpportunity = mutation({
-  args: { id: v.id("opportunities") },
+  args: { id: v.id('opportunities') },
   handler: async (ctx, args) => {
-    await requireAnyOrgAdmin(ctx);
-    await ctx.db.patch("opportunities", args.id, {
-      status: "archived",
+    await requireAnyOrgAdmin(ctx)
+    await ctx.db.patch('opportunities', args.id, {
+      status: 'archived',
       updatedAt: Date.now(),
-    });
+    })
   },
-});
+})

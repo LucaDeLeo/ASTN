@@ -1,53 +1,53 @@
-import { useEffect, useState } from "react";
-import { useAction, useQuery } from "convex/react";
-import { Building2, ChevronDown, ChevronUp, Search, X } from "lucide-react";
-import { api } from "../../../../convex/_generated/api";
-import { Input } from "~/components/ui/input";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { Checkbox } from "~/components/ui/checkbox";
+import { useEffect, useState } from 'react'
+import { useAction, useQuery } from 'convex/react'
+import { Building2, ChevronDown, ChevronUp, Search, X } from 'lucide-react'
+import { api } from '../../../../convex/_generated/api'
+import { Input } from '~/components/ui/input'
+import { Badge } from '~/components/ui/badge'
+import { Button } from '~/components/ui/button'
+import { Checkbox } from '~/components/ui/checkbox'
 
 interface OrgSelectorProps {
-  selectedOrgs: Array<string>;
-  onOrgsChange: (orgs: Array<string>) => void;
+  selectedOrgs: Array<string>
+  onOrgsChange: (orgs: Array<string>) => void
 }
 
 export function OrgSelector({ selectedOrgs, onOrgsChange }: OrgSelectorProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showBrowse, setShowBrowse] = useState(false);
-  const [isSeeding, setIsSeeding] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showBrowse, setShowBrowse] = useState(false)
+  const [isSeeding, setIsSeeding] = useState(false)
 
   // Fetch all organizations and ensure they're seeded
-  const allOrgs = useQuery(api.organizations.listOrganizations);
+  const allOrgs = useQuery(api.organizations.listOrganizations)
   const searchResults = useQuery(
     api.organizations.searchOrganizations,
-    searchQuery.trim() ? { query: searchQuery } : "skip"
-  );
-  const ensureSeeded = useAction(api.organizations.ensureOrganizationsSeeded);
+    searchQuery.trim() ? { query: searchQuery } : 'skip',
+  )
+  const ensureSeeded = useAction(api.organizations.ensureOrganizationsSeeded)
 
   // Seed organizations on first load if needed
   useEffect(() => {
     if (allOrgs && allOrgs.length === 0 && !isSeeding) {
-      setIsSeeding(true);
-      ensureSeeded().finally(() => setIsSeeding(false));
+      setIsSeeding(true)
+      ensureSeeded().finally(() => setIsSeeding(false))
     }
-  }, [allOrgs, ensureSeeded, isSeeding]);
+  }, [allOrgs, ensureSeeded, isSeeding])
 
   // Get selected organization details
   const selectedOrgDetails =
-    allOrgs?.filter((org) => selectedOrgs.includes(org._id)) ?? [];
+    allOrgs?.filter((org) => selectedOrgs.includes(org._id)) ?? []
 
   const toggleOrg = (orgId: string) => {
     if (selectedOrgs.includes(orgId)) {
-      onOrgsChange(selectedOrgs.filter((id) => id !== orgId));
+      onOrgsChange(selectedOrgs.filter((id) => id !== orgId))
     } else {
-      onOrgsChange([...selectedOrgs, orgId]);
+      onOrgsChange([...selectedOrgs, orgId])
     }
-  };
+  }
 
   const removeOrg = (orgId: string) => {
-    onOrgsChange(selectedOrgs.filter((id) => id !== orgId));
-  };
+    onOrgsChange(selectedOrgs.filter((id) => id !== orgId))
+  }
 
   return (
     <div className="space-y-4">
@@ -98,7 +98,7 @@ export function OrgSelector({ selectedOrgs, onOrgsChange }: OrgSelectorProps) {
                   key={org._id}
                   onClick={() => toggleOrg(org._id)}
                   className={`w-full px-3 py-2 text-left hover:bg-slate-50 flex items-center justify-between transition-colors ${
-                    selectedOrgs.includes(org._id) ? "bg-slate-50" : ""
+                    selectedOrgs.includes(org._id) ? 'bg-slate-50' : ''
                   }`}
                 >
                   <span className="text-sm">{org.name}</span>
@@ -142,7 +142,9 @@ export function OrgSelector({ selectedOrgs, onOrgsChange }: OrgSelectorProps) {
             <div className="mt-2 border rounded-md max-h-64 overflow-y-auto">
               {allOrgs.length === 0 ? (
                 <p className="p-3 text-sm text-slate-500 text-center">
-                  {isSeeding ? "Loading organizations..." : "No organizations available"}
+                  {isSeeding
+                    ? 'Loading organizations...'
+                    : 'No organizations available'}
                 </p>
               ) : (
                 <div className="divide-y">
@@ -171,5 +173,5 @@ export function OrgSelector({ selectedOrgs, onOrgsChange }: OrgSelectorProps) {
         matches.
       </p>
     </div>
-  );
+  )
 }

@@ -22,9 +22,9 @@ affects: [16-05, 16-06, org-admin-dashboard]
 tech-stack:
   added: []
   patterns:
-    - "Soft delete via archiving (status: archived)"
-    - "URL-safe slug generation with timestamp collision handling"
-    - "Capacity enforcement before enrollment"
+    - 'Soft delete via archiving (status: archived)'
+    - 'URL-safe slug generation with timestamp collision handling'
+    - 'Capacity enforcement before enrollment'
 
 key-files:
   created:
@@ -33,14 +33,14 @@ key-files:
     - convex/schema.ts
 
 key-decisions:
-  - "Soft delete: Programs archived instead of hard deleted"
-  - "Auto-completion: Attendance count triggers completion when criteria met"
-  - "Privacy: Member emails not exposed in participant list"
+  - 'Soft delete: Programs archived instead of hard deleted'
+  - 'Auto-completion: Attendance count triggers completion when criteria met'
+  - 'Privacy: Member emails not exposed in participant list'
 
 patterns-established:
-  - "Program types: reading_group, fellowship, mentorship, cohort, workshop_series, custom"
-  - "Enrollment methods: admin_only, self_enroll, approval_required"
-  - "Completion criteria: attendance_count, attendance_percentage, manual"
+  - 'Program types: reading_group, fellowship, mentorship, cohort, workshop_series, custom'
+  - 'Enrollment methods: admin_only, self_enroll, approval_required'
+  - 'Completion criteria: attendance_count, attendance_percentage, manual'
 
 # Metrics
 duration: 3min
@@ -105,5 +105,6 @@ None - no external service configuration required.
 - Ready to build program creation form and participant management UI
 
 ---
-*Phase: 16-crm-dashboard-programs*
-*Completed: 2026-01-19*
+
+_Phase: 16-crm-dashboard-programs_
+_Completed: 2026-01-19_

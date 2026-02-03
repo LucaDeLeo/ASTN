@@ -35,14 +35,14 @@ key-files:
     - convex/events/mutations.ts
 
 key-decisions:
-  - "Daily digest targets 9 AM local time (offset from match alerts at 8 AM)"
-  - "Weekly event digest runs Sunday 22:30 UTC (30 min after opportunity digest)"
+  - 'Daily digest targets 9 AM local time (offset from match alerts at 8 AM)'
+  - 'Weekly event digest runs Sunday 22:30 UTC (30 min after opportunity digest)'
   - "Rate limit of 5 notifications per hour per user for 'all' frequency"
-  - "Use scheduler.runAfter(0) for async notification dispatch"
+  - 'Use scheduler.runAfter(0) for async notification dispatch'
 
 patterns-established:
-  - "Real-time notification pattern with rate limiting"
-  - "Hourly cron with timezone-aware user targeting"
+  - 'Real-time notification pattern with rate limiting'
+  - 'Hourly cron with timezone-aware user targeting'
 
 # Metrics
 duration: 7min
@@ -98,6 +98,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Fixed db.patch calls in events/mutations.ts**
+
 - **Found during:** Task 4 (Real-time notifications)
 - **Issue:** Pre-existing lint errors on db.patch calls missing explicit table names
 - **Fix:** Added explicit table names to db.patch calls
@@ -126,5 +127,6 @@ None - no external service configuration required.
 - Ready for Phase 14: Member Engagement
 
 ---
-*Phase: 13-event-notifications*
-*Completed: 2026-01-19*
+
+_Phase: 13-event-notifications_
+_Completed: 2026-01-19_

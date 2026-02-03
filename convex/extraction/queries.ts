@@ -1,46 +1,46 @@
-import { v } from "convex/values";
-import { internalQuery, query } from "../_generated/server";
+import { v } from 'convex/values'
+import { internalQuery, query } from '../_generated/server'
 
 // Get document by ID (internal use for extraction)
 export const getDocument = internalQuery({
-  args: { documentId: v.id("uploadedDocuments") },
+  args: { documentId: v.id('uploadedDocuments') },
   handler: async (ctx, { documentId }) => {
-    return await ctx.db.get("uploadedDocuments", documentId);
+    return await ctx.db.get('uploadedDocuments', documentId)
   },
-});
+})
 
 // Get skills taxonomy for matching
 export const getSkillsTaxonomy = internalQuery({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("skillsTaxonomy").collect();
+    return await ctx.db.query('skillsTaxonomy').collect()
   },
-});
+})
 
 // Get document with extraction status (internal use)
 export const getDocumentStatus = internalQuery({
-  args: { documentId: v.id("uploadedDocuments") },
+  args: { documentId: v.id('uploadedDocuments') },
   handler: async (ctx, { documentId }) => {
-    const doc = await ctx.db.get("uploadedDocuments", documentId);
-    if (!doc) return null;
+    const doc = await ctx.db.get('uploadedDocuments', documentId)
+    if (!doc) return null
     return {
       status: doc.status,
       extractedData: doc.extractedData,
       errorMessage: doc.errorMessage,
-    };
+    }
   },
-});
+})
 
 // Public query for frontend to check extraction status
 export const getExtractionStatus = query({
-  args: { documentId: v.id("uploadedDocuments") },
+  args: { documentId: v.id('uploadedDocuments') },
   handler: async (ctx, { documentId }) => {
-    const doc = await ctx.db.get("uploadedDocuments", documentId);
-    if (!doc) return null;
+    const doc = await ctx.db.get('uploadedDocuments', documentId)
+    if (!doc) return null
     return {
       status: doc.status,
       extractedData: doc.extractedData,
       errorMessage: doc.errorMessage,
-    };
+    }
   },
-});
+})

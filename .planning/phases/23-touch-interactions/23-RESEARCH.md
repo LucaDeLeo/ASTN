@@ -17,26 +17,30 @@ The project already has solid foundations for touch interactions. The button com
 The established libraries/tools for this domain:
 
 ### Core
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| @use-gesture/react | 10.x | Gesture detection (drag, swipe) | Best-in-class React gesture library, works with React 19, tree-shakeable |
-| CSS touch-action | Native | Browser touch handling | Zero-JS solution for tap delay elimination |
-| Vibration API | Native | Haptic feedback | Browser standard, no library needed |
+
+| Library            | Version | Purpose                         | Why Standard                                                             |
+| ------------------ | ------- | ------------------------------- | ------------------------------------------------------------------------ |
+| @use-gesture/react | 10.x    | Gesture detection (drag, swipe) | Best-in-class React gesture library, works with React 19, tree-shakeable |
+| CSS touch-action   | Native  | Browser touch handling          | Zero-JS solution for tap delay elimination                               |
+| Vibration API      | Native  | Haptic feedback                 | Browser standard, no library needed                                      |
 
 ### Supporting
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| @react-spring/web | 9.x | Spring animations | Optional: only if needing physics-based animations for gestures |
+
+| Library           | Version | Purpose           | When to Use                                                     |
+| ----------------- | ------- | ----------------- | --------------------------------------------------------------- |
+| @react-spring/web | 9.x     | Spring animations | Optional: only if needing physics-based animations for gestures |
 
 ### Alternatives Considered
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| @use-gesture | Hammer.js | Hammer is older, larger, less React-native; @use-gesture is smaller and hooks-based |
-| @use-gesture | framer-motion gestures | Framer would add significant bundle size for just gesture detection |
+
+| Instead of             | Could Use                    | Tradeoff                                                                                       |
+| ---------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------- |
+| @use-gesture           | Hammer.js                    | Hammer is older, larger, less React-native; @use-gesture is smaller and hooks-based            |
+| @use-gesture           | framer-motion gestures       | Framer would add significant bundle size for just gesture detection                            |
 | Custom pull-to-refresh | react-simple-pull-to-refresh | NPM packages are often unmaintained; custom implementation is ~100 lines and more controllable |
-| Vibration API | No haptics | Safari doesn't support Vibration API; graceful degradation is acceptable |
+| Vibration API          | No haptics                   | Safari doesn't support Vibration API; graceful degradation is acceptable                       |
 
 **Installation:**
+
 ```bash
 npm install @use-gesture/react
 # Optional, only if needing spring physics:
@@ -46,6 +50,7 @@ npm install @react-spring/web
 ## Architecture Patterns
 
 ### Recommended Project Structure
+
 ```
 src/
 ├── hooks/
@@ -66,44 +71,45 @@ src/
 **What:** Custom pull-to-refresh using drag gesture detection
 **When to use:** List views that need manual refresh capability
 **Example:**
+
 ```typescript
 // Source: @use-gesture docs + custom integration
-import { useDrag } from '@use-gesture/react';
-import { useState, useCallback } from 'react';
+import { useDrag } from '@use-gesture/react'
+import { useState, useCallback } from 'react'
 
 export function usePullToRefresh(onRefresh: () => Promise<void>) {
-  const [pullDistance, setPullDistance] = useState(0);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const THRESHOLD = 80; // pixels to trigger refresh
+  const [pullDistance, setPullDistance] = useState(0)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const THRESHOLD = 80 // pixels to trigger refresh
 
   const bind = useDrag(
     ({ movement: [, my], last, cancel }) => {
       // Only allow pulling down when at top of scroll
       if (my < 0) {
-        cancel();
-        return;
+        cancel()
+        return
       }
 
-      setPullDistance(Math.min(my, THRESHOLD * 1.5));
+      setPullDistance(Math.min(my, THRESHOLD * 1.5))
 
       if (last && my >= THRESHOLD && !isRefreshing) {
-        setIsRefreshing(true);
+        setIsRefreshing(true)
         onRefresh().finally(() => {
-          setIsRefreshing(false);
-          setPullDistance(0);
-        });
+          setIsRefreshing(false)
+          setPullDistance(0)
+        })
       } else if (last) {
-        setPullDistance(0);
+        setPullDistance(0)
       }
     },
     {
       axis: 'y',
       filterTaps: true,
-      from: () => [0, pullDistance]
-    }
-  );
+      from: () => [0, pullDistance],
+    },
+  )
 
-  return { bind, pullDistance, isRefreshing };
+  return { bind, pullDistance, isRefreshing }
 }
 ```
 
@@ -112,37 +118,38 @@ export function usePullToRefresh(onRefresh: () => Promise<void>) {
 **What:** Detect swipe direction for card actions (dismiss, save)
 **When to use:** Cards that need swipe-to-dismiss or swipe-to-save
 **Example:**
+
 ```typescript
 // Source: @use-gesture docs state properties
-import { useDrag } from '@use-gesture/react';
+import { useDrag } from '@use-gesture/react'
 
 export function useSwipeAction(
   onSwipeLeft?: () => void,
-  onSwipeRight?: () => void
+  onSwipeRight?: () => void,
 ) {
-  const [offset, setOffset] = useState(0);
+  const [offset, setOffset] = useState(0)
 
   const bind = useDrag(
     ({ movement: [mx], swipe: [swipeX], last }) => {
       if (last) {
-        if (swipeX === -1 && onSwipeLeft) onSwipeLeft();
-        if (swipeX === 1 && onSwipeRight) onSwipeRight();
-        setOffset(0);
+        if (swipeX === -1 && onSwipeLeft) onSwipeLeft()
+        if (swipeX === 1 && onSwipeRight) onSwipeRight()
+        setOffset(0)
       } else {
-        setOffset(mx);
+        setOffset(mx)
       }
     },
     {
       axis: 'x',
       swipe: {
-        distance: 50,    // min pixels to trigger swipe
-        velocity: 0.5,   // min velocity (px/ms)
-        duration: 220    // max duration (ms)
-      }
-    }
-  );
+        distance: 50, // min pixels to trigger swipe
+        velocity: 0.5, // min velocity (px/ms)
+        duration: 220, // max duration (ms)
+      },
+    },
+  )
 
-  return { bind, offset };
+  return { bind, offset }
 }
 ```
 
@@ -151,23 +158,24 @@ export function useSwipeAction(
 **What:** Cross-browser haptic feedback with graceful degradation
 **When to use:** Key interactions (successful actions, errors, confirmations)
 **Example:**
+
 ```typescript
 // Source: MDN Vibration API documentation
 export function useHaptic() {
   const vibrate = useCallback((pattern: number | number[]) => {
     // Check if Vibration API is supported
     if ('vibrate' in navigator) {
-      navigator.vibrate(pattern);
+      navigator.vibrate(pattern)
     }
     // Silently fail on unsupported browsers (Safari)
-  }, []);
+  }, [])
 
   return {
-    tap: () => vibrate(10),           // Light tap: 10ms
+    tap: () => vibrate(10), // Light tap: 10ms
     success: () => vibrate([10, 50, 10]), // Double pulse
     error: () => vibrate([50, 30, 50, 30, 50]), // Error pattern
-    warning: () => vibrate([30, 20, 30])  // Warning pattern
-  };
+    warning: () => vibrate([30, 20, 30]), // Warning pattern
+  }
 }
 ```
 
@@ -176,6 +184,7 @@ export function useHaptic() {
 **What:** Immediate visual feedback using CSS-only approach
 **When to use:** All interactive elements
 **Example:**
+
 ```css
 /* Source: web.dev touch feedback best practices */
 
@@ -191,7 +200,9 @@ html {
 
 /* Explicit active states for touch feedback */
 .interactive {
-  transition: transform 100ms ease-out, opacity 100ms ease-out;
+  transition:
+    transform 100ms ease-out,
+    opacity 100ms ease-out;
 }
 
 .interactive:active {
@@ -211,12 +222,12 @@ html {
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Swipe velocity calculation | Manual touch event math | @use-gesture swipe detection | Edge cases with direction, velocity thresholds, duration windows |
-| Gesture conflict resolution | Custom touch event juggling | @use-gesture axis locking | Library handles gesture prioritization automatically |
-| Pull threshold physics | Linear distance tracking | Rubberband formula | UX feels wrong without proper overscroll physics |
-| Cross-browser touch events | Raw touchstart/touchend | @use-gesture | Handles pointer events, touch events, mouse events uniformly |
+| Problem                     | Don't Build                 | Use Instead                  | Why                                                              |
+| --------------------------- | --------------------------- | ---------------------------- | ---------------------------------------------------------------- |
+| Swipe velocity calculation  | Manual touch event math     | @use-gesture swipe detection | Edge cases with direction, velocity thresholds, duration windows |
+| Gesture conflict resolution | Custom touch event juggling | @use-gesture axis locking    | Library handles gesture prioritization automatically             |
+| Pull threshold physics      | Linear distance tracking    | Rubberband formula           | UX feels wrong without proper overscroll physics                 |
+| Cross-browser touch events  | Raw touchstart/touchend     | @use-gesture                 | Handles pointer events, touch events, mouse events uniformly     |
 
 **Key insight:** Touch interaction feels "wrong" when thresholds, velocities, and timing don't match native apps. Libraries encode years of UX tuning.
 
@@ -375,14 +386,15 @@ html {
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| Hammer.js for gestures | @use-gesture with hooks | ~2020 | Smaller bundle, better React integration, tree-shaking |
-| User-scalable=no for tap delay | touch-action: manipulation | ~2019 | Removes delay without blocking accessibility zoom |
-| Raw touchstart/touchend | Pointer Events API | ~2018 | Unified handling of touch, mouse, pen input |
-| Custom gesture math | @use-gesture swipe detection | ~2020 | Built-in velocity, direction, duration thresholds |
+| Old Approach                   | Current Approach             | When Changed | Impact                                                 |
+| ------------------------------ | ---------------------------- | ------------ | ------------------------------------------------------ |
+| Hammer.js for gestures         | @use-gesture with hooks      | ~2020        | Smaller bundle, better React integration, tree-shaking |
+| User-scalable=no for tap delay | touch-action: manipulation   | ~2019        | Removes delay without blocking accessibility zoom      |
+| Raw touchstart/touchend        | Pointer Events API           | ~2018        | Unified handling of touch, mouse, pen input            |
+| Custom gesture math            | @use-gesture swipe detection | ~2020        | Built-in velocity, direction, duration thresholds      |
 
 **Deprecated/outdated:**
+
 - `FastClick.js`: No longer needed; modern browsers with proper viewport meta don't have 300ms delay
 - `user-scalable=no`: Accessibility violation; use touch-action instead
 - Hammer.js: Still works but @use-gesture is more modern, smaller, and better for React
@@ -409,21 +421,25 @@ Things that couldn't be fully resolved:
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - @use-gesture official docs (https://use-gesture.netlify.app/docs/) - Gesture API, swipe state, configuration options
 - MDN Vibration API (https://developer.mozilla.org/en-US/docs/Web/API/Vibration_API) - API usage, patterns
 - MDN touch-action (https://developer.mozilla.org/en-US/docs/Web/CSS/touch-action) - Values, use cases
 - MDN overscroll-behavior (https://developer.mozilla.org/en-US/docs/Web/CSS/overscroll-behavior) - Pull-to-refresh control
 
 ### Secondary (MEDIUM confidence)
+
 - web.dev touch feedback article - Best practices verified with MDN
 - Can I Use Vibration API - Browser support data (81% global, no Safari)
 
 ### Tertiary (LOW confidence)
+
 - None - all findings verified with primary sources
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - @use-gesture is well-documented with official docs consulted
 - Architecture: HIGH - Patterns derived from official documentation examples
 - Pitfalls: HIGH - Common issues documented in MDN and web.dev

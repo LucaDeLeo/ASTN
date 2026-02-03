@@ -32,13 +32,13 @@ key-files:
 
 key-decisions:
   - "Batch alerts hourly to catch each timezone's 8 AM"
-  - "Weekly digest at 22:00 UTC Sunday (covers Americas evening)"
-  - "Only great-tier matches trigger alerts (per CONTEXT.md)"
-  - "Batch size of 10 users to avoid action timeout"
+  - 'Weekly digest at 22:00 UTC Sunday (covers Americas evening)'
+  - 'Only great-tier matches trigger alerts (per CONTEXT.md)'
+  - 'Batch size of 10 users to avoid action timeout'
 
 patterns-established:
-  - "Timezone-aware email delivery via hourly cron checking local hour"
-  - "Separate Node.js actions file for template rendering"
+  - 'Timezone-aware email delivery via hourly cron checking local hour'
+  - 'Separate Node.js actions file for template rendering'
 
 # Metrics
 duration: 6min
@@ -58,6 +58,7 @@ completed: 2026-01-18
 - **Files modified:** 3
 
 ## Accomplishments
+
 - Hourly cron processes match alerts for users whose local time is 8 AM
 - Weekly cron sends digest emails Sunday evening UTC
 - Only great-tier matches trigger alert emails (per CONTEXT.md)
@@ -71,11 +72,13 @@ Each task was committed atomically:
 2. **Task 2: Add cron jobs for scheduled email delivery** - `f30034c` (feat)
 
 ## Files Created/Modified
+
 - `convex/emails/batchActions.ts` - Batch processing actions for match alerts and weekly digests
 - `convex/emails/send.ts` - Added queries for users by timezone, new great matches, recent matches
 - `convex/crons.ts` - Added hourly match alerts cron and weekly digest cron
 
 ## Decisions Made
+
 - Hourly cron covers all timezones' 8 AM by checking each user's local hour via date-fns-tz
 - Weekly digest at 22:00 UTC Sunday targets Americas Sunday afternoon/evening
 - Batch processing in chunks of 10 users to stay within Convex action timeout limits
@@ -86,6 +89,7 @@ Each task was committed atomically:
 None - plan executed exactly as written.
 
 ## Issues Encountered
+
 - TypeScript inference issues with Convex internalAction handlers required @ts-nocheck directive
 - ESLint required Array<T> syntax instead of T[] per project configuration
 
@@ -94,10 +98,12 @@ None - plan executed exactly as written.
 None - cron jobs are automatically scheduled by Convex deployment.
 
 ## Next Phase Readiness
+
 - Email scheduling infrastructure complete
 - Settings page (05-03) can manage notification preferences
 - Email templates ready to receive real user data
 
 ---
-*Phase: 05-engagement-org*
-*Completed: 2026-01-18*
+
+_Phase: 05-engagement-org_
+_Completed: 2026-01-18_

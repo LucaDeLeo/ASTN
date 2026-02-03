@@ -1,7 +1,7 @@
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { AuthLoading, Authenticated, Unauthenticated } from "convex/react";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { convexQuery } from "@convex-dev/react-query";
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
+import { AuthLoading, Authenticated, Unauthenticated } from 'convex/react'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { convexQuery } from '@convex-dev/react-query'
 import {
   AlertTriangle,
   ArrowLeft,
@@ -13,28 +13,28 @@ import {
   MapPin,
   Sparkles,
   ThumbsUp,
-} from "lucide-react";
-import { useEffect } from "react";
-import { api } from "../../../convex/_generated/api";
-import type { Id } from "../../../convex/_generated/dataModel";
-import { AuthHeader } from "~/components/layout/auth-header";
-import { GradientBg } from "~/components/layout/GradientBg";
-import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
-import { Spinner } from "~/components/ui/spinner";
-import { ProbabilityBadge } from "~/components/matches/ProbabilityBadge";
+} from 'lucide-react'
+import { useEffect } from 'react'
+import { api } from '../../../convex/_generated/api'
+import type { Id } from '../../../convex/_generated/dataModel'
+import { AuthHeader } from '~/components/layout/auth-header'
+import { GradientBg } from '~/components/layout/GradientBg'
+import { Button } from '~/components/ui/button'
+import { Card } from '~/components/ui/card'
+import { Badge } from '~/components/ui/badge'
+import { Spinner } from '~/components/ui/spinner'
+import { ProbabilityBadge } from '~/components/matches/ProbabilityBadge'
 
-export const Route = createFileRoute("/matches/$id")({
+export const Route = createFileRoute('/matches/$id')({
   loader: async ({ context, params }) => {
     await context.queryClient.ensureQueryData(
       convexQuery(api.matches.getMatchById, {
-        matchId: params.id as Id<"matches">,
-      })
-    );
+        matchId: params.id as Id<'matches'>,
+      }),
+    )
   },
   component: MatchDetailPage,
-});
+})
 
 function MatchDetailPage() {
   return (
@@ -50,7 +50,7 @@ function MatchDetailPage() {
         <MatchDetailContent />
       </Authenticated>
     </GradientBg>
-  );
+  )
 }
 
 function LoadingState() {
@@ -58,32 +58,44 @@ function LoadingState() {
     <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">
       <Spinner />
     </div>
-  );
+  )
 }
 
 function UnauthenticatedRedirect() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   useEffect(() => {
-    navigate({ to: "/login" });
-  }, [navigate]);
-  return <LoadingState />;
+    navigate({ to: '/login' })
+  }, [navigate])
+  return <LoadingState />
 }
 
 const tierConfig = {
-  great: { label: "Great match", color: "bg-emerald-100 text-emerald-800", icon: Sparkles },
-  good: { label: "Good match", color: "bg-blue-100 text-blue-800", icon: ThumbsUp },
-  exploring: { label: "Worth exploring", color: "bg-amber-100 text-amber-800", icon: Compass },
-};
+  great: {
+    label: 'Great match',
+    color: 'bg-emerald-100 text-emerald-800',
+    icon: Sparkles,
+  },
+  good: {
+    label: 'Good match',
+    color: 'bg-blue-100 text-blue-800',
+    icon: ThumbsUp,
+  },
+  exploring: {
+    label: 'Worth exploring',
+    color: 'bg-amber-100 text-amber-800',
+    icon: Compass,
+  },
+}
 
 function MatchDetailContent() {
-  const { id } = Route.useParams();
+  const { id } = Route.useParams()
 
   // Data is synchronously available - preloaded by route loader
   const { data: match } = useSuspenseQuery(
     convexQuery(api.matches.getMatchById, {
-      matchId: id as Id<"matches">,
-    })
-  );
+      matchId: id as Id<'matches'>,
+    }),
+  )
 
   if (match === null) {
     return (
@@ -100,11 +112,11 @@ function MatchDetailContent() {
           </Button>
         </Card>
       </main>
-    );
+    )
   }
 
-  const tier = tierConfig[match.tier];
-  const TierIcon = tier.icon;
+  const tier = tierConfig[match.tier]
+  const TierIcon = tier.icon
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -127,13 +139,11 @@ function MatchDetailContent() {
                   <TierIcon className="size-3 mr-1" />
                   {tier.label}
                 </Badge>
-                {match.isNew && (
-                  <Badge variant="secondary">New</Badge>
-                )}
+                {match.isNew && <Badge variant="secondary">New</Badge>}
               </div>
 
               <h1
-                style={{ viewTransitionName: "match-title" }}
+                style={{ viewTransitionName: 'match-title' }}
                 className="text-xl sm:text-2xl font-display font-semibold text-foreground break-words"
               >
                 {match.opportunity.title}
@@ -147,13 +157,20 @@ function MatchDetailContent() {
                   <MapPin className="size-4 shrink-0" />
                   <span className="truncate">{match.opportunity.location}</span>
                   {match.opportunity.isRemote && (
-                    <Badge variant="outline" className="ml-1 shrink-0">Remote</Badge>
+                    <Badge variant="outline" className="ml-1 shrink-0">
+                      Remote
+                    </Badge>
                   )}
                 </div>
                 {match.opportunity.deadline && (
                   <div className="flex items-center gap-1">
                     <Calendar className="size-4 shrink-0" />
-                    <span>Deadline: {new Date(match.opportunity.deadline).toLocaleDateString()}</span>
+                    <span>
+                      Deadline:{' '}
+                      {new Date(
+                        match.opportunity.deadline,
+                      ).toLocaleDateString()}
+                    </span>
                   </div>
                 )}
               </div>
@@ -184,7 +201,9 @@ function MatchDetailContent() {
               <li
                 key={i}
                 className="flex items-start gap-3"
-                style={i === 0 ? { viewTransitionName: "match-strength" } : undefined}
+                style={
+                  i === 0 ? { viewTransitionName: 'match-strength' } : undefined
+                }
               >
                 <span className="size-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm flex-shrink-0 mt-0.5">
                   +
@@ -222,20 +241,20 @@ function MatchDetailContent() {
               <div
                 key={i}
                 className={`flex items-start gap-3 p-3 rounded-lg ${
-                  rec.type === "specific" ? "bg-primary/5" : "bg-slate-50"
+                  rec.type === 'specific' ? 'bg-primary/5' : 'bg-slate-50'
                 }`}
               >
                 <Badge
                   variant="outline"
                   className={
-                    rec.priority === "high"
-                      ? "border-primary text-primary"
-                      : rec.priority === "medium"
-                        ? "border-blue-500 text-blue-500"
-                        : "border-slate-400 text-slate-400"
+                    rec.priority === 'high'
+                      ? 'border-primary text-primary'
+                      : rec.priority === 'medium'
+                        ? 'border-blue-500 text-blue-500'
+                        : 'border-slate-400 text-slate-400'
                   }
                 >
-                  {rec.type === "specific" ? "For this role" : rec.type}
+                  {rec.type === 'specific' ? 'For this role' : rec.type}
                 </Badge>
                 <span className="text-slate-700">{rec.action}</span>
               </div>
@@ -250,24 +269,32 @@ function MatchDetailContent() {
           </h2>
 
           <div className="prose prose-slate max-w-none">
-            <p className="whitespace-pre-wrap">{match.opportunity.description}</p>
+            <p className="whitespace-pre-wrap">
+              {match.opportunity.description}
+            </p>
           </div>
 
-          {match.opportunity.requirements && match.opportunity.requirements.length > 0 && (
-            <div className="mt-6 pt-4 border-t">
-              <h3 className="font-medium text-foreground mb-3">Requirements</h3>
-              <ul className="space-y-2">
-                {match.opportunity.requirements.map((req, i) => (
-                  <li key={i} className="flex items-start gap-2 text-slate-600">
-                    <span className="text-slate-400">-</span>
-                    {req}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {match.opportunity.requirements &&
+            match.opportunity.requirements.length > 0 && (
+              <div className="mt-6 pt-4 border-t">
+                <h3 className="font-medium text-foreground mb-3">
+                  Requirements
+                </h3>
+                <ul className="space-y-2">
+                  {match.opportunity.requirements.map((req, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start gap-2 text-slate-600"
+                    >
+                      <span className="text-slate-400">-</span>
+                      {req}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
         </Card>
       </div>
     </main>
-  );
+  )
 }

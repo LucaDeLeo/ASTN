@@ -1,33 +1,33 @@
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 
 interface OrgStatsProps {
   stats: {
-    memberCount: number;
-    adminCount: number;
-    joinedThisMonth: number;
-    skillsDistribution: Array<{ name: string; count: number }>;
+    memberCount: number
+    adminCount: number
+    joinedThisMonth: number
+    skillsDistribution: Array<{ name: string; count: number }>
     completenessDistribution: {
-      high: number;
-      medium: number;
-      low: number;
-    };
+      high: number
+      medium: number
+      low: number
+    }
     // Enhanced stats (optional for backward compatibility)
     engagementDistribution?: {
-      highly_engaged: number;
-      moderate: number;
-      at_risk: number;
-      new: number;
-      inactive: number;
-      pending: number;
-    };
-    careerDistribution?: Record<string, number>;
+      highly_engaged: number
+      moderate: number
+      at_risk: number
+      new: number
+      inactive: number
+      pending: number
+    }
+    careerDistribution?: Record<string, number>
     eventMetrics?: {
-      totalResponses: number;
-      attendedCount: number;
-      attendanceRate: number;
-    };
-    timeRange?: string;
-  };
+      totalResponses: number
+      attendedCount: number
+      attendanceRate: number
+    }
+    timeRange?: string
+  }
 }
 
 export function OrgStats({ stats }: OrgStatsProps) {
@@ -37,12 +37,12 @@ export function OrgStats({ stats }: OrgStatsProps) {
     engagementDistribution,
     careerDistribution,
     eventMetrics,
-  } = stats;
+  } = stats
 
   const totalMembers =
     completenessDistribution.high +
     completenessDistribution.medium +
-    completenessDistribution.low;
+    completenessDistribution.low
 
   // Calculate total for engagement distribution
   const totalEngagement = engagementDistribution
@@ -52,7 +52,7 @@ export function OrgStats({ stats }: OrgStatsProps) {
       engagementDistribution.new +
       engagementDistribution.inactive +
       engagementDistribution.pending
-    : 0;
+    : 0
 
   // Get top career stages sorted by count
   const topCareerStages = careerDistribution
@@ -60,7 +60,7 @@ export function OrgStats({ stats }: OrgStatsProps) {
         .map(([name, count]) => ({ name, count }))
         .sort((a, b) => b.count - a.count)
         .slice(0, 6)
-    : [];
+    : []
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
@@ -81,9 +81,9 @@ export function OrgStats({ stats }: OrgStatsProps) {
                 // Calculate max for scaling (at least 1 to avoid division by zero)
                 const maxCount = Math.max(
                   ...skillsDistribution.map((s) => s.count),
-                  1
-                );
-                const percentage = (skill.count / maxCount) * 100;
+                  1,
+                )
+                const percentage = (skill.count / maxCount) * 100
 
                 return (
                   <div key={skill.name}>
@@ -102,7 +102,7 @@ export function OrgStats({ stats }: OrgStatsProps) {
                       />
                     </div>
                   </div>
-                );
+                )
               })}
             </div>
           )}
@@ -168,7 +168,7 @@ export function OrgStats({ stats }: OrgStatsProps) {
                     <p className="text-sm text-slate-600">
                       <span className="font-medium">
                         {eventMetrics.attendanceRate}%
-                      </span>{" "}
+                      </span>{' '}
                       attendance rate ({eventMetrics.attendedCount}/
                       {eventMetrics.totalResponses} responses)
                     </p>
@@ -220,7 +220,7 @@ export function OrgStats({ stats }: OrgStatsProps) {
                   {completenessDistribution.high} of {totalMembers} members (
                   {totalMembers > 0
                     ? Math.round(
-                        (completenessDistribution.high / totalMembers) * 100
+                        (completenessDistribution.high / totalMembers) * 100,
                       )
                     : 0}
                   %) have highly complete profiles.
@@ -242,9 +242,9 @@ export function OrgStats({ stats }: OrgStatsProps) {
               {topCareerStages.map((stage) => {
                 const maxCount = Math.max(
                   ...topCareerStages.map((s) => s.count),
-                  1
-                );
-                const percentage = (stage.count / maxCount) * 100;
+                  1,
+                )
+                const percentage = (stage.count / maxCount) * 100
 
                 return (
                   <div key={stage.name}>
@@ -263,22 +263,22 @@ export function OrgStats({ stats }: OrgStatsProps) {
                       />
                     </div>
                   </div>
-                );
+                )
               })}
             </div>
           </CardContent>
         </Card>
       )}
     </div>
-  );
+  )
 }
 
 interface CompletenessBarProps {
-  label: string;
-  sublabel: string;
-  count: number;
-  total: number;
-  color: string;
+  label: string
+  sublabel: string
+  count: number
+  total: number
+  color: string
 }
 
 function CompletenessBar({
@@ -288,7 +288,7 @@ function CompletenessBar({
   total,
   color,
 }: CompletenessBarProps) {
-  const percentage = total > 0 ? (count / total) * 100 : 0;
+  const percentage = total > 0 ? (count / total) * 100 : 0
 
   return (
     <div>
@@ -298,7 +298,7 @@ function CompletenessBar({
           <span className="text-slate-400 ml-1">({sublabel})</span>
         </div>
         <span className="text-slate-500">
-          {count} member{count !== 1 ? "s" : ""}
+          {count} member{count !== 1 ? 's' : ''}
         </span>
       </div>
       <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
@@ -308,23 +308,18 @@ function CompletenessBar({
         />
       </div>
     </div>
-  );
+  )
 }
 
 interface DistributionBarProps {
-  label: string;
-  count: number;
-  total: number;
-  color: string;
+  label: string
+  count: number
+  total: number
+  color: string
 }
 
-function DistributionBar({
-  label,
-  count,
-  total,
-  color,
-}: DistributionBarProps) {
-  const percentage = total > 0 ? (count / total) * 100 : 0;
+function DistributionBar({ label, count, total, color }: DistributionBarProps) {
+  const percentage = total > 0 ? (count / total) * 100 : 0
 
   return (
     <div>
@@ -341,5 +336,5 @@ function DistributionBar({
         />
       </div>
     </div>
-  );
+  )
 }

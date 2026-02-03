@@ -22,8 +22,8 @@ affects: [all-primary-routes]
 tech-stack:
   added: []
   patterns:
-    - "Flex-based mobile shell isolating scroll from navigation"
-    - "Conditional layout with useIsMobile hook"
+    - 'Flex-based mobile shell isolating scroll from navigation'
+    - 'Conditional layout with useIsMobile hook'
 
 key-files:
   created:
@@ -39,13 +39,13 @@ key-files:
     - src/components/matches/MatchCard.tsx
 
 key-decisions:
-  - "Flex-based mobile shell with fixed positioning prevents tab bar shift"
-  - "Content scrolls inside its container, header/tab bar stay fixed"
-  - "Explicit grid-cols-1 prevents content overflow on mobile"
+  - 'Flex-based mobile shell with fixed positioning prevents tab bar shift'
+  - 'Content scrolls inside its container, header/tab bar stay fixed'
+  - 'Explicit grid-cols-1 prevents content overflow on mobile'
 
 patterns-established:
-  - "MobileShell: fixed inset-0 flex container, content flex-1 with overflow-y-auto"
-  - "Route pattern: useIsMobile conditional with MobileShell vs AuthHeader"
+  - 'MobileShell: fixed inset-0 flex container, content flex-1 with overflow-y-auto'
+  - 'Route pattern: useIsMobile conditional with MobileShell vs AuthHeader'
 
 # Metrics
 duration: 25min
@@ -65,6 +65,7 @@ completed: 2026-01-21
 - **Files modified:** 7
 
 ## Accomplishments
+
 - MobileShell layout wrapper with MobileHeader and BottomTabBar
 - Flex-based architecture preventing tab bar layout shifts
 - MobileHeader with logo link and hamburger menu trigger
@@ -77,10 +78,12 @@ completed: 2026-01-21
 2. **Task 4: Human Verification** - Approved after bug fixes
 
 ## Bug Fixes During Verification
+
 - Tab bar shifted when content loaded → Fixed with flex-based architecture (`fixed inset-0 flex flex-col`)
 - Horizontal overflow on MatchCard → Fixed with explicit `grid-cols-1`, `overflow-hidden`, `min-w-0` on flex items
 
 ## Files Created/Modified
+
 - `src/components/layout/mobile-shell.tsx` - Layout wrapper with fixed flex container
 - `src/components/layout/mobile-header.tsx` - Header with logo and hamburger trigger
 - `src/routes/index.tsx` - Home with conditional MobileShell
@@ -92,20 +95,25 @@ completed: 2026-01-21
 - `src/components/matches/MatchCard.tsx` - Added overflow handling
 
 ## Deviations from Plan
+
 - Changed MobileShell architecture from padding-based to flex-based to prevent tab bar shift
 - Added overflow fixes to MatchCard/MatchTierSection discovered during verification
 
 ## Issues Encountered
+
 - Tab bar moved when navigating between routes due to content height changes
 - MatchCard content overflowed horizontally on mobile due to long text
 
 ## User Setup Required
+
 None
 
 ## Next Phase Readiness
+
 - Mobile navigation complete for all primary routes
 - Ready for Phase 23: Touch Interactions (pull-to-refresh, tap feedback, swipe gestures)
 
 ---
-*Phase: 22-mobile-navigation*
-*Completed: 2026-01-21*
+
+_Phase: 22-mobile-navigation_
+_Completed: 2026-01-21_

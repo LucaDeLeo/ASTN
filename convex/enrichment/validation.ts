@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const extractionResultSchema = z
   .object({
@@ -8,8 +8,6 @@ export const extractionResultSchema = z
     background_summary: z.string().optional(),
     seeking: z.string().optional(),
   })
-  .passthrough();
+  .passthrough()
 
-export type ExtractionResultValidated = z.infer<
-  typeof extractionResultSchema
->;
+export type ExtractionResultValidated = z.infer<typeof extractionResultSchema>

@@ -1,6 +1,6 @@
-import { v } from "convex/values";
-import { internalMutation } from "../_generated/server";
-import { internal } from "../_generated/api";
+import { v } from 'convex/values'
+import { internalMutation } from '../_generated/server'
+import { internal } from '../_generated/api'
 
 /**
  * Upsert events from Lu.ma API for an organization.
@@ -8,7 +8,7 @@ import { internal } from "../_generated/api";
  */
 export const upsertEvents = internalMutation({
   args: {
-    orgId: v.id("organizations"),
+    orgId: v.id('organizations'),
     events: v.array(
       v.object({
         lumaEventId: v.string(),
@@ -21,54 +21,54 @@ export const upsertEvents = internalMutation({
         url: v.string(),
         location: v.optional(v.string()),
         isVirtual: v.boolean(),
-      })
+      }),
     ),
   },
   handler: async (ctx, { orgId, events }) => {
-    const now = Date.now();
+    const now = Date.now()
 
     for (const event of events) {
       // Check if event already exists
       const existing = await ctx.db
-        .query("events")
-        .withIndex("by_luma_id", (q) => q.eq("lumaEventId", event.lumaEventId))
-        .first();
+        .query('events')
+        .withIndex('by_luma_id', (q) => q.eq('lumaEventId', event.lumaEventId))
+        .first()
 
       if (existing) {
         // Update existing event
-        await ctx.db.patch("events", existing._id, {
+        await ctx.db.patch('events', existing._id, {
           ...event,
           orgId,
           syncedAt: now,
-        });
+        })
       } else {
         // Create new event
-        const newEventId = await ctx.db.insert("events", {
+        const newEventId = await ctx.db.insert('events', {
           ...event,
           orgId,
           syncedAt: now,
-        });
+        })
 
         // Notify users with "all" frequency preference (async to avoid timeout)
         await ctx.scheduler.runAfter(
           0,
           internal.notifications.realtime.notifyAllFrequencyUsers,
-          { eventId: newEventId, orgId }
-        );
+          { eventId: newEventId, orgId },
+        )
       }
     }
   },
-});
+})
 
 /**
  * Update the eventsLastSynced timestamp on an organization.
  */
 export const updateOrgSyncTimestamp = internalMutation({
   args: {
-    orgId: v.id("organizations"),
+    orgId: v.id('organizations'),
     timestamp: v.number(),
   },
   handler: async (ctx, { orgId, timestamp }) => {
-    await ctx.db.patch("organizations", orgId, { eventsLastSynced: timestamp });
+    await ctx.db.patch('organizations', orgId, { eventsLastSynced: timestamp })
   },
-});
+})

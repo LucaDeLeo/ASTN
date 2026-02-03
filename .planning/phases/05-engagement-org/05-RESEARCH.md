@@ -17,26 +17,30 @@ The primary challenge is timezone-aware email delivery (8-9 AM user local time p
 The established libraries/tools for this domain:
 
 ### Core
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| @convex-dev/resend | latest | Email delivery via Resend | Official Convex component with queueing, idempotency, webhooks |
-| resend | ^4.0 | Resend SDK (for manual sends) | Required for React Email rendering in Node actions |
-| @react-email/components | ^0.0.31 | Email template components | De-facto standard for React-based email templates |
-| @react-email/render | ^1.0.1 | Render React to HTML | Required to convert React Email components to HTML strings |
+
+| Library                 | Version | Purpose                       | Why Standard                                                   |
+| ----------------------- | ------- | ----------------------------- | -------------------------------------------------------------- |
+| @convex-dev/resend      | latest  | Email delivery via Resend     | Official Convex component with queueing, idempotency, webhooks |
+| resend                  | ^4.0    | Resend SDK (for manual sends) | Required for React Email rendering in Node actions             |
+| @react-email/components | ^0.0.31 | Email template components     | De-facto standard for React-based email templates              |
+| @react-email/render     | ^1.0.1  | Render React to HTML          | Required to convert React Email components to HTML strings     |
 
 ### Supporting
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| @react-email/tailwind | ^1.0.1 | Tailwind CSS in emails | HTML email styling with familiar syntax |
-| date-fns-tz | ^3.2.0 | Timezone utilities | Converting UTC to user local time for scheduling |
+
+| Library               | Version | Purpose                | When to Use                                      |
+| --------------------- | ------- | ---------------------- | ------------------------------------------------ |
+| @react-email/tailwind | ^1.0.1  | Tailwind CSS in emails | HTML email styling with familiar syntax          |
+| date-fns-tz           | ^3.2.0  | Timezone utilities     | Converting UTC to user local time for scheduling |
 
 ### Alternatives Considered
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| Resend | SendGrid | SendGrid has more features but Resend has official Convex component |
-| React Email | MJML | MJML is more email-compatible but React Email has better DX |
+
+| Instead of  | Could Use | Tradeoff                                                            |
+| ----------- | --------- | ------------------------------------------------------------------- |
+| Resend      | SendGrid  | SendGrid has more features but Resend has official Convex component |
+| React Email | MJML      | MJML is more email-compatible but React Email has better DX         |
 
 **Installation:**
+
 ```bash
 npm install @convex-dev/resend resend @react-email/components @react-email/render @react-email/tailwind date-fns-tz
 ```
@@ -44,6 +48,7 @@ npm install @convex-dev/resend resend @react-email/components @react-email/rende
 ## Architecture Patterns
 
 ### Recommended Project Structure
+
 ```
 convex/
 ├── emails/                    # Email-related functions
@@ -60,38 +65,42 @@ convex/
 ```
 
 ### Pattern 1: Timezone-Aware Daily Email Batch
+
 **What:** Run UTC cron, query users by timezone bucket, schedule emails at their local 8 AM
 **When to use:** Any user-local-time email delivery
 **Example:**
+
 ```typescript
 // Source: Convex docs + timezone scheduling patterns
 // convex/emails/crons.ts
-import { cronJobs } from "convex/server";
-import { internal } from "./_generated/api";
+import { cronJobs } from 'convex/server'
+import { internal } from './_generated/api'
 
-const crons = cronJobs();
+const crons = cronJobs()
 
 // Run hourly to catch each timezone's 8 AM
 crons.hourly(
-  "send-match-alerts",
+  'send-match-alerts',
   { minuteUTC: 0 },
-  internal.emails.send.processMatchAlertBatch
-);
+  internal.emails.send.processMatchAlertBatch,
+)
 
 // Sunday evening digest (run at multiple UTC hours for timezone coverage)
 crons.weekly(
-  "send-weekly-digest",
-  { dayOfWeek: "sunday", hourUTC: 17, minuteUTC: 0 },
-  internal.emails.send.processWeeklyDigestBatch
-);
+  'send-weekly-digest',
+  { dayOfWeek: 'sunday', hourUTC: 17, minuteUTC: 0 },
+  internal.emails.send.processWeeklyDigestBatch,
+)
 
-export default crons;
+export default crons
 ```
 
 ### Pattern 2: React Email Template in Node Action
+
 **What:** Define email templates as React components, render in "use node" action
 **When to use:** Any branded HTML email
 **Example:**
+
 ```typescript
 // Source: React Email docs + Convex Resend component
 // convex/emails/templates.tsx
@@ -149,9 +158,11 @@ export const renderMatchAlert = internalAction({
 ```
 
 ### Pattern 3: Org Membership with Roles
+
 **What:** Schema design for org membership with admin roles and invite links
 **When to use:** Multi-tenant org features
 **Example:**
+
 ```typescript
 // Source: Convex multi-tenant patterns
 // Schema additions
@@ -182,6 +193,7 @@ orgInviteLinks: defineTable({
 ```
 
 ### Anti-Patterns to Avoid
+
 - **Immediate email on match:** Don't send emails synchronously when matches compute. Batch daily per CONTEXT.md.
 - **Storing rendered HTML:** Don't persist rendered email HTML. Re-render at send time with fresh data.
 - **Single timezone cron:** Don't run one cron at fixed UTC time. Run hourly to cover all user timezones.
@@ -191,43 +203,48 @@ orgInviteLinks: defineTable({
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Email delivery | Custom SMTP integration | @convex-dev/resend | Handles queueing, retries, idempotency, webhooks |
-| Email templates | String interpolation HTML | React Email | Cross-client compatibility, Tailwind support, type-safe |
-| Email tracking | Custom delivery status | Resend webhooks | Bounce/delivery/open tracking built-in |
-| CSV export | Manual string building | Built-in JSON + client-side conversion | Convex returns JSON, convert to CSV in browser |
-| Timezone conversion | Manual UTC offset math | date-fns-tz | Edge cases like DST handled correctly |
+| Problem             | Don't Build               | Use Instead                            | Why                                                     |
+| ------------------- | ------------------------- | -------------------------------------- | ------------------------------------------------------- |
+| Email delivery      | Custom SMTP integration   | @convex-dev/resend                     | Handles queueing, retries, idempotency, webhooks        |
+| Email templates     | String interpolation HTML | React Email                            | Cross-client compatibility, Tailwind support, type-safe |
+| Email tracking      | Custom delivery status    | Resend webhooks                        | Bounce/delivery/open tracking built-in                  |
+| CSV export          | Manual string building    | Built-in JSON + client-side conversion | Convex returns JSON, convert to CSV in browser          |
+| Timezone conversion | Manual UTC offset math    | date-fns-tz                            | Edge cases like DST handled correctly                   |
 
 **Key insight:** Email delivery has many edge cases (bounces, spam complaints, rate limits, retries). Resend component handles all of these. Don't try to build reliable email infrastructure from scratch.
 
 ## Common Pitfalls
 
 ### Pitfall 1: Sending Emails from Mutations
+
 **What goes wrong:** Mutations are deterministic and cannot make external HTTP calls
 **Why it happens:** Developer tries to call Resend API directly from a mutation
 **How to avoid:** Use internalAction for Node.js code, then call from mutation via scheduler
 **Warning signs:** TypeScript error about fetch not available, or runtime error about non-deterministic operation
 
 ### Pitfall 2: Timezone Edge Cases
+
 **What goes wrong:** Users get emails at wrong time, especially around DST changes
 **Why it happens:** Using simple UTC offset instead of proper timezone identifier (e.g., "America/New_York")
 **How to avoid:** Store IANA timezone identifier in profile, use date-fns-tz to compute local time
 **Warning signs:** Complaints about email timing twice per year (spring/fall)
 
 ### Pitfall 3: React Email Import in Non-Node Context
+
 **What goes wrong:** Build fails or runtime error when importing React Email in regular Convex function
 **Why it happens:** React Email requires Node.js environment, Convex mutations/queries run in custom runtime
 **How to avoid:** Only import React Email in files with `"use node"` directive
 **Warning signs:** "Cannot find module" or "document is not defined" errors
 
 ### Pitfall 4: Invite Link Security
+
 **What goes wrong:** Invite links can be brute-forced or reused after member removal
 **Why it happens:** Using predictable tokens or not checking membership state
 **How to avoid:** Use crypto.randomUUID() for tokens, verify org membership before showing member features
 **Warning signs:** Unauthorized users appearing in org, invite links working after intended expiration
 
 ### Pitfall 5: Email Content Exceeds Provider Limits
+
 **What goes wrong:** Emails fail to send when including too many matches
 **Why it happens:** Including full match details for 50+ opportunities in one email
 **How to avoid:** Limit to top 5-10 matches in alert emails, link to full list in app
@@ -238,44 +255,47 @@ Problems that look simple but have existing solutions:
 Verified patterns from official sources:
 
 ### Convex Resend Component Setup
+
 ```typescript
 // Source: https://www.convex.dev/components/resend
 // convex/convex.config.ts
-import { defineApp } from "convex/server";
-import resend from "@convex-dev/resend/convex.config.js";
+import { defineApp } from 'convex/server'
+import resend from '@convex-dev/resend/convex.config.js'
 
-const app = defineApp();
-app.use(resend);
+const app = defineApp()
+app.use(resend)
 
-export default app;
+export default app
 ```
 
 ### Send Email via Component
+
 ```typescript
 // Source: Convex Resend component docs
 // convex/emails/send.ts
-import { components } from "./_generated/api";
-import { Resend } from "@convex-dev/resend";
-import { internalMutation } from "./_generated/server";
+import { components } from './_generated/api'
+import { Resend } from '@convex-dev/resend'
+import { internalMutation } from './_generated/server'
 
 export const resend = new Resend(components.resend, {
   // Production: set testMode: false
-});
+})
 
 export const sendMatchAlert = internalMutation({
   args: { to: v.string(), subject: v.string(), html: v.string() },
   handler: async (ctx, { to, subject, html }) => {
     await resend.sendEmail(ctx, {
-      from: "ASTN <notifications@astn.ai>",
+      from: 'ASTN <notifications@astn.ai>',
       to,
       subject,
       html,
-    });
+    })
   },
-});
+})
 ```
 
 ### Notification Preferences Schema
+
 ```typescript
 // Source: Common SaaS pattern
 // Schema addition to profiles table
@@ -294,6 +314,7 @@ notificationPreferences: v.optional(
 ```
 
 ### Query Users for Timezone-Based Batch
+
 ```typescript
 // Source: Timezone scheduling patterns
 // convex/emails/send.ts
@@ -302,59 +323,61 @@ export const getUsersForTimezoneBatch = internalQuery({
   handler: async (ctx, { targetLocalHour }) => {
     // Get all profiles with notification preferences enabled
     const profiles = await ctx.db
-      .query("profiles")
+      .query('profiles')
       .filter((q) =>
-        q.eq(q.field("notificationPreferences.matchAlerts.enabled"), true)
+        q.eq(q.field('notificationPreferences.matchAlerts.enabled'), true),
       )
-      .collect();
+      .collect()
 
-    const now = new Date();
-    const currentUTCHour = now.getUTCHours();
+    const now = new Date()
+    const currentUTCHour = now.getUTCHours()
 
     // Filter to users whose local time matches target
     return profiles.filter((profile) => {
-      const tz = profile.notificationPreferences?.timezone || "UTC";
+      const tz = profile.notificationPreferences?.timezone || 'UTC'
       // Use date-fns-tz to compute user's current local hour
       // Return true if their local hour matches targetLocalHour
-      const userLocalHour = getLocalHour(now, tz);
-      return userLocalHour === targetLocalHour;
-    });
+      const userLocalHour = getLocalHour(now, tz)
+      return userLocalHour === targetLocalHour
+    })
   },
-});
+})
 ```
 
 ### Org Admin Check Pattern
+
 ```typescript
 // Source: Convex RBAC patterns
 // convex/orgs/admin.ts
-async function requireOrgAdmin(ctx: QueryCtx, orgId: Id<"organizations">) {
-  const userId = await auth.getUserId(ctx);
-  if (!userId) throw new Error("Not authenticated");
+async function requireOrgAdmin(ctx: QueryCtx, orgId: Id<'organizations'>) {
+  const userId = await auth.getUserId(ctx)
+  if (!userId) throw new Error('Not authenticated')
 
   const membership = await ctx.db
-    .query("orgMemberships")
-    .withIndex("by_user", (q) => q.eq("userId", userId))
-    .filter((q) => q.eq(q.field("orgId"), orgId))
-    .first();
+    .query('orgMemberships')
+    .withIndex('by_user', (q) => q.eq('userId', userId))
+    .filter((q) => q.eq(q.field('orgId'), orgId))
+    .first()
 
-  if (!membership || membership.role !== "admin") {
-    throw new Error("Must be org admin");
+  if (!membership || membership.role !== 'admin') {
+    throw new Error('Must be org admin')
   }
 
-  return membership;
+  return membership
 }
 ```
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| MJML templates | React Email | 2023 | Type-safe, Tailwind support, better DX |
-| SendGrid/Mailgun | Resend | 2023 | Developer-first API, better deliverability |
-| Manual email tracking | Webhook-based status | 2024 | Real-time delivery status, bounce handling |
-| Simple UTC cron | Timezone-aware scheduling | Standard | User-local-time delivery support |
+| Old Approach          | Current Approach          | When Changed | Impact                                     |
+| --------------------- | ------------------------- | ------------ | ------------------------------------------ |
+| MJML templates        | React Email               | 2023         | Type-safe, Tailwind support, better DX     |
+| SendGrid/Mailgun      | Resend                    | 2023         | Developer-first API, better deliverability |
+| Manual email tracking | Webhook-based status      | 2024         | Real-time delivery status, bounce handling |
+| Simple UTC cron       | Timezone-aware scheduling | Standard     | User-local-time delivery support           |
 
 **Deprecated/outdated:**
+
 - **String template HTML:** Use React Email components instead for cross-client compatibility
 - **Synchronous email sending:** Use queued/batched approach for reliability
 
@@ -380,21 +403,25 @@ Things that couldn't be fully resolved:
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - Convex Resend Component: https://www.convex.dev/components/resend - Installation, API, webhooks, tracking
 - Convex Cron Jobs: https://docs.convex.dev/scheduling/cron-jobs - Daily, weekly, hourly scheduling
 - Convex Scheduler: https://docs.convex.dev/scheduling/scheduled-functions - ctx.scheduler.runAt() for precise timing
 - React Email: https://react.email - Components list, Tailwind support, rendering
 
 ### Secondary (MEDIUM confidence)
+
 - Timezone scheduling patterns: Upstash blog, node-schedule docs - User local time email delivery
 - Multi-tenant RBAC: Kinde + Convex tutorial, Convex teams docs - Role-based org access
 
 ### Tertiary (LOW confidence)
+
 - Email deliverability best practices: Various blog posts - Subject line, content guidelines
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - Official Convex component, well-documented
 - Architecture: HIGH - Patterns verified in Convex docs and examples
 - Pitfalls: HIGH - Based on Convex runtime constraints and React Email requirements

@@ -36,15 +36,15 @@ key-files:
   modified: []
 
 key-decisions:
-  - "State machine uses discriminated union for type-safe step transitions"
-  - "Hooks composed at wizard level, not duplicated in child components"
-  - "extractedData preserved in state for back navigation"
-  - "Grid overlay pattern from test-upload.tsx reused for smooth transitions"
+  - 'State machine uses discriminated union for type-safe step transitions'
+  - 'Hooks composed at wizard level, not duplicated in child components'
+  - 'extractedData preserved in state for back navigation'
+  - 'Grid overlay pattern from test-upload.tsx reused for smooth transitions'
 
 patterns-established:
-  - "Wizard orchestrator: compose hooks at top level, pass actions to children"
-  - "State preservation: keep extracted data when navigating back"
-  - "Conditional step indicator: showReviewStep prop for manual/chat-first flows"
+  - 'Wizard orchestrator: compose hooks at top level, pass actions to children'
+  - 'State preservation: keep extracted data when navigating back'
+  - 'Conditional step indicator: showReviewStep prop for manual/chat-first flows'
 
 # Metrics
 duration: 4min
@@ -64,6 +64,7 @@ completed: 2026-01-19
 - **Files created:** 3
 
 ## Accomplishments
+
 - ProfileCreationWizard orchestrates full flow: entry selection -> upload/paste -> extract -> review -> apply -> summary -> enrich
 - PostApplySummary displays completeness percentage with continue/skip/manual options
 - Barrel export provides clean imports for all wizard components
@@ -78,11 +79,13 @@ Each task was committed atomically:
 3. **Task 3: Update wizard barrel export** - `b97fa96` (chore)
 
 ## Files Created/Modified
+
 - `src/components/profile/wizard/PostApplySummary.tsx` - Completeness display with enrichment CTA and skip/manual options
 - `src/components/profile/wizard/ProfileCreationWizard.tsx` - State machine orchestrating full profile creation flow
 - `src/components/profile/wizard/index.ts` - Barrel export for wizard module
 
 ## Decisions Made
+
 - Used discriminated union for WizardState type - enables type-safe step transitions
 - Composed useFileUpload and useExtraction at wizard level - prevents duplicate state
 - Progress bar implemented with div instead of Progress component (doesn't exist in project)
@@ -101,10 +104,12 @@ None - plan executed exactly as written.
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - ProfileCreationWizard ready for integration into profile routes
 - Plan 10-03 can wire wizard into profile creation flow
 - All components exported via barrel for clean imports
 
 ---
-*Phase: 10-wizard-integration*
-*Completed: 2026-01-19*
+
+_Phase: 10-wizard-integration_
+_Completed: 2026-01-19_

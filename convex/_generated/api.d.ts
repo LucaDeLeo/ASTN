@@ -46,6 +46,7 @@ import type * as extraction_validation from "../extraction/validation.js";
 import type * as http from "../http.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_limits from "../lib/limits.js";
+import type * as lib_logging from "../lib/logging.js";
 import type * as matches from "../matches.js";
 import type * as matching_compute from "../matching/compute.js";
 import type * as matching_mutations from "../matching/mutations.js";
@@ -115,6 +116,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   "lib/auth": typeof lib_auth;
   "lib/limits": typeof lib_limits;
+  "lib/logging": typeof lib_logging;
   matches: typeof matches;
   "matching/compute": typeof matching_compute;
   "matching/mutations": typeof matching_mutations;

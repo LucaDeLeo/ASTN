@@ -2,7 +2,15 @@
 phase: 05-engagement-org
 plan: 06
 subsystem: ui
-tags: [admin-dashboard, org-management, export, statistics, convex-query, tanstack-router]
+tags:
+  [
+    admin-dashboard,
+    org-management,
+    export,
+    statistics,
+    convex-query,
+    tanstack-router,
+  ]
 
 # Dependency graph
 requires:
@@ -19,9 +27,9 @@ affects: []
 tech-stack:
   added: []
   patterns:
-    - "Aggregate statistics with parallel profile fetching"
-    - "Browser-side export (Blob download, no server)"
-    - "Completeness distribution buckets (high/medium/low)"
+    - 'Aggregate statistics with parallel profile fetching'
+    - 'Browser-side export (Blob download, no server)'
+    - 'Completeness distribution buckets (high/medium/low)'
 
 key-files:
   created:
@@ -35,16 +43,16 @@ key-files:
     - src/routes/org/$slug/index.tsx
 
 key-decisions:
-  - "Stats computed on-demand (no caching) for pilot scale"
-  - "Skills distribution limited to top 10 for readability"
-  - "Completeness buckets: high (>70%), medium (40-70%), low (<40%)"
-  - "Export uses browser Blob API, no server-side generation"
-  - "Admin link in org header uses typed TanStack params"
+  - 'Stats computed on-demand (no caching) for pilot scale'
+  - 'Skills distribution limited to top 10 for readability'
+  - 'Completeness buckets: high (>70%), medium (40-70%), low (<40%)'
+  - 'Export uses browser Blob API, no server-side generation'
+  - 'Admin link in org header uses typed TanStack params'
 
 patterns-established:
-  - "OrgStats component for skill/completeness visualization"
-  - "ExportButton pattern with CSV/JSON dropdown"
-  - "requireOrgAdmin helper reused across admin queries"
+  - 'OrgStats component for skill/completeness visualization'
+  - 'ExportButton pattern with CSV/JSON dropdown'
+  - 'requireOrgAdmin helper reused across admin queries'
 
 # Metrics
 duration: 12min
@@ -102,6 +110,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] Fixed admin link in org header**
+
 - **Found during:** Task 2 (Admin dashboard routes)
 - **Issue:** Admin button linked to `/admin` instead of `/org/:slug/admin`
 - **Fix:** Updated MembershipStatus component to accept orgSlug prop and use typed TanStack Router params
@@ -129,5 +138,6 @@ None - no external service configuration required.
 - Dashboard provides visibility into org membership and profile quality
 
 ---
-*Phase: 05-engagement-org*
-*Completed: 2026-01-18*
+
+_Phase: 05-engagement-org_
+_Completed: 2026-01-18_

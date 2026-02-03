@@ -25,6 +25,7 @@ Before implementing, do not assume; fetch the latest documentation:
 ### File Storage Overview
 
 Convex provides built-in file storage with:
+
 - Automatic URL generation for serving files
 - Support for any file type (images, PDFs, videos, etc.)
 - File metadata via the `_storage` system table
@@ -34,16 +35,16 @@ Convex provides built-in file storage with:
 
 ```typescript
 // convex/files.ts
-import { mutation } from "./_generated/server";
-import { v } from "convex/values";
+import { mutation } from './_generated/server'
+import { v } from 'convex/values'
 
 export const generateUploadUrl = mutation({
   args: {},
   returns: v.string(),
   handler: async (ctx) => {
-    return await ctx.storage.generateUploadUrl();
+    return await ctx.storage.generateUploadUrl()
   },
-});
+})
 ```
 
 ### Client-Side Upload
@@ -106,27 +107,27 @@ function FileUploader() {
 
 ```typescript
 // convex/files.ts
-import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
+import { mutation, query } from './_generated/server'
+import { v } from 'convex/values'
 
 export const saveFile = mutation({
   args: {
-    storageId: v.id("_storage"),
+    storageId: v.id('_storage'),
     fileName: v.string(),
     fileType: v.string(),
     fileSize: v.number(),
   },
-  returns: v.id("files"),
+  returns: v.id('files'),
   handler: async (ctx, args) => {
-    return await ctx.db.insert("files", {
+    return await ctx.db.insert('files', {
       storageId: args.storageId,
       fileName: args.fileName,
       fileType: args.fileType,
       fileSize: args.fileSize,
       uploadedAt: Date.now(),
-    });
+    })
   },
-});
+})
 ```
 
 ### Serving Files via URL
@@ -134,41 +135,41 @@ export const saveFile = mutation({
 ```typescript
 // convex/files.ts
 export const getFileUrl = query({
-  args: { storageId: v.id("_storage") },
+  args: { storageId: v.id('_storage') },
   returns: v.union(v.string(), v.null()),
   handler: async (ctx, args) => {
-    return await ctx.storage.getUrl(args.storageId);
+    return await ctx.storage.getUrl(args.storageId)
   },
-});
+})
 
 // Get file with URL
 export const getFile = query({
-  args: { fileId: v.id("files") },
+  args: { fileId: v.id('files') },
   returns: v.union(
     v.object({
-      _id: v.id("files"),
+      _id: v.id('files'),
       fileName: v.string(),
       fileType: v.string(),
       fileSize: v.number(),
       url: v.union(v.string(), v.null()),
     }),
-    v.null()
+    v.null(),
   ),
   handler: async (ctx, args) => {
-    const file = await ctx.db.get(args.fileId);
-    if (!file) return null;
+    const file = await ctx.db.get(args.fileId)
+    if (!file) return null
 
-    const url = await ctx.storage.getUrl(file.storageId);
-    
+    const url = await ctx.storage.getUrl(file.storageId)
+
     return {
       _id: file._id,
       fileName: file.fileName,
       fileType: file.fileType,
       fileSize: file.fileSize,
       url,
-    };
+    }
   },
-});
+})
 ```
 
 ### Displaying Files in React
@@ -211,106 +212,106 @@ function FileDisplay({ fileId }: { fileId: Id<"files"> }) {
 
 ```typescript
 // convex/generate.ts
-"use node";
+'use node'
 
-import { action } from "./_generated/server";
-import { v } from "convex/values";
-import { api } from "./_generated/api";
+import { action } from './_generated/server'
+import { v } from 'convex/values'
+import { api } from './_generated/api'
 
 export const generatePDF = action({
   args: { content: v.string() },
-  returns: v.id("_storage"),
+  returns: v.id('_storage'),
   handler: async (ctx, args) => {
     // Generate PDF (example using a library)
-    const pdfBuffer = await generatePDFFromContent(args.content);
+    const pdfBuffer = await generatePDFFromContent(args.content)
 
     // Convert to Blob
-    const blob = new Blob([pdfBuffer], { type: "application/pdf" });
+    const blob = new Blob([pdfBuffer], { type: 'application/pdf' })
 
     // Store in Convex
-    const storageId = await ctx.storage.store(blob);
+    const storageId = await ctx.storage.store(blob)
 
-    return storageId;
+    return storageId
   },
-});
+})
 
 // Generate and save image
 export const generateImage = action({
   args: { prompt: v.string() },
-  returns: v.id("_storage"),
+  returns: v.id('_storage'),
   handler: async (ctx, args) => {
     // Call external API to generate image
-    const response = await fetch("https://api.example.com/generate", {
-      method: "POST",
+    const response = await fetch('https://api.example.com/generate', {
+      method: 'POST',
       body: JSON.stringify({ prompt: args.prompt }),
-    });
+    })
 
-    const imageBuffer = await response.arrayBuffer();
-    const blob = new Blob([imageBuffer], { type: "image/png" });
+    const imageBuffer = await response.arrayBuffer()
+    const blob = new Blob([imageBuffer], { type: 'image/png' })
 
-    return await ctx.storage.store(blob);
+    return await ctx.storage.store(blob)
   },
-});
+})
 ```
 
 ### Accessing File Metadata
 
 ```typescript
 // convex/files.ts
-import { query } from "./_generated/server";
-import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
+import { query } from './_generated/server'
+import { v } from 'convex/values'
+import { Id } from './_generated/dataModel'
 
 type FileMetadata = {
-  _id: Id<"_storage">;
-  _creationTime: number;
-  contentType?: string;
-  sha256: string;
-  size: number;
-};
+  _id: Id<'_storage'>
+  _creationTime: number
+  contentType?: string
+  sha256: string
+  size: number
+}
 
 export const getFileMetadata = query({
-  args: { storageId: v.id("_storage") },
+  args: { storageId: v.id('_storage') },
   returns: v.union(
     v.object({
-      _id: v.id("_storage"),
+      _id: v.id('_storage'),
       _creationTime: v.number(),
       contentType: v.optional(v.string()),
       sha256: v.string(),
       size: v.number(),
     }),
-    v.null()
+    v.null(),
   ),
   handler: async (ctx, args) => {
-    const metadata = await ctx.db.system.get(args.storageId);
-    return metadata as FileMetadata | null;
+    const metadata = await ctx.db.system.get(args.storageId)
+    return metadata as FileMetadata | null
   },
-});
+})
 ```
 
 ### Deleting Files
 
 ```typescript
 // convex/files.ts
-import { mutation } from "./_generated/server";
-import { v } from "convex/values";
+import { mutation } from './_generated/server'
+import { v } from 'convex/values'
 
 export const deleteFile = mutation({
-  args: { fileId: v.id("files") },
+  args: { fileId: v.id('files') },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const file = await ctx.db.get(args.fileId);
-    if (!file) return null;
+    const file = await ctx.db.get(args.fileId)
+    if (!file) return null
 
     // Delete from storage
-    await ctx.storage.delete(file.storageId);
+    await ctx.storage.delete(file.storageId)
 
     // Delete database record
-    await ctx.db.delete(args.fileId);
+    await ctx.db.delete(args.fileId)
 
-    return null;
+    return null
   },
-});
+})
 ```
 
 ### Image Upload with Preview
@@ -381,7 +382,7 @@ function ImageUploader({ onUpload }: { onUpload: (id: Id<"files">) => void }) {
         onChange={handleFileSelect}
         style={{ display: "none" }}
       />
-      
+
       <button
         onClick={() => inputRef.current?.click()}
         disabled={uploading}
@@ -407,36 +408,36 @@ function ImageUploader({ onUpload }: { onUpload: (id: Id<"files">) => void }) {
 
 ```typescript
 // convex/schema.ts
-import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
+import { defineSchema, defineTable } from 'convex/server'
+import { v } from 'convex/values'
 
 export default defineSchema({
   files: defineTable({
-    storageId: v.id("_storage"),
+    storageId: v.id('_storage'),
     fileName: v.string(),
     fileType: v.string(),
     fileSize: v.number(),
-    uploadedBy: v.id("users"),
+    uploadedBy: v.id('users'),
     uploadedAt: v.number(),
   })
-    .index("by_user", ["uploadedBy"])
-    .index("by_type", ["fileType"]),
+    .index('by_user', ['uploadedBy'])
+    .index('by_type', ['fileType']),
 
   // User avatars
   users: defineTable({
     name: v.string(),
     email: v.string(),
-    avatarStorageId: v.optional(v.id("_storage")),
+    avatarStorageId: v.optional(v.id('_storage')),
   }),
 
   // Posts with images
   posts: defineTable({
-    authorId: v.id("users"),
+    authorId: v.id('users'),
     content: v.string(),
-    imageStorageIds: v.array(v.id("_storage")),
+    imageStorageIds: v.array(v.id('_storage')),
     createdAt: v.number(),
-  }).index("by_author", ["authorId"]),
-});
+  }).index('by_author', ['authorId']),
+})
 ```
 
 ## Best Practices

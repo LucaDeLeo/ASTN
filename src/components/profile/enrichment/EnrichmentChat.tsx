@@ -1,40 +1,40 @@
-import { useEffect, useRef } from "react";
-import { Loader2, MessageSquare, Send } from "lucide-react";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { cn } from "~/lib/utils";
+import { useEffect, useRef } from 'react'
+import { Loader2, MessageSquare, Send } from 'lucide-react'
+import { Button } from '~/components/ui/button'
+import { Input } from '~/components/ui/input'
+import { cn } from '~/lib/utils'
 
 /**
  * Simple markdown renderer for chat messages.
  * Handles **bold** and *italic* formatting.
  */
 function renderMarkdown(text: string): React.ReactNode {
-  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g)
   return parts.map((part, i) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={i}>{part.slice(2, -2)}</strong>;
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i}>{part.slice(2, -2)}</strong>
     }
-    if (part.startsWith("*") && part.endsWith("*")) {
-      return <em key={i}>{part.slice(1, -1)}</em>;
+    if (part.startsWith('*') && part.endsWith('*')) {
+      return <em key={i}>{part.slice(1, -1)}</em>
     }
-    return part;
-  });
+    return part
+  })
 }
 
 interface Message {
-  _id: string;
-  role: "user" | "assistant";
-  content: string;
-  createdAt: number;
+  _id: string
+  role: 'user' | 'assistant'
+  content: string
+  createdAt: number
 }
 
 interface EnrichmentChatProps {
-  messages: Array<Message>;
-  input: string;
-  onInputChange: (value: string) => void;
-  onSendMessage: (message: string) => void;
-  isLoading: boolean;
-  disabled?: boolean;
+  messages: Array<Message>
+  input: string
+  onInputChange: (value: string) => void
+  onSendMessage: (message: string) => void
+  isLoading: boolean
+  disabled?: boolean
 }
 
 export function EnrichmentChat({
@@ -45,35 +45,35 @@ export function EnrichmentChat({
   isLoading,
   disabled = false,
 }: EnrichmentChatProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   // Scroll to bottom on new messages
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
 
   // Focus input on mount
   useEffect(() => {
     if (!disabled) {
-      inputRef.current?.focus();
+      inputRef.current?.focus()
     }
-  }, [disabled]);
+  }, [disabled])
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (input.trim() && !isLoading && !disabled) {
-      onSendMessage(input.trim());
-      onInputChange("");
+      onSendMessage(input.trim())
+      onInputChange('')
     }
-  };
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit(e);
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSubmit(e)
     }
-  };
+  }
 
   return (
     <div className="flex flex-col h-[500px]">
@@ -88,8 +88,8 @@ export function EnrichmentChat({
               Start a conversation
             </h3>
             <p className="text-muted-foreground text-sm max-w-sm">
-              Tell me about your background and interests in AI safety. I will help
-              you articulate your experience and goals for your profile.
+              Tell me about your background and interests in AI safety. I will
+              help you articulate your experience and goals for your profile.
             </p>
           </div>
         ) : (
@@ -97,21 +97,21 @@ export function EnrichmentChat({
             <div
               key={message._id}
               className={cn(
-                "flex animate-in fade-in slide-in-from-bottom-2 duration-300",
-                message.role === "user" ? "justify-end" : "justify-start"
+                'flex animate-in fade-in slide-in-from-bottom-2 duration-300',
+                message.role === 'user' ? 'justify-end' : 'justify-start',
               )}
               style={{ animationDelay: `${index * 50}ms` }}
             >
               <div
                 className={cn(
-                  "max-w-[80%] rounded-2xl px-4 py-2.5",
-                  message.role === "user"
-                    ? "bg-primary text-primary-foreground rounded-br-md"
-                    : "bg-muted text-foreground rounded-bl-md"
+                  'max-w-[80%] rounded-2xl px-4 py-2.5',
+                  message.role === 'user'
+                    ? 'bg-primary text-primary-foreground rounded-br-md'
+                    : 'bg-muted text-foreground rounded-bl-md',
                 )}
               >
                 <p className="text-sm whitespace-pre-wrap">
-                  {message.role === "assistant"
+                  {message.role === 'assistant'
                     ? renderMarkdown(message.content)
                     : message.content}
                 </p>
@@ -128,11 +128,11 @@ export function EnrichmentChat({
                 <span className="size-2 bg-muted-foreground/50 rounded-full animate-bounce" />
                 <span
                   className="size-2 bg-muted-foreground/50 rounded-full animate-bounce"
-                  style={{ animationDelay: "0.1s" }}
+                  style={{ animationDelay: '0.1s' }}
                 />
                 <span
                   className="size-2 bg-muted-foreground/50 rounded-full animate-bounce"
-                  style={{ animationDelay: "0.2s" }}
+                  style={{ animationDelay: '0.2s' }}
                 />
               </div>
             </div>
@@ -154,8 +154,8 @@ export function EnrichmentChat({
           onKeyDown={handleKeyDown}
           placeholder={
             messages.length === 0
-              ? "Tell me about your background..."
-              : "Continue the conversation..."
+              ? 'Tell me about your background...'
+              : 'Continue the conversation...'
           }
           disabled={isLoading || disabled}
           className="flex-1"
@@ -173,5 +173,5 @@ export function EnrichmentChat({
         </Button>
       </form>
     </div>
-  );
+  )
 }

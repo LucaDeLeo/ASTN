@@ -1,19 +1,19 @@
-import { Link } from "@tanstack/react-router";
-import { useAuthActions } from "@convex-dev/auth/react";
-import { AuthLoading, Authenticated, Unauthenticated } from "convex/react";
-import { LogOut, Settings, User } from "lucide-react";
+import { Link } from '@tanstack/react-router'
+import { useAuthActions } from '@convex-dev/auth/react'
+import { AuthLoading, Authenticated, Unauthenticated } from 'convex/react'
+import { LogOut, Settings, User } from 'lucide-react'
 
-import { NotificationBell } from "~/components/notifications";
-import { ThemeToggle } from "~/components/theme/theme-toggle";
-import { Avatar, AvatarFallback } from "~/components/ui/avatar";
-import { Button } from "~/components/ui/button";
+import { NotificationBell } from '~/components/notifications'
+import { ThemeToggle } from '~/components/theme/theme-toggle'
+import { Avatar, AvatarFallback } from '~/components/ui/avatar'
+import { Button } from '~/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+} from '~/components/ui/dropdown-menu'
 
 export function AuthHeader() {
   return (
@@ -27,7 +27,8 @@ export function AuthHeader() {
             to="/opportunities"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors relative py-2"
             activeProps={{
-              className: "text-sm text-foreground font-medium transition-colors relative py-2 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full"
+              className:
+                'text-sm text-foreground font-medium transition-colors relative py-2 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full',
             }}
           >
             Opportunities
@@ -38,7 +39,8 @@ export function AuthHeader() {
               to="/matches"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors relative py-2"
               activeProps={{
-                className: "text-sm text-foreground font-medium transition-colors relative py-2 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full"
+                className:
+                  'text-sm text-foreground font-medium transition-colors relative py-2 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full',
               }}
             >
               Matches
@@ -66,11 +68,11 @@ export function AuthHeader() {
         </nav>
       </div>
     </header>
-  );
+  )
 }
 
 function UserMenu() {
-  const { signOut } = useAuthActions();
+  const { signOut } = useAuthActions()
 
   return (
     <DropdownMenu>
@@ -106,5 +108,5 @@ function UserMenu() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

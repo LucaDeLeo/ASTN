@@ -2,7 +2,16 @@
 phase: 02-authentication
 plan: 02
 subsystem: auth
-tags: [convex-auth, oauth, google, github, login-ui, avatar-dropdown, tanstack-router]
+tags:
+  [
+    convex-auth,
+    oauth,
+    google,
+    github,
+    login-ui,
+    avatar-dropdown,
+    tanstack-router,
+  ]
 
 # Dependency graph
 requires:
@@ -19,8 +28,8 @@ affects: [profile-management, user-onboarding, protected-routes]
 tech-stack:
   added: []
   patterns:
-    - "useAuthActions hook for signIn/signOut actions"
-    - "Authenticated/Unauthenticated/AuthLoading components for conditional rendering"
+    - 'useAuthActions hook for signIn/signOut actions'
+    - 'Authenticated/Unauthenticated/AuthLoading components for conditional rendering'
 
 key-files:
   created:
@@ -36,15 +45,15 @@ key-files:
     - src/styles/app.css
 
 key-decisions:
-  - "Combined sign-in/sign-up on single page with tabs"
+  - 'Combined sign-in/sign-up on single page with tabs'
   - "OAuth buttons above email form with 'or continue with email' separator"
   - "Generic error messages for security (don't reveal which field is wrong)"
-  - "Frosted glass overlay during auth loading states"
+  - 'Frosted glass overlay during auth loading states'
 
 patterns-established:
-  - "AuthHeader for all public routes (replaces PublicHeader)"
-  - "LoginCard with OAuthButtons + Separator + Tabs + PasswordForm composition"
-  - "Shake animation (150ms) for form errors with coral-tinted error styling"
+  - 'AuthHeader for all public routes (replaces PublicHeader)'
+  - 'LoginCard with OAuthButtons + Separator + Tabs + PasswordForm composition'
+  - 'Shake animation (150ms) for form errors with coral-tinted error styling'
 
 # Metrics
 duration: 8min
@@ -115,5 +124,6 @@ None.
 - Profile/Settings routes are placeholders, need implementation
 
 ---
-*Phase: 02-authentication*
-*Completed: 2026-01-17*
+
+_Phase: 02-authentication_
+_Completed: 2026-01-17_

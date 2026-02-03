@@ -18,8 +18,8 @@ affects: [22-03, 22-04] # MobileShell integration and header will use this compo
 tech-stack:
   added: []
   patterns:
-    - "Bottom tab navigation using TanStack Router Link with activeProps"
-    - "Scroll-to-top via onClick handler with e.preventDefault()"
+    - 'Bottom tab navigation using TanStack Router Link with activeProps'
+    - 'Scroll-to-top via onClick handler with e.preventDefault()'
 
 key-files:
   created:
@@ -27,13 +27,13 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Used fixed position with z-50 for tab bar stacking"
-  - "activeProps replaces className entirely (requires full class list in both)"
-  - "Touch targets set to min-h-[44px] per WCAG 2.5.8 guidelines"
+  - 'Used fixed position with z-50 for tab bar stacking'
+  - 'activeProps replaces className entirely (requires full class list in both)'
+  - 'Touch targets set to min-h-[44px] per WCAG 2.5.8 guidelines'
 
 patterns-established:
-  - "Tab navigation: Use Link with activeOptions.exact for home, false for nested routes"
-  - "Scroll-to-top: Check isActive before onClick, preventDefault if already on route"
+  - 'Tab navigation: Use Link with activeOptions.exact for home, false for nested routes'
+  - 'Scroll-to-top: Check isActive before onClick, preventDefault if already on route'
 
 # Metrics
 duration: 6min
@@ -94,5 +94,6 @@ None - no external service configuration required.
 - Safe area handling tested via tab-bar-safe CSS class
 
 ---
-*Phase: 22-mobile-navigation*
-*Completed: 2026-01-21*
+
+_Phase: 22-mobile-navigation_
+_Completed: 2026-01-21_

@@ -1,6 +1,6 @@
 ---
 status: resolved
-trigger: "ANTHROPIC_API_KEY configuration issue - Could not resolve authentication method"
+trigger: 'ANTHROPIC_API_KEY configuration issue - Could not resolve authentication method'
 created: 2026-01-18T02:00:00Z
 updated: 2026-01-18T02:05:00Z
 ---
@@ -27,7 +27,7 @@ started: First time feature was tested (never worked - configuration not done)
   timestamp: 2026-01-18T02:02:00Z
 
 - hypothesis: Convex doesn't support environment variables
-  evidence: Other Convex actions in this project use process.env successfully (AIRTABLE_API_KEY, ALGOLIA_API_KEY, AUTH_* vars)
+  evidence: Other Convex actions in this project use process.env successfully (AIRTABLE*API_KEY, ALGOLIA_API_KEY, AUTH*\* vars)
   timestamp: 2026-01-18T02:03:00Z
 
 ## Evidence

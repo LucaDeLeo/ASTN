@@ -18,9 +18,9 @@ affects: [09-02, 09-03, profile-wizard, extraction-flow]
 tech-stack:
   added: []
   patterns:
-    - "Review state hook with per-field status tracking"
-    - "Flat item list from nested extraction data"
-    - "YYYY-MM to timestamp date conversion"
+    - 'Review state hook with per-field status tracking'
+    - 'Flat item list from nested extraction data'
+    - 'YYYY-MM to timestamp date conversion'
 
 key-files:
   created:
@@ -31,13 +31,13 @@ key-files:
     - convex/profiles.ts
 
 key-decisions:
-  - "Education/workHistory entries as individual reviewable items (not arrays)"
-  - "Skills grouped as single reviewable item with array value"
-  - "Email extracted but not applied to profile (display only)"
+  - 'Education/workHistory entries as individual reviewable items (not arrays)'
+  - 'Skills grouped as single reviewable item with array value'
+  - 'Email extracted but not applied to profile (display only)'
 
 patterns-established:
-  - "Review items use dot notation IDs (education.0, workHistory.1)"
-  - "getAcceptedData() returns only accepted/edited fields"
+  - 'Review items use dot notation IDs (education.0, workHistory.1)'
+  - 'getAcceptedData() returns only accepted/edited fields'
   - "convertDateString handles 'present', empty, and invalid formats"
 
 # Metrics
@@ -58,6 +58,7 @@ completed: 2026-01-18
 - **Files modified:** 4
 
 ## Accomplishments
+
 - Created useResumeReview hook with status tracking (pending/accepted/rejected/edited) per field
 - Transforms nested education/workHistory arrays into flat reviewable items with dot notation IDs
 - Added applyExtractedProfile mutation that converts YYYY-MM date strings to Unix timestamps
@@ -71,12 +72,14 @@ Each task was committed atomically:
 2. **Task 2: Create applyExtractedProfile mutation** - `04812af` (feat)
 
 ## Files Created/Modified
+
 - `src/components/profile/extraction/types.ts` - ExtractedData, ResumeReviewItem, ResumeReviewStatus types
 - `src/components/profile/extraction/hooks/useResumeReview.ts` - State management hook for review flow
 - `src/components/profile/extraction/index.ts` - Public exports for module
 - `convex/profiles.ts` - applyExtractedProfile mutation with date conversion
 
 ## Decisions Made
+
 - Education/workHistory entries rendered as individual reviewable items rather than grouped arrays - allows per-entry accept/reject
 - Email field extracted for display but NOT applied to profile (not in profile schema)
 - Skills kept as single reviewable item with array value - user approves entire skills list at once
@@ -95,10 +98,12 @@ None
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - useResumeReview hook ready for UI components in 09-02
 - applyExtractedProfile mutation ready for apply button integration
 - Types exported and available for import across codebase
 
 ---
-*Phase: 09-review-apply-ui*
-*Completed: 2026-01-18*
+
+_Phase: 09-review-apply-ui_
+_Completed: 2026-01-18_

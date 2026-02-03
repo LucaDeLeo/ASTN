@@ -23,6 +23,7 @@ Tauri v2 renders web applications in a native WebView. The integration works as 
 ### Reference Implementation
 
 A community template exists: `kvnxiao/tauri-tanstack-start-react-template`. Key patterns:
+
 - Uses prerendering to generate static HTML at build time
 - Tauri loads static files directly into WebView
 - IPC via `window.__TAURI_INTERNALS__` and `invoke` function
@@ -137,13 +138,15 @@ src-tauri/
   },
   "app": {
     "withGlobalTauri": true,
-    "windows": [{
-      "title": "AI Safety Talent Network",
-      "width": 1200,
-      "height": 800,
-      "resizable": true,
-      "fullscreen": false
-    }]
+    "windows": [
+      {
+        "title": "AI Safety Talent Network",
+        "width": 1200,
+        "height": 800,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ]
   },
   "plugins": {
     "http": {
@@ -286,11 +289,13 @@ Tailwind v4 supports container queries natively:
 ```tsx
 // Card that responds to its container, not viewport
 <div className="@container">
-  <div className="
+  <div
+    className="
     flex flex-col      // Default: stack
     @md:flex-row       // When container >= 28rem: row
     @md:items-center
-  ">
+  "
+  >
     <Avatar />
     <div className="@md:ml-4">Content</div>
   </div>
@@ -303,14 +308,15 @@ Tailwind v4 supports container queries natively:
 
 Primary navigation tabs (max 5 items per iOS/Android guidelines):
 
-| Tab | Icon | Route | Auth Required |
-|-----|------|-------|---------------|
-| Home | `Home` | `/` | No |
-| Opportunities | `Briefcase` | `/opportunities` | No |
-| Matches | `Target` | `/matches` | Yes |
-| Profile | `User` | `/profile` | Yes |
+| Tab           | Icon        | Route            | Auth Required |
+| ------------- | ----------- | ---------------- | ------------- |
+| Home          | `Home`      | `/`              | No            |
+| Opportunities | `Briefcase` | `/opportunities` | No            |
+| Matches       | `Target`    | `/matches`       | Yes           |
+| Profile       | `User`      | `/profile`       | Yes           |
 
 Secondary navigation (in hamburger/sheet menu):
+
 - Settings
 - Organizations
 - Admin (if applicable)
@@ -524,14 +530,14 @@ function MobileMenu() {
 
 ### Changes to Existing Code
 
-| File | Change | Reason |
-|------|--------|--------|
-| `src/routes/__root.tsx` | Add conditional SSR logic for Tauri | Tauri compatibility |
-| `src/components/layout/auth-header.tsx` | Refactor to `DesktopNav.tsx` | Clarity for responsive system |
-| Route layouts | Wrap with `ResponsiveShell` | Consistent responsive layout |
-| `vite.config.ts` | Keep as-is for web | Web SSR builds |
-| New: `vite.config.tauri.ts` | Create | Tauri prerender builds |
-| `package.json` | Add Tauri scripts | Build automation |
+| File                                    | Change                              | Reason                        |
+| --------------------------------------- | ----------------------------------- | ----------------------------- |
+| `src/routes/__root.tsx`                 | Add conditional SSR logic for Tauri | Tauri compatibility           |
+| `src/components/layout/auth-header.tsx` | Refactor to `DesktopNav.tsx`        | Clarity for responsive system |
+| Route layouts                           | Wrap with `ResponsiveShell`         | Consistent responsive layout  |
+| `vite.config.ts`                        | Keep as-is for web                  | Web SSR builds                |
+| New: `vite.config.tauri.ts`             | Create                              | Tauri prerender builds        |
+| `package.json`                          | Add Tauri scripts                   | Build automation              |
 
 ### New Files to Create
 
@@ -563,6 +569,7 @@ vite.config.tauri.ts
 ### Package Dependencies
 
 For Tauri integration:
+
 ```bash
 # Tauri CLI and core
 bun add -D @tauri-apps/cli@latest
@@ -575,6 +582,7 @@ bun add @tauri-apps/plugin-haptics  # Mobile haptic feedback (optional)
 ```
 
 For responsive components:
+
 ```bash
 # shadcn/ui Sheet (if not already present)
 bunx --bun shadcn@latest add sheet
@@ -624,10 +632,7 @@ Convex client uses WebSocket for real-time sync and HTTP for actions. Both work 
 {
   "plugins": {
     "http": {
-      "scope": [
-        "https://*.convex.cloud/*",
-        "https://api.convex.dev/*"
-      ]
+      "scope": ["https://*.convex.cloud/*", "https://api.convex.dev/*"]
     }
   }
 }
@@ -635,14 +640,14 @@ Convex client uses WebSocket for real-time sync and HTTP for actions. Both work 
 
 ## Confidence
 
-| Area | Level | Notes |
-|------|-------|-------|
-| Tauri + TanStack Start pattern | MEDIUM | Based on community template (kvnxiao/tauri-tanstack-start-react-template) and official docs. Pattern exists but isn't widely battle-tested. |
-| Prerendering requirement | HIGH | Official Tauri docs confirm no Node.js runtime - prerendering is the documented solution. |
-| Responsive patterns | HIGH | Standard Tailwind v4 patterns, well-documented. |
-| Mobile navigation architecture | MEDIUM | TanStack Router has no native bottom tabs - pattern is custom but follows common React Native/mobile web practices. |
-| Build order recommendation | HIGH | Logical dependency chain: responsive CSS must work before wrapping with native container. |
-| Convex compatibility with Tauri | MEDIUM | Convex uses WebSocket/HTTP which Tauri supports, but needs HTTP plugin. OAuth flow in WebView needs testing. |
+| Area                            | Level  | Notes                                                                                                                                       |
+| ------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tauri + TanStack Start pattern  | MEDIUM | Based on community template (kvnxiao/tauri-tanstack-start-react-template) and official docs. Pattern exists but isn't widely battle-tested. |
+| Prerendering requirement        | HIGH   | Official Tauri docs confirm no Node.js runtime - prerendering is the documented solution.                                                   |
+| Responsive patterns             | HIGH   | Standard Tailwind v4 patterns, well-documented.                                                                                             |
+| Mobile navigation architecture  | MEDIUM | TanStack Router has no native bottom tabs - pattern is custom but follows common React Native/mobile web practices.                         |
+| Build order recommendation      | HIGH   | Logical dependency chain: responsive CSS must work before wrapping with native container.                                                   |
+| Convex compatibility with Tauri | MEDIUM | Convex uses WebSocket/HTTP which Tauri supports, but needs HTTP plugin. OAuth flow in WebView needs testing.                                |
 
 ### Open Questions for Phase-Specific Research
 
@@ -652,5 +657,6 @@ Convex client uses WebSocket for real-time sync and HTTP for actions. Both work 
 4. **Offline support**: Tauri can bundle static files, but Convex requires network - consider offline UX.
 
 ---
-*Researched: 2026-01-20*
-*Sources: Tauri v2 official docs (v2.tauri.app), TanStack Start docs (tanstack.com/start), kvnxiao/tauri-tanstack-start-react-template (GitHub), Tailwind CSS v4 docs, Exa code search*
+
+_Researched: 2026-01-20_
+_Sources: Tauri v2 official docs (v2.tauri.app), TanStack Start docs (tanstack.com/start), kvnxiao/tauri-tanstack-start-react-template (GitHub), Tailwind CSS v4 docs, Exa code search_

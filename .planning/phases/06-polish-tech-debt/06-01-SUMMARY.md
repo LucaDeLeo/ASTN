@@ -19,8 +19,8 @@ affects: [user-onboarding, admin-features]
 tech-stack:
   added: []
   patterns:
-    - "AuthLoading/Authenticated/Unauthenticated wrapper for route protection"
-    - "UnauthenticatedRedirect component for protected routes"
+    - 'AuthLoading/Authenticated/Unauthenticated wrapper for route protection'
+    - 'UnauthenticatedRedirect component for protected routes'
 
 key-files:
   created: []
@@ -29,11 +29,11 @@ key-files:
     - src/routes/admin/route.tsx
 
 key-decisions:
-  - "Matches link shown only for authenticated users (inside Authenticated wrapper)"
-  - "Admin route uses same auth pattern as profile routes for consistency"
+  - 'Matches link shown only for authenticated users (inside Authenticated wrapper)'
+  - 'Admin route uses same auth pattern as profile routes for consistency'
 
 patterns-established:
-  - "Conditional nav links: Wrap in Authenticated component for auth-only visibility"
+  - 'Conditional nav links: Wrap in Authenticated component for auth-only visibility'
 
 # Metrics
 duration: 4min
@@ -53,6 +53,7 @@ completed: 2026-01-18
 - **Files modified:** 2
 
 ## Accomplishments
+
 - /matches link now visible in AuthHeader for authenticated users
 - Admin routes now show spinner during auth loading and redirect to /login for unauthenticated users
 - Defense-in-depth pattern applied (backend still enforces auth, frontend provides UX)
@@ -65,10 +66,12 @@ Each task was committed atomically:
 2. **Task 2: Add Authenticated wrapper to admin route layout** - `45e9e46` (feat)
 
 ## Files Created/Modified
+
 - `src/components/layout/auth-header.tsx` - Added Matches link wrapped in Authenticated component
 - `src/routes/admin/route.tsx` - Added AuthLoading/Authenticated/Unauthenticated wrapper with redirect
 
 ## Decisions Made
+
 - Used Authenticated wrapper around Matches link (consistent with user menu pattern)
 - Followed profile/index.tsx pattern for UnauthenticatedRedirect component
 
@@ -77,6 +80,7 @@ Each task was committed atomically:
 None - plan executed exactly as written.
 
 ## Issues Encountered
+
 None - pre-existing lint errors in other files do not affect this plan's changes.
 
 ## User Setup Required
@@ -84,10 +88,12 @@ None - pre-existing lint errors in other files do not affect this plan's changes
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Navigation now surfaces /matches to authenticated users
 - Admin routes protected at frontend level (defense in depth with backend enforcement)
 - Ready for Plan 2: Error handling and edge case fixes
 
 ---
-*Phase: 06-polish-tech-debt*
-*Completed: 2026-01-18*
+
+_Phase: 06-polish-tech-debt_
+_Completed: 2026-01-18_

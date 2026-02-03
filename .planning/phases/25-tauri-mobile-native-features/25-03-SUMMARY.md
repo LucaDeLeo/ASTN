@@ -28,8 +28,8 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Use universal APK (all architectures) for debug builds"
-  - "Add USE_BIOMETRIC permission for future biometric auth"
+  - 'Use universal APK (all architectures) for debug builds'
+  - 'Add USE_BIOMETRIC permission for future biometric auth'
 
 duration: 15min
 completed: 2026-01-22
@@ -64,17 +64,18 @@ completed: 2026-01-22
 
 ## Verification Status
 
-| Check | Status |
-|-------|--------|
-| Android project exists | ✓ |
-| APK builds | ✓ |
-| Biometric permission added | ✓ |
-| Deep link configured | ✓ |
-| Emulator test | Pending (no AVD) |
+| Check                      | Status           |
+| -------------------------- | ---------------- |
+| Android project exists     | ✓                |
+| APK builds                 | ✓                |
+| Biometric permission added | ✓                |
+| Deep link configured       | ✓                |
+| Emulator test              | Pending (no AVD) |
 
 ## Environment Setup
 
 Added to `~/.zshrc`:
+
 ```bash
 export ANDROID_HOME=~/Library/Android/sdk
 export JAVA_HOME=$(/usr/libexec/java_home)
@@ -93,5 +94,6 @@ export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
 - Plan 25-06: Push notifications and offline
 
 ---
-*Phase: 25-tauri-mobile-native-features*
-*Completed: 2026-01-22*
+
+_Phase: 25-tauri-mobile-native-features_
+_Completed: 2026-01-22_

@@ -28,14 +28,14 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Step indicator uses Input/Review/Enrich labels"
-  - "Review step can be conditionally hidden for manual/chat-first flows"
-  - "LinkedIn PDF tip collapsed by default with expand/collapse"
+  - 'Step indicator uses Input/Review/Enrich labels'
+  - 'Review step can be conditionally hidden for manual/chat-first flows'
+  - 'LinkedIn PDF tip collapsed by default with expand/collapse'
   - "Upload option marked as 'Recommended' with badge"
 
 patterns-established:
-  - "Wizard step indicator: shows complete/current/future with icons"
-  - "Entry selection: stacked cards with primary option highlighted"
+  - 'Wizard step indicator: shows complete/current/future with icons'
+  - 'Entry selection: stacked cards with primary option highlighted'
 
 # Metrics
 duration: 1min
@@ -55,6 +55,7 @@ completed: 2026-01-19
 - **Files created:** 2
 
 ## Accomplishments
+
 - WizardStepIndicator shows Input/Review/Enrich flow with visual states
 - EntryPointSelector presents 4 entry options with Upload PDF highlighted
 - LinkedIn PDF tip with collapsible instructions
@@ -68,10 +69,12 @@ Each task was committed atomically:
 2. **Task 2: Create EntryPointSelector component** - `9b4bba6` (feat)
 
 ## Files Created/Modified
+
 - `src/components/profile/wizard/WizardStepIndicator.tsx` - 3-step progress indicator with complete/current/future states
 - `src/components/profile/wizard/EntryPointSelector.tsx` - 4 entry option cards with LinkedIn PDF tip
 
 ## Decisions Made
+
 - Step indicator uses "Input/Review/Enrich" labels per context decisions
 - Review step conditionally hideable via `showReviewStep` prop for manual/chat-first flows
 - Upload option has "Recommended" badge and primary styling
@@ -90,10 +93,12 @@ None.
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Components ready for integration into ProfileWizard in Plan 02
 - WizardStepIndicator exports WizardStepIndicator component
 - EntryPointSelector exports EntryPointSelector component with onSelect callback
 
 ---
-*Phase: 10-wizard-integration*
-*Completed: 2026-01-19*
+
+_Phase: 10-wizard-integration_
+_Completed: 2026-01-19_

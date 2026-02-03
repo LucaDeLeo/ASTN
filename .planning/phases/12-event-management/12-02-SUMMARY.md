@@ -21,8 +21,8 @@ affects: [12-03 (dashboard event aggregation)]
 tech-stack:
   added: []
   patterns:
-    - "Lu.ma iframe embedding with ?embed=true parameter"
-    - "Admin settings page pattern for org configuration"
+    - 'Lu.ma iframe embedding with ?embed=true parameter'
+    - 'Admin settings page pattern for org configuration'
 
 key-files:
   created:
@@ -35,13 +35,13 @@ key-files:
     - src/routes/org/$slug/admin/index.tsx
 
 key-decisions:
-  - "Lu.ma embed uses ?embed=true query param for clean iframe display"
-  - "Events button only shown when lumaCalendarUrl is configured"
-  - "Admin dashboard shows 4-column grid with Events status card"
+  - 'Lu.ma embed uses ?embed=true query param for clean iframe display'
+  - 'Events button only shown when lumaCalendarUrl is configured'
+  - 'Admin dashboard shows 4-column grid with Events status card'
 
 patterns-established:
-  - "Admin settings page pattern: breadcrumb navigation, card-based form sections"
-  - "Integration status cards: green dot for connected, link to settings for unconfigured"
+  - 'Admin settings page pattern: breadcrumb navigation, card-based form sections'
+  - 'Integration status cards: green dot for connected, link to settings for unconfigured'
 
 # Metrics
 duration: 4min
@@ -110,5 +110,6 @@ None - this plan only creates UI components and Convex mutations. Lu.ma API key 
 - Ready for Plan 03: Dashboard event aggregation across all org memberships
 
 ---
-*Phase: 12-event-management*
-*Completed: 2026-01-19*
+
+_Phase: 12-event-management_
+_Completed: 2026-01-19_

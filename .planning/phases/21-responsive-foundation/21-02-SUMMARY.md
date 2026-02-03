@@ -26,13 +26,13 @@ key-files:
     - src/components/opportunities/opportunity-list.tsx
 
 key-decisions:
-  - "Mobile filters use chips for active states + single button for full sheet"
-  - "Skeleton cards match actual card layout for smooth perceived loading"
-  - "Filter changes apply immediately (no separate submit action)"
+  - 'Mobile filters use chips for active states + single button for full sheet'
+  - 'Skeleton cards match actual card layout for smooth perceived loading'
+  - 'Filter changes apply immediately (no separate submit action)'
 
 patterns-established:
-  - "Mobile filter pattern: Active chips + Filter button opens ResponsiveSheet"
-  - "Skeleton loading: Create matching skeleton component inline, show 5 instances"
+  - 'Mobile filter pattern: Active chips + Filter button opens ResponsiveSheet'
+  - 'Skeleton loading: Create matching skeleton component inline, show 5 instances'
 
 # Metrics
 duration: 8min
@@ -52,6 +52,7 @@ completed: 2026-01-21
 - **Files modified:** 3
 
 ## Accomplishments
+
 - MobileFilters component shows active filters as removable badge chips
 - Filter button opens ResponsiveSheet with full filter options (search, role, location)
 - OpportunityFilters renders mobile vs desktop layouts based on md: breakpoint
@@ -66,11 +67,13 @@ Each task was committed atomically:
 3. **Task 3: Add skeleton loading to OpportunityList** - `de61d41` (feat)
 
 ## Files Created/Modified
+
 - `src/components/opportunities/mobile-filters.tsx` - Mobile filter UI with chips and ResponsiveSheet
 - `src/components/opportunities/opportunity-filters.tsx` - Responsive filter bar (mobile/desktop switch)
 - `src/components/opportunities/opportunity-list.tsx` - Added OpportunityCardSkeleton and skeleton loading state
 
 ## Decisions Made
+
 - Active filters displayed as removable chips with X button and "Clear all" link
 - Filter button shows badge with count of active filters
 - All touch targets use min-h-11 (44px) per accessibility guidelines
@@ -90,10 +93,12 @@ None
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Opportunity filtering works on mobile with intuitive UX
 - Pattern established for other filter views (matches, admin lists)
 - Ready for 21-03 (Profile wizard responsive) or other plans
 
 ---
-*Phase: 21-responsive-foundation*
-*Completed: 2026-01-21*
+
+_Phase: 21-responsive-foundation_
+_Completed: 2026-01-21_

@@ -17,26 +17,30 @@ The technical challenge is minimal - the core patterns already exist. The work i
 The established libraries/tools for this domain:
 
 ### Core (All Already in ASTN)
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| React | 19 | UI framework | Already in use |
-| shadcn/ui | new-york | Component primitives | Already configured |
-| Tailwind v4 | - | Styling | Already configured |
-| lucide-react | - | Icons (Check, X, Pencil, ChevronDown) | Already in use |
+
+| Library      | Version  | Purpose                               | Why Standard       |
+| ------------ | -------- | ------------------------------------- | ------------------ |
+| React        | 19       | UI framework                          | Already in use     |
+| shadcn/ui    | new-york | Component primitives                  | Already configured |
+| Tailwind v4  | -        | Styling                               | Already configured |
+| lucide-react | -        | Icons (Check, X, Pencil, ChevronDown) | Already in use     |
 
 ### Supporting
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| cn (from ~/lib/utils) | - | Conditional class names | Styling states |
-| Convex React | ^1.31.0 | Data mutations | Profile updates |
+
+| Library               | Version | Purpose                 | When to Use     |
+| --------------------- | ------- | ----------------------- | --------------- |
+| cn (from ~/lib/utils) | -       | Conditional class names | Styling states  |
+| Convex React          | ^1.31.0 | Data mutations          | Profile updates |
 
 ### Alternatives Considered
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
+
+| Instead of             | Could Use       | Tradeoff                                                              |
+| ---------------------- | --------------- | --------------------------------------------------------------------- |
 | Clone ExtractionReview | Modify original | Original is specific to enrichment fields; separate component cleaner |
-| Build custom accordion | Radix Accordion | Radix adds complexity; simple CSS disclosure sufficient |
+| Build custom accordion | Radix Accordion | Radix adds complexity; simple CSS disclosure sufficient               |
 
 **Installation:**
+
 ```bash
 # No new packages needed - all dependencies already installed
 ```
@@ -44,6 +48,7 @@ The established libraries/tools for this domain:
 ## Architecture Patterns
 
 ### Recommended Project Structure
+
 ```
 src/components/profile/
 ├── extraction/              # New module for extraction review
@@ -59,9 +64,11 @@ src/components/profile/
 ```
 
 ### Pattern 1: ExtractionReview Card Pattern (Existing)
+
 **What:** Card-based row with field label, value display, and action icons (accept/reject/edit)
 **When to use:** All extracted fields
 **Example:** (from `src/components/profile/enrichment/ExtractionReview.tsx`)
+
 ```typescript
 <Card className={cn(
   "p-4 transition-all duration-200",
@@ -89,9 +96,11 @@ src/components/profile/
 ```
 
 ### Pattern 2: Field Counter Footer (Existing)
+
 **What:** "X of Y fields will be applied" counter with Apply button
 **When to use:** Bottom of review UI
 **Example:** (from `ExtractionReview.tsx`)
+
 ```typescript
 <div className="flex items-center justify-between pt-4 border-t">
   <p className="text-sm text-slate-500">
@@ -104,9 +113,11 @@ src/components/profile/
 ```
 
 ### Pattern 3: Expandable Card for Multi-Entry Fields
+
 **What:** Collapsed summary with expand/collapse toggle
 **When to use:** Education array, Work History array
 **Example pattern:**
+
 ```typescript
 <Card className="p-4">
   <button
@@ -131,9 +142,11 @@ src/components/profile/
 ```
 
 ### Pattern 4: Auto-Save on Blur (Existing)
+
 **What:** Save changes immediately when field loses focus
 **When to use:** Inline editing mode
 **Example:** (from `WorkHistoryStep.tsx`)
+
 ```typescript
 <Input
   value={value}
@@ -143,6 +156,7 @@ src/components/profile/
 ```
 
 ### Anti-Patterns to Avoid
+
 - **Don't create separate Accept All button:** Context specifies individual field control only
 - **Don't show percentages:** Context specifies field counter (e.g., "8 of 12 fields"), not percentages
 - **Don't add undo functionality:** Context says no undo after applying
@@ -151,83 +165,97 @@ src/components/profile/
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Skill selection UI | Custom multi-select | `SkillsInput` from `~/components/profile/skills/` | Already handles taxonomy, search, chip display |
-| Card component | Custom div styling | `Card` from shadcn/ui | Consistent with app styling |
-| Button icon variants | Custom button styles | `Button variant="ghost" size="icon-sm"` | Already configured in shadcn |
-| Status badges | Custom spans | `Badge` from shadcn/ui | Consistent styling |
-| Date format conversion | Manual string parsing | Existing helpers in `WorkHistoryStep.tsx` | `parseDateInput`, `formatDateForInput` |
-| Profile updates | Custom API calls | `profiles.updateField` mutation | Already handles auth, validation |
+| Problem                | Don't Build           | Use Instead                                       | Why                                            |
+| ---------------------- | --------------------- | ------------------------------------------------- | ---------------------------------------------- |
+| Skill selection UI     | Custom multi-select   | `SkillsInput` from `~/components/profile/skills/` | Already handles taxonomy, search, chip display |
+| Card component         | Custom div styling    | `Card` from shadcn/ui                             | Consistent with app styling                    |
+| Button icon variants   | Custom button styles  | `Button variant="ghost" size="icon-sm"`           | Already configured in shadcn                   |
+| Status badges          | Custom spans          | `Badge` from shadcn/ui                            | Consistent styling                             |
+| Date format conversion | Manual string parsing | Existing helpers in `WorkHistoryStep.tsx`         | `parseDateInput`, `formatDateForInput`         |
+| Profile updates        | Custom API calls      | `profiles.updateField` mutation                   | Already handles auth, validation               |
 
 **Key insight:** All UI primitives and profile update logic already exist. The work is composition, not creation.
 
 ## Common Pitfalls
 
 ### Pitfall 1: Date Format Mismatch
+
 **What goes wrong:** Work history dates fail to save or display incorrectly
 **Why it happens:** Extraction returns `startDate: "2022-01"` (string), profile schema expects `startDate: number` (Unix timestamp)
 **How to avoid:** Convert dates before applying:
+
 ```typescript
 // Extraction format: "2022-01" or "present"
 // Profile format: Unix timestamp (number)
 const parseDateString = (dateStr?: string): number | undefined => {
-  if (!dateStr || dateStr === "present") return undefined;
-  const [year, month] = dateStr.split("-").map(Number);
-  return new Date(year, month - 1, 1).getTime();
-};
+  if (!dateStr || dateStr === 'present') return undefined
+  const [year, month] = dateStr.split('-').map(Number)
+  return new Date(year, month - 1, 1).getTime()
+}
 ```
+
 **Warning signs:** Work history entries missing dates in profile after applying
 
 ### Pitfall 2: Not Handling Missing Profile
+
 **What goes wrong:** Applying extraction crashes when user has no profile yet
 **Why it happens:** Profile might be null if user went straight to upload without visiting profile edit
 **How to avoid:** Create profile before applying if it doesn't exist:
+
 ```typescript
-const profile = useQuery(api.profiles.getOrCreateProfile);
-const createProfile = useMutation(api.profiles.create);
+const profile = useQuery(api.profiles.getOrCreateProfile)
+const createProfile = useMutation(api.profiles.create)
 
 const handleApply = async () => {
-  let profileId = profile?._id;
+  let profileId = profile?._id
   if (!profileId) {
-    profileId = await createProfile();
+    profileId = await createProfile()
   }
-  await applyExtraction(profileId, selectedFields);
-};
+  await applyExtraction(profileId, selectedFields)
+}
 ```
+
 **Warning signs:** "Profile not found" errors on apply
 
 ### Pitfall 3: Overwriting vs Merging Arrays
+
 **What goes wrong:** Existing education/work/skills get replaced instead of merged
 **Why it happens:** Using simple assignment instead of merge strategy
 **How to avoid:** Implement merge strategy per CONTEXT.md (Claude's discretion item):
+
 ```typescript
 // Recommendation: Replace for initial empty arrays, prompt for non-empty
 const mergeArrays = (existing: Array<T> | undefined, extracted: Array<T>) => {
-  if (!existing || existing.length === 0) return extracted;
+  if (!existing || existing.length === 0) return extracted
   // For non-empty: could prompt user or append with dedup
-  return [...existing, ...extracted.filter(e => !isDuplicate(e, existing))];
-};
+  return [...existing, ...extracted.filter((e) => !isDuplicate(e, existing))]
+}
 ```
+
 **Warning signs:** User loses existing profile data after applying extraction
 
 ### Pitfall 4: State Sync After Apply
+
 **What goes wrong:** UI still shows review screen after successful apply
 **Why it happens:** Not resetting extraction state and navigating to next step
 **How to avoid:** Clear state and redirect after apply:
+
 ```typescript
 const handleApply = async () => {
-  await applyExtraction(/*...*/);
-  resetExtractionState();
-  navigate({ to: "/profile/edit", search: { step: "enrichment" } });
-};
+  await applyExtraction(/*...*/)
+  resetExtractionState()
+  navigate({ to: '/profile/edit', search: { step: 'enrichment' } })
+}
 ```
+
 **Warning signs:** User confused about what happened after clicking Apply
 
 ### Pitfall 5: Not Showing Placeholders for Missing Fields
+
 **What goes wrong:** Missing fields invisible to user, unclear what wasn't extracted
 **Why it happens:** Only rendering fields that have values
 **How to avoid:** Show all possible fields with placeholder for missing:
+
 ```typescript
 {extractedData.email ? (
   <ValueDisplay value={extractedData.email} />
@@ -235,6 +263,7 @@ const handleApply = async () => {
   <PlaceholderText>Not found in document</PlaceholderText>
 )}
 ```
+
 **Warning signs:** User thinks extraction worked perfectly when fields are missing
 
 ## Code Examples
@@ -242,40 +271,43 @@ const handleApply = async () => {
 Verified patterns from existing ASTN code:
 
 ### Extraction Item Type (Extend from Enrichment)
+
 ```typescript
 // Source: src/components/profile/enrichment/hooks/useEnrichment.ts (adapted)
-export type ExtractionStatus = "pending" | "accepted" | "rejected" | "edited";
+export type ExtractionStatus = 'pending' | 'accepted' | 'rejected' | 'edited'
 
 export interface ResumeExtractionItem {
-  id: string;  // Unique key for React
-  field: keyof ExtractedData | `education.${number}` | `workHistory.${number}`;
-  label: string;
-  value: unknown;
-  editedValue?: unknown;
-  status: ExtractionStatus;
+  id: string // Unique key for React
+  field: keyof ExtractedData | `education.${number}` | `workHistory.${number}`
+  label: string
+  value: unknown
+  editedValue?: unknown
+  status: ExtractionStatus
 }
 ```
 
 ### Date Conversion Utilities (From WorkHistoryStep)
+
 ```typescript
 // Source: src/components/profile/wizard/steps/WorkHistoryStep.tsx
 // Convert extraction string format to profile timestamp format
 const convertExtractionDate = (dateStr?: string): number | undefined => {
-  if (!dateStr || dateStr.toLowerCase() === "present") return undefined;
-  const [year, month] = dateStr.split("-").map(Number);
-  if (isNaN(year) || isNaN(month)) return undefined;
-  return new Date(year, month - 1, 1).getTime();
-};
+  if (!dateStr || dateStr.toLowerCase() === 'present') return undefined
+  const [year, month] = dateStr.split('-').map(Number)
+  if (isNaN(year) || isNaN(month)) return undefined
+  return new Date(year, month - 1, 1).getTime()
+}
 
 // Convert profile timestamp to display string
 const formatDateForDisplay = (timestamp?: number): string => {
-  if (!timestamp) return "Present";
-  const date = new Date(timestamp);
-  return date.toLocaleDateString("en-US", { year: "numeric", month: "short" });
-};
+  if (!timestamp) return 'Present'
+  const date = new Date(timestamp)
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
+}
 ```
 
 ### Profile Update with Multiple Fields
+
 ```typescript
 // Source: convex/profiles.ts - updateField mutation
 // Call with all accepted fields at once
@@ -288,10 +320,11 @@ await updateField({
     workHistory: convertedWorkHistory,
     skills: acceptedData.skills,
   },
-});
+})
 ```
 
 ### Skills Input Reuse
+
 ```typescript
 // Source: src/components/profile/wizard/steps/SkillsStep.tsx
 // For editing skills in extraction review
@@ -306,35 +339,37 @@ await updateField({
 
 ### Extraction Schema to Profile Schema
 
-| Extracted Field | Profile Field | Conversion Needed |
-|-----------------|---------------|-------------------|
-| `name` | `name` | None (string to string) |
-| `email` | - | Not in profile schema (display only) |
-| `location` | `location` | None (string to string) |
-| `education[].institution` | `education[].institution` | None |
-| `education[].degree` | `education[].degree` | None |
-| `education[].field` | `education[].field` | None |
-| `education[].startYear` | `education[].startYear` | None (number to number) |
-| `education[].endYear` | `education[].endYear` | None (number to number) |
-| `education[].current` | `education[].current` | None (boolean to boolean) |
-| `workHistory[].organization` | `workHistory[].organization` | None |
-| `workHistory[].title` | `workHistory[].title` | None |
-| `workHistory[].startDate` | `workHistory[].startDate` | String "YYYY-MM" to Unix timestamp |
-| `workHistory[].endDate` | `workHistory[].endDate` | String "YYYY-MM"/"present" to timestamp/undefined |
-| `workHistory[].current` | `workHistory[].current` | None (already boolean from extraction) |
-| `workHistory[].description` | `workHistory[].description` | None |
-| `skills` | `skills` | None (already matched to taxonomy) |
-| `rawSkills` | - | For display/reference only |
+| Extracted Field              | Profile Field                | Conversion Needed                                 |
+| ---------------------------- | ---------------------------- | ------------------------------------------------- |
+| `name`                       | `name`                       | None (string to string)                           |
+| `email`                      | -                            | Not in profile schema (display only)              |
+| `location`                   | `location`                   | None (string to string)                           |
+| `education[].institution`    | `education[].institution`    | None                                              |
+| `education[].degree`         | `education[].degree`         | None                                              |
+| `education[].field`          | `education[].field`          | None                                              |
+| `education[].startYear`      | `education[].startYear`      | None (number to number)                           |
+| `education[].endYear`        | `education[].endYear`        | None (number to number)                           |
+| `education[].current`        | `education[].current`        | None (boolean to boolean)                         |
+| `workHistory[].organization` | `workHistory[].organization` | None                                              |
+| `workHistory[].title`        | `workHistory[].title`        | None                                              |
+| `workHistory[].startDate`    | `workHistory[].startDate`    | String "YYYY-MM" to Unix timestamp                |
+| `workHistory[].endDate`      | `workHistory[].endDate`      | String "YYYY-MM"/"present" to timestamp/undefined |
+| `workHistory[].current`      | `workHistory[].current`      | None (already boolean from extraction)            |
+| `workHistory[].description`  | `workHistory[].description`  | None                                              |
+| `skills`                     | `skills`                     | None (already matched to taxonomy)                |
+| `rawSkills`                  | -                            | For display/reference only                        |
 
 ### Fields Extracted vs Profile Fields
 
 **Fields extraction provides:**
+
 - Basic: name, email, location
 - Education: institution, degree, field, startYear, endYear, current
 - Work: organization, title, startDate, endDate, current, description
 - Skills: matched skills, rawSkills
 
 **Profile fields NOT from extraction (handled by enrichment chat):**
+
 - `pronouns` - Personal preference
 - `headline` - Needs user crafting
 - `careerGoals` - Conversational extraction better
@@ -346,6 +381,7 @@ await updateField({
 ## Integration Points
 
 ### Entry Point: test-upload.tsx to Review UI
+
 Current flow ends at success display. Phase 9 replaces success state with review UI:
 
 ```typescript
@@ -360,25 +396,29 @@ Current flow ends at success display. Phase 9 replaces success state with review
 ```
 
 ### Exit Point: Review UI to Enrichment Chat
+
 After apply, navigate to enrichment step per CONTEXT.md:
 
 ```typescript
-const navigate = useNavigate();
+const navigate = useNavigate()
 
 const handleApplyComplete = () => {
-  navigate({ to: "/profile/edit", search: { step: "enrichment" } });
-};
+  navigate({ to: '/profile/edit', search: { step: 'enrichment' } })
+}
 ```
 
 ### Where Review UI Lives
+
 Two options per CONTEXT.md (Claude's discretion):
 
 **Option A: Dedicated Page (Recommended)**
+
 - New route `/profile/import` or similar
 - Clean separation of concerns
 - Can be deep-linked from upload flow
 
 **Option B: Wizard Step**
+
 - Add "import" as first step before "basic"
 - Tighter integration with wizard
 - More complex conditional routing
@@ -407,6 +447,7 @@ Things that couldn't be fully resolved:
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - ASTN codebase: `src/components/profile/enrichment/ExtractionReview.tsx` - UI pattern
 - ASTN codebase: `src/components/profile/wizard/steps/WorkHistoryStep.tsx` - Date conversion
 - ASTN codebase: `convex/schema.ts` - Profile and extraction schemas
@@ -414,11 +455,13 @@ Things that couldn't be fully resolved:
 - Phase 8 summaries: Integration patterns and decisions
 
 ### Secondary (MEDIUM confidence)
+
 - Phase 9 CONTEXT.md: User decisions from discussion
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - All components already exist in ASTN
 - Architecture: HIGH - Following established patterns exactly
 - Pitfalls: HIGH - Based on actual schema differences found in codebase

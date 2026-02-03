@@ -28,14 +28,14 @@ key-files:
     - src/components/org/MemberFilters.tsx
 
 key-decisions:
-  - "MemberCardMobile duplicates some logic from MemberRow for clear separation between mobile/desktop"
-  - "Filter chips shown above button for quick removal on mobile"
-  - "Grid layout for date range inputs in filter sheet"
+  - 'MemberCardMobile duplicates some logic from MemberRow for clear separation between mobile/desktop'
+  - 'Filter chips shown above button for quick removal on mobile'
+  - 'Grid layout for date range inputs in filter sheet'
 
 patterns-established:
-  - "Admin CRM table pattern: Card list (md:hidden) + Full table (hidden md:block)"
-  - "Active filter chips pattern: Badge with X button for individual removal"
-  - "Admin sheet footer pattern: Clear All (conditional) + Show Results buttons"
+  - 'Admin CRM table pattern: Card list (md:hidden) + Full table (hidden md:block)'
+  - 'Active filter chips pattern: Badge with X button for individual removal'
+  - 'Admin sheet footer pattern: Clear All (conditional) + Show Results buttons'
 
 # Metrics
 duration: 5min
@@ -100,5 +100,6 @@ None - no external service configuration required.
 - Ready for plan 21-05 (if additional admin pages need responsive treatment)
 
 ---
-*Phase: 21-responsive-foundation*
-*Completed: 2026-01-21*
+
+_Phase: 21-responsive-foundation_
+_Completed: 2026-01-21_

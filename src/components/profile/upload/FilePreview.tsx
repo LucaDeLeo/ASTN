@@ -1,21 +1,21 @@
-import { FileText, RefreshCw, X } from "lucide-react";
-import { cn } from "~/lib/utils";
-import { Button } from "~/components/ui/button";
+import { FileText, RefreshCw, X } from 'lucide-react'
+import { cn } from '~/lib/utils'
+import { Button } from '~/components/ui/button'
 
 /**
  * Format bytes into human-readable string
  */
 function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
 interface FilePreviewProps {
-  file: File;
-  onRemove: () => void;
-  onReplace?: () => void;
-  disabled?: boolean;
+  file: File
+  onRemove: () => void
+  onReplace?: () => void
+  disabled?: boolean
 }
 
 /**
@@ -37,8 +37,8 @@ export function FilePreview({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 rounded-lg bg-muted/50 p-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-200",
-        disabled && "opacity-50"
+        'flex items-center gap-3 rounded-lg bg-muted/50 p-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-200',
+        disabled && 'opacity-50',
       )}
     >
       {/* File icon */}
@@ -86,5 +86,5 @@ export function FilePreview({
         </Button>
       </div>
     </div>
-  );
+  )
 }

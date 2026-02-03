@@ -14,17 +14,20 @@ Add purposeful animation that reinforces warmth - entrance animations, hover fee
 ## Implementation Decisions
 
 ### Entrance choreography
+
 - Fade up animation: cards fade in while sliding up slightly (10-20px)
 - Full page choreography: page title fades in first, then cards stagger
 - Stagger applies to list pages (matches, opportunities, home)
 
 ### Page transitions
+
 - Shared element transitions: clicked card animates/morphs into detail page
 - Crossfade fallback when no shared element exists (e.g., nav menu clicks)
 - Reverse animation on back navigation (card returns to list position)
 - Fast duration: 200-250ms for transitions
 
 ### Claude's Discretion
+
 - Stagger timing (50ms vs 100ms) - pick what looks good with warm aesthetic
 - Animation replay behavior on back navigation
 - Exact easing curves and timing refinements
@@ -51,5 +54,5 @@ None — discussion stayed within phase scope
 
 ---
 
-*Phase: 19-motion-system*
-*Context gathered: 2026-01-19*
+_Phase: 19-motion-system_
+_Context gathered: 2026-01-19_

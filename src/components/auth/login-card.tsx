@@ -1,24 +1,24 @@
-import { useState } from "react";
-import { OAuthButtons } from "./oauth-buttons";
-import { PasswordForm } from "./password-form";
-import { Card, CardContent, CardHeader } from "~/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { Separator } from "~/components/ui/separator";
-import { cn } from "~/lib/utils";
+import { useState } from 'react'
+import { OAuthButtons } from './oauth-buttons'
+import { PasswordForm } from './password-form'
+import { Card, CardContent, CardHeader } from '~/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
+import { Separator } from '~/components/ui/separator'
+import { cn } from '~/lib/utils'
 
 interface LoginCardProps {
-  isLoading?: boolean;
+  isLoading?: boolean
 }
 
 export function LoginCard({ isLoading = false }: LoginCardProps) {
-  const [flow, setFlow] = useState<"signIn" | "signUp">("signIn");
+  const [flow, setFlow] = useState<'signIn' | 'signUp'>('signIn')
 
   return (
     <Card
       className={cn(
-        "w-full max-w-md relative overflow-hidden",
+        'w-full max-w-md relative overflow-hidden',
         // Generous padding, soft shadow with coral undertone, rounded corners (12-16px)
-        "p-10 md:p-12 shadow-[0_8px_30px_oklch(0.70_0.08_30/0.15)] rounded-2xl"
+        'p-10 md:p-12 shadow-[0_8px_30px_oklch(0.70_0.08_30/0.15)] rounded-2xl',
       )}
     >
       {/* Full-form frosted glass overlay during loading */}
@@ -49,7 +49,7 @@ export function LoginCard({ isLoading = false }: LoginCardProps) {
         {/* Tabs for Sign In / Sign Up */}
         <Tabs
           value={flow}
-          onValueChange={(v) => setFlow(v as "signIn" | "signUp")}
+          onValueChange={(v) => setFlow(v as 'signIn' | 'signUp')}
           className="w-full"
         >
           <TabsList className="w-full grid grid-cols-2">
@@ -65,5 +65,5 @@ export function LoginCard({ isLoading = false }: LoginCardProps) {
         </Tabs>
       </CardContent>
     </Card>
-  );
+  )
 }

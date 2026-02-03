@@ -5,6 +5,7 @@
 [PageIndex](https://github.com/VectifyAI/PageIndex) is a reasoning-based RAG system that builds hierarchical tree indexes from documents. Instead of vector similarity (which doesn't equal relevance), it uses LLM reasoning to navigate document structure—mimicking how humans find information in complex documents.
 
 **Key difference from traditional RAG:**
+
 - No chunking - documents organized into natural sections
 - No vector DB required - uses document structure + LLM reasoning
 - Traceable - all retrievals have page/section references
@@ -38,6 +39,7 @@ Programs like MATS and SPAR have many individual projects with rich descriptions
 The current matching system answers "which opportunities fit me?" but users also need to answer "what's actually out there and how do I think about it?"—especially when uncertain about their direction.
 
 **Example exploration queries PageIndex enables:**
+
 - "Compare ARC's and Redwood's research approaches"
 - "Which MATS projects involve interpretability and don't require a PhD?"
 - "Which SPAR projects are good for someone transitioning from SWE?"
@@ -53,6 +55,7 @@ The current matching system answers "which opportunities fit me?" but users also
 ### Recommendation
 
 **Phase 2 enhancement** once opportunity volume grows. Not needed for initial pilot with 50-100 profiles, but becomes valuable when:
+
 - MATS/SPAR/AISC project listings are rich enough to index
 - Users need to explore and understand the opportunity landscape, not just get matches
 - Counselor advice quality matters enough to justify grounding infrastructure
@@ -64,17 +67,20 @@ The current matching system answers "which opportunities fit me?" but users also
 #### Documents to Index
 
 **Core career guidance:**
+
 - 80,000 Hours career guide (primary - large, well-structured)
 - 80k problem profiles and career reviews
 - AI safety field guides (AGISF curriculum docs, intro materials)
 
 **Program/org information:**
+
 - MATS program guide and requirements
 - SERI program details
 - AISC, Astra Fellowship, other program docs
 - Org profiles (Anthropic, Redwood, ARC, METR, etc.)
 
 **Research landscape:**
+
 - Key research agendas (Anthropic core views, ARC research agenda, etc.)
 - Field overviews (interpretability, alignment theory, governance)
 - Technical AI safety curriculum materials
@@ -82,9 +88,11 @@ The current matching system answers "which opportunities fit me?" but users also
 #### Why This Matters
 
 **Without structured retrieval:**
+
 > "You should consider technical AI safety roles if you have a strong ML background."
 
 **With PageIndex-grounded retrieval:**
+
 > "Based on 80k's analysis of technical AI safety careers (Career Guide, Section 4.2), your ML background is a strong fit. They specifically note that 'researchers with experience in [X] are particularly needed for interpretability work.' However, they also flag that publication record matters for research roles—your profile doesn't highlight publications yet. See their full analysis: [link to section]"
 
 The counselor becomes **verifiably grounded** rather than vibes-based.
@@ -94,6 +102,7 @@ The counselor becomes **verifiably grounded** rather than vibes-based.
 #### The Problem
 
 Programs like MATS and SPAR have dozens of individual projects. Each mentor has:
+
 - Research agenda and background
 - Project description and goals
 - Specific requirements and expectations
@@ -194,11 +203,13 @@ def counselor_respond(user_message: str, profile: dict) -> str:
 ## Cost Considerations
 
 **Indexing (one-time):**
+
 - ~$0.50-3.00 per document depending on size
 - 50 documents ≈ $25-150 total
 - Only re-run when documents update
 
 **Query time:**
+
 - Vector search: cheap (local or hosted embeddings)
 - Tree navigation: 1 LLM call for node selection
 - Answer generation: 1 LLM call
@@ -207,6 +218,7 @@ def counselor_respond(user_message: str, profile: dict) -> str:
 ## Implementation Considerations
 
 **Python dependency:** ASTN is TypeScript/Convex. PageIndex would need either:
+
 - A separate Python microservice
 - A Convex action calling an external API
 - Porting the tree navigation logic to TypeScript (index building could stay Python)

@@ -1,47 +1,50 @@
-import { useEffect, useState } from "react";
-import { useMutation, useQuery } from "convex/react";
-import { ArrowLeft } from "lucide-react";
-import { api } from "../../../../convex/_generated/api";
-import { EntryPointSelector } from "./EntryPointSelector";
-import { PostApplySummary } from "./PostApplySummary";
-import { WizardStepIndicator } from "./WizardStepIndicator";
-import { EnrichmentStep } from "./steps/EnrichmentStep";
-import type { AppliedData } from "~/components/profile/extraction";
-import type {ExtractedData} from "~/components/profile/upload";
-import { ResumeExtractionReview } from "~/components/profile/extraction";
+import { useEffect, useState } from 'react'
+import { useMutation, useQuery } from 'convex/react'
+import { ArrowLeft } from 'lucide-react'
+import { api } from '../../../../convex/_generated/api'
+import { EntryPointSelector } from './EntryPointSelector'
+import { PostApplySummary } from './PostApplySummary'
+import { WizardStepIndicator } from './WizardStepIndicator'
+import { EnrichmentStep } from './steps/EnrichmentStep'
+import type { AppliedData } from '~/components/profile/extraction'
+import type { ExtractedData } from '~/components/profile/upload'
+import { ResumeExtractionReview } from '~/components/profile/extraction'
 import {
   DocumentUpload,
-  
   ExtractionError,
   ExtractionProgress,
   FilePreview,
   TextPasteZone,
   UploadProgress,
   useExtraction,
-  useFileUpload
-} from "~/components/profile/upload";
-import { Button } from "~/components/ui/button";
+  useFileUpload,
+} from '~/components/profile/upload'
+import { Button } from '~/components/ui/button'
 
-type EntryPoint = "upload" | "paste" | "manual" | "chat";
+type EntryPoint = 'upload' | 'paste' | 'manual' | 'chat'
 
 /**
  * Discriminated union type for wizard state machine.
  * Each step has associated data appropriate to that state.
  */
 type WizardState =
-  | { step: "input"; entryPoint?: undefined }
-  | { step: "uploading"; entryPoint: "upload"; file: File }
-  | { step: "extracting"; entryPoint: "upload" | "paste" }
-  | { step: "review"; entryPoint: "upload" | "paste"; extractedData: ExtractedData }
-  | { step: "summary" }
-  | { step: "enrich"; fromExtraction: boolean }
-  | { step: "manual" };
+  | { step: 'input'; entryPoint?: undefined }
+  | { step: 'uploading'; entryPoint: 'upload'; file: File }
+  | { step: 'extracting'; entryPoint: 'upload' | 'paste' }
+  | {
+      step: 'review'
+      entryPoint: 'upload' | 'paste'
+      extractedData: ExtractedData
+    }
+  | { step: 'summary' }
+  | { step: 'enrich'; fromExtraction: boolean }
+  | { step: 'manual' }
 
 interface ProfileCreationWizardProps {
-  onComplete: () => void;
-  onManualEntry?: () => void;
-  onEnrich?: (fromExtraction: boolean) => void;
-  initialStep?: "input" | "manual" | "chat";
+  onComplete: () => void
+  onManualEntry?: () => void
+  onEnrich?: (fromExtraction: boolean) => void
+  initialStep?: 'input' | 'manual' | 'chat'
 }
 
 /**
@@ -57,18 +60,18 @@ export function ProfileCreationWizard({
   onComplete,
   onManualEntry,
   onEnrich,
-  initialStep = "input",
+  initialStep = 'input',
 }: ProfileCreationWizardProps) {
   // Initialize state based on initial step
   const [wizardState, setWizardState] = useState<WizardState>(() => {
-    if (initialStep === "manual") return { step: "manual" };
-    if (initialStep === "chat") return { step: "enrich", fromExtraction: false };
-    return { step: "input" };
-  });
+    if (initialStep === 'manual') return { step: 'manual' }
+    if (initialStep === 'chat') return { step: 'enrich', fromExtraction: false }
+    return { step: 'input' }
+  })
 
   // Preserved extracted data for back navigation
   // Note: This allows returning to input step while keeping data available
-  const [, setPreservedExtractedData] = useState<ExtractedData | null>(null);
+  const [, setPreservedExtractedData] = useState<ExtractedData | null>(null)
 
   // Upload and extraction hooks (lifted state)
   const {
@@ -77,187 +80,194 @@ export function ProfileCreationWizard({
     clearFile,
     upload,
     retry: retryUpload,
-  } = useFileUpload();
+  } = useFileUpload()
   const {
     state: extractionState,
     extractFromDocument,
     extractFromText,
     retry: retryExtraction,
     reset: resetExtraction,
-  } = useExtraction();
+  } = useExtraction()
 
   // Profile query for enrichment step
-  const profile = useQuery(api.profiles.getOrCreateProfile);
+  const profile = useQuery(api.profiles.getOrCreateProfile)
 
   // Apply extracted data mutation
-  const applyExtractedProfile = useMutation(api.profiles.applyExtractedProfile);
-  const [isApplying, setIsApplying] = useState(false);
+  const applyExtractedProfile = useMutation(api.profiles.applyExtractedProfile)
+  const [isApplying, setIsApplying] = useState(false)
 
   // Text paste visibility state
-  const [showTextPaste, setShowTextPaste] = useState(false);
+  const [showTextPaste, setShowTextPaste] = useState(false)
 
   // Auto-trigger extraction when upload succeeds
   useEffect(() => {
     if (
-      uploadState.status === "success" &&
-      extractionState.status === "idle" &&
-      wizardState.step === "uploading"
+      uploadState.status === 'success' &&
+      extractionState.status === 'idle' &&
+      wizardState.step === 'uploading'
     ) {
-      setWizardState({ step: "extracting", entryPoint: "upload" });
-      void extractFromDocument(uploadState.documentId);
+      setWizardState({ step: 'extracting', entryPoint: 'upload' })
+      void extractFromDocument(uploadState.documentId)
     }
-  }, [uploadState, extractionState.status, extractFromDocument, wizardState.step]);
+  }, [
+    uploadState,
+    extractionState.status,
+    extractFromDocument,
+    wizardState.step,
+  ])
 
   // Transition to review when extraction succeeds
   useEffect(() => {
     if (
-      extractionState.status === "success" &&
-      (wizardState.step === "extracting" || wizardState.step === "uploading")
+      extractionState.status === 'success' &&
+      (wizardState.step === 'extracting' || wizardState.step === 'uploading')
     ) {
-      const entryPoint = wizardState.step === "extracting" ? wizardState.entryPoint : "upload";
-      setPreservedExtractedData(extractionState.extractedData);
+      const entryPoint =
+        wizardState.step === 'extracting' ? wizardState.entryPoint : 'upload'
+      setPreservedExtractedData(extractionState.extractedData)
       setWizardState({
-        step: "review",
+        step: 'review',
         entryPoint,
         extractedData: extractionState.extractedData,
-      });
+      })
     }
-  }, [extractionState, wizardState.step]);
+  }, [extractionState, wizardState.step])
 
   // Handle entry point selection
   const handleEntrySelect = (entryPoint: EntryPoint) => {
-    if (entryPoint === "upload") {
+    if (entryPoint === 'upload') {
       // Just prepare for file selection, actual flow starts on file select
-      resetExtraction();
-      clearFile();
-      setShowTextPaste(false);
-    } else if (entryPoint === "paste") {
-      resetExtraction();
-      clearFile();
-      setShowTextPaste(true);
-    } else if (entryPoint === "manual") {
-      setWizardState({ step: "manual" });
+      resetExtraction()
+      clearFile()
+      setShowTextPaste(false)
+    } else if (entryPoint === 'paste') {
+      resetExtraction()
+      clearFile()
+      setShowTextPaste(true)
+    } else if (entryPoint === 'manual') {
+      setWizardState({ step: 'manual' })
     } else {
       // entryPoint === "chat"
-      setWizardState({ step: "enrich", fromExtraction: false });
+      setWizardState({ step: 'enrich', fromExtraction: false })
     }
-  };
+  }
 
   // Handle file selection
   const handleFileSelect = (file: File) => {
-    selectFile(file);
-    setWizardState({ step: "uploading", entryPoint: "upload", file });
+    selectFile(file)
+    setWizardState({ step: 'uploading', entryPoint: 'upload', file })
     // Upload will be triggered manually
-  };
+  }
 
   // Handle upload trigger
   const handleUpload = async () => {
-    await upload();
-  };
+    await upload()
+  }
 
   // Handle text paste submit
   const handleTextSubmit = async (text: string) => {
-    setShowTextPaste(false);
-    setWizardState({ step: "extracting", entryPoint: "paste" });
-    await extractFromText(text);
-  };
+    setShowTextPaste(false)
+    setWizardState({ step: 'extracting', entryPoint: 'paste' })
+    await extractFromText(text)
+  }
 
   // Handle back from review
   const handleBackFromReview = () => {
     // Preserve extracted data and return to input
-    if (wizardState.step === "review") {
-      setPreservedExtractedData(wizardState.extractedData);
+    if (wizardState.step === 'review') {
+      setPreservedExtractedData(wizardState.extractedData)
     }
-    resetExtraction();
-    clearFile();
-    setShowTextPaste(false);
-    setWizardState({ step: "input" });
-  };
+    resetExtraction()
+    clearFile()
+    setShowTextPaste(false)
+    setWizardState({ step: 'input' })
+  }
 
   // Handle apply extracted data to profile
   const handleApplyToProfile = async (data: AppliedData) => {
-    setIsApplying(true);
+    setIsApplying(true)
     try {
-      await applyExtractedProfile({ extractedData: data });
-      setWizardState({ step: "summary" });
+      await applyExtractedProfile({ extractedData: data })
+      setWizardState({ step: 'summary' })
     } catch (error) {
-      console.error("Failed to apply extraction:", error);
+      console.error('Failed to apply extraction:', error)
       // Stay on review page, user can retry
     } finally {
-      setIsApplying(false);
+      setIsApplying(false)
     }
-  };
+  }
 
   // Handle skip to manual from review
   const handleSkipToManual = () => {
-    setWizardState({ step: "manual" });
-  };
+    setWizardState({ step: 'manual' })
+  }
 
   // Handle paste text fallback from error
   const handlePasteTextFallback = () => {
-    resetExtraction();
-    clearFile();
-    setShowTextPaste(true);
-    setWizardState({ step: "input" });
-  };
+    resetExtraction()
+    clearFile()
+    setShowTextPaste(true)
+    setWizardState({ step: 'input' })
+  }
 
   // Handle manual entry from error
   const handleManualEntry = () => {
-    setWizardState({ step: "manual" });
-  };
+    setWizardState({ step: 'manual' })
+  }
 
   // Handle start over
   const handleStartOver = () => {
-    clearFile();
-    resetExtraction();
-    setShowTextPaste(false);
-    setPreservedExtractedData(null);
-    setWizardState({ step: "input" });
-  };
+    clearFile()
+    resetExtraction()
+    setShowTextPaste(false)
+    setPreservedExtractedData(null)
+    setWizardState({ step: 'input' })
+  }
 
   // Summary actions
   const handleContinueToEnrichment = () => {
-    setWizardState({ step: "enrich", fromExtraction: true });
-  };
+    setWizardState({ step: 'enrich', fromExtraction: true })
+  }
 
   const handleSkipEnrichment = () => {
-    onComplete();
-  };
+    onComplete()
+  }
 
   const handleBackToManualFromSummary = () => {
-    setWizardState({ step: "manual" });
-  };
+    setWizardState({ step: 'manual' })
+  }
 
   // Determine current wizard step for indicator
-  const getIndicatorStep = (): "input" | "review" | "enrich" => {
+  const getIndicatorStep = (): 'input' | 'review' | 'enrich' => {
     switch (wizardState.step) {
-      case "input":
-      case "uploading":
-      case "extracting":
-        return "input";
-      case "review":
-        return "review";
-      case "summary":
-      case "enrich":
-        return "enrich";
-      case "manual":
-        return "input";
+      case 'input':
+      case 'uploading':
+      case 'extracting':
+        return 'input'
+      case 'review':
+        return 'review'
+      case 'summary':
+      case 'enrich':
+        return 'enrich'
+      case 'manual':
+        return 'input'
       default:
-        return "input";
+        return 'input'
     }
-  };
+  }
 
   // Should show review step in indicator (hidden for manual/chat-first)
-  const showReviewStep = wizardState.step !== "manual" &&
-    !(wizardState.step === "enrich" && !wizardState.fromExtraction);
+  const showReviewStep =
+    wizardState.step !== 'manual' &&
+    !(wizardState.step === 'enrich' && !wizardState.fromExtraction)
 
   // Render manual step - signal to parent
-  if (wizardState.step === "manual") {
+  if (wizardState.step === 'manual') {
     // Signal parent to show ProfileWizard with step="basic"
     if (onManualEntry) {
       // Immediately call callback - parent handles navigation
-      onManualEntry();
-      return null;
+      onManualEntry()
+      return null
     }
     // Fallback if no callback provided
     return (
@@ -270,15 +280,15 @@ export function ProfileCreationWizard({
           <Button onClick={onComplete}>Go to Profile Editor</Button>
         </div>
       </div>
-    );
+    )
   }
 
   // Render enrichment step
-  if (wizardState.step === "enrich") {
+  if (wizardState.step === 'enrich') {
     // Signal parent to handle enrichment via route if callback provided
     if (onEnrich) {
-      onEnrich(wizardState.fromExtraction);
-      return null;
+      onEnrich(wizardState.fromExtraction)
+      return null
     }
     // Fallback if no callback provided - render inline
     return (
@@ -297,11 +307,11 @@ export function ProfileCreationWizard({
           </Button>
         </div>
       </div>
-    );
+    )
   }
 
   // Render summary step
-  if (wizardState.step === "summary") {
+  if (wizardState.step === 'summary') {
     return (
       <div className="space-y-6">
         <WizardStepIndicator currentStep="enrich" showReviewStep={true} />
@@ -311,11 +321,11 @@ export function ProfileCreationWizard({
           onBackToManual={handleBackToManualFromSummary}
         />
       </div>
-    );
+    )
   }
 
   // Render review step
-  if (wizardState.step === "review") {
+  if (wizardState.step === 'review') {
     return (
       <div className="space-y-6">
         <WizardStepIndicator currentStep="review" showReviewStep={true} />
@@ -334,25 +344,28 @@ export function ProfileCreationWizard({
           />
         </div>
       </div>
-    );
+    )
   }
 
   // All input states use grid overlay pattern for smooth transitions
   return (
     <div className="space-y-6">
-      <WizardStepIndicator currentStep={getIndicatorStep()} showReviewStep={showReviewStep} />
+      <WizardStepIndicator
+        currentStep={getIndicatorStep()}
+        showReviewStep={showReviewStep}
+      />
 
       {/* All states in grid overlay for smooth transitions */}
       <div className="grid [&>*]:col-start-1 [&>*]:row-start-1">
         {/* Initial entry point selection */}
         <div
           className={`transition-all duration-500 ease-out ${
-            wizardState.step === "input" &&
-            uploadState.status === "idle" &&
-            extractionState.status === "idle" &&
+            wizardState.step === 'input' &&
+            uploadState.status === 'idle' &&
+            extractionState.status === 'idle' &&
             !showTextPaste
-              ? "opacity-100 scale-100"
-              : "opacity-0 scale-95 pointer-events-none"
+              ? 'opacity-100 scale-100'
+              : 'opacity-0 scale-95 pointer-events-none'
           }`}
         >
           <EntryPointSelector
@@ -364,16 +377,16 @@ export function ProfileCreationWizard({
         {/* Text paste expanded */}
         <div
           className={`transition-all duration-500 ease-out ${
-            showTextPaste && extractionState.status === "idle"
-              ? "opacity-100 scale-100"
-              : "opacity-0 scale-95 pointer-events-none"
+            showTextPaste && extractionState.status === 'idle'
+              ? 'opacity-100 scale-100'
+              : 'opacity-0 scale-95 pointer-events-none'
           }`}
         >
           <div className="space-y-4">
             <TextPasteZone onTextSubmit={handleTextSubmit} defaultExpanded />
             <button
               onClick={() => {
-                setShowTextPaste(false);
+                setShowTextPaste(false)
               }}
               className="text-sm text-muted-foreground hover:text-foreground"
             >
@@ -385,12 +398,12 @@ export function ProfileCreationWizard({
         {/* File selected, ready to upload */}
         <div
           className={`transition-all duration-500 ease-out ${
-            uploadState.status === "selected"
-              ? "opacity-100 scale-100"
-              : "opacity-0 scale-95 pointer-events-none"
+            uploadState.status === 'selected'
+              ? 'opacity-100 scale-100'
+              : 'opacity-0 scale-95 pointer-events-none'
           }`}
         >
-          {uploadState.status === "selected" && (
+          {uploadState.status === 'selected' && (
             <div className="space-y-4">
               <FilePreview file={uploadState.file} onRemove={handleStartOver} />
               <Button onClick={handleUpload} className="w-full">
@@ -403,12 +416,12 @@ export function ProfileCreationWizard({
         {/* Uploading */}
         <div
           className={`transition-all duration-500 ease-out ${
-            uploadState.status === "uploading"
-              ? "opacity-100 scale-100"
-              : "opacity-0 scale-95 pointer-events-none"
+            uploadState.status === 'uploading'
+              ? 'opacity-100 scale-100'
+              : 'opacity-0 scale-95 pointer-events-none'
           }`}
         >
-          {uploadState.status === "uploading" && (
+          {uploadState.status === 'uploading' && (
             <div className="space-y-4">
               <FilePreview
                 file={uploadState.file}
@@ -427,16 +440,16 @@ export function ProfileCreationWizard({
         {/* Upload error */}
         <div
           className={`transition-all duration-500 ease-out ${
-            uploadState.status === "error" && extractionState.status === "idle"
-              ? "opacity-100 scale-100"
-              : "opacity-0 scale-95 pointer-events-none"
+            uploadState.status === 'error' && extractionState.status === 'idle'
+              ? 'opacity-100 scale-100'
+              : 'opacity-0 scale-95 pointer-events-none'
           }`}
         >
           <div className="space-y-4">
             <DocumentUpload
               onFileSelect={handleFileSelect}
               error={
-                uploadState.status === "error" ? uploadState.error : undefined
+                uploadState.status === 'error' ? uploadState.error : undefined
               }
               onErrorDismiss={handleStartOver}
             />
@@ -454,19 +467,19 @@ export function ProfileCreationWizard({
         {/* Extraction in progress */}
         <div
           className={`transition-all duration-500 ease-out ${
-            extractionState.status === "extracting"
-              ? "opacity-100 scale-100"
-              : "opacity-0 scale-95 pointer-events-none"
+            extractionState.status === 'extracting'
+              ? 'opacity-100 scale-100'
+              : 'opacity-0 scale-95 pointer-events-none'
           }`}
         >
           <ExtractionProgress
             stage={
-              extractionState.status === "extracting"
+              extractionState.status === 'extracting'
                 ? extractionState.stage
-                : "reading"
+                : 'reading'
             }
             fileName={
-              uploadState.status === "success"
+              uploadState.status === 'success'
                 ? uploadState.file.name
                 : undefined
             }
@@ -476,12 +489,12 @@ export function ProfileCreationWizard({
         {/* Extraction error */}
         <div
           className={`transition-all duration-500 ease-out ${
-            extractionState.status === "error"
-              ? "opacity-100 scale-100"
-              : "opacity-0 scale-95 pointer-events-none"
+            extractionState.status === 'error'
+              ? 'opacity-100 scale-100'
+              : 'opacity-0 scale-95 pointer-events-none'
           }`}
         >
-          {extractionState.status === "error" && (
+          {extractionState.status === 'error' && (
             <ExtractionError
               error={extractionState.error}
               onRetry={retryExtraction}
@@ -493,5 +506,5 @@ export function ProfileCreationWizard({
         </div>
       </div>
     </div>
-  );
+  )
 }

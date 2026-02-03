@@ -13,6 +13,7 @@ These mistakes cause significant rework, user trust issues, or security vulnerab
 ### Pitfall 1: Trusting LLM Output Without User Verification
 
 **Risk:** LLM extracts plausible-sounding but incorrect data. User accepts auto-filled profile without reviewing, leading to wrong information that affects match quality. Common errors:
+
 - Inventing job titles that sound similar to actual ones
 - Fabricating dates when originals are ambiguous (e.g., "2020" becomes "January 2020")
 - Hallucinating skills mentioned in passing as core competencies
@@ -20,12 +21,14 @@ These mistakes cause significant rework, user trust issues, or security vulnerab
 - Extracting aspirational statements as current facts ("seeking ML role" -> current title: "ML Engineer")
 
 **Warning signs:**
+
 - High user acceptance rate (>90%) on first pass - indicates users aren't actually reviewing
 - Support tickets about incorrect profile information
 - Match quality complaints despite "complete" profiles
 - Extraction confidence scores don't correlate with actual accuracy
 
 **Prevention:**
+
 1. **Never auto-save extracted data** - require explicit user confirmation per section
 2. **Show extraction confidence** - flag low-confidence extractions visually (yellow/orange highlighting)
 3. **Side-by-side view** - show source text alongside extracted fields so users can verify
@@ -39,6 +42,7 @@ These mistakes cause significant rework, user trust issues, or security vulnerab
 ### Pitfall 2: PDF Text Extraction Failures
 
 **Risk:** PDFs are notoriously difficult to parse. Text extraction fails silently, producing garbage or incomplete data that the LLM then hallucinates around. Common failure modes:
+
 - Multi-column layouts extracted as interleaved gibberish
 - Tables rendered as disconnected text fragments
 - Scanned PDFs (images) producing no text at all
@@ -47,12 +51,14 @@ These mistakes cause significant rework, user trust issues, or security vulnerab
 - LinkedIn PDF exports with specific formatting that breaks parsers
 
 **Warning signs:**
+
 - Extracted text length much shorter than expected for page count
 - Lots of "[?]" or replacement characters in output
 - Repeated phrases (headers/footers extracted per page)
 - Numbers appearing without context (orphaned from their labels)
 
 **Prevention:**
+
 1. **Use Claude's native PDF support** - send PDF directly to API rather than extracting text first. Claude handles visual parsing much better than text extraction libraries.
 2. **Validate extraction quality** before LLM processing:
    - Check character count vs page count (< 500 chars/page is suspicious)
@@ -68,16 +74,19 @@ These mistakes cause significant rework, user trust issues, or security vulnerab
 ### Pitfall 3: Schema Mismatch Leading to Data Loss
 
 **Risk:** LLM extracts data that doesn't fit your schema, causing silent data loss or corruption. Your ASTN schema has specific structures (e.g., `workHistory` array with `organization`, `title`, `startDate`, `endDate`). If LLM outputs:
+
 - Dates as strings ("March 2020") instead of timestamps
 - Combined fields ("Software Engineer at Google") instead of separate title/org
 - Nested structures that don't match (skills with proficiency levels when schema expects flat array)
 
 **Warning signs:**
+
 - Validation errors on database insert
 - Partial profile saves (some fields work, others don't)
 - Type coercion producing wrong values (string "2020" -> number 2020 interpreted as Unix timestamp)
 
 **Prevention:**
+
 1. **Use Claude's structured outputs** (now in public beta) - guarantees JSON matches your schema via constrained decoding
 2. **Provide exact schema in prompt** with examples showing expected format:
    ```typescript
@@ -101,6 +110,7 @@ These mistakes cause significant rework, user trust issues, or security vulnerab
 ### Pitfall 4: Date Parsing Ambiguity
 
 **Risk:** Dates in resumes are notoriously ambiguous and inconsistent. LLM may interpret incorrectly:
+
 - "03/04/2020" - is this March 4th or April 3rd? (US vs international)
 - "2020" alone - becomes January 1st 2020 vs December 31st 2020 vs null?
 - "Present" / "Current" / "Ongoing" - how to represent?
@@ -110,11 +120,13 @@ These mistakes cause significant rework, user trust issues, or security vulnerab
 Your schema uses `startDate: v.optional(v.number())` (Unix timestamp) which loses the "I only know the year" nuance.
 
 **Warning signs:**
+
 - Work history appears out of order
 - Gaps in employment that don't actually exist
 - Duration calculations that seem wrong to users
 
 **Prevention:**
+
 1. **Extract dates with granularity metadata**:
    ```typescript
    {
@@ -135,6 +147,7 @@ Your schema uses `startDate: v.optional(v.number())` (Unix timestamp) which lose
 ### Pitfall 5: File Upload Security Vulnerabilities
 
 **Risk:** Accepting file uploads opens attack vectors:
+
 - Malware disguised as PDFs
 - Path traversal attacks in filenames
 - Denial of service via huge files
@@ -142,11 +155,13 @@ Your schema uses `startDate: v.optional(v.number())` (Unix timestamp) which lose
 - SSRF if fetching files from user-provided URLs
 
 **Warning signs:**
+
 - Server crashes or hangs during upload
 - Unusual file sizes or processing times
 - Files with suspicious names or extensions
 
 **Prevention:**
+
 1. **Validate aggressively on upload**:
    - File size limit (10MB max for resumes is plenty)
    - MIME type check (application/pdf only)
@@ -165,17 +180,20 @@ Your schema uses `startDate: v.optional(v.number())` (Unix timestamp) which lose
 ### Pitfall 6: Cost Explosion from PDF Processing
 
 **Risk:** Claude API charges per token. PDFs with images/visual elements are processed as images, which is expensive:
+
 - Each page processed visually costs ~1,000-2,000 tokens
 - A 10-page resume could cost $0.05-0.15 per extraction (using Sonnet)
 - Users uploading multiple versions, or re-processing frequently, adds up
 - Malicious users could upload large documents to rack up costs
 
 **Warning signs:**
+
 - API costs growing faster than user growth
 - Single users with disproportionate costs
 - Processing very long documents (10+ pages for a resume is unusual)
 
 **Prevention:**
+
 1. **Limit page count** - resumes shouldn't be more than 3-4 pages. Reject or truncate longer documents.
 2. **Cache aggressively** - if same file is uploaded twice (hash match), reuse extraction
 3. **Use Haiku for initial pass** - extract basic structure with cheaper model, only use Sonnet for complex cases
@@ -194,11 +212,13 @@ Less critical but worth avoiding.
 ### Mistake 1: Over-Extracting to Empty Fields
 
 **Risk:** LLM tries to fill every schema field even when source doesn't have that information, leading to:
+
 - Generic placeholder text ("Responsible for various tasks")
 - Reasonable-sounding fabrications
 - Overly confident extraction from ambiguous context
 
 **Prevention:**
+
 - Explicitly instruct LLM to return null/empty for missing fields
 - Validate that extracted text actually appears in source (or close paraphrase)
 - Prefer "unknown" over "guessed"
@@ -212,6 +232,7 @@ Less critical but worth avoiding.
 **Risk:** LinkedIn PDF exports, Word documents, creative resumes, and academic CVs have very different structures. One-size-fits-all extraction produces poor results.
 
 **Prevention:**
+
 - Detect document type from structure/content
 - Use type-specific extraction prompts
 - Test with samples of each type you expect to support
@@ -225,6 +246,7 @@ Less critical but worth avoiding.
 **Risk:** When extraction partially fails, the whole flow breaks. User gets error message and loses confidence.
 
 **Prevention:**
+
 - Extract what you can, flag what you can't
 - Allow manual entry alongside auto-fill
 - "We extracted 5 of 8 fields - please fill in the rest"
@@ -238,6 +260,7 @@ Less critical but worth avoiding.
 **Risk:** Privacy/compliance issues from retaining original documents. GDPR right to deletion, storage costs.
 
 **Prevention:**
+
 - Delete uploaded files after extraction (keep only extracted data)
 - Or: explicit user consent for storage, with clear deletion path
 - Document retention policy
@@ -251,6 +274,7 @@ Less critical but worth avoiding.
 **Risk:** LLM extracts "ML", "Machine Learning", "machine-learning", "deep learning" as separate skills. Your `skillsTaxonomy` table exists but isn't used during extraction.
 
 **Prevention:**
+
 - Post-process extracted skills against taxonomy
 - Map variants to canonical names
 - Flag unrecognized skills for user confirmation (might be new/valid)
@@ -264,6 +288,7 @@ Less critical but worth avoiding.
 **Risk:** PDF extraction + LLM processing takes 5-15 seconds. If UI is blocked, users think it's broken and navigate away.
 
 **Prevention:**
+
 - Upload happens instantly (to Convex storage)
 - Processing happens async (Convex action)
 - Show progress/status in real-time
@@ -278,6 +303,7 @@ Less critical but worth avoiding.
 **Risk:** You never learn which extractions are wrong because you don't track user edits. Cannot improve prompts or detect systematic errors.
 
 **Prevention:**
+
 - Track: extracted value, accepted/rejected, final value
 - Use existing `enrichmentExtractions` table pattern (status: pending/accepted/rejected/edited)
 - Periodic review of rejection patterns to improve prompts
@@ -316,14 +342,14 @@ Less critical but worth avoiding.
 
 ### Key Metrics to Track
 
-| Metric | Target | Warning Threshold |
-|--------|--------|-------------------|
-| Extraction success rate | >95% | <90% |
+| Metric                          | Target | Warning Threshold                              |
+| ------------------------------- | ------ | ---------------------------------------------- |
+| Extraction success rate         | >95%   | <90%                                           |
 | User edit rate after extraction | 20-50% | <10% (not reviewing) or >70% (poor extraction) |
-| Average extraction time | <10s | >20s |
-| Cost per extraction | <$0.10 | >$0.25 |
-| Field accuracy (sampled) | >90% | <80% |
-| Date parsing accuracy | >85% | <75% |
+| Average extraction time         | <10s   | >20s                                           |
+| Cost per extraction             | <$0.10 | >$0.25                                         |
+| Field accuracy (sampled)        | >90%   | <80%                                           |
+| Date parsing accuracy           | >85%   | <75%                                           |
 
 ### Integration Test Scenarios
 
@@ -340,15 +366,15 @@ Less critical but worth avoiding.
 
 ## Phase-Specific Warnings Summary
 
-| Phase | Critical Pitfalls | Key Prevention |
-|-------|-------------------|----------------|
-| **File Upload** | #5 Security, #6 Cost | Size/type validation, rate limiting |
-| **PDF Parsing** | #2 Extraction failures | Use Claude native PDF, fallback to paste |
-| **Schema Design** | #3 Schema mismatch, #4 Date ambiguity | Structured outputs, granularity metadata |
-| **LLM Extraction** | #1 No verification, Mistake #1 Over-extraction | User review required, null for unknowns |
+| Phase                 | Critical Pitfalls                                 | Key Prevention                             |
+| --------------------- | ------------------------------------------------- | ------------------------------------------ |
+| **File Upload**       | #5 Security, #6 Cost                              | Size/type validation, rate limiting        |
+| **PDF Parsing**       | #2 Extraction failures                            | Use Claude native PDF, fallback to paste   |
+| **Schema Design**     | #3 Schema mismatch, #4 Date ambiguity             | Structured outputs, granularity metadata   |
+| **LLM Extraction**    | #1 No verification, Mistake #1 Over-extraction    | User review required, null for unknowns    |
 | **UX Implementation** | Mistake #3 No degradation, Mistake #6 Blocking UI | Async processing, partial success handling |
-| **Post-Processing** | Mistake #5 Skills mapping | Taxonomy integration |
-| **Operations** | #6 Cost monitoring, Mistake #4 Storage retention | Alerts, deletion policy |
+| **Post-Processing**   | Mistake #5 Skills mapping                         | Taxonomy integration                       |
+| **Operations**        | #6 Cost monitoring, Mistake #4 Storage retention  | Alerts, deletion policy                    |
 
 ---
 
@@ -357,23 +383,27 @@ Less critical but worth avoiding.
 Based on pitfall analysis, recommended implementation order:
 
 ### Phase 1: File Upload Foundation
+
 1. Convex storage integration with size/type validation
 2. Security controls (rate limiting, filename sanitization)
 3. Basic upload UI with progress indication
 
 ### Phase 2: LLM Extraction Core
+
 1. Claude API integration with native PDF support
 2. Structured outputs for schema compliance
 3. Extraction prompt with explicit null handling
 4. Date parsing with granularity tracking
 
 ### Phase 3: User Review Flow
+
 1. Side-by-side review UI (source + extracted)
 2. Inline editing for corrections
 3. Confidence indicators
 4. Save/reject per section
 
 ### Phase 4: Polish + Monitoring
+
 1. Skills taxonomy mapping
 2. Cost monitoring and alerts
 3. Extraction analytics (track edits)

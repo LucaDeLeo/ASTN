@@ -33,15 +33,15 @@ key-files:
     - src/components/profile/wizard/steps/SkillsStep.tsx
 
 key-decisions:
-  - "Lazy taxonomy seeding: ensureTaxonomySeeded action on first access"
-  - "Soft limit of 10 skills with amber warning, not hard cap"
-  - "Custom skills allowed via Enter key on unmatched input"
-  - "Skills saved immediately (not debounced) since array changes"
+  - 'Lazy taxonomy seeding: ensureTaxonomySeeded action on first access'
+  - 'Soft limit of 10 skills with amber warning, not hard cap'
+  - 'Custom skills allowed via Enter key on unmatched input'
+  - 'Skills saved immediately (not debounced) since array changes'
 
 patterns-established:
-  - "Skill chip: coral-100 background, X button to remove"
-  - "Autocomplete: show category badge next to each suggestion"
-  - "Keyboard navigation: arrows to navigate, Enter to select, Escape to close"
+  - 'Skill chip: coral-100 background, X button to remove'
+  - 'Autocomplete: show category badge next to each suggestion'
+  - 'Keyboard navigation: arrows to navigate, Enter to select, Escape to close'
 
 # Metrics
 duration: 4min
@@ -61,6 +61,7 @@ completed: 2026-01-18
 - **Files modified:** 5
 
 ## Accomplishments
+
 - Skills taxonomy deployed with Research Areas, Technical Skills, Domain Knowledge, and Soft Skills categories
 - Tag-based skill input with autocomplete from taxonomy
 - Custom skill entry for skills not in taxonomy
@@ -75,6 +76,7 @@ Each task was committed atomically:
 2. **Task 2: SkillsStep with tag input and autocomplete** - `9d37f99` (feat)
 
 ## Files Created/Modified
+
 - `convex/skills.ts` - Skills taxonomy seed data, getTaxonomy query, searchSkills query, ensureTaxonomySeeded action
 - `src/components/profile/skills/SkillChip.tsx` - Removable skill chip component with coral styling
 - `src/components/profile/skills/SkillsInput.tsx` - Tag input with autocomplete, keyboard navigation, soft limit warning
@@ -82,6 +84,7 @@ Each task was committed atomically:
 - `src/components/profile/wizard/ProfileWizard.tsx` - Pass required props to SkillsStep
 
 ## Decisions Made
+
 - Lazy seeding: Taxonomy is seeded on first access via ensureTaxonomySeeded action (no migration scripts needed)
 - Soft limit: Warning appears at 10+ skills but users can add more if needed
 - Custom skills: Users can add skills not in taxonomy by pressing Enter
@@ -92,6 +95,7 @@ Each task was committed atomically:
 None - plan executed exactly as written.
 
 ## Issues Encountered
+
 - Pre-existing TypeScript errors in convex/organizations.ts and vite.config.ts (unrelated to this plan, used --typecheck=disable)
 
 ## User Setup Required
@@ -99,10 +103,12 @@ None - plan executed exactly as written.
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Skills taxonomy ready for matching algorithms
 - Profile skills field populated and ready for LLM enrichment to extract additional skills
 - SkillsInput component can be reused in other contexts if needed
 
 ---
-*Phase: 03-profiles*
-*Completed: 2026-01-18*
+
+_Phase: 03-profiles_
+_Completed: 2026-01-18_

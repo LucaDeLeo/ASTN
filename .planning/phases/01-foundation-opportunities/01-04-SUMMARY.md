@@ -37,14 +37,14 @@ key-files:
   modified: []
 
 key-decisions:
-  - "URL-synced filters for shareable links (TanStack Router search params)"
-  - "Replaced pathless _public.tsx layout with shared PublicHeader component"
-  - "Staggered animation delay of 50ms per card for dynamic reveal"
+  - 'URL-synced filters for shareable links (TanStack Router search params)'
+  - 'Replaced pathless _public.tsx layout with shared PublicHeader component'
+  - 'Staggered animation delay of 50ms per card for dynamic reveal'
 
 patterns-established:
-  - "Filter state in URL: useSearch/useNavigate for filter sync"
+  - 'Filter state in URL: useSearch/useNavigate for filter sync'
   - "Conditional Convex queries: useQuery with 'skip' for conditional fetching"
-  - "Lyra aesthetic: rounded-sm (sharp), font-mono for titles, hover:-translate-y-0.5"
+  - 'Lyra aesthetic: rounded-sm (sharp), font-mono for titles, hover:-translate-y-0.5'
 
 # Metrics
 duration: 12min
@@ -103,11 +103,12 @@ Each task was committed atomically:
 
 ### Auto-fixed Issues
 
-**1. [Rule 3 - Blocking] Fixed route conflict with _public.tsx layout**
+**1. [Rule 3 - Blocking] Fixed route conflict with \_public.tsx layout**
+
 - **Found during:** Task 3 (Create opportunities list page)
 - **Issue:** Pathless `_public.tsx` layout conflicted with existing route structure
 - **Fix:** Removed pathless layout, created shared `PublicHeader` component instead, updated opportunities pages to include header directly
-- **Files modified:** src/routes/_public.tsx (removed), src/components/layout/public-header.tsx (created), src/routes/opportunities/index.tsx, src/routes/opportunities/$id.tsx
+- **Files modified:** src/routes/\_public.tsx (removed), src/components/layout/public-header.tsx (created), src/routes/opportunities/index.tsx, src/routes/opportunities/$id.tsx
 - **Verification:** Routes load correctly, header displays on both pages
 - **Committed in:** 90fd14b (Task 4 commit)
 
@@ -131,5 +132,6 @@ None - no external service configuration required.
 - Ready for Phase 2: User profiles and authentication
 
 ---
-*Phase: 01-foundation-opportunities*
-*Completed: 2026-01-17*
+
+_Phase: 01-foundation-opportunities_
+_Completed: 2026-01-17_

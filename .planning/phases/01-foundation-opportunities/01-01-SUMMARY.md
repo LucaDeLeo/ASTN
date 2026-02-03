@@ -16,14 +16,14 @@ affects: [01-02, 01-03, 01-04, phase-2-auth]
 # Tech tracking
 tech-stack:
   added:
-    - "@tanstack/react-start@1.132.2"
-    - "convex@1.31.0"
-    - "@convex-dev/auth@0.0.90"
-    - "@auth/core@0.39.1"
-    - "@convex-dev/react-query@0.0.0-alpha.11"
-    - "@tanstack/react-query@5.89.0"
-    - "tailwindcss@4.1.13"
-    - "shadcn/ui (new-york style)"
+    - '@tanstack/react-start@1.132.2'
+    - 'convex@1.31.0'
+    - '@convex-dev/auth@0.0.90'
+    - '@auth/core@0.39.1'
+    - '@convex-dev/react-query@0.0.0-alpha.11'
+    - '@tanstack/react-query@5.89.0'
+    - 'tailwindcss@4.1.13'
+    - 'shadcn/ui (new-york style)'
   patterns:
     - Convex + TanStack Query integration via ConvexQueryClient
     - File-based routing with TanStack Router
@@ -49,16 +49,16 @@ key-files:
     - package.json
 
 key-decisions:
-  - "Used @auth/core@0.39 for compatibility with @convex-dev/auth (customFetch export)"
-  - "Removed template sample files (myFunctions.ts, anotherPage.tsx) for clean slate"
-  - "Used OKLCH color format for coral accent (0.70 0.16 30)"
-  - "Deferred OAuth credential setup to Phase 2 (no auth needed for browsing)"
+  - 'Used @auth/core@0.39 for compatibility with @convex-dev/auth (customFetch export)'
+  - 'Removed template sample files (myFunctions.ts, anotherPage.tsx) for clean slate'
+  - 'Used OKLCH color format for coral accent (0.70 0.16 30)'
+  - 'Deferred OAuth credential setup to Phase 2 (no auth needed for browsing)'
 
 patterns-established:
-  - "Convex schema with authTables spread"
-  - "TanStack Start route structure in src/routes/"
-  - "shadcn/ui components in src/components/ui/"
-  - "Utility function cn() for Tailwind class merging"
+  - 'Convex schema with authTables spread'
+  - 'TanStack Start route structure in src/routes/'
+  - 'shadcn/ui components in src/components/ui/'
+  - 'Utility function cn() for Tailwind class merging'
 
 # Metrics
 duration: 6min
@@ -121,6 +121,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Fixed @auth/core version mismatch**
+
 - **Found during:** Task 2 (Convex Auth configuration)
 - **Issue:** @convex-dev/auth@0.0.90 requires customFetch export from @auth/core, but template installed @auth/core@0.34.3 which lacks it
 - **Fix:** Updated to @auth/core@0.39.1 which has the customFetch export
@@ -129,6 +130,7 @@ Each task was committed atomically:
 - **Committed in:** 0d96f73 (Task 2 commit)
 
 **2. [Rule 3 - Blocking] Removed template sample files referencing deleted schema table**
+
 - **Found during:** Task 2 (Convex schema update)
 - **Issue:** myFunctions.ts referenced 'numbers' table which was removed when schema changed to authTables
 - **Fix:** Deleted myFunctions.ts and README.md from convex/
@@ -157,5 +159,6 @@ None - no external service configuration required for this plan. OAuth credentia
 - shadcn/ui components available for UI development
 
 ---
-*Phase: 01-foundation-opportunities*
-*Completed: 2026-01-17*
+
+_Phase: 01-foundation-opportunities_
+_Completed: 2026-01-17_

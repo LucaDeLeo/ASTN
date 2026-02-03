@@ -36,13 +36,13 @@ key-files:
     - convex/schema.ts
 
 key-decisions:
-  - "Profile-level privacy defaults stored in privacySettings.attendancePrivacyDefaults"
-  - "Privacy updates can optionally batch-update existing records"
-  - "Host org visibility disclaimer in both attendance page and settings form"
+  - 'Profile-level privacy defaults stored in privacySettings.attendancePrivacyDefaults'
+  - 'Privacy updates can optionally batch-update existing records'
+  - 'Host org visibility disclaimer in both attendance page and settings form'
 
 patterns-established:
-  - "Privacy defaults pattern: profile stores defaults, records store actual values, UI can sync both"
-  - "Summary queries return { total, specific_count, recent[] } for profile cards"
+  - 'Privacy defaults pattern: profile stores defaults, records store actual values, UI can sync both'
+  - 'Summary queries return { total, specific_count, recent[] } for profile cards'
 
 # Metrics
 duration: 4min
@@ -113,5 +113,6 @@ None - no external service configuration required.
 - No blockers for next phase
 
 ---
-*Phase: 14-attendance-tracking*
-*Completed: 2026-01-19*
+
+_Phase: 14-attendance-tracking_
+_Completed: 2026-01-19_

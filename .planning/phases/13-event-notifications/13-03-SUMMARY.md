@@ -20,7 +20,7 @@ affects: [14-member-engagement]
 # Tech tracking
 tech-stack:
   added:
-    - "@radix-ui/react-popover"
+    - '@radix-ui/react-popover'
   patterns:
     - Intersection Observer for view tracking in EventCard
     - Popover for notification dropdown
@@ -40,13 +40,13 @@ key-files:
     - src/components/events/EventCard.tsx
 
 key-decisions:
-  - "Intersection Observer for event view tracking (50% threshold before recording)"
-  - "Scheduler-based reminders using ctx.scheduler.runAt for future notifications"
-  - "scheduledReminders table tracks scheduled functions for cancellation capability"
+  - 'Intersection Observer for event view tracking (50% threshold before recording)'
+  - 'Scheduler-based reminders using ctx.scheduler.runAt for future notifications'
+  - 'scheduledReminders table tracks scheduled functions for cancellation capability'
 
 patterns-established:
-  - "Notification bell pattern: query for unread count + recent notifications in popover"
-  - "Event view tracking via Intersection Observer for implicit interest signals"
+  - 'Notification bell pattern: query for unread count + recent notifications in popover'
+  - 'Event view tracking via Intersection Observer for implicit interest signals'
 
 # Metrics
 duration: 8min
@@ -106,6 +106,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Added @radix-ui/react-popover dependency**
+
 - **Found during:** Task 2 (NotificationBell component)
 - **Issue:** Popover component required for dropdown but not installed
 - **Fix:** Installed @radix-ui/react-popover and created src/components/ui/popover.tsx
@@ -134,5 +135,6 @@ None - no external service configuration required.
 - Ready for Phase 14: Member Engagement
 
 ---
-*Phase: 13-event-notifications*
-*Completed: 2026-01-19*
+
+_Phase: 13-event-notifications_
+_Completed: 2026-01-19_

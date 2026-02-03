@@ -1,69 +1,69 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { Check, Globe, Lock, PartyPopper, Shield, Users } from "lucide-react";
-import { SectionVisibility } from "../../privacy/SectionVisibility";
-import { OrgSelector } from "../../privacy/OrgSelector";
-import type { Doc } from "../../../../../convex/_generated/dataModel";
-import { Card } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
-import { Label } from "~/components/ui/label";
+import { useEffect, useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
+import { Check, Globe, Lock, PartyPopper, Shield, Users } from 'lucide-react'
+import { SectionVisibility } from '../../privacy/SectionVisibility'
+import { OrgSelector } from '../../privacy/OrgSelector'
+import type { Doc } from '../../../../../convex/_generated/dataModel'
+import { Card } from '~/components/ui/card'
+import { Button } from '~/components/ui/button'
+import { Label } from '~/components/ui/label'
 
 interface PrivacyStepProps {
-  profile: Doc<"profiles"> | null;
-  saveFieldImmediate: (field: string, value: unknown) => Promise<void>;
-  isSaving: boolean;
-  lastSaved: Date | null;
+  profile: Doc<'profiles'> | null
+  saveFieldImmediate: (field: string, value: unknown) => Promise<void>
+  isSaving: boolean
+  lastSaved: Date | null
 }
 
-type VisibilityLevel = "public" | "connections" | "private";
+type VisibilityLevel = 'public' | 'connections' | 'private'
 
 interface SectionVisibilitySettings {
-  basicInfo?: string;
-  education?: string;
-  workHistory?: string;
-  skills?: string;
-  careerGoals?: string;
+  basicInfo?: string
+  education?: string
+  workHistory?: string
+  skills?: string
+  careerGoals?: string
 }
 
 interface PrivacySettings {
-  defaultVisibility: VisibilityLevel;
-  sectionVisibility?: SectionVisibilitySettings;
-  hiddenFromOrgs?: Array<string>;
+  defaultVisibility: VisibilityLevel
+  sectionVisibility?: SectionVisibilitySettings
+  hiddenFromOrgs?: Array<string>
 }
 
 const VISIBILITY_OPTIONS: Array<{
-  value: VisibilityLevel;
-  label: string;
-  description: string;
-  icon: typeof Globe;
+  value: VisibilityLevel
+  label: string
+  description: string
+  icon: typeof Globe
 }> = [
   {
-    value: "public",
-    label: "Public",
-    description: "Anyone can see your profile",
+    value: 'public',
+    label: 'Public',
+    description: 'Anyone can see your profile',
     icon: Globe,
   },
   {
-    value: "connections",
-    label: "Connections Only",
-    description: "Only people you connect with can see your profile",
+    value: 'connections',
+    label: 'Connections Only',
+    description: 'Only people you connect with can see your profile',
     icon: Users,
   },
   {
-    value: "private",
-    label: "Private",
-    description: "Only you can see your profile",
+    value: 'private',
+    label: 'Private',
+    description: 'Only you can see your profile',
     icon: Lock,
   },
-];
+]
 
 const SECTIONS = [
-  { id: "basicInfo", label: "Basic Information" },
-  { id: "education", label: "Education" },
-  { id: "workHistory", label: "Work History" },
-  { id: "skills", label: "Skills" },
-  { id: "careerGoals", label: "Career Goals" },
-];
+  { id: 'basicInfo', label: 'Basic Information' },
+  { id: 'education', label: 'Education' },
+  { id: 'workHistory', label: 'Work History' },
+  { id: 'skills', label: 'Skills' },
+  { id: 'careerGoals', label: 'Career Goals' },
+]
 
 export function PrivacyStep({
   profile,
@@ -71,16 +71,16 @@ export function PrivacyStep({
   isSaving,
   lastSaved,
 }: PrivacyStepProps) {
-  const navigate = useNavigate();
-  const [showSuccess, setShowSuccess] = useState(false);
+  const navigate = useNavigate()
+  const [showSuccess, setShowSuccess] = useState(false)
 
   // Initialize from profile or defaults
   const [privacySettings, setPrivacySettings] = useState<PrivacySettings>({
     defaultVisibility:
-      profile?.privacySettings?.defaultVisibility ?? "connections",
+      profile?.privacySettings?.defaultVisibility ?? 'connections',
     sectionVisibility: profile?.privacySettings?.sectionVisibility ?? {},
     hiddenFromOrgs: profile?.privacySettings?.hiddenFromOrgs ?? [],
-  });
+  })
 
   // Sync with profile when it changes
   useEffect(() => {
@@ -89,58 +89,58 @@ export function PrivacyStep({
         defaultVisibility: profile.privacySettings.defaultVisibility,
         sectionVisibility: profile.privacySettings.sectionVisibility ?? {},
         hiddenFromOrgs: profile.privacySettings.hiddenFromOrgs ?? [],
-      });
+      })
     }
-  }, [profile]);
+  }, [profile])
 
   // Save helper - updates local state and persists
   const updateSettings = async (updates: Partial<PrivacySettings>) => {
-    const newSettings = { ...privacySettings, ...updates };
-    setPrivacySettings(newSettings);
-    await saveFieldImmediate("privacySettings", newSettings);
-  };
+    const newSettings = { ...privacySettings, ...updates }
+    setPrivacySettings(newSettings)
+    await saveFieldImmediate('privacySettings', newSettings)
+  }
 
   // Handle default visibility change
   const handleDefaultVisibilityChange = (value: VisibilityLevel) => {
-    updateSettings({ defaultVisibility: value });
-  };
+    updateSettings({ defaultVisibility: value })
+  }
 
   // Handle section visibility change
   const handleSectionVisibilityChange = (
     section: string,
-    value: string | undefined
+    value: string | undefined,
   ) => {
     const newSectionVisibility = {
       ...privacySettings.sectionVisibility,
       [section]: value,
-    };
+    }
 
     // Remove undefined values
     if (value === undefined) {
-      delete newSectionVisibility[section as keyof SectionVisibilitySettings];
+      delete newSectionVisibility[section as keyof SectionVisibilitySettings]
     }
 
-    updateSettings({ sectionVisibility: newSectionVisibility });
-  };
+    updateSettings({ sectionVisibility: newSectionVisibility })
+  }
 
   // Handle hidden orgs change
   const handleHiddenOrgsChange = (orgs: Array<string>) => {
-    updateSettings({ hiddenFromOrgs: orgs });
-  };
+    updateSettings({ hiddenFromOrgs: orgs })
+  }
 
   // Handle complete profile
   const handleComplete = async () => {
     // Ensure settings are saved
-    await saveFieldImmediate("privacySettings", privacySettings);
+    await saveFieldImmediate('privacySettings', privacySettings)
 
     // Show success state briefly
-    setShowSuccess(true);
+    setShowSuccess(true)
 
     // Navigate to profile view after delay
     setTimeout(() => {
-      navigate({ to: "/profile" });
-    }, 1500);
-  };
+      navigate({ to: '/profile' })
+    }, 1500)
+  }
 
   if (showSuccess) {
     return (
@@ -153,7 +153,7 @@ export function PrivacyStep({
         </h2>
         <p className="text-slate-500">Redirecting to your profile...</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -182,9 +182,9 @@ export function PrivacyStep({
 
         <div className="grid gap-3">
           {VISIBILITY_OPTIONS.map((option) => {
-            const Icon = option.icon;
+            const Icon = option.icon
             const isSelected =
-              privacySettings.defaultVisibility === option.value;
+              privacySettings.defaultVisibility === option.value
 
             return (
               <button
@@ -193,13 +193,13 @@ export function PrivacyStep({
                 onClick={() => handleDefaultVisibilityChange(option.value)}
                 className={`flex items-start gap-4 p-4 rounded-lg border-2 text-left transition-all ${
                   isSelected
-                    ? "border-primary bg-primary/5"
-                    : "border-slate-200 hover:border-slate-300"
+                    ? 'border-primary bg-primary/5'
+                    : 'border-slate-200 hover:border-slate-300'
                 }`}
               >
                 <div
                   className={`size-10 rounded-full flex items-center justify-center shrink-0 ${
-                    isSelected ? "bg-primary text-white" : "bg-slate-100"
+                    isSelected ? 'bg-primary text-white' : 'bg-slate-100'
                   }`}
                 >
                   <Icon className="size-5" />
@@ -209,16 +209,14 @@ export function PrivacyStep({
                     <span className="font-medium text-foreground">
                       {option.label}
                     </span>
-                    {isSelected && (
-                      <Check className="size-4 text-primary" />
-                    )}
+                    {isSelected && <Check className="size-4 text-primary" />}
                   </div>
                   <p className="text-sm text-slate-500 mt-0.5">
                     {option.description}
                   </p>
                 </div>
               </button>
-            );
+            )
           })}
         </div>
       </Card>
@@ -236,7 +234,6 @@ export function PrivacyStep({
           {SECTIONS.map((section) => (
             <SectionVisibility
               key={section.id}
-              section={section.id}
               label={section.label}
               value={
                 privacySettings.sectionVisibility?.[
@@ -295,5 +292,5 @@ export function PrivacyStep({
         </p>
       </div>
     </div>
-  );
+  )
 }

@@ -1,31 +1,31 @@
-import { formatDistanceToNow } from "date-fns";
-import { History } from "lucide-react";
-import type { Id } from "../../../convex/_generated/dataModel";
+import { formatDistanceToNow } from 'date-fns'
+import { History } from 'lucide-react'
+import type { Id } from '../../../convex/_generated/dataModel'
 
 type OverrideHistoryEntry = {
-  _id: Id<"engagementOverrideHistory">;
-  previousLevel: string;
-  newLevel: string;
-  notes: string;
-  action: "override" | "clear";
-  performedAt: number;
-};
+  _id: Id<'engagementOverrideHistory'>
+  previousLevel: string
+  newLevel: string
+  notes: string
+  action: 'override' | 'clear'
+  performedAt: number
+}
 
 interface OverrideHistoryProps {
-  history: Array<OverrideHistoryEntry>;
+  history: Array<OverrideHistoryEntry>
 }
 
 // Map level values to display labels
 const levelLabels: Record<string, string> = {
-  highly_engaged: "Active",
-  moderate: "Moderate",
-  at_risk: "At Risk",
-  new: "New",
-  inactive: "Inactive",
-};
+  highly_engaged: 'Active',
+  moderate: 'Moderate',
+  at_risk: 'At Risk',
+  new: 'New',
+  inactive: 'Inactive',
+}
 
 function formatLevel(level: string): string {
-  return levelLabels[level] || level;
+  return levelLabels[level] || level
 }
 
 export function OverrideHistory({ history }: OverrideHistoryProps) {
@@ -34,7 +34,7 @@ export function OverrideHistory({ history }: OverrideHistoryProps) {
       <div className="text-sm text-slate-500 italic py-4 text-center">
         No override history
       </div>
-    );
+    )
   }
 
   return (
@@ -51,7 +51,9 @@ export function OverrideHistory({ history }: OverrideHistoryProps) {
           >
             <div className="flex items-center gap-2 text-slate-600">
               <span className="font-medium">
-                {entry.action === "override" ? "Overridden" : "Override cleared"}
+                {entry.action === 'override'
+                  ? 'Overridden'
+                  : 'Override cleared'}
               </span>
               <span className="text-slate-400">
                 {formatDistanceToNow(entry.performedAt, { addSuffix: true })}
@@ -60,7 +62,7 @@ export function OverrideHistory({ history }: OverrideHistoryProps) {
             <div className="text-slate-500 text-xs mt-0.5">
               {formatLevel(entry.previousLevel)} → {formatLevel(entry.newLevel)}
             </div>
-            {entry.notes && entry.notes !== "Override cleared" && (
+            {entry.notes && entry.notes !== 'Override cleared' && (
               <div className="text-slate-500 text-xs mt-0.5 italic">
                 "{entry.notes}"
               </div>
@@ -69,5 +71,5 @@ export function OverrideHistory({ history }: OverrideHistoryProps) {
         ))}
       </div>
     </div>
-  );
+  )
 }

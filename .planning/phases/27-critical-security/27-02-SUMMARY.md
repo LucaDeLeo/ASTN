@@ -23,10 +23,10 @@ affects:
 tech-stack:
   added: []
   patterns:
-    - "PKCE S256 via Web Crypto API (no external deps)"
-    - "Tauri Store persistence for OAuth state (replaces module-level variables)"
-    - "redirectUri allowlist on server-side with env var extension"
-    - "5-minute TTL on stored PKCE data"
+    - 'PKCE S256 via Web Crypto API (no external deps)'
+    - 'Tauri Store persistence for OAuth state (replaces module-level variables)'
+    - 'redirectUri allowlist on server-side with env var extension'
+    - '5-minute TTL on stored PKCE data'
 
 key-files:
   created: []
@@ -37,16 +37,16 @@ key-files:
     - src/router.tsx
 
 key-decisions:
-  - "PKCE uses Web Crypto API (no new deps) for code_verifier generation and SHA-256 hashing"
-  - "Tauri Store replaces module-level variables for PKCE data persistence (survives app kill)"
-  - "5-minute TTL on stored PKCE data to prevent stale state"
-  - "Token exposure flagged as TODO for post-pilot (not changed in Phase 27 per CONTEXT.md)"
-  - "Web OAuth flow (non-Tauri) left unchanged -- @convex-dev/auth handles its own flow"
+  - 'PKCE uses Web Crypto API (no new deps) for code_verifier generation and SHA-256 hashing'
+  - 'Tauri Store replaces module-level variables for PKCE data persistence (survives app kill)'
+  - '5-minute TTL on stored PKCE data to prevent stale state'
+  - 'Token exposure flagged as TODO for post-pilot (not changed in Phase 27 per CONTEXT.md)'
+  - 'Web OAuth flow (non-Tauri) left unchanged -- @convex-dev/auth handles its own flow'
 
 patterns-established:
-  - "storePKCEData/getPKCEData/clearPKCEData: persistent OAuth state via Tauri Store"
-  - "generateCodeVerifier/generateCodeChallenge: PKCE S256 helpers using Web Crypto"
-  - "ALLOWED_REDIRECT_URIS: server-side allowlist for redirect URI validation"
+  - 'storePKCEData/getPKCEData/clearPKCEData: persistent OAuth state via Tauri Store'
+  - 'generateCodeVerifier/generateCodeChallenge: PKCE S256 helpers using Web Crypto'
+  - 'ALLOWED_REDIRECT_URIS: server-side allowlist for redirect URI validation'
 
 # Metrics
 duration: 10min
@@ -119,5 +119,6 @@ None - no external service configuration required. The AUTH_REDIRECT_URI_WEB env
 - Ready for plan 27-03 (LLM output validation and prompt injection defense)
 
 ---
-*Phase: 27-critical-security*
-*Completed: 2026-02-02*
+
+_Phase: 27-critical-security_
+_Completed: 2026-02-02_

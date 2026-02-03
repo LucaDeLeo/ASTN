@@ -1,113 +1,113 @@
-import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
-import { auth } from "./auth";
+import { v } from 'convex/values'
+import { mutation, query } from './_generated/server'
+import { auth } from './auth'
 
 // Section completeness rules
 const COMPLETENESS_SECTIONS = [
   {
-    id: "basicInfo",
-    label: "Basic Information",
+    id: 'basicInfo',
+    label: 'Basic Information',
     check: (profile: Record<string, unknown>) =>
       Boolean(profile.name) && Boolean(profile.location),
   },
   {
-    id: "education",
-    label: "Education",
+    id: 'education',
+    label: 'Education',
     check: (profile: Record<string, unknown>) =>
       Array.isArray(profile.education) && profile.education.length > 0,
   },
   {
-    id: "workHistory",
-    label: "Work History",
+    id: 'workHistory',
+    label: 'Work History',
     check: (profile: Record<string, unknown>) =>
       Array.isArray(profile.workHistory) && profile.workHistory.length > 0,
   },
   {
-    id: "careerGoals",
-    label: "Career Goals",
+    id: 'careerGoals',
+    label: 'Career Goals',
     check: (profile: Record<string, unknown>) => Boolean(profile.careerGoals),
   },
   {
-    id: "skills",
-    label: "Skills",
+    id: 'skills',
+    label: 'Skills',
     check: (profile: Record<string, unknown>) =>
       Array.isArray(profile.skills) && profile.skills.length > 0,
   },
   {
-    id: "enrichment",
-    label: "Profile Enrichment",
+    id: 'enrichment',
+    label: 'Profile Enrichment',
     check: (profile: Record<string, unknown>) =>
       profile.hasEnrichmentConversation === true,
   },
   {
-    id: "privacy",
-    label: "Privacy Settings",
+    id: 'privacy',
+    label: 'Privacy Settings',
     check: (profile: Record<string, unknown>) =>
       profile.privacySettings !== undefined &&
-      typeof profile.privacySettings === "object" &&
+      typeof profile.privacySettings === 'object' &&
       profile.privacySettings !== null &&
-      "defaultVisibility" in profile.privacySettings,
+      'defaultVisibility' in profile.privacySettings,
   },
-];
+]
 
 // Get or create profile for current user
 export const getOrCreateProfile = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await auth.getUserId(ctx)
     if (!userId) {
-      return null;
+      return null
     }
 
     // Try to find existing profile
     const existing = await ctx.db
-      .query("profiles")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
+      .query('profiles')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .first()
 
     if (existing) {
-      return existing;
+      return existing
     }
 
     // Return null if no profile exists (will be created on first update)
-    return null;
+    return null
   },
-});
+})
 
 // Create profile for current user (called on first edit)
 export const create = mutation({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await auth.getUserId(ctx)
     if (!userId) {
-      throw new Error("Not authenticated");
+      throw new Error('Not authenticated')
     }
 
     // Check if profile already exists
     const existing = await ctx.db
-      .query("profiles")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
+      .query('profiles')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .first()
 
     if (existing) {
-      return existing._id;
+      return existing._id
     }
 
-    const now = Date.now();
-    const profileId = await ctx.db.insert("profiles", {
+    const now = Date.now()
+    const profileId = await ctx.db.insert('profiles', {
       userId,
       createdAt: now,
       updatedAt: now,
-    });
+    })
 
-    return profileId;
+    return profileId
   },
-});
+})
 
 // Update specific field(s) with timestamp
 export const updateField = mutation({
   args: {
-    profileId: v.id("profiles"),
+    profileId: v.id('profiles'),
     updates: v.object({
       name: v.optional(v.string()),
       pronouns: v.optional(v.string()),
@@ -122,8 +122,8 @@ export const updateField = mutation({
             startYear: v.optional(v.number()),
             endYear: v.optional(v.number()),
             current: v.optional(v.boolean()),
-          })
-        )
+          }),
+        ),
       ),
       workHistory: v.optional(
         v.array(
@@ -134,8 +134,8 @@ export const updateField = mutation({
             endDate: v.optional(v.number()),
             current: v.optional(v.boolean()),
             description: v.optional(v.string()),
-          })
-        )
+          }),
+        ),
       ),
       skills: v.optional(v.array(v.string())),
       careerGoals: v.optional(v.string()),
@@ -146,9 +146,9 @@ export const updateField = mutation({
       privacySettings: v.optional(
         v.object({
           defaultVisibility: v.union(
-            v.literal("public"),
-            v.literal("connections"),
-            v.literal("private")
+            v.literal('public'),
+            v.literal('connections'),
+            v.literal('private'),
           ),
           sectionVisibility: v.optional(
             v.object({
@@ -157,55 +157,55 @@ export const updateField = mutation({
               workHistory: v.optional(v.string()),
               skills: v.optional(v.string()),
               careerGoals: v.optional(v.string()),
-            })
+            }),
           ),
           hiddenFromOrgs: v.optional(v.array(v.string())),
-        })
+        }),
       ),
     }),
   },
   handler: async (ctx, { profileId, updates }) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await auth.getUserId(ctx)
     if (!userId) {
-      throw new Error("Not authenticated");
+      throw new Error('Not authenticated')
     }
 
     // Verify ownership
-    const profile = await ctx.db.get("profiles", profileId);
+    const profile = await ctx.db.get('profiles', profileId)
     if (!profile || profile.userId !== userId) {
-      throw new Error("Profile not found or not authorized");
+      throw new Error('Profile not found or not authorized')
     }
 
-    await ctx.db.patch("profiles", profileId, {
+    await ctx.db.patch('profiles', profileId, {
       ...updates,
       updatedAt: Date.now(),
-    });
+    })
 
-    return { success: true };
+    return { success: true }
   },
-});
+})
 
 /** @deprecated Use getMyCompleteness instead. This endpoint will be removed. */
 export const getCompleteness = query({
-  args: { profileId: v.id("profiles") },
+  args: { profileId: v.id('profiles') },
   handler: async (ctx, { profileId }) => {
     // Auth + ownership check (returns null for unauthenticated/unauthorized)
-    const userId = await auth.getUserId(ctx);
-    if (!userId) return null;
+    const userId = await auth.getUserId(ctx)
+    if (!userId) return null
 
-    const profile = await ctx.db.get("profiles", profileId);
+    const profile = await ctx.db.get('profiles', profileId)
     if (!profile || profile.userId !== userId) {
-      return null;
+      return null
     }
 
     const sections = COMPLETENESS_SECTIONS.map((section) => ({
       id: section.id,
       label: section.label,
       isComplete: section.check(profile as unknown as Record<string, unknown>),
-    }));
+    }))
 
-    const completedCount = sections.filter((s) => s.isComplete).length;
-    const totalCount = sections.length;
+    const completedCount = sections.filter((s) => s.isComplete).length
+    const totalCount = sections.length
 
     return {
       sections,
@@ -213,39 +213,39 @@ export const getCompleteness = query({
       totalCount,
       percentage: Math.round((completedCount / totalCount) * 100),
       isFullyComplete: completedCount === totalCount,
-    };
+    }
   },
-});
+})
 
 // Get notification preferences for current user
 export const getNotificationPreferences = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await auth.getUserId(ctx)
     if (!userId) {
-      return null;
+      return null
     }
 
     const profile = await ctx.db
-      .query("profiles")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
+      .query('profiles')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .first()
 
     if (!profile) {
-      return null;
+      return null
     }
 
-    return profile.notificationPreferences ?? null;
+    return profile.notificationPreferences ?? null
   },
-});
+})
 
 // Validate IANA timezone string using Intl.DateTimeFormat
 function isValidIANATimezone(tz: string): boolean {
   try {
-    Intl.DateTimeFormat(undefined, { timeZone: tz });
-    return true;
+    Intl.DateTimeFormat(undefined, { timeZone: tz })
+    return true
   } catch {
-    return false;
+    return false
   }
 }
 
@@ -256,61 +256,66 @@ export const updateNotificationPreferences = mutation({
     weeklyDigestEnabled: v.boolean(),
     timezone: v.string(),
   },
-  handler: async (ctx, { matchAlertsEnabled, weeklyDigestEnabled, timezone }) => {
-    const userId = await auth.getUserId(ctx);
+  handler: async (
+    ctx,
+    { matchAlertsEnabled, weeklyDigestEnabled, timezone },
+  ) => {
+    const userId = await auth.getUserId(ctx)
     if (!userId) {
-      throw new Error("Not authenticated");
+      throw new Error('Not authenticated')
     }
 
     // Validate IANA timezone using Intl.DateTimeFormat
     if (!isValidIANATimezone(timezone)) {
-      throw new Error("Invalid timezone format. Expected IANA timezone (e.g., America/New_York)");
+      throw new Error(
+        'Invalid timezone format. Expected IANA timezone (e.g., America/New_York)',
+      )
     }
 
     // Get or create profile
     let profile = await ctx.db
-      .query("profiles")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
+      .query('profiles')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .first()
 
     if (!profile) {
       // Create profile if it doesn't exist
-      const now = Date.now();
-      const profileId = await ctx.db.insert("profiles", {
+      const now = Date.now()
+      const profileId = await ctx.db.insert('profiles', {
         userId,
         createdAt: now,
         updatedAt: now,
-      });
-      profile = (await ctx.db.get("profiles", profileId))!;
+      })
+      profile = (await ctx.db.get('profiles', profileId))!
     }
 
     // Update notification preferences
-    await ctx.db.patch("profiles", profile._id, {
+    await ctx.db.patch('profiles', profile._id, {
       notificationPreferences: {
         matchAlerts: { enabled: matchAlertsEnabled },
         weeklyDigest: { enabled: weeklyDigestEnabled },
         timezone,
       },
       updatedAt: Date.now(),
-    });
+    })
 
-    return { success: true };
+    return { success: true }
   },
-});
+})
 
 // Get completeness for current user's profile
 export const getMyCompleteness = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await auth.getUserId(ctx)
     if (!userId) {
-      return null;
+      return null
     }
 
     const profile = await ctx.db
-      .query("profiles")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
+      .query('profiles')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .first()
 
     if (!profile) {
       // Return empty completeness for non-existent profile
@@ -324,17 +329,17 @@ export const getMyCompleteness = query({
         totalCount: COMPLETENESS_SECTIONS.length,
         percentage: 0,
         isFullyComplete: false,
-      };
+      }
     }
 
     const sections = COMPLETENESS_SECTIONS.map((section) => ({
       id: section.id,
       label: section.label,
       isComplete: section.check(profile as unknown as Record<string, unknown>),
-    }));
+    }))
 
-    const completedCount = sections.filter((s) => s.isComplete).length;
-    const totalCount = sections.length;
+    const completedCount = sections.filter((s) => s.isComplete).length
+    const totalCount = sections.length
 
     return {
       sections,
@@ -342,20 +347,20 @@ export const getMyCompleteness = query({
       totalCount,
       percentage: Math.round((completedCount / totalCount) * 100),
       isFullyComplete: completedCount === totalCount,
-    };
+    }
   },
-});
+})
 
 // Convert YYYY-MM date string to Unix timestamp (first of month)
 // Returns undefined for "present", empty string, or invalid format
 function convertDateString(dateStr?: string): number | undefined {
-  if (!dateStr || dateStr.toLowerCase() === "present") return undefined;
-  const parts = dateStr.split("-");
-  if (parts.length < 2) return undefined;
-  const year = parseInt(parts[0], 10);
-  const month = parseInt(parts[1], 10);
-  if (isNaN(year) || isNaN(month)) return undefined;
-  return Date.UTC(year, month - 1, 1);
+  if (!dateStr || dateStr.toLowerCase() === 'present') return undefined
+  const parts = dateStr.split('-')
+  if (parts.length < 2) return undefined
+  const year = parseInt(parts[0], 10)
+  const month = parseInt(parts[1], 10)
+  if (isNaN(year) || isNaN(month)) return undefined
+  return Date.UTC(year, month - 1, 1)
 }
 
 // Apply extracted profile data from resume/CV
@@ -374,8 +379,8 @@ export const applyExtractedProfile = mutation({
             startYear: v.optional(v.number()),
             endYear: v.optional(v.number()),
             current: v.optional(v.boolean()),
-          })
-        )
+          }),
+        ),
       ),
       workHistory: v.optional(
         v.array(
@@ -386,50 +391,50 @@ export const applyExtractedProfile = mutation({
             endDate: v.optional(v.string()), // YYYY-MM or "present"
             current: v.optional(v.boolean()),
             description: v.optional(v.string()),
-          })
-        )
+          }),
+        ),
       ),
       skills: v.optional(v.array(v.string())),
     }),
   },
   handler: async (ctx, { extractedData }) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await auth.getUserId(ctx)
     if (!userId) {
-      throw new Error("Not authenticated");
+      throw new Error('Not authenticated')
     }
 
     // Get or create profile
     let profile = await ctx.db
-      .query("profiles")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
+      .query('profiles')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .first()
 
-    const now = Date.now();
+    const now = Date.now()
 
     if (!profile) {
       // Create profile if it doesn't exist
-      const profileId = await ctx.db.insert("profiles", {
+      const profileId = await ctx.db.insert('profiles', {
         userId,
         createdAt: now,
         updatedAt: now,
-      });
-      profile = (await ctx.db.get("profiles", profileId))!;
+      })
+      profile = (await ctx.db.get('profiles', profileId))!
     }
 
     // Build updates object with only provided fields
-    const updates: Record<string, unknown> = {};
+    const updates: Record<string, unknown> = {}
 
     if (extractedData.name !== undefined) {
-      updates.name = extractedData.name;
+      updates.name = extractedData.name
     }
 
     if (extractedData.location !== undefined) {
-      updates.location = extractedData.location;
+      updates.location = extractedData.location
     }
 
     // Education maps directly (uses year numbers, no conversion needed)
     if (extractedData.education !== undefined) {
-      updates.education = extractedData.education;
+      updates.education = extractedData.education
     }
 
     // Work history needs date conversion from strings to timestamps
@@ -441,152 +446,153 @@ export const applyExtractedProfile = mutation({
         endDate: convertDateString(work.endDate),
         current: work.current,
         description: work.description,
-      }));
+      }))
     }
 
     if (extractedData.skills !== undefined) {
-      updates.skills = extractedData.skills;
+      updates.skills = extractedData.skills
     }
 
     // Only update if there's something to update
     if (Object.keys(updates).length > 0) {
-      await ctx.db.patch("profiles", profile._id, {
+      await ctx.db.patch('profiles', profile._id, {
         ...updates,
         updatedAt: now,
-      });
+      })
     }
 
-    return { success: true, profileId: profile._id };
+    return { success: true, profileId: profile._id }
   },
-});
+})
 
 // Get location privacy setting for current user
 export const getLocationPrivacy = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await auth.getUserId(ctx)
     if (!userId) {
-      return null;
+      return null
     }
 
     const profile = await ctx.db
-      .query("profiles")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
+      .query('profiles')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .first()
 
     if (!profile) {
-      return { locationDiscoverable: false };
+      return { locationDiscoverable: false }
     }
 
     return {
-      locationDiscoverable: profile.privacySettings?.locationDiscoverable ?? false,
-    };
+      locationDiscoverable:
+        profile.privacySettings?.locationDiscoverable ?? false,
+    }
   },
-});
+})
 
 // Update location privacy setting for current user
 export const updateLocationPrivacy = mutation({
   args: { locationDiscoverable: v.boolean() },
   handler: async (ctx, { locationDiscoverable }) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await auth.getUserId(ctx)
     if (!userId) {
-      throw new Error("Not authenticated");
+      throw new Error('Not authenticated')
     }
 
     const profile = await ctx.db
-      .query("profiles")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
+      .query('profiles')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .first()
 
     if (!profile) {
-      throw new Error("Profile not found");
+      throw new Error('Profile not found')
     }
 
     // Merge with existing privacy settings
     const existingSettings = profile.privacySettings ?? {
-      defaultVisibility: "private" as const,
-    };
+      defaultVisibility: 'private' as const,
+    }
 
-    await ctx.db.patch("profiles", profile._id, {
+    await ctx.db.patch('profiles', profile._id, {
       privacySettings: {
         ...existingSettings,
         locationDiscoverable,
       },
       updatedAt: Date.now(),
-    });
+    })
 
-    return { success: true };
+    return { success: true }
   },
-});
+})
 
 // Get event notification preferences for current user
 export const getEventNotificationPreferences = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx);
-    if (!userId) return null;
+    const userId = await auth.getUserId(ctx)
+    if (!userId) return null
 
     const profile = await ctx.db
-      .query("profiles")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
+      .query('profiles')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .first()
 
     if (!profile?.eventNotificationPreferences) {
       // Return defaults for new users (weekly digest, 1 day + 1 hour reminders)
       return {
-        frequency: "weekly" as const,
+        frequency: 'weekly' as const,
         reminderTiming: {
           oneWeekBefore: false,
           oneDayBefore: true,
           oneHourBefore: true,
         },
         mutedOrgIds: [] as Array<string>,
-      };
+      }
     }
 
     return {
       ...profile.eventNotificationPreferences,
       mutedOrgIds: profile.eventNotificationPreferences.mutedOrgIds ?? [],
-    };
+    }
   },
-});
+})
 
 // Update event notification preferences for current user
 export const updateEventNotificationPreferences = mutation({
   args: {
     frequency: v.union(
-      v.literal("all"),
-      v.literal("daily"),
-      v.literal("weekly"),
-      v.literal("none")
+      v.literal('all'),
+      v.literal('daily'),
+      v.literal('weekly'),
+      v.literal('none'),
     ),
     reminderTiming: v.object({
       oneWeekBefore: v.boolean(),
       oneDayBefore: v.boolean(),
       oneHourBefore: v.boolean(),
     }),
-    mutedOrgIds: v.array(v.id("organizations")),
+    mutedOrgIds: v.array(v.id('organizations')),
   },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    const userId = await auth.getUserId(ctx)
+    if (!userId) throw new Error('Not authenticated')
 
     const profile = await ctx.db
-      .query("profiles")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
+      .query('profiles')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .first()
 
-    if (!profile) throw new Error("Profile not found");
+    if (!profile) throw new Error('Profile not found')
 
-    await ctx.db.patch("profiles", profile._id, {
+    await ctx.db.patch('profiles', profile._id, {
       eventNotificationPreferences: {
         frequency: args.frequency,
         reminderTiming: args.reminderTiming,
         mutedOrgIds: args.mutedOrgIds,
       },
       updatedAt: Date.now(),
-    });
+    })
 
-    return { success: true };
+    return { success: true }
   },
-});
+})

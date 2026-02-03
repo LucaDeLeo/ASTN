@@ -35,13 +35,13 @@ key-files:
     - convex/crons.ts
 
 key-decisions:
-  - "10-minute cron with 10-20 minute window to avoid duplicate scheduling"
-  - "2-prompt max limit (no more follow-ups after prompt 2)"
-  - "Default privacy: showOnProfile=true, showToOtherOrgs=false"
+  - '10-minute cron with 10-20 minute window to avoid duplicate scheduling'
+  - '2-prompt max limit (no more follow-ups after prompt 2)'
+  - 'Default privacy: showOnProfile=true, showToOtherOrgs=false'
 
 patterns-established:
-  - "Post-event scheduling: cron detects ended events, schedules prompts 1 hour after"
-  - "Attendance record privacy: host org always sees, user controls profile/cross-org visibility"
+  - 'Post-event scheduling: cron detects ended events, schedules prompts 1 hour after'
+  - 'Attendance record privacy: host org always sees, user controls profile/cross-org visibility'
 
 # Metrics
 duration: 4min
@@ -111,5 +111,6 @@ None - no external service configuration required. The cron job is automatically
 - No blockers for next phase
 
 ---
-*Phase: 14-attendance-tracking*
-*Completed: 2026-01-19*
+
+_Phase: 14-attendance-tracking_
+_Completed: 2026-01-19_

@@ -1,5 +1,5 @@
-import { auth } from "../auth";
-import type { ActionCtx, MutationCtx, QueryCtx } from "../_generated/server";
+import { auth } from '../auth'
+import type { ActionCtx, MutationCtx, QueryCtx } from '../_generated/server'
 
 /**
  * Require the current user to be authenticated.
@@ -7,13 +7,13 @@ import type { ActionCtx, MutationCtx, QueryCtx } from "../_generated/server";
  * Works with queries, mutations, and actions.
  */
 export async function requireAuth(
-  ctx: QueryCtx | MutationCtx | ActionCtx
+  ctx: QueryCtx | MutationCtx | ActionCtx,
 ): Promise<string> {
-  const userId = await auth.getUserId(ctx);
+  const userId = await auth.getUserId(ctx)
   if (!userId) {
-    throw new Error("Not authenticated");
+    throw new Error('Not authenticated')
   }
-  return userId;
+  return userId
 }
 
 /**
@@ -25,22 +25,22 @@ export async function requireAuth(
  * (e.g., opportunity CRUD) where no specific orgId is available.
  */
 export async function requireAnyOrgAdmin(
-  ctx: QueryCtx | MutationCtx
+  ctx: QueryCtx | MutationCtx,
 ): Promise<string> {
-  const userId = await auth.getUserId(ctx);
+  const userId = await auth.getUserId(ctx)
   if (!userId) {
-    throw new Error("Not authenticated");
+    throw new Error('Not authenticated')
   }
 
   const membership = await ctx.db
-    .query("orgMemberships")
-    .withIndex("by_user", (q) => q.eq("userId", userId))
-    .filter((q) => q.eq(q.field("role"), "admin"))
-    .first();
+    .query('orgMemberships')
+    .withIndex('by_user', (q) => q.eq('userId', userId))
+    .filter((q) => q.eq(q.field('role'), 'admin'))
+    .first()
 
   if (!membership) {
-    throw new Error("Admin access required");
+    throw new Error('Admin access required')
   }
 
-  return userId;
+  return userId
 }

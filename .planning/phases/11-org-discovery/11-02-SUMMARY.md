@@ -18,7 +18,11 @@ affects: [events-ui, org-pages, discovery-features]
 # Tech tracking
 tech-stack:
   added: []
-  patterns: [carousel with CSS scroll-snap, authenticated vs unauthenticated route branching]
+  patterns:
+    [
+      carousel with CSS scroll-snap,
+      authenticated vs unauthenticated route branching,
+    ]
 
 key-files:
   created:
@@ -30,13 +34,13 @@ key-files:
     - src/routes/settings/index.tsx
 
 key-decisions:
-  - "CSS scroll-snap for carousel instead of JS-based scrolling (simpler, native feel)"
-  - "Authenticated/Unauthenticated branch at route level for cleaner component separation"
-  - "Immediate toggle feedback via toast instead of save button pattern"
+  - 'CSS scroll-snap for carousel instead of JS-based scrolling (simpler, native feel)'
+  - 'Authenticated/Unauthenticated branch at route level for cleaner component separation'
+  - 'Immediate toggle feedback via toast instead of save button pattern'
 
 patterns-established:
-  - "OrgCard with carousel/list variants for reuse in different contexts"
-  - "Empty state cards with action prompts linking to settings"
+  - 'OrgCard with carousel/list variants for reuse in different contexts'
+  - 'Empty state cards with action prompts linking to settings'
 
 # Metrics
 duration: 4min
@@ -104,5 +108,6 @@ None - no external service configuration required.
 - Ready for phase 12: Events system
 
 ---
-*Phase: 11-org-discovery*
-*Completed: 2026-01-19*
+
+_Phase: 11-org-discovery_
+_Completed: 2026-01-19_

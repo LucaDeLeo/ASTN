@@ -7,22 +7,22 @@ tags: [react, review-ui, profile, tanstack-router, convex-mutation]
 # Dependency graph
 requires:
   - phase: 09-02
-    provides: "ResumeExtractionReview component and all field/entry card components"
+    provides: 'ResumeExtractionReview component and all field/entry card components'
   - phase: 08-03
-    provides: "test-upload page with extraction flow and useExtraction hook"
+    provides: 'test-upload page with extraction flow and useExtraction hook'
 provides:
-  - "Complete upload -> extract -> review -> apply flow"
-  - "Integration between extraction UI and profile mutation"
-  - "Navigation to enrichment step after apply"
+  - 'Complete upload -> extract -> review -> apply flow'
+  - 'Integration between extraction UI and profile mutation'
+  - 'Navigation to enrichment step after apply'
 affects: [profile-wizard, enrichment-flow]
 
 # Tech tracking
 tech-stack:
   added: []
   patterns:
-    - "useMutation + navigate pattern for apply with redirect"
-    - "Default acceptance for review items (better UX)"
-    - "Auto-expand for textarea fields"
+    - 'useMutation + navigate pattern for apply with redirect'
+    - 'Default acceptance for review items (better UX)'
+    - 'Auto-expand for textarea fields'
 
 key-files:
   created: []
@@ -36,13 +36,13 @@ key-files:
     - src/components/profile/wizard/steps/EnrichmentStep.tsx
 
 key-decisions:
-  - "Default acceptance for all extracted fields (better UX, user rejects rather than accepts)"
-  - "Auto-expand textarea on edit mode"
-  - "Auto-greet in enrichment step after extraction apply"
+  - 'Default acceptance for all extracted fields (better UX, user rejects rather than accepts)'
+  - 'Auto-expand textarea on edit mode'
+  - 'Auto-greet in enrichment step after extraction apply'
 
 patterns-established:
-  - "Review-then-apply pattern: extract -> review -> user edits -> apply to profile"
-  - "Grid overlay state transition pattern for smooth UI state changes"
+  - 'Review-then-apply pattern: extract -> review -> user edits -> apply to profile'
+  - 'Grid overlay state transition pattern for smooth UI state changes'
 
 # Metrics
 duration: 15min
@@ -75,6 +75,7 @@ Each task was committed atomically:
 2. **Task 2: Human verification checkpoint** - Approved by user
 
 **UX improvements during verification:** `90b8b4b` (feat)
+
 - Default acceptance for review items
 - Auto-expand textarea on edit
 - Enrichment auto-greet after extraction apply
@@ -116,5 +117,6 @@ None - no external service configuration required.
 - Ready for Phase 10 or milestone completion
 
 ---
-*Phase: 09-review-apply-ui*
-*Completed: 2026-01-18*
+
+_Phase: 09-review-apply-ui_
+_Completed: 2026-01-18_

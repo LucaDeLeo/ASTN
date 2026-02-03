@@ -3,6 +3,7 @@ import { Building2, Calendar, MapPin, Users } from 'lucide-react'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { Card } from '~/components/ui/card'
 import { Button } from '~/components/ui/button'
+import { cn } from '~/lib/utils'
 
 export interface OrgCardProps {
   org: {
@@ -42,12 +43,11 @@ export function OrgCard({ org, variant = 'carousel' }: OrgCardProps) {
       aria-label={org.name}
       onClick={handleNavigate}
       onKeyDown={handleKeyDown}
-      className={
-        (variant === 'carousel'
-          ? 'w-72 p-4 flex flex-col'
-          : 'w-full p-4 flex flex-col') +
-        ' cursor-pointer hover:shadow-md transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
-      }
+      className={cn(
+        variant === 'carousel' ? 'w-72' : 'w-full',
+        'p-4 flex flex-col cursor-pointer hover:shadow-md transition-shadow',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+      )}
     >
       {/* Logo and name */}
       <div className="flex items-start gap-3 mb-3">

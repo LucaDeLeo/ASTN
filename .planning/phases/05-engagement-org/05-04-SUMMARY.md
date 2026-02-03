@@ -31,14 +31,14 @@ key-files:
     - convex/schema.ts
 
 key-decisions:
-  - "First user to join org becomes admin (per CONTEXT.md)"
-  - "Last admin cannot leave or demote self without promoting another"
-  - "Invite tokens are UUIDs with optional expiration"
-  - "Directory visibility is member-controlled (visible/hidden)"
+  - 'First user to join org becomes admin (per CONTEXT.md)'
+  - 'Last admin cannot leave or demote self without promoting another'
+  - 'Invite tokens are UUIDs with optional expiration'
+  - 'Directory visibility is member-controlled (visible/hidden)'
 
 patterns-established:
-  - "requireOrgAdmin helper for admin-only operations"
-  - "Org membership queries filter by userId index then orgId"
+  - 'requireOrgAdmin helper for admin-only operations'
+  - 'Org membership queries filter by userId index then orgId'
 
 # Metrics
 duration: 4min
@@ -109,5 +109,6 @@ None - no external service configuration required.
   - `orgs.admin.createInviteLink`, `orgs.admin.removeMember`
 
 ---
-*Phase: 05-engagement-org*
-*Completed: 2026-01-18*
+
+_Phase: 05-engagement-org_
+_Completed: 2026-01-18_

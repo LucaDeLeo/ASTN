@@ -1,6 +1,6 @@
 # `AI Safety Talent Network — Feedback Request`
 
-*`Draft for feedback • January 2026`*
+_`Draft for feedback • January 2026`_
 
 ---
 
@@ -20,19 +20,19 @@
 
 ### `What's Working Today`
 
-| `Feature` | `Status` |
-| :---- | :---- |
+| `Feature`                                                     | `Status`  |
+| :------------------------------------------------------------ | :-------- |
 | `Profile wizard (basic info, education, work, skills, goals)` | `✅ Live` |
-| `Resume upload with AI extraction` | `✅ Live` |
-| `AI career coach conversation (enrichment)` | `✅ Live` |
-| `Opportunity browsing with search/filters` | `✅ Live` |
-| `AI-powered matching (great/good/exploring tiers)` | `✅ Live` |
-| `Match explanations with strengths, gaps, recommendations` | `✅ Live` |
-| `Organization discovery and joining` | `✅ Live` |
-| `Member directory` | `✅ Live` |
-| `Event browsing and RSVP (via Luma integration)` | `✅ Live` |
-| `Email digests and match alerts` | `✅ Live` |
-| `Event attendance feedback` | `✅ Live` |
+| `Resume upload with AI extraction`                            | `✅ Live` |
+| `AI career coach conversation (enrichment)`                   | `✅ Live` |
+| `Opportunity browsing with search/filters`                    | `✅ Live` |
+| `AI-powered matching (great/good/exploring tiers)`            | `✅ Live` |
+| `Match explanations with strengths, gaps, recommendations`    | `✅ Live` |
+| `Organization discovery and joining`                          | `✅ Live` |
+| `Member directory`                                            | `✅ Live` |
+| `Event browsing and RSVP (via Luma integration)`              | `✅ Live` |
+| `Email digests and match alerts`                              | `✅ Live` |
+| `Event attendance feedback`                                   | `✅ Live` |
 
 ### `Coming Soon`
 
@@ -47,22 +47,22 @@
 
 ### `For Individuals`
 
-- **`Overwhelming discovery:`** `Opportunities scattered across job boards, Twitter, mailing lists, Slack channels`  
-- **`No personalized guidance:`** `Generic advice doesn't help you figure out what you should apply for`  
-- **`The limbo problem:`** `Between paid opportunities, it's hard to know what to do to stay on track`  
-- **`Easy to miss deadlines:`** `That perfect-fit fellowship closed last week and you never saw it`  
+- **`Overwhelming discovery:`** `Opportunities scattered across job boards, Twitter, mailing lists, Slack channels`
+- **`No personalized guidance:`** `Generic advice doesn't help you figure out what you should apply for`
+- **`The limbo problem:`** `Between paid opportunities, it's hard to know what to do to stay on track`
+- **`Easy to miss deadlines:`** `That perfect-fit fellowship closed last week and you never saw it`
 - **`No feedback loop:`** `You apply, get rejected, never learn why. Next cycle you make the same mistakes. Your application history lives in scattered emails and forgotten spreadsheets.`
 
 ### `For Local Orgs (Student Groups, Hubs)`
 
-- **`CRM death spiral:`** `You build an Airtable, beg people to fill it out, data goes stale, leadership graduates, repeat`  
-- **`Reinventing the wheel:`** `Every org builds janky member tracking independently`  
+- **`CRM death spiral:`** `You build an Airtable, beg people to fill it out, data goes stale, leadership graduates, repeat`
+- **`Reinventing the wheel:`** `Every org builds janky member tracking independently`
 - **`Isolation:`** `No visibility into what other groups worldwide are doing`
 
 ### `For Opportunity Posters (Programs, Employers)`
 
-- **`Passive posting:`** `Tweet it, post on 80k, hope the right people see it`  
-- **`No proactive discovery:`** `Can't find qualified candidates outside your existing network`  
+- **`Passive posting:`** `Tweet it, post on 80k, hope the right people see it`
+- **`No proactive discovery:`** `Can't find qualified candidates outside your existing network`
 - **`Signal-to-noise:`** `Generic applicants make it hard to find high-fit candidates`
 
 ---
@@ -153,9 +153,9 @@
 
 **`The value prop:`** `Zero extra work.`
 
-- `Keep posting on 80k, keep tweeting — we aggregate from existing sources`  
-- `We match against our rich profile database`  
-- `We push high-fit candidates to your opportunities (with their consent)`  
+- `Keep posting on 80k, keep tweeting — we aggregate from existing sources`
+- `We match against our rich profile database`
+- `We push high-fit candidates to your opportunities (with their consent)`
 - `You get better signal-to-noise without adopting a new platform`
 
 ---
@@ -166,32 +166,32 @@
 
 `Built through a combination of structured form + LLM conversation:`
 
-- `Background (education, work, technical skills)`  
-- `AI safety engagement history (courses, projects, writing)`  
-- `Research interests and career goals`  
-- `What they're seeking (jobs, programs, grants, collaborators, mentorship)`  
-- `Constraints (location, timing, visa status)`  
+- `Background (education, work, technical skills)`
+- `AI safety engagement history (courses, projects, writing)`
+- `Research interests and career goals`
+- `What they're seeking (jobs, programs, grants, collaborators, mentorship)`
+- `Constraints (location, timing, visa status)`
 - `Application history and outcomes (to power rejection analysis and learning)`
 
 `The LLM counselor isn't just a chatbot — it's the mechanism to elicit rich enough data to power matching, recommendations, and pre-fill. It gives real advice grounded in 80k-style thinking and the AI safety landscape.`
 
 ### `Opportunity Matching`
 
-- `Aggregates from 80k job board, aisafety.com, plus manual posts`  
-- `Hard filters (location, career stage) + LLM-scored soft fit`  
+- `Aggregates from 80k job board, aisafety.com, plus manual posts`
+- `Hard filters (location, career stage) + LLM-scored soft fit`
 - `Explains the match: "Strong technical background matches their requirements. Your interpretability interest aligns with their research focus. Gap: they emphasize publications, your profile doesn't highlight any."`
 
 ### `Rejection Analysis`
 
-- `User logs outcome (rejected, accepted, waitlisted, ghosted)`  
-- `LLM compares profile snapshot at application time vs. opportunity requirements`  
-- `Generates hypothesis about gaps + actionable recommendations`  
+- `User logs outcome (rejected, accepted, waitlisted, ghosted)`
+- `LLM compares profile snapshot at application time vs. opportunity requirements`
+- `Generates hypothesis about gaps + actionable recommendations`
 - `Tracks patterns across multiple applications: "You've been rejected from 3 research programs; all emphasized publication record. Priority: get a paper out."`
 
 ### `Smart Notifications`
 
-- `Weekly digest (default)`  
-- `Immediate notification for high-fit matches`  
+- `Weekly digest (default)`
+- `Immediate notification for high-fit matches`
 - `User controls frequency and channels`
 
 ---
@@ -200,24 +200,24 @@
 
 ### `✅ Shipped`
 
-| `Feature` | `Description` |
-| :---- | :---- |
-| `Rich profile (form + LLM conversation)` | `Foundation for everything` |
-| `User portal with prioritized opportunity feed` | `The "command center" experience` |
-| `Fit scoring + explanations` | `Core value: "why this is right for you"` |
-| `Org CRM view` | `Member directory, event management, engagement tracking` |
-| `Email digests + match alerts` | `Reach people who don't check portal` |
-| `AI career coach (enrichment)` | `LLM-powered profile building and advice` |
-| `Organization discovery + joining` | `Find and join AI safety communities` |
-| `Event integration (Luma)` | `Browse events, RSVP, give feedback` |
+| `Feature`                                       | `Description`                                             |
+| :---------------------------------------------- | :-------------------------------------------------------- |
+| `Rich profile (form + LLM conversation)`        | `Foundation for everything`                               |
+| `User portal with prioritized opportunity feed` | `The "command center" experience`                         |
+| `Fit scoring + explanations`                    | `Core value: "why this is right for you"`                 |
+| `Org CRM view`                                  | `Member directory, event management, engagement tracking` |
+| `Email digests + match alerts`                  | `Reach people who don't check portal`                     |
+| `AI career coach (enrichment)`                  | `LLM-powered profile building and advice`                 |
+| `Organization discovery + joining`              | `Find and join AI safety communities`                     |
+| `Event integration (Luma)`                      | `Browse events, RSVP, give feedback`                      |
 
 ### `🔜 In Progress`
 
-| `Feature` | `Why It Matters` |
-| :---- | :---- |
-| `Application tracker + rejection analysis` | `Core differentiator: learn from every cycle` |
-| `Career capital recommendations` | `Differentiator: "what to do" not just "where to apply"` |
-| `Pre-fill applications` | `Killer feature: friction reduction` |
+| `Feature`                                  | `Why It Matters`                                         |
+| :----------------------------------------- | :------------------------------------------------------- |
+| `Application tracker + rejection analysis` | `Core differentiator: learn from every cycle`            |
+| `Career capital recommendations`           | `Differentiator: "what to do" not just "where to apply"` |
+| `Pre-fill applications`                    | `Killer feature: friction reduction`                     |
 
 ### `📋 Future`
 
@@ -248,8 +248,8 @@
 
 **`Not competing with existing players — complementing them:`**
 
-- **`80,000 Hours job board:`** `We drive traffic to them, aggregate their listings`  
-- **`aisafety.com:`** `Same — aggregate, not replace`  
+- **`80,000 Hours job board:`** `We drive traffic to them, aggregate their listings`
+- **`aisafety.com:`** `Same — aggregate, not replace`
 - **`EA Forum profiles:`** `We're active matching, not passive directory`
 
 `The differentiation is proactive, personalized matching, rejection analysis, and application friction reduction — things no one else does.`
@@ -260,8 +260,8 @@
 
 ### `1. Does this solve a real problem for you?`
 
-- `If you're an individual: Would you invest time in a detailed profile for these features? What would make it worth it?`  
-- `If you run a local org: Would this solve your CRM problem? What's missing?`  
+- `If you're an individual: Would you invest time in a detailed profile for these features? What would make it worth it?`
+- `If you run a local org: Would this solve your CRM problem? What's missing?`
 - `If you post opportunities: Would aggregated, high-fit candidate matches be valuable? What would you need to trust the matching?`
 
 ### `2. Pre-fill applications`
@@ -292,11 +292,11 @@
 
 ## `What We'd Love From You`
 
-1. **`Your honest reaction`** `— Does this excite you, bore you, confuse you?`  
-2. **`Which features matter most`** `— If we could only build two things, which two?`  
-3. **`Red flags`** `— What would prevent you from using this?`  
+1. **`Your honest reaction`** `— Does this excite you, bore you, confuse you?`
+2. **`Which features matter most`** `— If we could only build two things, which two?`
+3. **`Red flags`** `— What would prevent you from using this?`
 4. **`Comparisons`** `— What's closest to this that exists? What works/doesn't work about those?`
 
 ---
 
-*`Feedback to: [luca@baish.com.ar]`*
+_`Feedback to: [luca@baish.com.ar]`_

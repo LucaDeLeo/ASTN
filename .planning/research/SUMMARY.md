@@ -18,6 +18,7 @@
 ### Stack Decisions
 
 **Use (already installed):**
+
 - **Convex scheduler + crons**: Event reminders, attendance prompts, engagement recomputation
 - **date-fns + date-fns-tz**: Timezone handling for events (already has IANA timezone pattern)
 - **@convex-dev/resend**: Event notifications using existing email batch patterns
@@ -25,6 +26,7 @@
 - **Convex search indexes**: Member directory search (already using for skillsTaxonomy)
 
 **Do NOT add:**
+
 - **FullCalendar/react-big-calendar**: Overkill for simple event list. Use shadcn/ui cards.
 - **rrule**: Only if recurring events become a requirement (not in initial scope)
 - **Push notification services**: Email sufficient for pilot phase
@@ -33,6 +35,7 @@
 ### Table Stakes vs Differentiators
 
 **Must have (orgs expect these):**
+
 - Member directory with search/filter
 - Event creation, listing, RSVP
 - Event notifications (email reminders)
@@ -41,6 +44,7 @@
 - CSV export of member data
 
 **Differentiators (competitive advantage):**
+
 - Self-updating profiles (members maintain for personal value, orgs benefit)
 - LLM-computed engagement levels with transparency
 - Admin override for engagement with audit trail
@@ -49,6 +53,7 @@
 - Configurable notification preferences per-org
 
 **Defer to v2+:**
+
 - Real-time chat/messaging (creates spam burden, LinkedIn 2.0 problem)
 - Event ticketing/payments (Luma/Eventbrite do this well)
 - Complex event check-in (QR codes, NFC badges)
@@ -58,17 +63,20 @@
 ### Architecture Highlights
 
 **New tables required:**
+
 1. `events` - Event details, timing, location, status
 2. `eventAttendance` - RSVP status, attendance confirmation, feedback
 3. `engagementLogs` - Activity records (event_attended, profile_updated, etc.)
 4. `memberEngagement` - Computed engagement level per member per org
 
 **Key patterns to follow:**
+
 - LLM scoring pattern from `matching/compute.ts` (Haiku 4.5, tool_use, internal actions)
 - Cron pattern from `crons.ts` (hourly reminders, daily recomputation)
 - Email batch pattern from `emails/batchActions.ts`
 
 **Anti-patterns to avoid:**
+
 - Real-time subscriptions for aggregate CRM views (use pagination + refresh)
 - Storing engagement in profile (coupling; use separate table)
 - Single engagement score across orgs (per-membership, not per-user)
@@ -89,6 +97,7 @@
 ## Implications for Roadmap
 
 ### Phase 1: Org Discovery Foundation
+
 **Rationale:** Events and CRM require discoverable orgs. Foundation must exist first.
 **Delivers:** Searchable org list, geography-based suggestions, invite links
 **Addresses:** Org discovery features from FEATURES.md
@@ -96,6 +105,7 @@
 **Schema:** Add location, coordinates, description, website to organizations table
 
 ### Phase 2: Events Core
+
 **Rationale:** Attendance tracking (Phase 3) requires events to exist
 **Delivers:** Event creation by admins, event listing, RSVP functionality
 **Uses:** Convex scheduler for reminders, date-fns-tz for timezone handling
@@ -103,18 +113,21 @@
 **Schema:** New events table, eventAttendance table
 
 ### Phase 3: Attendance Tracking
+
 **Rationale:** Engagement scoring (Phase 4) requires attendance data
 **Delivers:** Post-event "Did you attend?" flow, feedback collection, attendance history on profiles
 **Implements:** Email notifications via Resend (existing pattern)
 **Avoids:** Low completion rate (1-click confirmation, send within 2-4 hours)
 
 ### Phase 4: Notification System
+
 **Rationale:** Events and attendance create notification needs; must batch properly
 **Delivers:** Configurable event reminders, notification preferences UI, batched delivery
 **Avoids:** Notification fatigue (budget, batching, granular preferences)
 **Schema:** Extend notificationPreferences with eventReminders, orgAnnouncements
 
 ### Phase 5: Engagement Scoring
+
 **Rationale:** Requires attendance data from Phase 3 to be meaningful
 **Delivers:** LLM-computed engagement levels, admin override capability, engagement signals display
 **Uses:** Claude Haiku 4.5 (same as matching), internal actions pattern
@@ -122,6 +135,7 @@
 **Schema:** engagementLogs table, memberEngagement table
 
 ### Phase 6: CRM Dashboard
+
 **Rationale:** Pulls together all data from previous phases
 **Delivers:** Member directory with engagement, filtering by level, export, org stats
 **Avoids:** Performance explosion (server-side pagination, no real-time aggregates)
@@ -137,10 +151,12 @@
 ### Research Flags
 
 **Phases needing deeper research during planning:**
+
 - **Phase 4 (Notifications)**: Need to finalize notification budget rules, batching windows, preference schema details
 - **Phase 5 (Engagement)**: Need to refine LLM prompt for engagement scoring, decide engagement level thresholds
 
 **Phases with standard patterns (skip research-phase):**
+
 - **Phase 1 (Org Discovery)**: Standard search + location patterns, well-documented
 - **Phase 2 (Events Core)**: Common event CRUD, many examples
 - **Phase 3 (Attendance)**: Simple confirmation flow, existing email patterns
@@ -148,12 +164,12 @@
 
 ## Confidence Assessment
 
-| Area | Confidence | Notes |
-|------|------------|-------|
-| Stack | HIGH | Zero new deps; all patterns verified against existing codebase |
-| Features | MEDIUM-HIGH | Table stakes clear; differentiators validated against Oxford OAISI reference |
-| Architecture | HIGH | Builds on proven Convex patterns; schema extensions straightforward |
-| Pitfalls | MEDIUM-HIGH | Industry patterns well-documented; Convex-specific warnings verified |
+| Area         | Confidence  | Notes                                                                        |
+| ------------ | ----------- | ---------------------------------------------------------------------------- |
+| Stack        | HIGH        | Zero new deps; all patterns verified against existing codebase               |
+| Features     | MEDIUM-HIGH | Table stakes clear; differentiators validated against Oxford OAISI reference |
+| Architecture | HIGH        | Builds on proven Convex patterns; schema extensions straightforward          |
+| Pitfalls     | MEDIUM-HIGH | Industry patterns well-documented; Convex-specific warnings verified         |
 
 **Overall confidence:** HIGH
 
@@ -173,20 +189,24 @@
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - ASTN codebase (package.json, schema.ts, matching/compute.ts, crons.ts)
 - Convex documentation on scheduled functions, cron jobs, search indexes
 - date-fns and date-fns-tz documentation
 
 ### Secondary (MEDIUM confidence)
+
 - iMIS, Association Analytics, Rhythm Software on engagement scoring models
 - EventX, vFairs, Qualtrics on event attendance tracking
 - Typeform on post-event survey timing (42% higher response within 2 hours)
 - MagicBell, Courier.com on notification fatigue patterns
 
 ### Tertiary (validation needed)
+
 - Engagement level thresholds (3+ events = highly engaged) - needs org-specific tuning
 - Notification budget (max 3/day) - needs user testing
 
 ---
-*Research completed: 2026-01-19*
-*Ready for roadmap: yes*
+
+_Research completed: 2026-01-19_
+_Ready for roadmap: yes_

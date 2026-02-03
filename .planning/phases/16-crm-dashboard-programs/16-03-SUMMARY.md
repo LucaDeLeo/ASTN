@@ -31,15 +31,15 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Profile visibility respects sectionVisibility settings (public/connections visible, private hidden)"
-  - "Name always visible for identification purposes"
-  - "Attendance history sorted by event date descending (most recent first)"
-  - "Override history enriched with admin names for audit clarity"
+  - 'Profile visibility respects sectionVisibility settings (public/connections visible, private hidden)'
+  - 'Name always visible for identification purposes'
+  - 'Attendance history sorted by event date descending (most recent first)'
+  - 'Override history enriched with admin names for audit clarity'
 
 patterns-established:
-  - "requireOrgAdmin helper in convex/orgs/members.ts for admin-only queries"
-  - "Privacy isVisible helper for section-level visibility checks"
-  - "Override history enrichment pattern for audit trails"
+  - 'requireOrgAdmin helper in convex/orgs/members.ts for admin-only queries'
+  - 'Privacy isVisible helper for section-level visibility checks'
+  - 'Override history enrichment pattern for audit trails'
 
 # Metrics
 duration: 4min
@@ -59,6 +59,7 @@ completed: 2026-01-19
 - **Files modified:** 1
 
 ## Accomplishments
+
 - Privacy-controlled member profile query respecting section visibility settings
 - Attendance history query with event details and chronological ordering
 - Engagement history query with full override audit trail and admin names
@@ -72,9 +73,11 @@ Each task was committed atomically:
 3. **Task 3: Create getMemberEngagementHistory query** - `4fd7e02` (feat)
 
 ## Files Created/Modified
+
 - `convex/orgs/members.ts` - New file with three admin queries for member profile, attendance history, and engagement history
 
 ## Decisions Made
+
 - Profile name is always visible to admins (needed for identification) but other sections respect privacy settings
 - Used "connections" visibility level as visible to org admins since org membership constitutes a connection
 - Attendance records sorted by event date (most recent first) for intuitive display
@@ -93,10 +96,12 @@ None
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Backend queries ready for frontend consumption in member profile page
 - Queries accessible via api.orgs.members namespace
 - All queries require admin authentication via requireOrgAdmin helper
 
 ---
-*Phase: 16-crm-dashboard-programs*
-*Completed: 2026-01-19*
+
+_Phase: 16-crm-dashboard-programs_
+_Completed: 2026-01-19_

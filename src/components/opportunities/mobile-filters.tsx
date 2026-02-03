@@ -1,36 +1,36 @@
-import { useState } from "react"
-import { Filter, X } from "lucide-react"
-import { Badge } from "~/components/ui/badge"
-import { Button } from "~/components/ui/button"
-import { Input } from "~/components/ui/input"
+import { useState } from 'react'
+import { Filter, X } from 'lucide-react'
+import { Badge } from '~/components/ui/badge'
+import { Button } from '~/components/ui/button'
+import { Input } from '~/components/ui/input'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select"
+} from '~/components/ui/select'
 import {
   ResponsiveSheet,
   ResponsiveSheetContent,
   ResponsiveSheetHeader,
   ResponsiveSheetTitle,
   ResponsiveSheetTrigger,
-} from "~/components/ui/responsive-sheet"
+} from '~/components/ui/responsive-sheet'
 
 const ROLE_TYPES = [
-  { value: "all", label: "All Roles" },
-  { value: "research", label: "Research" },
-  { value: "engineering", label: "Engineering" },
-  { value: "operations", label: "Operations" },
-  { value: "policy", label: "Policy" },
-  { value: "other", label: "Other" },
+  { value: 'all', label: 'All Roles' },
+  { value: 'research', label: 'Research' },
+  { value: 'engineering', label: 'Engineering' },
+  { value: 'operations', label: 'Operations' },
+  { value: 'policy', label: 'Policy' },
+  { value: 'other', label: 'Other' },
 ]
 
 const LOCATION_OPTIONS = [
-  { value: "all", label: "All Locations" },
-  { value: "remote", label: "Remote Only" },
-  { value: "onsite", label: "On-site Only" },
+  { value: 'all', label: 'All Locations' },
+  { value: 'remote', label: 'Remote Only' },
+  { value: 'onsite', label: 'On-site Only' },
 ]
 
 interface MobileFiltersProps {
@@ -55,31 +55,38 @@ export function MobileFilters({
   const [sheetOpen, setSheetOpen] = useState(false)
 
   // Build active filter chips
-  const activeFilters: Array<{ key: string; label: string; onRemove: () => void }> = []
+  const activeFilters: Array<{
+    key: string
+    label: string
+    onRemove: () => void
+  }> = []
 
-  if (roleType && roleType !== "all") {
-    const roleLabel = ROLE_TYPES.find(r => r.value === roleType)?.label || roleType
+  if (roleType && roleType !== 'all') {
+    const roleLabel =
+      ROLE_TYPES.find((r) => r.value === roleType)?.label || roleType
     activeFilters.push({
-      key: "role",
+      key: 'role',
       label: roleLabel,
-      onRemove: () => onRoleChange("all"),
+      onRemove: () => onRoleChange('all'),
     })
   }
 
-  if (locationFilter && locationFilter !== "all") {
-    const locLabel = LOCATION_OPTIONS.find(l => l.value === locationFilter)?.label || locationFilter
+  if (locationFilter && locationFilter !== 'all') {
+    const locLabel =
+      LOCATION_OPTIONS.find((l) => l.value === locationFilter)?.label ||
+      locationFilter
     activeFilters.push({
-      key: "location",
+      key: 'location',
       label: locLabel,
-      onRemove: () => onLocationChange("all"),
+      onRemove: () => onLocationChange('all'),
     })
   }
 
   if (searchTerm) {
     activeFilters.push({
-      key: "search",
+      key: 'search',
       label: `"${searchTerm}"`,
-      onRemove: () => onSearchChange(""),
+      onRemove: () => onSearchChange(''),
     })
   }
 
@@ -89,11 +96,7 @@ export function MobileFilters({
       {activeFilters.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {activeFilters.map((filter) => (
-            <Badge
-              key={filter.key}
-              variant="secondary"
-              className="pr-1 gap-1"
-            >
+            <Badge key={filter.key} variant="secondary" className="pr-1 gap-1">
               {filter.label}
               <button
                 onClick={filter.onRemove}
@@ -147,7 +150,7 @@ export function MobileFilters({
             {/* Role Type */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Role Type</label>
-              <Select value={roleType || "all"} onValueChange={onRoleChange}>
+              <Select value={roleType || 'all'} onValueChange={onRoleChange}>
                 <SelectTrigger className="min-h-11">
                   <SelectValue placeholder="All Roles" />
                 </SelectTrigger>
@@ -164,7 +167,10 @@ export function MobileFilters({
             {/* Location */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Location</label>
-              <Select value={locationFilter || "all"} onValueChange={onLocationChange}>
+              <Select
+                value={locationFilter || 'all'}
+                onValueChange={onLocationChange}
+              >
                 <SelectTrigger className="min-h-11">
                   <SelectValue placeholder="All Locations" />
                 </SelectTrigger>

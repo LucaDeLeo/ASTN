@@ -32,11 +32,11 @@ key-files:
 
 key-decisions:
   - "Default step changed from 'basic' to 'input' for new profile flow"
-  - "chatFirst prop passed through wizard chain to EnrichmentStep"
-  - "Chat-first users send greeting indicating starting from scratch"
+  - 'chatFirst prop passed through wizard chain to EnrichmentStep'
+  - 'Chat-first users send greeting indicating starting from scratch'
 
 patterns-established:
-  - "Entry point context flows via search params through route to wizard to chat"
+  - 'Entry point context flows via search params through route to wizard to chat'
 
 # Metrics
 duration: ~5min
@@ -56,6 +56,7 @@ completed: 2026-01-19
 - **Files modified:** 5
 
 ## Accomplishments
+
 - Profile edit route now defaults to input step showing entry point selection
 - All four entry paths work: upload, paste, manual, chat-first
 - Chat-first entry auto-sends greeting to EnrichmentStep for context-aware AI conversation
@@ -72,6 +73,7 @@ Each task was committed atomically:
 5. **Fix: LinkedIn instructions** - `d6ce96a` (fix)
 
 ## Files Created/Modified
+
 - `src/routes/profile/edit.tsx` - Extended search schema, added input step routing, conditional page titles
 - `src/components/profile/wizard/ProfileCreationWizard.tsx` - Added onManualEntry and onEnrich callbacks
 - `src/components/profile/wizard/ProfileWizard.tsx` - Added chatFirst prop passthrough
@@ -79,6 +81,7 @@ Each task was committed atomically:
 - `src/components/profile/wizard/EntryPointSelector.tsx` - Fixed LinkedIn PDF instructions
 
 ## Decisions Made
+
 - Default step changed from "basic" to "input" so new users see entry point selection
 - chatFirst users send "Hi! I'd like help creating my profile. I'm starting from scratch." as greeting
 - LinkedIn PDF instructions corrected per user feedback (More -> Resources button)
@@ -88,6 +91,7 @@ Each task was committed atomically:
 ### User-Requested Fix
 
 **1. [Checkpoint Feedback] LinkedIn PDF instructions incorrect**
+
 - **Found during:** Task 4 (verification checkpoint)
 - **Issue:** Instructions said "More" button but LinkedIn actually shows "Resources"
 - **Fix:** Changed text from "More" to "Resources" in EntryPointSelector.tsx
@@ -100,17 +104,21 @@ Each task was committed atomically:
 **Impact on plan:** Minor text correction, no scope change
 
 ## Issues Encountered
+
 None - plan executed as specified with user feedback incorporated at checkpoint
 
 ## User Setup Required
+
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Profile creation wizard fully integrated and verified
 - All four entry points functional
 - Phase 10 (Wizard Integration) complete
 - v1.1 Profile Input Speedup milestone ready for completion
 
 ---
-*Phase: 10-wizard-integration*
-*Completed: 2026-01-19*
+
+_Phase: 10-wizard-integration_
+_Completed: 2026-01-19_

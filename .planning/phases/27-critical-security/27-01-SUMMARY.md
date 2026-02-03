@@ -22,9 +22,9 @@ affects:
 tech-stack:
   added: []
   patterns:
-    - "requireAuth helper for action/query/mutation auth checks"
-    - "requireAnyOrgAdmin for legacy admin endpoints without org context"
-    - "Graceful degradation (return [] or null) for queries vs throw for mutations/actions"
+    - 'requireAuth helper for action/query/mutation auth checks'
+    - 'requireAnyOrgAdmin for legacy admin endpoints without org context'
+    - 'Graceful degradation (return [] or null) for queries vs throw for mutations/actions'
 
 key-files:
   created:
@@ -40,14 +40,14 @@ key-files:
     - convex/_generated/api.d.ts
 
 key-decisions:
-  - "requireAnyOrgAdmin pattern for legacy admin endpoints (no orgId in frontend)"
-  - "Queries return empty/null for unauthorized, mutations/actions throw errors"
-  - "Deprecate getCompleteness rather than remove (no frontend callers found)"
+  - 'requireAnyOrgAdmin pattern for legacy admin endpoints (no orgId in frontend)'
+  - 'Queries return empty/null for unauthorized, mutations/actions throw errors'
+  - 'Deprecate getCompleteness rather than remove (no frontend callers found)'
 
 patterns-established:
-  - "requireAuth: shared helper for auth enforcement across actions/queries/mutations"
-  - "requireAnyOrgAdmin: admin check without org-scoped context for global data"
-  - "Ownership check pattern: fetch profile via internal query, compare userId"
+  - 'requireAuth: shared helper for auth enforcement across actions/queries/mutations'
+  - 'requireAnyOrgAdmin: admin check without org-scoped context for global data'
+  - 'Ownership check pattern: fetch profile via internal query, compare userId'
 
 # Metrics
 duration: 6min
@@ -121,5 +121,6 @@ None - no external service configuration required.
 - Ready for plan 27-02 (LLM output validation)
 
 ---
-*Phase: 27-critical-security*
-*Completed: 2026-02-02*
+
+_Phase: 27-critical-security_
+_Completed: 2026-02-02_

@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
-import { Check } from "lucide-react";
-import { SkillsInput } from "../../skills/SkillsInput";
-import type { Doc } from "../../../../../convex/_generated/dataModel";
+import { useEffect, useState } from 'react'
+import { Check } from 'lucide-react'
+import { SkillsInput } from '../../skills/SkillsInput'
+import type { Doc } from '../../../../../convex/_generated/dataModel'
 
 interface SkillsStepProps {
-  profile: Doc<"profiles"> | null;
-  saveFieldImmediate: (field: string, value: unknown) => Promise<void>;
-  isSaving: boolean;
-  lastSaved: Date | null;
+  profile: Doc<'profiles'> | null
+  saveFieldImmediate: (field: string, value: unknown) => Promise<void>
+  isSaving: boolean
+  lastSaved: Date | null
 }
 
 export function SkillsStep({
@@ -17,20 +17,20 @@ export function SkillsStep({
   lastSaved,
 }: SkillsStepProps) {
   const [selectedSkills, setSelectedSkills] = useState<Array<string>>(
-    profile?.skills ?? []
-  );
+    profile?.skills ?? [],
+  )
 
   // Sync local state with profile when it changes
   useEffect(() => {
     if (profile) {
-      setSelectedSkills(profile.skills ?? []);
+      setSelectedSkills(profile.skills ?? [])
     }
-  }, [profile]);
+  }, [profile])
 
   const handleSkillsChange = (skills: Array<string>) => {
-    setSelectedSkills(skills);
-    saveFieldImmediate("skills", skills);
-  };
+    setSelectedSkills(skills)
+    saveFieldImmediate('skills', skills)
+  }
 
   return (
     <div className="space-y-6">
@@ -60,5 +60,5 @@ export function SkillsStep({
         ) : null}
       </div>
     </div>
-  );
+  )
 }

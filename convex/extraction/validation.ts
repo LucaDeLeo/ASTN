@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const documentExtractionResultSchema = z
   .object({
@@ -16,7 +16,7 @@ export const documentExtractionResultSchema = z
             endYear: z.coerce.number().optional(),
             current: z.boolean().optional(),
           })
-          .passthrough()
+          .passthrough(),
       )
       .optional(),
     workHistory: z
@@ -30,13 +30,13 @@ export const documentExtractionResultSchema = z
             current: z.boolean().optional(),
             description: z.string().optional(),
           })
-          .passthrough()
+          .passthrough(),
       )
       .optional(),
     rawSkills: z.array(z.string()).optional(),
   })
-  .passthrough();
+  .passthrough()
 
 export type DocumentExtractionResultValidated = z.infer<
   typeof documentExtractionResultSchema
->;
+>

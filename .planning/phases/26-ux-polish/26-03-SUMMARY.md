@@ -18,8 +18,8 @@ affects: [events-pages, profile-pages]
 tech-stack:
   added: []
   patterns:
-    - "Empty state variants for context-appropriate messaging"
-    - "Component props for filter-aware empty states"
+    - 'Empty state variants for context-appropriate messaging'
+    - 'Component props for filter-aware empty states'
 
 key-files:
   created: []
@@ -30,12 +30,12 @@ key-files:
     - src/components/opportunities/opportunity-list.tsx
 
 key-decisions:
-  - "Added hasFilters/onClearFilters props to OpportunityList for contextual empty states"
-  - "Kept compound component pattern (Empty.Icon, Empty.Title) for backward compatibility"
+  - 'Added hasFilters/onClearFilters props to OpportunityList for contextual empty states'
+  - 'Kept compound component pattern (Empty.Icon, Empty.Title) for backward compatibility'
 
 patterns-established:
   - "Empty variant selection: use 'no-results' when filters active, specific variant otherwise"
-  - "Empty component actions: pass action prop with buttons for contextual CTAs"
+  - 'Empty component actions: pass action prop with buttons for contextual CTAs'
 
 # Metrics
 duration: 4min
@@ -55,6 +55,7 @@ completed: 2026-01-22
 - **Files modified:** 4
 
 ## Accomplishments
+
 - Empty component expanded from 4 to 8 variants with unique SVG illustrations
 - Matches page now uses no-matches variant with Improve Profile / Browse Opportunities CTAs
 - Opportunities page shows no-results (with Clear Filters) when filters active, no-opportunities otherwise
@@ -68,28 +69,35 @@ Each task was committed atomically:
 2. **Task 2: Update page usages to use contextual variants** - `9209bc4` (feat)
 
 ## Files Created/Modified
+
 - `src/components/ui/empty.tsx` - Added 4 new variants with illustrations, titles, descriptions
 - `src/routes/matches/index.tsx` - Replaced inline Card empty state with Empty variant
 - `src/routes/opportunities/index.tsx` - Added hasFilters detection and clearFilters handler
 - `src/components/opportunities/opportunity-list.tsx` - Added hasFilters/onClearFilters props for contextual variants
 
 ## Decisions Made
+
 - Added hasFilters and onClearFilters props to OpportunityList to enable context-aware empty states
 - Kept the compound component pattern (Empty.Icon, Empty.Title, Empty.Description) for backward compatibility with existing usages
 
 ## Deviations from Plan
+
 None - plan executed exactly as written.
 
 ## Issues Encountered
+
 None
 
 ## User Setup Required
+
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Empty state variants available for events pages and other future uses
 - Pattern established for filter-aware empty states in list components
 
 ---
-*Phase: 26-ux-polish*
-*Completed: 2026-01-22*
+
+_Phase: 26-ux-polish_
+_Completed: 2026-01-22_

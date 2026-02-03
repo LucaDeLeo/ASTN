@@ -209,9 +209,7 @@ export const processMatchBatch = internalAction({
         } else {
           for (const match of batchResult.matches) {
             const oppId = match.opportunityId as Id<'opportunities'>
-            const validOpp = batch.some(
-              (o: { _id: string }) => o._id === oppId,
-            )
+            const validOpp = batch.some((o: { _id: string }) => o._id === oppId)
             if (validOpp) {
               batchMatches.push({
                 ...match,
@@ -282,12 +280,13 @@ export const processMatchBatch = internalAction({
       })
     }
 
-    if (batchMatches.length > 0 || isLastBatch) {
-      const newAccumulatedGrowthAreas = [
-        ...accumulatedGrowthAreas,
-        ...batchGrowthAreas,
-      ]
+    const newAccumulatedGrowthAreas = [
+      ...accumulatedGrowthAreas,
+      ...batchGrowthAreas,
+    ]
 
+    // Save results when we have matches or this is the final batch
+    if (batchMatches.length > 0 || isLastBatch) {
       await ctx.runMutation(internal.matching.mutations.saveBatchResults, {
         profileId,
         batchIndex,
@@ -308,39 +307,19 @@ export const processMatchBatch = internalAction({
         accumulatedGrowthAreas: newAccumulatedGrowthAreas,
         runTimestamp,
       })
+    }
 
-      const durationMs = Date.now() - startTime
-      log('info', 'processMatchBatch', {
-        batchIndex,
-        totalBatches,
-        durationMs,
-        matchCount: batchMatches.length,
-        isLastBatch,
-      })
+    const durationMs = Date.now() - startTime
+    log('info', 'processMatchBatch', {
+      batchIndex,
+      totalBatches,
+      durationMs,
+      matchCount: batchMatches.length,
+      isLastBatch,
+    })
 
-      if (!isLastBatch) {
-        await ctx.scheduler.runAfter(
-          RATE_LIMIT_DELAY_MS,
-          internal.matching.compute.processMatchBatch,
-          {
-            profileId,
-            batchIndex: batchIndex + 1,
-            totalBatches,
-            retryCount: 0,
-            previousOppIds,
-            accumulatedGrowthAreas: newAccumulatedGrowthAreas,
-            runTimestamp,
-          },
-        )
-      }
-    } else {
-      const durationMs = Date.now() - startTime
-      log('info', 'processMatchBatch: no matches in batch', {
-        batchIndex,
-        totalBatches,
-        durationMs,
-      })
-
+    // Schedule the next batch unless this was the last one
+    if (!isLastBatch) {
       await ctx.scheduler.runAfter(
         RATE_LIMIT_DELAY_MS,
         internal.matching.compute.processMatchBatch,
@@ -350,7 +329,7 @@ export const processMatchBatch = internalAction({
           totalBatches,
           retryCount: 0,
           previousOppIds,
-          accumulatedGrowthAreas,
+          accumulatedGrowthAreas: newAccumulatedGrowthAreas,
           runTimestamp,
         },
       )

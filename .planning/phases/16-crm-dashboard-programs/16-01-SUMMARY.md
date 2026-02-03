@@ -30,14 +30,14 @@ key-files:
     - src/routes/org/$slug/admin/index.tsx
 
 key-decisions:
-  - "Time range options: 7d, 30d, 90d, all (default 30d)"
-  - "Engagement labels use friendly names: Active instead of highly_engaged"
-  - "Career distribution shows top 6 seeking values"
-  - "joinedThisMonth field reused for time-range-filtered join count"
+  - 'Time range options: 7d, 30d, 90d, all (default 30d)'
+  - 'Engagement labels use friendly names: Active instead of highly_engaged'
+  - 'Career distribution shows top 6 seeking values'
+  - 'joinedThisMonth field reused for time-range-filtered join count'
 
 patterns-established:
-  - "DistributionBar: Simple bar component for count/percentage display"
-  - "Enhanced stats pattern: Extend existing query with optional new fields for backward compatibility"
+  - 'DistributionBar: Simple bar component for count/percentage display'
+  - 'Enhanced stats pattern: Extend existing query with optional new fields for backward compatibility'
 
 # Metrics
 duration: 6min
@@ -104,5 +104,6 @@ None - no external service configuration required.
 - Engagement distribution data available for member directory filtering
 
 ---
-*Phase: 16-crm-dashboard-programs*
-*Completed: 2026-01-19*
+
+_Phase: 16-crm-dashboard-programs_
+_Completed: 2026-01-19_

@@ -1,13 +1,13 @@
-import { useQuery } from "convex/react";
-import { CheckCircle, PenLine, Sparkles } from "lucide-react";
-import { api } from "../../../../convex/_generated/api";
-import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
+import { useQuery } from 'convex/react'
+import { CheckCircle, PenLine, Sparkles } from 'lucide-react'
+import { api } from '../../../../convex/_generated/api'
+import { Button } from '~/components/ui/button'
+import { Card } from '~/components/ui/card'
 
 interface PostApplySummaryProps {
-  onContinueToEnrichment: () => void;
-  onSkip: () => void;
-  onBackToManual: () => void;
+  onContinueToEnrichment: () => void
+  onSkip: () => void
+  onBackToManual: () => void
 }
 
 export function PostApplySummary({
@@ -15,12 +15,12 @@ export function PostApplySummary({
   onSkip,
   onBackToManual,
 }: PostApplySummaryProps) {
-  const completeness = useQuery(api.profiles.getMyCompleteness);
+  const completeness = useQuery(api.profiles.getMyCompleteness)
 
   // Show loading state while fetching completeness
-  const percentage = completeness?.percentage ?? 0;
-  const completedCount = completeness?.completedCount ?? 0;
-  const totalCount = completeness?.totalCount ?? 7;
+  const percentage = completeness?.percentage ?? 0
+  const completedCount = completeness?.completedCount ?? 0
+  const totalCount = completeness?.totalCount ?? 7
 
   return (
     <Card className="p-8 max-w-lg mx-auto">
@@ -54,15 +54,22 @@ export function PostApplySummary({
               style={{ width: `${percentage}%` }}
             />
           </div>
-          <p className="text-2xl font-bold text-primary">{percentage}% complete</p>
+          <p className="text-2xl font-bold text-primary">
+            {percentage}% complete
+          </p>
         </div>
 
         {/* Call to action */}
         <div className="pt-4 space-y-3">
           <p className="text-sm text-slate-600">
-            Continue to chat with our AI to fill in the gaps and make your profile shine.
+            Continue to chat with our AI to fill in the gaps and make your
+            profile shine.
           </p>
-          <Button onClick={onContinueToEnrichment} size="lg" className="w-full gap-2">
+          <Button
+            onClick={onContinueToEnrichment}
+            size="lg"
+            className="w-full gap-2"
+          >
             <Sparkles className="size-4" />
             Continue to Enrichment
           </Button>
@@ -86,5 +93,5 @@ export function PostApplySummary({
         </div>
       </div>
     </Card>
-  );
+  )
 }

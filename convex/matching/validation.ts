@@ -1,9 +1,9 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const matchItemSchema = z
   .object({
     opportunityId: z.string(),
-    tier: z.enum(["great", "good", "exploring"]),
+    tier: z.enum(['great', 'good', 'exploring']),
     score: z.coerce.number().min(0).max(100),
     strengths: z.array(z.string()),
     gap: z.string().optional(),
@@ -18,12 +18,12 @@ export const matchItemSchema = z
             action: z.string(),
             priority: z.string(),
           })
-          .passthrough()
+          .passthrough(),
       )
       .optional()
       .default([]),
   })
-  .passthrough();
+  .passthrough()
 
 export const matchResultSchema = z
   .object({
@@ -35,10 +35,10 @@ export const matchResultSchema = z
             theme: z.string(),
             items: z.array(z.string()),
           })
-          .passthrough()
+          .passthrough(),
       )
       .optional(),
   })
-  .passthrough();
+  .passthrough()
 
-export type MatchingResultValidated = z.infer<typeof matchResultSchema>;
+export type MatchingResultValidated = z.infer<typeof matchResultSchema>

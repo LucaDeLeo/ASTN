@@ -20,12 +20,14 @@ Key risks center on PDF parsing failures (multi-column layouts, scanned document
 The stack builds on existing ASTN infrastructure with minimal additions.
 
 **Core technologies:**
+
 - **Convex File Storage** (built-in): Upload/store PDFs using `generateUploadUrl()` pattern - no external storage needed
 - **unpdf + pdfjs-dist** (new): Modern PDF text extraction, no native dependencies, works in Convex Node.js runtime
 - **Claude Haiku 4.5** (existing): Fast, cheap extraction (~$0.001/resume) using tool_choice for guaranteed structured output
 - **@anthropic-ai/sdk** (existing): Already in package.json at v0.71.2
 
 **Why not alternatives:**
+
 - pdf-parse: Unmaintained since 2019, security concerns
 - Claude Sonnet: Overkill cost for extraction where Haiku suffices
 - External storage (S3/R2): Unnecessary complexity when Convex storage is included
@@ -33,6 +35,7 @@ The stack builds on existing ASTN infrastructure with minimal additions.
 ### Expected Features
 
 **Must have (table stakes):**
+
 - PDF upload with drag-and-drop zone
 - Text paste alternative for users without file access
 - Progress/status indicators during upload and extraction
@@ -41,12 +44,14 @@ The stack builds on existing ASTN infrastructure with minimal additions.
 - File size limits displayed upfront (10MB max)
 
 **Should have (differentiators):**
+
 - Skills taxonomy mapping - extract "ML safety" and suggest matching ASTN taxonomy skills
 - Gap identification - "Resume filled 60% of profile, enrichment chat can help with the rest"
 - AI safety context understanding - recognize safety orgs, research roles
 - LinkedIn PDF format optimization
 
 **Defer (v2+):**
+
 - DOCX support
 - OCR for scanned PDFs (Claude Vision)
 - Batch document upload
@@ -57,6 +62,7 @@ The stack builds on existing ASTN infrastructure with minimal additions.
 The architecture adds a new "upload-first" entry point to the profile wizard while reusing the existing extraction review pattern from enrichment. Two new components (`DocumentUpload`, `ExtractionPreview`) handle the upload and review UI. A new Convex action (`extractFromDocument`) performs PDF parsing and LLM extraction server-side where the API key lives.
 
 **Major components:**
+
 1. **DocumentUpload component** (`src/components/profile/upload/`) - Drag-drop zone, file picker, paste textarea
 2. **ExtractionPreview component** (`src/components/profile/upload/`) - Field-by-field review with inline editing
 3. **extractFromDocument action** (`convex/documents/extraction.ts`) - PDF text extraction + Claude tool-use
@@ -81,12 +87,14 @@ The architecture adds a new "upload-first" entry point to the profile wizard whi
 Based on research, suggested phase structure with 5 phases:
 
 ### Phase 1: File Upload Foundation
+
 **Rationale:** Infrastructure must exist before extraction can work. Security controls prevent attacks from day one.
 **Delivers:** Convex storage integration, upload mutation, size/type validation, rate limiting, basic upload UI
 **Addresses:** Table stakes (file upload, progress indicators)
 **Avoids:** Pitfall #5 (security vulnerabilities), Pitfall #6 (cost explosion via rate limiting)
 
 ### Phase 2: LLM Extraction Core
+
 **Rationale:** Extraction is the core value - once upload works, extraction enables the user benefit.
 **Delivers:** PDF text extraction (unpdf), Claude extraction action, structured output schema, date parsing with granularity
 **Uses:** unpdf + pdfjs-dist (new), existing Claude/Anthropic SDK
@@ -94,18 +102,21 @@ Based on research, suggested phase structure with 5 phases:
 **Avoids:** Pitfall #2 (extraction failures), Pitfall #3 (schema mismatch), Pitfall #4 (date ambiguity)
 
 ### Phase 3: Review & Apply UI
+
 **Rationale:** Without review UI, extraction data cannot reach user profiles. This is the critical trust-building moment.
 **Delivers:** ExtractionPreview component, inline field editing, accept/reject per field, apply to profile mutation
 **Addresses:** Table stakes (editable extracted data, clear field mapping)
 **Avoids:** Pitfall #1 (no user verification)
 
 ### Phase 4: Wizard Integration
+
 **Rationale:** Once the upload-extract-review flow works standalone, integrate into existing profile wizard.
 **Delivers:** ProfileWizard modification with import step, text paste alternative flow, context-aware enrichment prompts
 **Addresses:** Table stakes (text paste, manual fallback), differentiator (gap identification for enrichment)
 **Implements:** Modified enrichment that skips questions about extracted data
 
 ### Phase 5: Polish & Monitoring
+
 **Rationale:** After core flow works, add refinements and operational visibility.
 **Delivers:** Skills taxonomy mapping, extraction analytics (track edits), error handling improvements, graceful degradation for partial failures
 **Addresses:** Differentiators (taxonomy-aware extraction, confidence display)
@@ -124,22 +135,24 @@ This ordering also staggers risk: Phase 1-2 are technical risks (will the librar
 ### Research Flags
 
 **Phases likely needing deeper research during planning:**
+
 - **Phase 2:** Test unpdf with diverse real-world resumes before committing to implementation. May need Claude Vision fallback for complex layouts.
 - **Phase 4:** Enrichment chat prompt engineering may need iteration to correctly leverage extracted context.
 
 **Phases with standard patterns (skip research-phase):**
+
 - **Phase 1:** Convex file storage is well-documented, straightforward implementation
 - **Phase 3:** UI patterns are clear from features research (review screen with inline edit)
 - **Phase 5:** Analytics and monitoring are standard operational concerns
 
 ## Confidence Assessment
 
-| Area | Confidence | Notes |
-|------|------------|-------|
-| Stack | HIGH | Verified against Convex docs, existing codebase patterns, npm ecosystem |
-| Features | HIGH | Well-established domain, multiple sources agree on table stakes |
-| Architecture | HIGH | Extends existing enrichment patterns, Convex docs verified |
-| Pitfalls | HIGH | Multiple sources document same issues, PDF parsing is known-hard problem |
+| Area         | Confidence | Notes                                                                    |
+| ------------ | ---------- | ------------------------------------------------------------------------ |
+| Stack        | HIGH       | Verified against Convex docs, existing codebase patterns, npm ecosystem  |
+| Features     | HIGH       | Well-established domain, multiple sources agree on table stakes          |
+| Architecture | HIGH       | Extends existing enrichment patterns, Convex docs verified               |
+| Pitfalls     | HIGH       | Multiple sources document same issues, PDF parsing is known-hard problem |
 
 **Overall confidence:** HIGH
 
@@ -153,6 +166,7 @@ This ordering also staggers risk: Phase 1-2 are technical risks (will the librar
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - Existing ASTN codebase: `convex/enrichment/extraction.ts` - proven tool_choice pattern
 - Existing ASTN codebase: `package.json` - @anthropic-ai/sdk v0.71.2 already present
 - Convex File Storage: https://docs.convex.dev/file-storage/upload-files
@@ -160,16 +174,19 @@ This ordering also staggers risk: Phase 1-2 are technical risks (will the librar
 - Claude PDF Support: https://platform.claude.com/docs/en/build-with-claude/pdf-support
 
 ### Secondary (MEDIUM confidence)
+
 - unpdf library: https://github.com/unjs/unpdf (UnJS ecosystem, actively maintained)
 - Multiple UX studies on job application frustrations and resume parsing expectations
 - Lightcast Skills Taxonomy documentation
 - OWASP file upload security guidelines
 
 ### Tertiary (validated via search, needs implementation testing)
+
 - Specific token costs for PDF visual processing
 - LinkedIn PDF export structure quirks
 - Date parsing edge cases in international formats
 
 ---
-*Research completed: 2026-01-18*
-*Ready for requirements: yes*
+
+_Research completed: 2026-01-18_
+_Ready for requirements: yes_
