@@ -67,6 +67,7 @@
     "lucide-react": "^0.562.0",
     "nitro": "^3.0.1-alpha.1",
     "react": "^19.2.1",
+    "react-day-picker": "^9.13.0",
     "react-dom": "^19.2.1",
     "react-dropzone": "^14.3.8",
     "resend": "^6.7.0",
