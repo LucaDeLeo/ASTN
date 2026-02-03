@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** v1.5 Org Onboarding & Co-working -- Phase 30
+**Current focus:** v1.5 Org Onboarding & Co-working -- Phase 30 complete
 
 ## Current Position
 
 Phase: 30 of 34 (Platform Admin + Org Application)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-02-03 -- Completed 30-01-PLAN.md (Schema + Auth + Org Applications Backend)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-02-03 -- Completed 30-02-PLAN.md (Frontend -- Application Form, Status Page, Admin Review Queue)
 
-Progress: [█████░░░░░] 50% (phase 30)
+Progress: [██████████] 100% (phase 30)
 
 ## Milestone History
 
@@ -25,7 +25,7 @@ Progress: [█████░░░░░] 50% (phase 30)
 - v2.0 Mobile + Tauri (partial) - Phases 21-23, 26 complete (16 plans). Phase 25 deferred.
 - v1.4 Hardening - 3 phases (27-29), 9 plans - shipped 2026-02-02
 
-**Total:** 29 phases, 92 plans across 5 shipped milestones + partial v2.0
+**Total:** 29 phases, 94 plans across 5 shipped milestones + partial v2.0
 
 ## Accumulated Decisions
 
@@ -34,13 +34,16 @@ Progress: [█████░░░░░] 50% (phase 30)
 | Platform admin is separate `platformAdmins` table | 30-01 | Clean separation from org-level admin role |
 | Slug generation with db uniqueness in `convex/lib/slug.ts` | 30-01 | Reusable utility, appends -2, -3 for collisions |
 | Case-insensitive normalized org name for duplicate detection | 30-01 | Checks both organizations and orgApplications tables |
+| Pre-fill applicant name/email from profile query | 30-02 | Better UX, reduces friction for authenticated users |
+| Desktop table + mobile card list for admin review queue | 30-02 | Responsive pattern matching existing member list |
+| Rejection reason minimum 10 characters | 30-02 | Ensures meaningful feedback to applicants |
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 93
-- Total execution time: ~20.5 hours (across all milestones)
+- Total plans completed: 94
+- Total execution time: ~20.6 hours (across all milestones)
 
 ## Pending Todos
 
@@ -48,6 +51,7 @@ Progress: [█████░░░░░] 50% (phase 30)
 - [ ] Configure 80K Hours Algolia credentials
 - [ ] Obtain aisafety.com Airtable credentials from their team
 - [ ] Configure Lu.ma API key for orgs needing event sync
+- [ ] Seed platformAdmins table for first platform admin user
 
 ## Blockers/Concerns
 
@@ -56,11 +60,11 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Completed 30-01-PLAN.md (Schema + Auth + Org Applications Backend)
+Stopped at: Completed 30-02-PLAN.md (Frontend -- Application Form, Status Page, Admin Review Queue)
 Resume file: None
-Next action: Execute 30-02-PLAN.md (frontend routes for org application)
+Next action: Plan Phase 31 (Org Self-Configuration + Space Definition)
 
 ---
 
 _State initialized: 2026-01-17_
-_Last updated: 2026-02-03 -- Completed 30-01-PLAN.md_
+_Last updated: 2026-02-03 -- Completed 30-02-PLAN.md_
