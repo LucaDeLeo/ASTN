@@ -1,75 +1,76 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
   AuthLoading,
   Authenticated,
   Unauthenticated,
   useMutation,
   useQuery,
-} from "convex/react";
-import { Building2, Eye, EyeOff, Link2Off, Loader2 } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
-import { api } from "../../../../convex/_generated/api";
-import type { Id } from "../../../../convex/_generated/dataModel";
-import { AuthHeader } from "~/components/layout/auth-header";
-import { Card } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
-import { Spinner } from "~/components/ui/spinner";
+} from 'convex/react'
+import { Building2, Eye, EyeOff, Link2Off, Loader2 } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
+import { api } from '../../../../convex/_generated/api'
+import type { Id } from '../../../../convex/_generated/dataModel'
+import { AuthHeader } from '~/components/layout/auth-header'
+import { GradientBg } from '~/components/layout/GradientBg'
+import { Card } from '~/components/ui/card'
+import { Button } from '~/components/ui/button'
+import { Spinner } from '~/components/ui/spinner'
 
-export const Route = createFileRoute("/org/$slug/join")({
+export const Route = createFileRoute('/org/$slug/join')({
   component: JoinOrgPage,
   validateSearch: (search: Record<string, unknown>) => ({
-    token: (search.token as string) || "",
+    token: (search.token as string) || '',
   }),
-});
+})
 
 function JoinOrgPage() {
-  const { token } = Route.useSearch();
+  const { token } = Route.useSearch()
   const validation = useQuery(
     api.orgs.directory.validateInviteToken,
-    token ? { token } : "skip"
-  );
+    token ? { token } : 'skip',
+  )
 
   // No token provided
   if (!token) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <GradientBg>
         <AuthHeader />
         <main className="container mx-auto px-4 py-8">
           <InvalidTokenMessage message="No invite link provided. Please request an invite link from an organization admin." />
         </main>
-      </div>
-    );
+      </GradientBg>
+    )
   }
 
   // Loading validation
   if (validation === undefined) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <GradientBg>
         <AuthHeader />
         <main className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center min-h-[60vh]">
             <Spinner />
           </div>
         </main>
-      </div>
-    );
+      </GradientBg>
+    )
   }
 
   // Invalid or expired token
   if (!validation.valid) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <GradientBg>
         <AuthHeader />
         <main className="container mx-auto px-4 py-8">
           <InvalidTokenMessage message="This invite link is invalid or has expired. Please request a new link from an organization admin." />
         </main>
-      </div>
-    );
+      </GradientBg>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <GradientBg>
       <AuthHeader />
       <main className="container mx-auto px-4 py-8">
         <AuthLoading>
@@ -91,8 +92,8 @@ function JoinOrgPage() {
           />
         </Authenticated>
       </main>
-    </div>
-  );
+    </GradientBg>
+  )
 }
 
 function InvalidTokenMessage({ message }: { message: string }) {
@@ -106,11 +107,11 @@ function InvalidTokenMessage({ message }: { message: string }) {
       </h1>
       <p className="text-slate-600">{message}</p>
     </div>
-  );
+  )
 }
 
 function SignInPrompt({ orgName }: { orgName: string }) {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   return (
     <Card className="max-w-md mx-auto p-8 text-center">
@@ -123,31 +124,31 @@ function SignInPrompt({ orgName }: { orgName: string }) {
       <p className="text-slate-600 mb-6">
         Sign in to join this organization and access the member directory.
       </p>
-      <Button onClick={() => navigate({ to: "/login" })}>
+      <Button onClick={() => navigate({ to: '/login' })}>
         Sign In to Continue
       </Button>
     </Card>
-  );
+  )
 }
 
 interface JoinFormProps {
-  token: string;
-  orgId: Id<"organizations">;
-  orgName: string;
-  orgSlug?: string;
+  token: string
+  orgId: Id<'organizations'>
+  orgName: string
+  orgSlug?: string
 }
 
 function JoinForm({ token, orgId, orgName, orgSlug }: JoinFormProps) {
-  const navigate = useNavigate();
-  const joinOrg = useMutation(api.orgs.membership.joinOrg);
+  const navigate = useNavigate()
+  const joinOrg = useMutation(api.orgs.membership.joinOrg)
   const existingMembership = useQuery(api.orgs.membership.getMembership, {
     orgId,
-  });
+  })
 
-  const [visibility, setVisibility] = useState<"visible" | "hidden" | null>(
-    null
-  );
-  const [isJoining, setIsJoining] = useState(false);
+  const [visibility, setVisibility] = useState<'visible' | 'hidden' | null>(
+    null,
+  )
+  const [isJoining, setIsJoining] = useState(false)
 
   // Already a member
   if (existingMembership) {
@@ -165,40 +166,40 @@ function JoinForm({ token, orgId, orgName, orgSlug }: JoinFormProps) {
         <Button
           onClick={() =>
             navigate({
-              to: "/org/$slug",
-              params: { slug: orgSlug || "unknown" },
+              to: '/org/$slug',
+              params: { slug: orgSlug || 'unknown' },
             })
           }
         >
           View Organization
         </Button>
       </Card>
-    );
+    )
   }
 
   const handleJoin = async () => {
-    if (!visibility) return;
+    if (!visibility) return
 
-    setIsJoining(true);
+    setIsJoining(true)
     try {
       await joinOrg({
         orgId,
         inviteToken: token,
         directoryVisibility: visibility,
-      });
-      toast.success(`Welcome to ${orgName}!`);
+      })
+      toast.success(`Welcome to ${orgName}!`)
       navigate({
-        to: "/org/$slug",
-        params: { slug: orgSlug || "unknown" },
-      });
+        to: '/org/$slug',
+        params: { slug: orgSlug || 'unknown' },
+      })
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to join organization"
-      );
+        error instanceof Error ? error.message : 'Failed to join organization',
+      )
     } finally {
-      setIsJoining(false);
+      setIsJoining(false)
     }
-  };
+  }
 
   return (
     <Card className="max-w-lg mx-auto p-8">
@@ -217,8 +218,8 @@ function JoinForm({ token, orgId, orgName, orgSlug }: JoinFormProps) {
       <div className="space-y-3 mb-6">
         <VisibilityOption
           value="visible"
-          selected={visibility === "visible"}
-          onSelect={() => setVisibility("visible")}
+          selected={visibility === 'visible'}
+          onSelect={() => setVisibility('visible')}
           icon={Eye}
           title="Visible in Directory"
           description="Your name and profile summary appear in the member directory. Other members can see you're part of the organization."
@@ -226,8 +227,8 @@ function JoinForm({ token, orgId, orgName, orgSlug }: JoinFormProps) {
 
         <VisibilityOption
           value="hidden"
-          selected={visibility === "hidden"}
-          onSelect={() => setVisibility("hidden")}
+          selected={visibility === 'hidden'}
+          onSelect={() => setVisibility('hidden')}
           icon={EyeOff}
           title="Hidden from Directory"
           description="You're a member but won't appear in the public directory. Only organization admins can see your membership."
@@ -245,20 +246,20 @@ function JoinForm({ token, orgId, orgName, orgSlug }: JoinFormProps) {
             Joining...
           </>
         ) : (
-          "Join Organization"
+          'Join Organization'
         )}
       </Button>
     </Card>
-  );
+  )
 }
 
 interface VisibilityOptionProps {
-  value: "visible" | "hidden";
-  selected: boolean;
-  onSelect: () => void;
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  description: string;
+  value: 'visible' | 'hidden'
+  selected: boolean
+  onSelect: () => void
+  icon: React.ComponentType<{ className?: string }>
+  title: string
+  description: string
 }
 
 function VisibilityOption({
@@ -274,23 +275,23 @@ function VisibilityOption({
       onClick={onSelect}
       className={`w-full p-4 rounded-lg border-2 text-left transition-colors ${
         selected
-          ? "border-primary bg-primary/5"
-          : "border-slate-200 hover:border-slate-300"
+          ? 'border-primary bg-primary/5'
+          : 'border-slate-200 hover:border-slate-300'
       }`}
     >
       <div className="flex items-start gap-3">
         <div
           className={`size-10 rounded-full flex items-center justify-center shrink-0 ${
-            selected ? "bg-primary/10" : "bg-slate-100"
+            selected ? 'bg-primary/10' : 'bg-slate-100'
           }`}
         >
           <Icon
-            className={`size-5 ${selected ? "text-primary" : "text-slate-500"}`}
+            className={`size-5 ${selected ? 'text-primary' : 'text-slate-500'}`}
           />
         </div>
         <div>
           <h3
-            className={`font-medium ${selected ? "text-primary" : "text-foreground"}`}
+            className={`font-medium ${selected ? 'text-primary' : 'text-foreground'}`}
           >
             {title}
           </h3>
@@ -298,5 +299,5 @@ function VisibilityOption({
         </div>
       </div>
     </button>
-  );
+  )
 }
