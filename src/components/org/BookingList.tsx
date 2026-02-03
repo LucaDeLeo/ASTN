@@ -1,6 +1,7 @@
 import { useQuery } from 'convex/react'
 import { format } from 'date-fns'
 import { Calendar, Loader2, Users } from 'lucide-react'
+import { useCallback, useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { Badge } from '~/components/ui/badge'
@@ -11,6 +12,21 @@ interface BookingListProps {
   spaceId: Id<'coworkingSpaces'>
   startDate: string
   endDate: string
+}
+
+type BookingItem = {
+  _id: Id<'spaceBookings'>
+  date: string
+  startMinutes: number
+  endMinutes: number
+  bookingType: 'member' | 'guest'
+  workingOn?: string
+  interestedInMeeting?: string
+  profile?: {
+    name?: string
+    headline?: string
+    isGuest: boolean
+  } | null
 }
 
 // Format time range from minutes
@@ -28,6 +44,10 @@ function formatTimeRange(startMinutes: number, endMinutes: number): string {
 }
 
 export function BookingList({ spaceId, startDate, endDate }: BookingListProps) {
+  const [cursor, setCursor] = useState<string | undefined>(undefined)
+  const [allBookings, setAllBookings] = useState<Array<BookingItem>>([])
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+
   const result = useQuery(
     api.spaceBookings.admin.getAdminBookingsForDateRange,
     {
@@ -36,19 +56,37 @@ export function BookingList({ spaceId, startDate, endDate }: BookingListProps) {
       endDate,
       status: 'confirmed',
       limit: 50,
+      cursor,
     },
   )
 
-  // Loading state
-  if (result === undefined) {
+  // Merge new results when they arrive
+  const bookings =
+    cursor === undefined
+      ? (result?.bookings ?? [])
+      : [...allBookings, ...(result?.bookings ?? [])]
+
+  const handleLoadMore = useCallback(() => {
+    if (result?.nextCursor) {
+      setIsLoadingMore(true)
+      setAllBookings(bookings)
+      setCursor(result.nextCursor)
+    }
+  }, [result?.nextCursor, bookings])
+
+  // Reset loading state when new results arrive
+  if (isLoadingMore && result !== undefined) {
+    setIsLoadingMore(false)
+  }
+
+  // Loading state (initial load only)
+  if (result === undefined && cursor === undefined) {
     return (
       <div className="flex justify-center py-8">
         <Loader2 className="size-6 animate-spin text-slate-400" />
       </div>
     )
   }
-
-  const { bookings } = result
 
   // Empty state
   if (bookings.length === 0) {
@@ -113,10 +151,21 @@ export function BookingList({ spaceId, startDate, endDate }: BookingListProps) {
         )
       })}
 
-      {result.hasMore && (
+      {result?.hasMore && (
         <div className="text-center pt-4">
-          <Button variant="outline" disabled>
-            Load More (pagination coming soon)
+          <Button
+            variant="outline"
+            onClick={handleLoadMore}
+            disabled={isLoadingMore}
+          >
+            {isLoadingMore ? (
+              <>
+                <Loader2 className="size-4 mr-2 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              'Load More'
+            )}
           </Button>
         </div>
       )}

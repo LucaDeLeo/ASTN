@@ -1,7 +1,7 @@
 import { useQuery } from 'convex/react'
 import { format, subDays } from 'date-fns'
 import { Calendar, Filter, Loader2 } from 'lucide-react'
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { Badge } from '~/components/ui/badge'
@@ -22,6 +22,25 @@ interface BookingHistoryProps {
 }
 
 type StatusFilter = 'all' | 'confirmed' | 'cancelled' | 'rejected'
+
+type HistoryBooking = {
+  _id: Id<'spaceBookings'>
+  date: string
+  startMinutes: number
+  endMinutes: number
+  status: 'confirmed' | 'pending' | 'cancelled' | 'rejected'
+  bookingType: 'member' | 'guest'
+  workingOn?: string
+  interestedInMeeting?: string
+  rejectionReason?: string
+  approvedByName?: string
+  profile?: {
+    name?: string
+    headline?: string
+    email?: string
+    isGuest: boolean
+  } | null
+}
 
 // Format time range from minutes
 function formatTimeRange(startMinutes: number, endMinutes: number): string {
@@ -46,6 +65,15 @@ export function BookingHistory({ spaceId }: BookingHistoryProps) {
   const [startDate, setStartDate] = useState(defaultStart)
   const [endDate, setEndDate] = useState(defaultEnd)
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [cursor, setCursor] = useState<string | undefined>(undefined)
+  const [allBookings, setAllBookings] = useState<Array<HistoryBooking>>([])
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCursor(undefined)
+    setAllBookings([])
+  }, [startDate, endDate, statusFilter])
 
   const result = useQuery(
     api.spaceBookings.admin.getAdminBookingsForDateRange,
@@ -55,8 +83,28 @@ export function BookingHistory({ spaceId }: BookingHistoryProps) {
       endDate,
       status: statusFilter,
       limit: 50,
+      cursor,
     },
   )
+
+  // Merge new results when they arrive
+  const bookings =
+    cursor === undefined
+      ? (result?.bookings ?? [])
+      : [...allBookings, ...(result?.bookings ?? [])]
+
+  const handleLoadMore = useCallback(() => {
+    if (result?.nextCursor) {
+      setIsLoadingMore(true)
+      setAllBookings(bookings)
+      setCursor(result.nextCursor)
+    }
+  }, [result?.nextCursor, bookings])
+
+  // Reset loading state when new results arrive
+  if (isLoadingMore && result !== undefined) {
+    setIsLoadingMore(false)
+  }
 
   return (
     <div className="space-y-4">
@@ -112,15 +160,15 @@ export function BookingHistory({ spaceId }: BookingHistoryProps) {
         </CardContent>
       </Card>
 
-      {/* Loading state */}
-      {result === undefined && (
+      {/* Loading state (initial load only) */}
+      {result === undefined && cursor === undefined && (
         <div className="flex justify-center py-8">
           <Loader2 className="size-6 animate-spin text-slate-400" />
         </div>
       )}
 
       {/* Empty state */}
-      {result && result.bookings.length === 0 && (
+      {result && bookings.length === 0 && (
         <Card>
           <CardContent className="py-12 text-center">
             <Calendar className="size-12 text-slate-300 mx-auto mb-4" />
@@ -135,9 +183,9 @@ export function BookingHistory({ spaceId }: BookingHistoryProps) {
       )}
 
       {/* Booking list - newest first for history */}
-      {result && result.bookings.length > 0 && (
+      {bookings.length > 0 && (
         <div className="space-y-2">
-          {result.bookings.map((booking) => (
+          {bookings.map((booking) => (
             <HistoryBookingCard key={booking._id} booking={booking} />
           ))}
         </div>
@@ -146,8 +194,19 @@ export function BookingHistory({ spaceId }: BookingHistoryProps) {
       {/* Pagination */}
       {result?.hasMore && (
         <div className="text-center pt-4">
-          <Button variant="outline" disabled>
-            Load More (pagination coming soon)
+          <Button
+            variant="outline"
+            onClick={handleLoadMore}
+            disabled={isLoadingMore}
+          >
+            {isLoadingMore ? (
+              <>
+                <Loader2 className="size-4 mr-2 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              'Load More'
+            )}
           </Button>
         </div>
       )}
