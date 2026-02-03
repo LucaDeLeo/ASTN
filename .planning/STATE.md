@@ -77,15 +77,17 @@ Progress: [██████████] 100% of v1.4 (9/9 plans)
 | Admin pages keep dotGridStyle                                              | Intentional admin-specific visual differentiation from user pages             | 29-03 |
 | Login page uses GradientBg component                                       | Centralizes gradient definition instead of inline CSS                         | 29-03 |
 | Remove font-mono from opportunity title h1                                 | Conflicted with font-display; Space Grotesk is the v1.3 heading standard      | 29-03 |
+| useId renamed to formId in EventNotificationPrefsForm                      | no-shadow ESLint rule conflicts with existing id parameter in filter callback | 29-02 |
+| Filter components excluded from aria-describedby                           | No validation errors; deferred per research recommendation                    | 29-02 |
 
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Completed 29-03-PLAN.md (GradientBg + font-display visual consistency)
+Stopped at: Completed 29-02-PLAN.md SUMMARY (WCAG 2.1 aria-describedby + keyboard + drag indicators)
 Resume file: None
-Next action: v1.4 complete -- all 9 plans across 3 phases shipped
+Next action: v1.4 complete -- all 9 plans across 3 phases shipped, all SUMMARYs created
 
 ---
 
 _State initialized: 2026-01-17_
-_Last updated: 2026-02-02 — Completed 29-03 (GradientBg on all user pages, font-display on all headings)_
+_Last updated: 2026-02-02 — Created 29-01-SUMMARY.md (N+1 query batching + chained matching actions)_
