@@ -33,7 +33,9 @@ import { Route as AdminApplicationsIndexRouteImport } from './routes/admin/appli
 import { Route as OrgSlugJoinRouteImport } from './routes/org/$slug/join'
 import { Route as OrgSlugEventsRouteImport } from './routes/org/$slug/events'
 import { Route as AdminOpportunitiesNewRouteImport } from './routes/admin/opportunities/new'
+import { Route as OrgSlugSpaceIndexRouteImport } from './routes/org/$slug/space/index'
 import { Route as OrgSlugAdminIndexRouteImport } from './routes/org/$slug/admin/index'
+import { Route as OrgSlugSpaceBookingsRouteImport } from './routes/org/$slug/space/bookings'
 import { Route as OrgSlugAdminSpaceRouteImport } from './routes/org/$slug/admin/space'
 import { Route as OrgSlugAdminSetupRouteImport } from './routes/org/$slug/admin/setup'
 import { Route as OrgSlugAdminSettingsRouteImport } from './routes/org/$slug/admin/settings'
@@ -163,9 +165,19 @@ const AdminOpportunitiesNewRoute = AdminOpportunitiesNewRouteImport.update({
   path: '/opportunities/new',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const OrgSlugSpaceIndexRoute = OrgSlugSpaceIndexRouteImport.update({
+  id: '/org/$slug/space/',
+  path: '/org/$slug/space/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OrgSlugAdminIndexRoute = OrgSlugAdminIndexRouteImport.update({
   id: '/org/$slug/admin/',
   path: '/org/$slug/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrgSlugSpaceBookingsRoute = OrgSlugSpaceBookingsRouteImport.update({
+  id: '/org/$slug/space/bookings',
+  path: '/org/$slug/space/bookings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OrgSlugAdminSpaceRoute = OrgSlugAdminSpaceRouteImport.update({
@@ -243,7 +255,9 @@ export interface FileRoutesByFullPath {
   '/org/$slug/admin/settings': typeof OrgSlugAdminSettingsRoute
   '/org/$slug/admin/setup': typeof OrgSlugAdminSetupRoute
   '/org/$slug/admin/space': typeof OrgSlugAdminSpaceRoute
+  '/org/$slug/space/bookings': typeof OrgSlugSpaceBookingsRoute
   '/org/$slug/admin/': typeof OrgSlugAdminIndexRoute
+  '/org/$slug/space/': typeof OrgSlugSpaceIndexRoute
   '/org/$slug/admin/members/$userId': typeof OrgSlugAdminMembersUserIdRoute
   '/org/$slug/admin/programs/$programId': typeof OrgSlugAdminProgramsProgramIdRoute
   '/org/$slug/admin/members/': typeof OrgSlugAdminMembersIndexRoute
@@ -274,7 +288,9 @@ export interface FileRoutesByTo {
   '/org/$slug/admin/settings': typeof OrgSlugAdminSettingsRoute
   '/org/$slug/admin/setup': typeof OrgSlugAdminSetupRoute
   '/org/$slug/admin/space': typeof OrgSlugAdminSpaceRoute
+  '/org/$slug/space/bookings': typeof OrgSlugSpaceBookingsRoute
   '/org/$slug/admin': typeof OrgSlugAdminIndexRoute
+  '/org/$slug/space': typeof OrgSlugSpaceIndexRoute
   '/org/$slug/admin/members/$userId': typeof OrgSlugAdminMembersUserIdRoute
   '/org/$slug/admin/programs/$programId': typeof OrgSlugAdminProgramsProgramIdRoute
   '/org/$slug/admin/members': typeof OrgSlugAdminMembersIndexRoute
@@ -310,7 +326,9 @@ export interface FileRoutesById {
   '/org/$slug/admin/settings': typeof OrgSlugAdminSettingsRoute
   '/org/$slug/admin/setup': typeof OrgSlugAdminSetupRoute
   '/org/$slug/admin/space': typeof OrgSlugAdminSpaceRoute
+  '/org/$slug/space/bookings': typeof OrgSlugSpaceBookingsRoute
   '/org/$slug/admin/': typeof OrgSlugAdminIndexRoute
+  '/org/$slug/space/': typeof OrgSlugSpaceIndexRoute
   '/org/$slug/admin/members/$userId': typeof OrgSlugAdminMembersUserIdRoute
   '/org/$slug/admin/programs/$programId': typeof OrgSlugAdminProgramsProgramIdRoute
   '/org/$slug/admin/members/': typeof OrgSlugAdminMembersIndexRoute
@@ -347,7 +365,9 @@ export interface FileRouteTypes {
     | '/org/$slug/admin/settings'
     | '/org/$slug/admin/setup'
     | '/org/$slug/admin/space'
+    | '/org/$slug/space/bookings'
     | '/org/$slug/admin/'
+    | '/org/$slug/space/'
     | '/org/$slug/admin/members/$userId'
     | '/org/$slug/admin/programs/$programId'
     | '/org/$slug/admin/members/'
@@ -378,7 +398,9 @@ export interface FileRouteTypes {
     | '/org/$slug/admin/settings'
     | '/org/$slug/admin/setup'
     | '/org/$slug/admin/space'
+    | '/org/$slug/space/bookings'
     | '/org/$slug/admin'
+    | '/org/$slug/space'
     | '/org/$slug/admin/members/$userId'
     | '/org/$slug/admin/programs/$programId'
     | '/org/$slug/admin/members'
@@ -413,7 +435,9 @@ export interface FileRouteTypes {
     | '/org/$slug/admin/settings'
     | '/org/$slug/admin/setup'
     | '/org/$slug/admin/space'
+    | '/org/$slug/space/bookings'
     | '/org/$slug/admin/'
+    | '/org/$slug/space/'
     | '/org/$slug/admin/members/$userId'
     | '/org/$slug/admin/programs/$programId'
     | '/org/$slug/admin/members/'
@@ -440,7 +464,9 @@ export interface RootRouteChildren {
   OrgSlugAdminSettingsRoute: typeof OrgSlugAdminSettingsRoute
   OrgSlugAdminSetupRoute: typeof OrgSlugAdminSetupRoute
   OrgSlugAdminSpaceRoute: typeof OrgSlugAdminSpaceRoute
+  OrgSlugSpaceBookingsRoute: typeof OrgSlugSpaceBookingsRoute
   OrgSlugAdminIndexRoute: typeof OrgSlugAdminIndexRoute
+  OrgSlugSpaceIndexRoute: typeof OrgSlugSpaceIndexRoute
   OrgSlugAdminMembersUserIdRoute: typeof OrgSlugAdminMembersUserIdRoute
   OrgSlugAdminProgramsProgramIdRoute: typeof OrgSlugAdminProgramsProgramIdRoute
   OrgSlugAdminMembersIndexRoute: typeof OrgSlugAdminMembersIndexRoute
@@ -617,11 +643,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminOpportunitiesNewRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/org/$slug/space/': {
+      id: '/org/$slug/space/'
+      path: '/org/$slug/space'
+      fullPath: '/org/$slug/space/'
+      preLoaderRoute: typeof OrgSlugSpaceIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/org/$slug/admin/': {
       id: '/org/$slug/admin/'
       path: '/org/$slug/admin'
       fullPath: '/org/$slug/admin/'
       preLoaderRoute: typeof OrgSlugAdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/org/$slug/space/bookings': {
+      id: '/org/$slug/space/bookings'
+      path: '/org/$slug/space/bookings'
+      fullPath: '/org/$slug/space/bookings'
+      preLoaderRoute: typeof OrgSlugSpaceBookingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/org/$slug/admin/space': {
@@ -763,7 +803,9 @@ const rootRouteChildren: RootRouteChildren = {
   OrgSlugAdminSettingsRoute: OrgSlugAdminSettingsRoute,
   OrgSlugAdminSetupRoute: OrgSlugAdminSetupRoute,
   OrgSlugAdminSpaceRoute: OrgSlugAdminSpaceRoute,
+  OrgSlugSpaceBookingsRoute: OrgSlugSpaceBookingsRoute,
   OrgSlugAdminIndexRoute: OrgSlugAdminIndexRoute,
+  OrgSlugSpaceIndexRoute: OrgSlugSpaceIndexRoute,
   OrgSlugAdminMembersUserIdRoute: OrgSlugAdminMembersUserIdRoute,
   OrgSlugAdminProgramsProgramIdRoute: OrgSlugAdminProgramsProgramIdRoute,
   OrgSlugAdminMembersIndexRoute: OrgSlugAdminMembersIndexRoute,
