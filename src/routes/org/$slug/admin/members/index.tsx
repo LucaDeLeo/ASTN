@@ -1,5 +1,5 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { useMutation, useQuery } from 'convex/react'
 import {
   Building2,
   ChevronLeft,
@@ -11,136 +11,131 @@ import {
   Trash2,
   User,
   Users,
-} from "lucide-react";
-import { useMemo, useState } from "react";
-import { api } from "../../../../../../convex/_generated/api";
-import type { Doc, Id } from "../../../../../../convex/_generated/dataModel";
-import type { EngagementLevel } from "~/components/engagement/EngagementBadge";
-import type {MemberFiltersType} from "~/components/org/MemberFilters";
+} from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { api } from '../../../../../../convex/_generated/api'
+import type { Doc, Id } from '../../../../../../convex/_generated/dataModel'
+import type { EngagementLevel } from '~/components/engagement/EngagementBadge'
+import type { MemberFiltersType } from '~/components/org/MemberFilters'
 import {
   EngagementBadge,
   PendingEngagementBadge,
-} from "~/components/engagement/EngagementBadge";
-import { OverrideDialog } from "~/components/engagement/OverrideDialog";
-import { AuthHeader } from "~/components/layout/auth-header";
-import { ExportButton } from "~/components/org/ExportButton";
-import {
-  MemberFilters
-  
-} from "~/components/org/MemberFilters";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
+} from '~/components/engagement/EngagementBadge'
+import { OverrideDialog } from '~/components/engagement/OverrideDialog'
+import { AuthHeader } from '~/components/layout/auth-header'
+import { ExportButton } from '~/components/org/ExportButton'
+import { MemberFilters } from '~/components/org/MemberFilters'
+import { Badge } from '~/components/ui/badge'
+import { Button } from '~/components/ui/button'
+import { Card } from '~/components/ui/card'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import { Spinner } from "~/components/ui/spinner";
+} from '~/components/ui/dropdown-menu'
+import { Spinner } from '~/components/ui/spinner'
 
-export const Route = createFileRoute("/org/$slug/admin/members/")({
+export const Route = createFileRoute('/org/$slug/admin/members/')({
   component: OrgAdminMembers,
-});
+})
 
 // Type for engagement data from query
 type EngagementData = {
-  _id: Id<"memberEngagement">;
-  userId: string;
-  level: EngagementLevel;
-  computedLevel: EngagementLevel;
-  adminExplanation: string;
-  hasOverride: boolean;
-  overrideNotes?: string;
-};
+  _id: Id<'memberEngagement'>
+  userId: string
+  level: EngagementLevel
+  computedLevel: EngagementLevel
+  adminExplanation: string
+  hasOverride: boolean
+  overrideNotes?: string
+}
 
 function OrgAdminMembers() {
-  const { slug } = Route.useParams();
-  const [filters, setFilters] = useState<MemberFiltersType>({});
-  const [page, setPage] = useState(1);
-  const pageSize = 25;
+  const { slug } = Route.useParams()
+  const [filters, setFilters] = useState<MemberFiltersType>({})
+  const [page, setPage] = useState(1)
+  const pageSize = 25
 
   // Reset page to 1 when filters change
   const handleFiltersChange = (newFilters: MemberFiltersType) => {
-    setFilters(newFilters);
-    setPage(1);
-  };
+    setFilters(newFilters)
+    setPage(1)
+  }
 
-  const org = useQuery(api.orgs.directory.getOrgBySlug, { slug });
+  const org = useQuery(api.orgs.directory.getOrgBySlug, { slug })
   const membership = useQuery(
     api.orgs.membership.getMembership,
-    org ? { orgId: org._id } : "skip"
-  );
+    org ? { orgId: org._id } : 'skip',
+  )
   const members = useQuery(
     api.orgs.admin.getAllMembersWithProfiles,
-    org && membership?.role === "admin" ? { orgId: org._id } : "skip"
-  );
+    org && membership?.role === 'admin' ? { orgId: org._id } : 'skip',
+  )
 
   // Fetch engagement data for all members
   const engagementData = useQuery(
     api.engagement.queries.getOrgEngagementForAdmin,
-    org && membership?.role === "admin" ? { orgId: org._id } : "skip"
-  );
+    org && membership?.role === 'admin' ? { orgId: org._id } : 'skip',
+  )
 
   // Create a Map for fast userId -> engagement lookup
   const engagementMap = useMemo(() => {
-    const map = new Map<string, EngagementData>();
+    const map = new Map<string, EngagementData>()
     if (engagementData) {
       for (const e of engagementData) {
-        map.set(e.userId, e as EngagementData);
+        map.set(e.userId, e as EngagementData)
       }
     }
-    return map;
-  }, [engagementData]);
+    return map
+  }, [engagementData])
 
   // Extract available skills from members data
   const availableSkills = useMemo(() => {
-    const skills = new Set<string>();
-    members?.forEach((m) =>
-      m.profile?.skills?.forEach((s) => skills.add(s))
-    );
-    return Array.from(skills).sort();
-  }, [members]);
+    const skills = new Set<string>()
+    members?.forEach((m) => m.profile?.skills?.forEach((s) => skills.add(s)))
+    return Array.from(skills).sort()
+  }, [members])
 
   // Extract available locations from members data
   const availableLocations = useMemo(() => {
-    const locations = new Set<string>();
+    const locations = new Set<string>()
     members?.forEach((m) => {
-      if (m.profile?.location) locations.add(m.profile.location);
-    });
-    return Array.from(locations).sort();
-  }, [members]);
+      if (m.profile?.location) locations.add(m.profile.location)
+    })
+    return Array.from(locations).sort()
+  }, [members])
 
   // Filter members by all active filters
   const filteredMembers = useMemo(() => {
-    if (!members) return [];
+    if (!members) return []
     return members.filter((member) => {
       // Search filter (name, email)
       if (filters.search) {
-        const query = filters.search.toLowerCase();
-        const name = member.profile?.name?.toLowerCase() ?? "";
-        const email = member.email?.toLowerCase() ?? "";
-        if (!name.includes(query) && !email.includes(query)) return false;
+        const query = filters.search.toLowerCase()
+        const name = member.profile?.name?.toLowerCase() ?? ''
+        const email = member.email?.toLowerCase() ?? ''
+        if (!name.includes(query) && !email.includes(query)) return false
       }
 
       // Engagement filter
       if (filters.engagementLevels?.length) {
-        const engagement = engagementMap.get(member.membership.userId);
-        const level = engagement?.level ?? "new";
-        if (!filters.engagementLevels.includes(level)) return false;
+        const engagement = engagementMap.get(member.membership.userId)
+        const level = engagement?.level ?? 'new'
+        if (!filters.engagementLevels.includes(level)) return false
       }
 
       // Skills filter (any match)
       if (filters.skills?.length) {
-        const memberSkills = member.profile?.skills ?? [];
-        if (!filters.skills.some((s) => memberSkills.includes(s))) return false;
+        const memberSkills = member.profile?.skills ?? []
+        if (!filters.skills.some((s) => memberSkills.includes(s))) return false
       }
 
       // Location filter
       if (filters.locations?.length) {
-        const location = member.profile?.location ?? "";
-        if (!filters.locations.includes(location)) return false;
+        const location = member.profile?.location ?? ''
+        if (!filters.locations.includes(location)) return false
       }
 
       // Join date range
@@ -148,36 +143,38 @@ function OrgAdminMembers() {
         filters.joinedAfter &&
         member.membership.joinedAt < filters.joinedAfter
       ) {
-        return false;
+        return false
       }
       if (
         filters.joinedBefore &&
         member.membership.joinedAt > filters.joinedBefore
       ) {
-        return false;
+        return false
       }
 
       // Directory visibility filter
       if (
         filters.directoryVisibility &&
-        filters.directoryVisibility !== "all"
+        filters.directoryVisibility !== 'all'
       ) {
-        if (member.membership.directoryVisibility !== filters.directoryVisibility) {
-          return false;
+        if (
+          member.membership.directoryVisibility !== filters.directoryVisibility
+        ) {
+          return false
         }
       }
 
-      return true;
-    });
-  }, [members, engagementMap, filters]);
+      return true
+    })
+  }, [members, engagementMap, filters])
 
   // Calculate paginated members
   const paginatedMembers = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return filteredMembers.slice(start, start + pageSize);
-  }, [filteredMembers, page, pageSize]);
+    const start = (page - 1) * pageSize
+    return filteredMembers.slice(start, start + pageSize)
+  }, [filteredMembers, page, pageSize])
 
-  const totalPages = Math.ceil(filteredMembers.length / pageSize);
+  const totalPages = Math.ceil(filteredMembers.length / pageSize)
 
   // Loading state
   if (org === undefined || membership === undefined) {
@@ -193,7 +190,7 @@ function OrgAdminMembers() {
           </div>
         </main>
       </div>
-    );
+    )
   }
 
   // Org not found
@@ -206,7 +203,7 @@ function OrgAdminMembers() {
             <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
               <Building2 className="size-8 text-slate-400" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground mb-4">
+            <h1 className="text-2xl font-display text-foreground mb-4">
               Organization Not Found
             </h1>
             <Button asChild>
@@ -215,11 +212,11 @@ function OrgAdminMembers() {
           </div>
         </main>
       </div>
-    );
+    )
   }
 
   // Not an admin
-  if (!membership || membership.role !== "admin") {
+  if (!membership || membership.role !== 'admin') {
     return (
       <div className="min-h-screen bg-slate-50">
         <AuthHeader />
@@ -228,7 +225,7 @@ function OrgAdminMembers() {
             <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
               <Shield className="size-8 text-slate-400" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground mb-4">
+            <h1 className="text-2xl font-display text-foreground mb-4">
               Admin Access Required
             </h1>
             <Button asChild>
@@ -239,7 +236,7 @@ function OrgAdminMembers() {
           </div>
         </main>
       </div>
-    );
+    )
   }
 
   return (
@@ -270,20 +267,22 @@ function OrgAdminMembers() {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Members</h1>
+                <h1 className="text-2xl font-display text-foreground">
+                  Members
+                </h1>
                 <p className="text-slate-600 mt-1">
-                  {members?.length ?? "..."} members in {org.name}
+                  {members?.length ?? '...'} members in {org.name}
                 </p>
               </div>
               <ExportButton
-                  orgId={org._id}
-                  orgSlug={slug}
-                  engagementData={engagementData?.map((e) => ({
-                    userId: e.userId,
-                    level: e.level,
-                    hasOverride: e.hasOverride,
-                  }))}
-                />
+                orgId={org._id}
+                orgSlug={slug}
+                engagementData={engagementData?.map((e) => ({
+                  userId: e.userId,
+                  level: e.level,
+                  hasOverride: e.hasOverride,
+                }))}
+              />
             </div>
           </div>
 
@@ -307,13 +306,13 @@ function OrgAdminMembers() {
               </div>
               <h3 className="text-lg font-medium text-foreground mb-2">
                 {Object.keys(filters).length > 0
-                  ? "No members found"
-                  : "No members yet"}
+                  ? 'No members found'
+                  : 'No members yet'}
               </h3>
               <p className="text-slate-500 text-sm">
                 {Object.keys(filters).length > 0
-                  ? "Try adjusting your filters"
-                  : "Share an invite link to add members"}
+                  ? 'Try adjusting your filters'
+                  : 'Share an invite link to add members'}
               </p>
             </Card>
           ) : (
@@ -339,7 +338,7 @@ function OrgAdminMembers() {
                   <div className="flex items-center justify-between p-4 border-t">
                     <span className="text-sm text-muted-foreground">
                       {(page - 1) * pageSize + 1}-
-                      {Math.min(page * pageSize, filteredMembers.length)} of{" "}
+                      {Math.min(page * pageSize, filteredMembers.length)} of{' '}
                       {filteredMembers.length}
                     </span>
                     <div className="flex gap-2">
@@ -418,8 +417,8 @@ function OrgAdminMembers() {
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between px-4 py-3 border-t">
                     <div className="text-sm text-slate-500">
-                      Showing {(page - 1) * pageSize + 1} to{" "}
-                      {Math.min(page * pageSize, filteredMembers.length)} of{" "}
+                      Showing {(page - 1) * pageSize + 1} to{' '}
+                      {Math.min(page * pageSize, filteredMembers.length)} of{' '}
                       {filteredMembers.length} members
                     </div>
                     <div className="flex items-center gap-2">
@@ -453,20 +452,20 @@ function OrgAdminMembers() {
         </div>
       </main>
     </div>
-  );
+  )
 }
 
 interface MemberRowProps {
   member: {
-    membership: Doc<"orgMemberships">;
-    profile: Doc<"profiles"> | null;
-    email: string | null;
-    completeness: number;
-  };
-  engagement: EngagementData | null;
-  orgId: Id<"organizations">;
-  slug: string;
-  currentMembershipId: Id<"orgMemberships">;
+    membership: Doc<'orgMemberships'>
+    profile: Doc<'profiles'> | null
+    email: string | null
+    completeness: number
+  }
+  engagement: EngagementData | null
+  orgId: Id<'organizations'>
+  slug: string
+  currentMembershipId: Id<'orgMemberships'>
 }
 
 function MemberCardMobile({
@@ -476,68 +475,68 @@ function MemberCardMobile({
   slug,
   currentMembershipId,
 }: MemberRowProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [overrideDialogOpen, setOverrideDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false)
+  const [overrideDialogOpen, setOverrideDialogOpen] = useState(false)
 
-  const removeMember = useMutation(api.orgs.admin.removeMember);
-  const promoteToAdmin = useMutation(api.orgs.admin.promoteToAdmin);
-  const demoteToMember = useMutation(api.orgs.admin.demoteToMember);
+  const removeMember = useMutation(api.orgs.admin.removeMember)
+  const promoteToAdmin = useMutation(api.orgs.admin.promoteToAdmin)
+  const demoteToMember = useMutation(api.orgs.admin.demoteToMember)
 
-  const isSelf = member.membership._id === currentMembershipId;
-  const isAdmin = member.membership.role === "admin";
+  const isSelf = member.membership._id === currentMembershipId
+  const isAdmin = member.membership.role === 'admin'
   const joinedDate = new Date(member.membership.joinedAt).toLocaleDateString(
-    "en-US",
-    { month: "short", day: "numeric", year: "numeric" }
-  );
+    'en-US',
+    { month: 'short', day: 'numeric', year: 'numeric' },
+  )
 
   const handlePromote = async () => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      await promoteToAdmin({ orgId, membershipId: member.membership._id });
+      await promoteToAdmin({ orgId, membershipId: member.membership._id })
     } catch (error) {
-      console.error("Failed to promote member:", error);
+      console.error('Failed to promote member:', error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleDemote = async () => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      await demoteToMember({ orgId, membershipId: member.membership._id });
+      await demoteToMember({ orgId, membershipId: member.membership._id })
     } catch (error) {
-      console.error("Failed to demote member:", error);
+      console.error('Failed to demote member:', error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleRemove = async () => {
     if (
       !confirm(
-        `Remove ${member.profile?.name || "this member"} from the organization?`
+        `Remove ${member.profile?.name || 'this member'} from the organization?`,
       )
     ) {
-      return;
+      return
     }
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      await removeMember({ orgId, membershipId: member.membership._id });
+      await removeMember({ orgId, membershipId: member.membership._id })
     } catch (error) {
-      console.error("Failed to remove member:", error);
+      console.error('Failed to remove member:', error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   // Get initials for avatar
   const initials =
     member.profile?.name
-      ?.split(" ")
+      ?.split(' ')
       .map((n) => n[0])
-      .join("")
+      .join('')
       .slice(0, 2)
-      .toUpperCase() || "?";
+      .toUpperCase() || '?'
 
   return (
     <>
@@ -561,7 +560,7 @@ function MemberCardMobile({
           >
             <div className="flex items-center gap-2">
               <span className="font-medium text-foreground truncate">
-                {member.profile?.name || "No name"}
+                {member.profile?.name || 'No name'}
               </span>
               {isAdmin && (
                 <Badge variant="secondary" className="shrink-0 text-xs">
@@ -646,7 +645,10 @@ function MemberCardMobile({
             {!isSelf && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleRemove} className="text-red-600">
+                <DropdownMenuItem
+                  onClick={handleRemove}
+                  className="text-red-600"
+                >
                   <Trash2 className="size-4 mr-2" />
                   Remove
                 </DropdownMenuItem>
@@ -668,7 +670,7 @@ function MemberCardMobile({
           open={overrideDialogOpen}
           onOpenChange={setOverrideDialogOpen}
           engagementId={engagement._id}
-          memberName={member.profile?.name || "Member"}
+          memberName={member.profile?.name || 'Member'}
           currentLevel={engagement.level}
           currentExplanation={engagement.adminExplanation}
           hasOverride={engagement.hasOverride}
@@ -678,77 +680,83 @@ function MemberCardMobile({
         />
       )}
     </>
-  );
+  )
 }
 
-function MemberRow({ member, engagement, orgId, slug, currentMembershipId }: MemberRowProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [overrideDialogOpen, setOverrideDialogOpen] = useState(false);
+function MemberRow({
+  member,
+  engagement,
+  orgId,
+  slug,
+  currentMembershipId,
+}: MemberRowProps) {
+  const [isLoading, setIsLoading] = useState(false)
+  const [overrideDialogOpen, setOverrideDialogOpen] = useState(false)
 
-  const removeMember = useMutation(api.orgs.admin.removeMember);
-  const promoteToAdmin = useMutation(api.orgs.admin.promoteToAdmin);
-  const demoteToMember = useMutation(api.orgs.admin.demoteToMember);
+  const removeMember = useMutation(api.orgs.admin.removeMember)
+  const promoteToAdmin = useMutation(api.orgs.admin.promoteToAdmin)
+  const demoteToMember = useMutation(api.orgs.admin.demoteToMember)
 
-  const isSelf = member.membership._id === currentMembershipId;
-  const isAdmin = member.membership.role === "admin";
+  const isSelf = member.membership._id === currentMembershipId
+  const isAdmin = member.membership.role === 'admin'
   const joinedDate = new Date(member.membership.joinedAt).toLocaleDateString(
-    "en-US",
+    'en-US',
     {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }
-  );
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    },
+  )
 
   const handlePromote = async () => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       await promoteToAdmin({
         orgId,
         membershipId: member.membership._id,
-      });
+      })
     } catch (error) {
-      console.error("Failed to promote member:", error);
+      console.error('Failed to promote member:', error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleDemote = async () => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       await demoteToMember({
         orgId,
         membershipId: member.membership._id,
-      });
+      })
     } catch (error) {
-      console.error("Failed to demote member:", error);
+      console.error('Failed to demote member:', error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleRemove = async () => {
     if (
       !confirm(
-        `Are you sure you want to remove ${member.profile?.name || "this member"} from the organization?`
+        `Are you sure you want to remove ${member.profile?.name || 'this member'} from the organization?`,
       )
     ) {
-      return;
+      return
     }
 
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       await removeMember({
         orgId,
         membershipId: member.membership._id,
-      });
+      })
     } catch (error) {
-      console.error("Failed to remove member:", error);
+      console.error('Failed to remove member:', error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <>
@@ -760,7 +768,7 @@ function MemberRow({ member, engagement, orgId, slug, currentMembershipId }: Mem
             className="block hover:bg-slate-50 -m-2 p-2 rounded transition-colors"
           >
             <div className="font-medium text-foreground hover:text-primary">
-              {member.profile?.name || "No name"}
+              {member.profile?.name || 'No name'}
             </div>
             {member.profile?.headline && (
               <div className="text-sm text-slate-500 truncate max-w-[200px]">
@@ -769,13 +777,11 @@ function MemberRow({ member, engagement, orgId, slug, currentMembershipId }: Mem
             )}
           </Link>
         </td>
-        <td className="px-4 py-3 text-slate-600">
-          {member.email || "—"}
-        </td>
+        <td className="px-4 py-3 text-slate-600">{member.email || '—'}</td>
         <td className="px-4 py-3">
-          <Badge variant={isAdmin ? "default" : "secondary"}>
+          <Badge variant={isAdmin ? 'default' : 'secondary'}>
             {isAdmin && <Shield className="size-3 mr-1" />}
-            {isAdmin ? "Admin" : "Member"}
+            {isAdmin ? 'Admin' : 'Member'}
           </Badge>
         </td>
         <td className="px-4 py-3">
@@ -793,14 +799,14 @@ function MemberRow({ member, engagement, orgId, slug, currentMembershipId }: Mem
         <td className="px-4 py-3">
           <Badge
             variant={
-              member.membership.directoryVisibility === "visible"
-                ? "outline"
-                : "secondary"
+              member.membership.directoryVisibility === 'visible'
+                ? 'outline'
+                : 'secondary'
             }
           >
-            {member.membership.directoryVisibility === "visible"
-              ? "Visible"
-              : "Hidden"}
+            {member.membership.directoryVisibility === 'visible'
+              ? 'Visible'
+              : 'Hidden'}
           </Badge>
         </td>
         <td className="px-4 py-3 text-slate-600">{joinedDate}</td>
@@ -810,10 +816,10 @@ function MemberRow({ member, engagement, orgId, slug, currentMembershipId }: Mem
               <div
                 className={`h-full rounded-full ${
                   member.completeness > 70
-                    ? "bg-green-500"
+                    ? 'bg-green-500'
                     : member.completeness >= 40
-                      ? "bg-amber-500"
-                      : "bg-red-500"
+                      ? 'bg-amber-500'
+                      : 'bg-red-500'
                 }`}
                 style={{ width: `${member.completeness}%` }}
               />
@@ -826,11 +832,7 @@ function MemberRow({ member, engagement, orgId, slug, currentMembershipId }: Mem
         <td className="px-4 py-3 text-right">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={isLoading}
-              >
+              <Button variant="ghost" size="sm" disabled={isLoading}>
                 {isLoading ? (
                   <Spinner className="size-4" />
                 ) : (
@@ -905,7 +907,7 @@ function MemberRow({ member, engagement, orgId, slug, currentMembershipId }: Mem
           open={overrideDialogOpen}
           onOpenChange={setOverrideDialogOpen}
           engagementId={engagement._id}
-          memberName={member.profile?.name || "Member"}
+          memberName={member.profile?.name || 'Member'}
           currentLevel={engagement.level}
           currentExplanation={engagement.adminExplanation}
           hasOverride={engagement.hasOverride}
@@ -915,5 +917,5 @@ function MemberRow({ member, engagement, orgId, slug, currentMembershipId }: Mem
         />
       )}
     </>
-  );
+  )
 }

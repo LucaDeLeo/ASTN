@@ -44,7 +44,7 @@ function OrgDirectoryPage() {
             <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
               <Building2 className="size-8 text-slate-400" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground mb-4">
+            <h1 className="text-2xl font-display text-foreground mb-4">
               Organization Not Found
             </h1>
             <p className="text-slate-600 mb-6">
@@ -103,7 +103,7 @@ function OrgHeader({ org }: OrgHeaderProps) {
             </div>
           )}
           <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">
+            <h1 className="text-xl sm:text-2xl font-display text-foreground truncate">
               {org.name}
             </h1>
             <div className="flex items-center gap-2 mt-1 text-slate-500 text-sm">

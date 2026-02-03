@@ -1,14 +1,16 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 
-export const Route = createFileRoute("/admin/")({
+export const Route = createFileRoute('/admin/')({
   component: AdminDashboard,
-});
+})
 
 function AdminDashboard() {
   return (
     <div>
-      <h1 className="text-2xl font-bold text-foreground mb-6">Admin Dashboard</h1>
+      <h1 className="text-2xl font-display text-foreground mb-6">
+        Admin Dashboard
+      </h1>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Link to="/admin/opportunities">
           <Card className="hover:shadow-md transition-shadow cursor-pointer">
@@ -24,5 +26,5 @@ function AdminDashboard() {
         </Link>
       </div>
     </div>
-  );
+  )
 }

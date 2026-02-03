@@ -1,41 +1,41 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
-import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
-import { Archive, Pencil, Plus, Trash2 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { api } from "../../../../convex/_generated/api";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
+import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
+import { Archive, Pencil, Plus, Trash2 } from 'lucide-react'
+import { formatDistanceToNow } from 'date-fns'
+import { api } from '../../../../convex/_generated/api'
+import { Button } from '~/components/ui/button'
+import { Card, CardContent } from '~/components/ui/card'
+import { Badge } from '~/components/ui/badge'
 
-export const Route = createFileRoute("/admin/opportunities/")({
+export const Route = createFileRoute('/admin/opportunities/')({
   loader: async ({ context }) => {
     await context.queryClient.ensureQueryData(
-      convexQuery(api.opportunities.listAll, { includeArchived: true })
-    );
+      convexQuery(api.opportunities.listAll, { includeArchived: true }),
+    )
   },
   component: AdminOpportunitiesPage,
-});
+})
 
 function AdminOpportunitiesPage() {
   const { data: opportunities } = useSuspenseQuery(
-    convexQuery(api.opportunities.listAll, { includeArchived: true })
-  );
+    convexQuery(api.opportunities.listAll, { includeArchived: true }),
+  )
 
-  const deleteMutationFn = useConvexMutation(api.admin.deleteOpportunity);
+  const deleteMutationFn = useConvexMutation(api.admin.deleteOpportunity)
   const { mutate: deleteOpportunity } = useMutation({
     mutationFn: deleteMutationFn,
-  });
+  })
 
-  const archiveMutationFn = useConvexMutation(api.admin.archiveOpportunity);
+  const archiveMutationFn = useConvexMutation(api.admin.archiveOpportunity)
   const { mutate: archiveOpportunity } = useMutation({
     mutationFn: archiveMutationFn,
-  });
+  })
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Opportunities</h1>
+        <h1 className="text-2xl font-display text-foreground">Opportunities</h1>
         <Button asChild>
           <Link to="/admin/opportunities/new">
             <Plus className="w-4 h-4 mr-2" />
@@ -55,15 +55,19 @@ function AdminOpportunitiesPage() {
           {opportunities.map((opp) => (
             <Card
               key={opp._id}
-              className={opp.status === "archived" ? "opacity-60" : ""}
+              className={opp.status === 'archived' ? 'opacity-60' : ''}
             >
               <CardContent className="py-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-medium text-foreground">{opp.title}</h3>
+                      <h3 className="font-medium text-foreground">
+                        {opp.title}
+                      </h3>
                       <Badge
-                        variant={opp.status === "active" ? "default" : "secondary"}
+                        variant={
+                          opp.status === 'active' ? 'default' : 'secondary'
+                        }
                       >
                         {opp.status}
                       </Badge>
@@ -71,11 +75,13 @@ function AdminOpportunitiesPage() {
                     </div>
                     <p className="text-sm text-slate-600">
                       {opp.organization} &bull; {opp.location}
-                      {opp.isRemote && " - Remote"}
+                      {opp.isRemote && ' - Remote'}
                     </p>
                     <p className="text-xs text-slate-500 mt-1">
-                      Last verified:{" "}
-                      {formatDistanceToNow(opp.lastVerified, { addSuffix: true })}
+                      Last verified:{' '}
+                      {formatDistanceToNow(opp.lastVerified, {
+                        addSuffix: true,
+                      })}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -87,7 +93,7 @@ function AdminOpportunitiesPage() {
                         <Pencil className="w-4 h-4" />
                       </Link>
                     </Button>
-                    {opp.status === "active" && (
+                    {opp.status === 'active' && (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -100,8 +106,8 @@ function AdminOpportunitiesPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        if (confirm("Delete this opportunity?")) {
-                          deleteOpportunity({ id: opp._id });
+                        if (confirm('Delete this opportunity?')) {
+                          deleteOpportunity({ id: opp._id })
                         }
                       }}
                     >
@@ -115,5 +121,5 @@ function AdminOpportunitiesPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

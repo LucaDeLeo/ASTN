@@ -1,43 +1,54 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
-import { useState } from "react";
-import { Building2, Calendar, Download, FolderPlus, Settings, Shield, UserPlus, Users } from "lucide-react";
-import { api } from "../../../../../convex/_generated/api";
-import type { Id } from "../../../../../convex/_generated/dataModel";
-import { AuthHeader } from "~/components/layout/auth-header";
-import { OrgStats } from "~/components/org/OrgStats";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
-import { Spinner } from "~/components/ui/spinner";
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { useMutation, useQuery } from 'convex/react'
+import { useState } from 'react'
+import {
+  Building2,
+  Calendar,
+  Download,
+  FolderPlus,
+  Settings,
+  Shield,
+  UserPlus,
+  Users,
+} from 'lucide-react'
+import { api } from '../../../../../convex/_generated/api'
+import type { Id } from '../../../../../convex/_generated/dataModel'
+import { AuthHeader } from '~/components/layout/auth-header'
+import { OrgStats } from '~/components/org/OrgStats'
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
+import { Button } from '~/components/ui/button'
+import { Spinner } from '~/components/ui/spinner'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select";
-import { useDotGridStyle } from "~/hooks/use-dot-grid-style";
+} from '~/components/ui/select'
+import { useDotGridStyle } from '~/hooks/use-dot-grid-style'
 
-export const Route = createFileRoute("/org/$slug/admin/")({
+export const Route = createFileRoute('/org/$slug/admin/')({
   component: OrgAdminDashboard,
-});
+})
 
-type TimeRange = "7d" | "30d" | "90d" | "all";
+type TimeRange = '7d' | '30d' | '90d' | 'all'
 
 function OrgAdminDashboard() {
-  const { slug } = Route.useParams();
-  const [timeRange, setTimeRange] = useState<TimeRange>("30d");
-  const dotGridStyle = useDotGridStyle();
+  const { slug } = Route.useParams()
+  const [timeRange, setTimeRange] = useState<TimeRange>('30d')
+  const dotGridStyle = useDotGridStyle()
 
-  const org = useQuery(api.orgs.directory.getOrgBySlug, { slug });
+  const org = useQuery(api.orgs.directory.getOrgBySlug, { slug })
   const membership = useQuery(
     api.orgs.membership.getMembership,
-    org ? { orgId: org._id } : "skip"
-  );
+    org ? { orgId: org._id } : 'skip',
+  )
   const stats = useQuery(
     api.orgs.stats.getEnhancedOrgStats,
-    org && membership?.role === "admin" ? { orgId: org._id, timeRange } : "skip"
-  );
+    org && membership?.role === 'admin'
+      ? { orgId: org._id, timeRange }
+      : 'skip',
+  )
 
   // Loading state
   if (org === undefined || membership === undefined) {
@@ -57,7 +68,7 @@ function OrgAdminDashboard() {
           </div>
         </main>
       </div>
-    );
+    )
   }
 
   // Org not found
@@ -70,7 +81,7 @@ function OrgAdminDashboard() {
             <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
               <Building2 className="size-8 text-slate-400" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground mb-4">
+            <h1 className="text-2xl font-display text-foreground mb-4">
               Organization Not Found
             </h1>
             <p className="text-slate-600 mb-6">
@@ -82,11 +93,11 @@ function OrgAdminDashboard() {
           </div>
         </main>
       </div>
-    );
+    )
   }
 
   // Not an admin - redirect to org page
-  if (!membership || membership.role !== "admin") {
+  if (!membership || membership.role !== 'admin') {
     return (
       <div className="min-h-screen" style={dotGridStyle}>
         <AuthHeader />
@@ -95,7 +106,7 @@ function OrgAdminDashboard() {
             <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
               <Shield className="size-8 text-slate-400" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground mb-4">
+            <h1 className="text-2xl font-display text-foreground mb-4">
               Admin Access Required
             </h1>
             <p className="text-slate-600 mb-6">
@@ -109,7 +120,7 @@ function OrgAdminDashboard() {
           </div>
         </main>
       </div>
-    );
+    )
   }
 
   return (
@@ -171,13 +182,13 @@ function OrgAdminDashboard() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-slate-500">
-                  {timeRange === "7d"
-                    ? "New This Week"
-                    : timeRange === "30d"
-                      ? "New This Month"
-                      : timeRange === "90d"
-                        ? "New (90 days)"
-                        : "Total Joined"}
+                  {timeRange === '7d'
+                    ? 'New This Week'
+                    : timeRange === '30d'
+                      ? 'New This Month'
+                      : timeRange === '90d'
+                        ? 'New (90 days)'
+                        : 'Total Joined'}
                 </CardTitle>
                 <UserPlus className="size-4 text-slate-400" />
               </CardHeader>
@@ -199,7 +210,9 @@ function OrgAdminDashboard() {
                 {org.lumaCalendarUrl ? (
                   <div className="flex items-center gap-2">
                     <div className="size-2 rounded-full bg-green-500" />
-                    <span className="text-sm font-medium text-slate-700">Connected</span>
+                    <span className="text-sm font-medium text-slate-700">
+                      Connected
+                    </span>
                   </div>
                 ) : (
                   <Link
@@ -223,11 +236,7 @@ function OrgAdminDashboard() {
               </Link>
             </Button>
 
-            <Button
-              variant="outline"
-              className="h-auto py-4"
-              asChild
-            >
+            <Button variant="outline" className="h-auto py-4" asChild>
               <Link to="/org/$slug/admin/programs" params={{ slug }}>
                 <FolderPlus className="size-5 mr-2" />
                 Programs
@@ -236,22 +245,14 @@ function OrgAdminDashboard() {
 
             <InviteLinkButton orgId={org._id} />
 
-            <Button
-              variant="outline"
-              className="h-auto py-4"
-              asChild
-            >
+            <Button variant="outline" className="h-auto py-4" asChild>
               <Link to="/org/$slug/admin/members" params={{ slug }}>
                 <Download className="size-5 mr-2" />
                 Export Data
               </Link>
             </Button>
 
-            <Button
-              variant="outline"
-              className="h-auto py-4"
-              asChild
-            >
+            <Button variant="outline" className="h-auto py-4" asChild>
               <Link to="/org/$slug/admin/settings" params={{ slug }}>
                 <Settings className="size-5 mr-2" />
                 Settings
@@ -290,28 +291,24 @@ function OrgAdminDashboard() {
         </div>
       </main>
     </div>
-  );
+  )
 }
 
 // Separate component for invite link creation
-function InviteLinkButton({
-  orgId,
-}: {
-  orgId: Id<"organizations">;
-}) {
-  const inviteLinks = useQuery(api.orgs.admin.getInviteLinks, { orgId });
-  const createInvite = useMutation(api.orgs.admin.createInviteLink);
-  const [isCreating, setIsCreating] = useState(false);
+function InviteLinkButton({ orgId }: { orgId: Id<'organizations'> }) {
+  const inviteLinks = useQuery(api.orgs.admin.getInviteLinks, { orgId })
+  const createInvite = useMutation(api.orgs.admin.createInviteLink)
+  const [isCreating, setIsCreating] = useState(false)
 
   // If there's an active invite link, show it
-  const activeLink = inviteLinks?.[0];
+  const activeLink = inviteLinks?.[0]
 
   if (activeLink) {
-    const inviteUrl = `${window.location.origin}/org/join?token=${activeLink.token}`;
+    const inviteUrl = `${window.location.origin}/org/join?token=${activeLink.token}`
 
     const copyToClipboard = () => {
-      navigator.clipboard.writeText(inviteUrl);
-    };
+      navigator.clipboard.writeText(inviteUrl)
+    }
 
     return (
       <Button
@@ -322,17 +319,17 @@ function InviteLinkButton({
         <UserPlus className="size-5 mr-2" />
         Copy Invite Link
       </Button>
-    );
+    )
   }
 
   const handleCreate = async () => {
-    setIsCreating(true);
+    setIsCreating(true)
     try {
-      await createInvite({ orgId });
+      await createInvite({ orgId })
     } finally {
-      setIsCreating(false);
+      setIsCreating(false)
     }
-  };
+  }
 
   return (
     <Button
@@ -342,7 +339,7 @@ function InviteLinkButton({
       disabled={isCreating}
     >
       <UserPlus className="size-5 mr-2" />
-      {isCreating ? "Creating..." : "Create Invite Link"}
+      {isCreating ? 'Creating...' : 'Create Invite Link'}
     </Button>
-  );
+  )
 }

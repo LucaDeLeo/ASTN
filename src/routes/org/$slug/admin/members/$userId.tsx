@@ -1,5 +1,5 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { useQuery } from 'convex/react'
 import {
   Briefcase,
   Building2,
@@ -17,53 +17,51 @@ import {
   Target,
   User,
   Wrench,
-} from "lucide-react";
-import { format, formatDistanceToNow } from "date-fns";
-import { api } from "../../../../../../convex/_generated/api";
-import type { EngagementLevel } from "~/components/engagement/EngagementBadge";
-import { EngagementBadge } from "~/components/engagement/EngagementBadge";
-import { AuthHeader } from "~/components/layout/auth-header";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Separator } from "~/components/ui/separator";
+} from 'lucide-react'
+import { format, formatDistanceToNow } from 'date-fns'
+import { api } from '../../../../../../convex/_generated/api'
+import type { EngagementLevel } from '~/components/engagement/EngagementBadge'
+import { EngagementBadge } from '~/components/engagement/EngagementBadge'
+import { AuthHeader } from '~/components/layout/auth-header'
+import { Badge } from '~/components/ui/badge'
+import { Button } from '~/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
+import { Separator } from '~/components/ui/separator'
 
-export const Route = createFileRoute("/org/$slug/admin/members/$userId")({
+export const Route = createFileRoute('/org/$slug/admin/members/$userId')({
   component: MemberProfilePage,
-});
+})
 
 function MemberProfilePage() {
-  const { slug, userId } = Route.useParams();
+  const { slug, userId } = Route.useParams()
 
-  const org = useQuery(api.orgs.directory.getOrgBySlug, { slug });
+  const org = useQuery(api.orgs.directory.getOrgBySlug, { slug })
   const membership = useQuery(
     api.orgs.membership.getMembership,
-    org ? { orgId: org._id } : "skip"
-  );
+    org ? { orgId: org._id } : 'skip',
+  )
 
   const memberProfile = useQuery(
     api.orgs.members.getMemberProfileForAdmin,
-    org && membership?.role === "admin"
-      ? { orgId: org._id, userId }
-      : "skip"
-  );
+    org && membership?.role === 'admin' ? { orgId: org._id, userId } : 'skip',
+  )
 
   const attendanceHistory = useQuery(
     api.orgs.members.getMemberAttendanceHistory,
-    org && membership?.role === "admin"
-      ? { orgId: org._id, userId }
-      : "skip"
-  );
+    org && membership?.role === 'admin' ? { orgId: org._id, userId } : 'skip',
+  )
 
   const engagementHistory = useQuery(
     api.orgs.members.getMemberEngagementHistory,
-    org && membership?.role === "admin"
-      ? { orgId: org._id, userId }
-      : "skip"
-  );
+    org && membership?.role === 'admin' ? { orgId: org._id, userId } : 'skip',
+  )
 
   // Loading state
-  if (org === undefined || membership === undefined || memberProfile === undefined) {
+  if (
+    org === undefined ||
+    membership === undefined ||
+    memberProfile === undefined
+  ) {
     return (
       <div className="min-h-screen bg-slate-50">
         <AuthHeader />
@@ -77,26 +75,26 @@ function MemberProfilePage() {
           </div>
         </main>
       </div>
-    );
+    )
   }
 
   // Org not found
   if (org === null) {
-    return <NotFound message="Organization not found" />;
+    return <NotFound message="Organization not found" />
   }
 
   // Not an admin
-  if (!membership || membership.role !== "admin") {
-    return <AccessDenied slug={slug} />;
+  if (!membership || membership.role !== 'admin') {
+    return <AccessDenied slug={slug} />
   }
 
   // Member not found
   if (memberProfile === null) {
-    return <NotFound message="Member not found" />;
+    return <NotFound message="Member not found" />
   }
 
   // Member has hidden profile from this org
-  if ("restricted" in memberProfile && memberProfile.restricted) {
+  if ('restricted' in memberProfile && memberProfile.restricted) {
     return (
       <div className="min-h-screen bg-slate-50">
         <AuthHeader />
@@ -110,26 +108,27 @@ function MemberProfilePage() {
                   Profile Hidden
                 </h2>
                 <p className="text-slate-500">
-                  This member has chosen to hide their profile from your organization.
+                  This member has chosen to hide their profile from your
+                  organization.
                 </p>
               </CardContent>
             </Card>
           </div>
         </main>
       </div>
-    );
+    )
   }
 
   // Type assertion - TypeScript narrowing doesn't work with Convex query return types
-  const profile = memberProfile.profile as ProfileData;
-  const email = memberProfile.email as string | null;
+  const profile = memberProfile.profile as ProfileData
+  const email = memberProfile.email as string | null
   const memberMembership = memberProfile.membership as {
-    _id: string;
-    joinedAt: number;
-    role: string;
-    directoryVisibility: string;
-  };
-  const visibleSections = memberProfile.visibleSections as VisibleSections;
+    _id: string
+    joinedAt: number
+    role: string
+    directoryVisibility: string
+  }
+  const visibleSections = memberProfile.visibleSections as VisibleSections
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -146,11 +145,13 @@ function MemberProfilePage() {
                   <User className="size-10 text-slate-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-2xl font-bold text-foreground">
-                    {profile.name ?? "No name"}
+                  <h1 className="text-2xl font-display text-foreground">
+                    {profile.name ?? 'No name'}
                   </h1>
                   {visibleSections.basicInfo && profile.headline && (
-                    <p className="text-lg text-slate-600 mt-1">{profile.headline}</p>
+                    <p className="text-lg text-slate-600 mt-1">
+                      {profile.headline}
+                    </p>
                   )}
                   <div className="flex flex-wrap items-center gap-3 mt-3">
                     {visibleSections.basicInfo && profile.location && (
@@ -162,13 +163,25 @@ function MemberProfilePage() {
                     {email && (
                       <span className="text-sm text-slate-500">{email}</span>
                     )}
-                    <Badge variant={memberMembership.role === "admin" ? "default" : "secondary"}>
-                      {memberMembership.role === "admin" && <Shield className="size-3 mr-1" />}
+                    <Badge
+                      variant={
+                        memberMembership.role === 'admin'
+                          ? 'default'
+                          : 'secondary'
+                      }
+                    >
+                      {memberMembership.role === 'admin' && (
+                        <Shield className="size-3 mr-1" />
+                      )}
                       {memberMembership.role}
                     </Badge>
                   </div>
                   <p className="text-sm text-slate-400 mt-2">
-                    Joined {format(new Date(memberMembership.joinedAt), "MMMM d, yyyy")}
+                    Joined{' '}
+                    {format(
+                      new Date(memberMembership.joinedAt),
+                      'MMMM d, yyyy',
+                    )}
                   </p>
                 </div>
                 {engagementHistory?.current && (
@@ -176,7 +189,9 @@ function MemberProfilePage() {
                     <EngagementBadge
                       level={engagementHistory.current.level as EngagementLevel}
                       hasOverride={engagementHistory.current.hasOverride}
-                      adminExplanation={engagementHistory.current.adminExplanation}
+                      adminExplanation={
+                        engagementHistory.current.adminExplanation
+                      }
                     />
                   </div>
                 )}
@@ -186,7 +201,10 @@ function MemberProfilePage() {
 
           <div className="grid gap-6 mt-6 lg:grid-cols-2">
             {/* Profile Details */}
-            <ProfileDetailsCard profile={profile} visibleSections={visibleSections} />
+            <ProfileDetailsCard
+              profile={profile}
+              visibleSections={visibleSections}
+            />
 
             {/* Engagement Card */}
             <EngagementCard history={engagementHistory} />
@@ -197,7 +215,7 @@ function MemberProfilePage() {
         </div>
       </main>
     </div>
-  );
+  )
 }
 
 function BackButton({ slug, orgName }: { slug: string; orgName: string }) {
@@ -220,7 +238,7 @@ function BackButton({ slug, orgName }: { slug: string; orgName: string }) {
         Members
       </Link>
     </div>
-  );
+  )
 }
 
 function NotFound({ message }: { message: string }) {
@@ -230,14 +248,16 @@ function NotFound({ message }: { message: string }) {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-lg mx-auto text-center py-12">
           <Building2 className="size-16 text-slate-300 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-foreground mb-4">{message}</h1>
+          <h1 className="text-2xl font-display text-foreground mb-4">
+            {message}
+          </h1>
           <Button asChild>
             <Link to="/">Go Home</Link>
           </Button>
         </div>
       </main>
     </div>
-  );
+  )
 }
 
 function AccessDenied({ slug }: { slug: string }) {
@@ -247,57 +267,61 @@ function AccessDenied({ slug }: { slug: string }) {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-lg mx-auto text-center py-12">
           <Shield className="size-16 text-slate-300 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-foreground mb-4">Admin Access Required</h1>
+          <h1 className="text-2xl font-display text-foreground mb-4">
+            Admin Access Required
+          </h1>
           <Button asChild>
-            <Link to="/org/$slug" params={{ slug }}>Back to Organization</Link>
+            <Link to="/org/$slug" params={{ slug }}>
+              Back to Organization
+            </Link>
           </Button>
         </div>
       </main>
     </div>
-  );
+  )
 }
 
 // Profile type from the query
 type ProfileData = {
-  name: string | null;
-  headline: string | null;
-  location: string | null;
-  pronouns: string | null;
+  name: string | null
+  headline: string | null
+  location: string | null
+  pronouns: string | null
   education: Array<{
-    institution: string;
-    degree?: string;
-    field?: string;
-    startYear?: number;
-    endYear?: number;
-  }> | null;
+    institution: string
+    degree?: string
+    field?: string
+    startYear?: number
+    endYear?: number
+  }> | null
   workHistory: Array<{
-    organization: string;
-    title: string;
-    startDate?: string;
-    endDate?: string;
-    current?: boolean;
-  }> | null;
-  skills: Array<string> | null;
-  careerGoals: string | null;
-  seeking: Array<string> | null;
-  aiSafetyInterests: Array<string> | null;
-  enrichmentSummary: string | null;
-};
+    organization: string
+    title: string
+    startDate?: string
+    endDate?: string
+    current?: boolean
+  }> | null
+  skills: Array<string> | null
+  careerGoals: string | null
+  seeking: Array<string> | null
+  aiSafetyInterests: Array<string> | null
+  enrichmentSummary: string | null
+}
 
 type VisibleSections = {
-  basicInfo: boolean;
-  education: boolean;
-  workHistory: boolean;
-  skills: boolean;
-  careerGoals: boolean;
-};
+  basicInfo: boolean
+  education: boolean
+  workHistory: boolean
+  skills: boolean
+  careerGoals: boolean
+}
 
 function ProfileDetailsCard({
   profile,
   visibleSections,
 }: {
-  profile: ProfileData;
-  visibleSections: VisibleSections;
+  profile: ProfileData
+  visibleSections: VisibleSections
 }) {
   return (
     <Card>
@@ -318,15 +342,17 @@ function ProfileDetailsCard({
             <ul className="space-y-2">
               {profile.education.map((edu, idx) => (
                 <li key={idx} className="text-sm">
-                  <div className="font-medium text-foreground">{edu.institution}</div>
+                  <div className="font-medium text-foreground">
+                    {edu.institution}
+                  </div>
                   {(edu.degree || edu.field) && (
                     <div className="text-slate-500">
-                      {[edu.degree, edu.field].filter(Boolean).join(" in ")}
+                      {[edu.degree, edu.field].filter(Boolean).join(' in ')}
                     </div>
                   )}
                   {(edu.startYear || edu.endYear) && (
                     <div className="text-slate-400 text-xs">
-                      {edu.startYear} - {edu.endYear ?? "Present"}
+                      {edu.startYear} - {edu.endYear ?? 'Present'}
                     </div>
                   )}
                 </li>
@@ -349,18 +375,23 @@ function ProfileDetailsCard({
             <ul className="space-y-2">
               {profile.workHistory.map((work, idx) => (
                 <li key={idx} className="text-sm">
-                  <div className="font-medium text-foreground">{work.title}</div>
+                  <div className="font-medium text-foreground">
+                    {work.title}
+                  </div>
                   <div className="text-slate-500">{work.organization}</div>
                   {(work.startDate || work.endDate) && (
                     <div className="text-slate-400 text-xs">
-                      {work.startDate} - {work.current ? "Present" : work.endDate}
+                      {work.startDate} -{' '}
+                      {work.current ? 'Present' : work.endDate}
                     </div>
                   )}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-slate-400 italic">No work history listed</p>
+            <p className="text-sm text-slate-400 italic">
+              No work history listed
+            </p>
           )}
         </Section>
 
@@ -407,32 +438,43 @@ function ProfileDetailsCard({
               </div>
             </div>
           ) : (
-            <p className="text-sm text-slate-400 italic">No career goals listed</p>
+            <p className="text-sm text-slate-400 italic">
+              No career goals listed
+            </p>
           )}
 
-          {profile.aiSafetyInterests && profile.aiSafetyInterests.length > 0 && (
-            <div className="mt-3">
-              <div className="text-sm text-slate-600 mb-1">AI Safety Interests:</div>
-              <div className="flex flex-wrap gap-1.5">
-                {profile.aiSafetyInterests.map((interest) => (
-                  <Badge key={interest} variant="secondary" className="text-xs">
-                    {interest}
-                  </Badge>
-                ))}
+          {profile.aiSafetyInterests &&
+            profile.aiSafetyInterests.length > 0 && (
+              <div className="mt-3">
+                <div className="text-sm text-slate-600 mb-1">
+                  AI Safety Interests:
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {profile.aiSafetyInterests.map((interest) => (
+                    <Badge
+                      key={interest}
+                      variant="secondary"
+                      className="text-xs"
+                    >
+                      {interest}
+                    </Badge>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {profile.enrichmentSummary && (
             <div className="mt-3 p-3 bg-slate-50 rounded-lg">
               <div className="text-xs text-slate-500 mb-1">AI Summary</div>
-              <p className="text-sm text-slate-700">{profile.enrichmentSummary}</p>
+              <p className="text-sm text-slate-700">
+                {profile.enrichmentSummary}
+              </p>
             </div>
           )}
         </Section>
       </CardContent>
     </Card>
-  );
+  )
 }
 
 function Section({
@@ -441,10 +483,10 @@ function Section({
   visible,
   children,
 }: {
-  title: string;
-  icon: React.ReactNode;
-  visible: boolean;
-  children: React.ReactNode;
+  title: string
+  icon: React.ReactNode
+  visible: boolean
+  children: React.ReactNode
 }) {
   return (
     <div>
@@ -463,31 +505,34 @@ function Section({
         <p className="text-sm text-slate-400 italic">Hidden by member</p>
       )}
     </div>
-  );
+  )
 }
 
-type EngagementHistoryData = {
-  current: {
-    level: string;
-    computedLevel: string;
-    adminExplanation: string;
-    userExplanation: string;
-    signals: Record<string, unknown>;
-    hasOverride: boolean;
-    overrideNotes?: string;
-    overrideExpiresAt?: number;
-    computedAt: number;
-  } | null;
-  history: Array<{
-    _id: string;
-    action: string;
-    previousLevel: string;
-    newLevel: string;
-    notes?: string;
-    adminName: string;
-    performedAt: number;
-  }>;
-} | null | undefined;
+type EngagementHistoryData =
+  | {
+      current: {
+        level: string
+        computedLevel: string
+        adminExplanation: string
+        userExplanation: string
+        signals: Record<string, unknown>
+        hasOverride: boolean
+        overrideNotes?: string
+        overrideExpiresAt?: number
+        computedAt: number
+      } | null
+      history: Array<{
+        _id: string
+        action: string
+        previousLevel: string
+        newLevel: string
+        notes?: string
+        adminName: string
+        performedAt: number
+      }>
+    }
+  | null
+  | undefined
 
 function EngagementCard({ history }: { history: EngagementHistoryData }) {
   if (!history?.current) {
@@ -508,10 +553,10 @@ function EngagementCard({ history }: { history: EngagementHistoryData }) {
           </div>
         </CardContent>
       </Card>
-    );
+    )
   }
 
-  const { current, history: overrideHistory } = history;
+  const { current, history: overrideHistory } = history
 
   return (
     <Card>
@@ -525,7 +570,9 @@ function EngagementCard({ history }: { history: EngagementHistoryData }) {
         {/* Current Status */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-700">Current Level</span>
+            <span className="text-sm font-medium text-slate-700">
+              Current Level
+            </span>
             <EngagementBadge
               level={current.level as EngagementLevel}
               hasOverride={current.hasOverride}
@@ -538,7 +585,10 @@ function EngagementCard({ history }: { history: EngagementHistoryData }) {
               {current.overrideNotes && <span> - {current.overrideNotes}</span>}
               {current.overrideExpiresAt && (
                 <span className="block mt-1 text-amber-600">
-                  Expires {formatDistanceToNow(new Date(current.overrideExpiresAt), { addSuffix: true })}
+                  Expires{' '}
+                  {formatDistanceToNow(new Date(current.overrideExpiresAt), {
+                    addSuffix: true,
+                  })}
                 </span>
               )}
             </div>
@@ -549,7 +599,10 @@ function EngagementCard({ history }: { history: EngagementHistoryData }) {
           </div>
 
           <p className="text-xs text-slate-400">
-            Last computed {formatDistanceToNow(new Date(current.computedAt), { addSuffix: true })}
+            Last computed{' '}
+            {formatDistanceToNow(new Date(current.computedAt), {
+              addSuffix: true,
+            })}
           </p>
         </div>
 
@@ -558,13 +611,20 @@ function EngagementCard({ history }: { history: EngagementHistoryData }) {
           <>
             <Separator />
             <div>
-              <div className="text-sm font-medium text-slate-700 mb-2">Signals</div>
+              <div className="text-sm font-medium text-slate-700 mb-2">
+                Signals
+              </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 {Object.entries(current.signals).map(([key, value]) => (
-                  <div key={key} className="flex justify-between p-2 bg-slate-50 rounded">
-                    <span className="text-slate-500">{formatSignalKey(key)}</span>
+                  <div
+                    key={key}
+                    className="flex justify-between p-2 bg-slate-50 rounded"
+                  >
+                    <span className="text-slate-500">
+                      {formatSignalKey(key)}
+                    </span>
                     <span className="font-medium text-slate-700">
-                      {typeof value === "number" ? value : String(value)}
+                      {typeof value === 'number' ? value : String(value)}
                     </span>
                   </div>
                 ))}
@@ -578,7 +638,9 @@ function EngagementCard({ history }: { history: EngagementHistoryData }) {
           <>
             <Separator />
             <div>
-              <div className="text-sm font-medium text-slate-700 mb-2">Override History</div>
+              <div className="text-sm font-medium text-slate-700 mb-2">
+                Override History
+              </div>
               <ul className="space-y-2">
                 {overrideHistory.map((record) => (
                   <li
@@ -587,19 +649,25 @@ function EngagementCard({ history }: { history: EngagementHistoryData }) {
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-slate-700">
-                        {record.action === "set" ? "Set Override" : "Cleared Override"}
+                        {record.action === 'set'
+                          ? 'Set Override'
+                          : 'Cleared Override'}
                       </span>
                       <span className="text-slate-400">
-                        {format(new Date(record.performedAt), "MMM d, yyyy")}
+                        {format(new Date(record.performedAt), 'MMM d, yyyy')}
                       </span>
                     </div>
                     <div className="text-slate-500 mt-1">
                       {record.previousLevel} &rarr; {record.newLevel}
                     </div>
                     {record.notes && (
-                      <div className="text-slate-600 mt-1 italic">"{record.notes}"</div>
+                      <div className="text-slate-600 mt-1 italic">
+                        "{record.notes}"
+                      </div>
                     )}
-                    <div className="text-slate-400 mt-1">by {record.adminName}</div>
+                    <div className="text-slate-400 mt-1">
+                      by {record.adminName}
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -608,34 +676,41 @@ function EngagementCard({ history }: { history: EngagementHistoryData }) {
         )}
       </CardContent>
     </Card>
-  );
+  )
 }
 
 function formatSignalKey(key: string): string {
   // Convert camelCase to Title Case
   return key
-    .replace(/([A-Z])/g, " $1")
+    .replace(/([A-Z])/g, ' $1')
     .replace(/^./, (str) => str.toUpperCase())
-    .trim();
+    .trim()
 }
 
-type AttendanceHistoryData = Array<{
-  _id: string;
-  status: string;
-  respondedAt?: number;
-  feedbackRating?: number;
-  feedbackText?: string;
-  createdAt: number;
-  event: {
-    _id: string;
-    title: string;
-    startAt: number;
-    location?: string;
-    isVirtual: boolean;
-  } | null;
-}> | null | undefined;
+type AttendanceHistoryData =
+  | Array<{
+      _id: string
+      status: string
+      respondedAt?: number
+      feedbackRating?: number
+      feedbackText?: string
+      createdAt: number
+      event: {
+        _id: string
+        title: string
+        startAt: number
+        location?: string
+        isVirtual: boolean
+      } | null
+    }>
+  | null
+  | undefined
 
-function AttendanceHistoryCard({ history }: { history: AttendanceHistoryData }) {
+function AttendanceHistoryCard({
+  history,
+}: {
+  history: AttendanceHistoryData
+}) {
   if (!history || history.length === 0) {
     return (
       <Card className="mt-6">
@@ -652,7 +727,7 @@ function AttendanceHistoryCard({ history }: { history: AttendanceHistoryData }) 
           </div>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   return (
@@ -708,13 +783,15 @@ function AttendanceHistoryCard({ history }: { history: AttendanceHistoryData }) 
                         </div>
                       </div>
                     ) : (
-                      <span className="text-slate-400 italic">Event deleted</span>
+                      <span className="text-slate-400 italic">
+                        Event deleted
+                      </span>
                     )}
                   </td>
                   <td className="px-3 py-2 text-sm text-slate-600">
                     {record.event
-                      ? format(new Date(record.event.startAt), "MMM d, yyyy")
-                      : "-"}
+                      ? format(new Date(record.event.startAt), 'MMM d, yyyy')
+                      : '-'}
                   </td>
                   <td className="px-3 py-2">
                     <AttendanceStatusBadge status={record.status} />
@@ -727,8 +804,8 @@ function AttendanceHistoryCard({ history }: { history: AttendanceHistoryData }) 
                             key={i}
                             className={`size-4 ${
                               i < record.feedbackRating!
-                                ? "text-yellow-400 fill-yellow-400"
-                                : "text-slate-200"
+                                ? 'text-yellow-400 fill-yellow-400'
+                                : 'text-slate-200'
                             }`}
                           />
                         ))}
@@ -749,22 +826,31 @@ function AttendanceHistoryCard({ history }: { history: AttendanceHistoryData }) 
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }
 
 function AttendanceStatusBadge({ status }: { status: string }) {
-  const variants: Record<string, { variant: "default" | "secondary" | "outline" | "destructive"; label: string }> = {
-    attended: { variant: "default", label: "Attended" },
-    did_not_attend: { variant: "secondary", label: "Did Not Attend" },
-    skipped: { variant: "outline", label: "Skipped" },
-    pending: { variant: "outline", label: "Pending" },
-  };
+  const variants: Record<
+    string,
+    {
+      variant: 'default' | 'secondary' | 'outline' | 'destructive'
+      label: string
+    }
+  > = {
+    attended: { variant: 'default', label: 'Attended' },
+    did_not_attend: { variant: 'secondary', label: 'Did Not Attend' },
+    skipped: { variant: 'outline', label: 'Skipped' },
+    pending: { variant: 'outline', label: 'Pending' },
+  }
 
-  const config = variants[status] ?? { variant: "outline" as const, label: status };
+  const config = variants[status] ?? {
+    variant: 'outline' as const,
+    label: status,
+  }
 
   return (
     <Badge variant={config.variant} className="text-xs">
       {config.label}
     </Badge>
-  );
+  )
 }

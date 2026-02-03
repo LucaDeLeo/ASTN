@@ -1,17 +1,17 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { OpportunityForm } from "~/components/admin/opportunity-form";
+import { createFileRoute } from '@tanstack/react-router'
+import { OpportunityForm } from '~/components/admin/opportunity-form'
 
-export const Route = createFileRoute("/admin/opportunities/new")({
+export const Route = createFileRoute('/admin/opportunities/new')({
   component: NewOpportunityPage,
-});
+})
 
 function NewOpportunityPage() {
   return (
     <div>
-      <h1 className="text-2xl font-bold text-foreground mb-6">
+      <h1 className="text-2xl font-display text-foreground mb-6">
         Add New Opportunity
       </h1>
       <OpportunityForm mode="create" />
     </div>
-  );
+  )
 }
