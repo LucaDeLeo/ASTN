@@ -204,7 +204,10 @@ function ApplicationCard({ application }: { application: Application }) {
 
           {application.status === 'approved' && application.orgSlug && (
             <Button size="sm" asChild>
-              <Link to={`/org/${application.orgSlug}/admin`}>
+              <Link
+                to="/org/$slug/admin"
+                params={{ slug: application.orgSlug }}
+              >
                 Configure your organization
               </Link>
             </Button>
