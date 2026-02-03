@@ -61,6 +61,40 @@ export const getSpaceByOrgPublic = query({
   },
 })
 
+// Get space by org slug (public, no auth required - for guest visit page)
+export const getSpaceBySlug = query({
+  args: { slug: v.string() },
+  handler: async (ctx, { slug }) => {
+    // Find org by slug
+    const org = await ctx.db
+      .query('organizations')
+      .withIndex('by_slug', (q) => q.eq('slug', slug))
+      .first()
+
+    if (!org) return null
+
+    // Find space for this org
+    const space = await ctx.db
+      .query('coworkingSpaces')
+      .withIndex('by_org', (q) => q.eq('orgId', org._id))
+      .first()
+
+    if (!space || !space.guestAccessEnabled) return null
+
+    return {
+      spaceId: space._id,
+      spaceName: space.name,
+      orgId: org._id,
+      orgName: org.name,
+      orgSlug: org.slug,
+      capacity: space.capacity,
+      timezone: space.timezone,
+      operatingHours: space.operatingHours,
+      customVisitFields: space.customVisitFields ?? [],
+    }
+  },
+})
+
 // Operating hours validator
 const operatingHoursValidator = v.array(
   v.object({
@@ -81,7 +115,10 @@ export const createSpace = mutation({
     operatingHours: operatingHoursValidator,
     guestAccessEnabled: v.optional(v.boolean()),
   },
-  handler: async (ctx, { orgId, name, capacity, timezone, operatingHours, guestAccessEnabled }) => {
+  handler: async (
+    ctx,
+    { orgId, name, capacity, timezone, operatingHours, guestAccessEnabled },
+  ) => {
     await requireOrgAdmin(ctx, orgId)
 
     // Validate: no existing space for this org (one per org limit)
@@ -91,16 +128,23 @@ export const createSpace = mutation({
       .first()
 
     if (existingSpace) {
-      throw new Error('This organization already has a co-working space configured')
+      throw new Error(
+        'This organization already has a co-working space configured',
+      )
     }
 
     // Validate: operatingHours has exactly 7 entries, one per day (0-6)
     if (operatingHours.length !== 7) {
-      throw new Error('Operating hours must have exactly 7 entries (one per day)')
+      throw new Error(
+        'Operating hours must have exactly 7 entries (one per day)',
+      )
     }
 
     const daysPresent = new Set(operatingHours.map((h) => h.dayOfWeek))
-    if (daysPresent.size !== 7 || ![0, 1, 2, 3, 4, 5, 6].every((d) => daysPresent.has(d))) {
+    if (
+      daysPresent.size !== 7 ||
+      ![0, 1, 2, 3, 4, 5, 6].every((d) => daysPresent.has(d))
+    ) {
       throw new Error('Operating hours must include each day of the week (0-6)')
     }
 
@@ -112,7 +156,9 @@ export const createSpace = mutation({
     // Validate: closeMinutes > openMinutes for open days
     for (const hours of operatingHours) {
       if (!hours.isClosed && hours.closeMinutes <= hours.openMinutes) {
-        throw new Error(`Close time must be after open time for day ${hours.dayOfWeek}`)
+        throw new Error(
+          `Close time must be after open time for day ${hours.dayOfWeek}`,
+        )
       }
     }
 
@@ -161,17 +207,28 @@ export const updateSpace = mutation({
     // Validate operatingHours if provided
     if (updates.operatingHours !== undefined) {
       if (updates.operatingHours.length !== 7) {
-        throw new Error('Operating hours must have exactly 7 entries (one per day)')
+        throw new Error(
+          'Operating hours must have exactly 7 entries (one per day)',
+        )
       }
 
-      const daysPresent = new Set(updates.operatingHours.map((h) => h.dayOfWeek))
-      if (daysPresent.size !== 7 || ![0, 1, 2, 3, 4, 5, 6].every((d) => daysPresent.has(d))) {
-        throw new Error('Operating hours must include each day of the week (0-6)')
+      const daysPresent = new Set(
+        updates.operatingHours.map((h) => h.dayOfWeek),
+      )
+      if (
+        daysPresent.size !== 7 ||
+        ![0, 1, 2, 3, 4, 5, 6].every((d) => daysPresent.has(d))
+      ) {
+        throw new Error(
+          'Operating hours must include each day of the week (0-6)',
+        )
       }
 
       for (const hours of updates.operatingHours) {
         if (!hours.isClosed && hours.closeMinutes <= hours.openMinutes) {
-          throw new Error(`Close time must be after open time for day ${hours.dayOfWeek}`)
+          throw new Error(
+            `Close time must be after open time for day ${hours.dayOfWeek}`,
+          )
         }
       }
     }
@@ -181,8 +238,10 @@ export const updateSpace = mutation({
     if (updates.name !== undefined) patch.name = updates.name
     if (updates.capacity !== undefined) patch.capacity = updates.capacity
     if (updates.timezone !== undefined) patch.timezone = updates.timezone
-    if (updates.operatingHours !== undefined) patch.operatingHours = updates.operatingHours
-    if (updates.guestAccessEnabled !== undefined) patch.guestAccessEnabled = updates.guestAccessEnabled
+    if (updates.operatingHours !== undefined)
+      patch.operatingHours = updates.operatingHours
+    if (updates.guestAccessEnabled !== undefined)
+      patch.guestAccessEnabled = updates.guestAccessEnabled
 
     await ctx.db.patch('coworkingSpaces', spaceId, patch)
 
@@ -249,8 +308,13 @@ export const updateCustomVisitFields = mutation({
       }
       fieldIds.add(field.fieldId)
 
-      if (field.type === 'select' && (!field.options || field.options.length === 0)) {
-        throw new Error(`Select field "${field.label}" must have at least one option`)
+      if (
+        field.type === 'select' &&
+        (!field.options || field.options.length === 0)
+      ) {
+        throw new Error(
+          `Select field "${field.label}" must have at least one option`,
+        )
       }
     }
 

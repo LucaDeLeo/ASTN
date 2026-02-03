@@ -30,6 +30,7 @@ import { Route as AdminApplicationsRouteRouteImport } from './routes/admin/appli
 import { Route as OrgSlugIndexRouteImport } from './routes/org/$slug/index'
 import { Route as AdminOpportunitiesIndexRouteImport } from './routes/admin/opportunities/index'
 import { Route as AdminApplicationsIndexRouteImport } from './routes/admin/applications/index'
+import { Route as OrgSlugVisitRouteImport } from './routes/org/$slug/visit'
 import { Route as OrgSlugJoinRouteImport } from './routes/org/$slug/join'
 import { Route as OrgSlugEventsRouteImport } from './routes/org/$slug/events'
 import { Route as AdminOpportunitiesNewRouteImport } from './routes/admin/opportunities/new'
@@ -39,6 +40,7 @@ import { Route as OrgSlugSpaceBookingsRouteImport } from './routes/org/$slug/spa
 import { Route as OrgSlugAdminSpaceRouteImport } from './routes/org/$slug/admin/space'
 import { Route as OrgSlugAdminSetupRouteImport } from './routes/org/$slug/admin/setup'
 import { Route as OrgSlugAdminSettingsRouteImport } from './routes/org/$slug/admin/settings'
+import { Route as OrgSlugAdminGuestsRouteImport } from './routes/org/$slug/admin/guests'
 import { Route as AdminOpportunitiesIdEditRouteImport } from './routes/admin/opportunities/$id/edit'
 import { Route as OrgSlugAdminProgramsIndexRouteImport } from './routes/org/$slug/admin/programs/index'
 import { Route as OrgSlugAdminMembersIndexRouteImport } from './routes/org/$slug/admin/members/index'
@@ -150,6 +152,11 @@ const AdminApplicationsIndexRoute = AdminApplicationsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminApplicationsRouteRoute,
 } as any)
+const OrgSlugVisitRoute = OrgSlugVisitRouteImport.update({
+  id: '/org/$slug/visit',
+  path: '/org/$slug/visit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OrgSlugJoinRoute = OrgSlugJoinRouteImport.update({
   id: '/org/$slug/join',
   path: '/org/$slug/join',
@@ -193,6 +200,11 @@ const OrgSlugAdminSetupRoute = OrgSlugAdminSetupRouteImport.update({
 const OrgSlugAdminSettingsRoute = OrgSlugAdminSettingsRouteImport.update({
   id: '/org/$slug/admin/settings',
   path: '/org/$slug/admin/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrgSlugAdminGuestsRoute = OrgSlugAdminGuestsRouteImport.update({
+  id: '/org/$slug/admin/guests',
+  path: '/org/$slug/admin/guests',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminOpportunitiesIdEditRoute =
@@ -248,10 +260,12 @@ export interface FileRoutesByFullPath {
   '/admin/opportunities/new': typeof AdminOpportunitiesNewRoute
   '/org/$slug/events': typeof OrgSlugEventsRoute
   '/org/$slug/join': typeof OrgSlugJoinRoute
+  '/org/$slug/visit': typeof OrgSlugVisitRoute
   '/admin/applications/': typeof AdminApplicationsIndexRoute
   '/admin/opportunities/': typeof AdminOpportunitiesIndexRoute
   '/org/$slug/': typeof OrgSlugIndexRoute
   '/admin/opportunities/$id/edit': typeof AdminOpportunitiesIdEditRoute
+  '/org/$slug/admin/guests': typeof OrgSlugAdminGuestsRoute
   '/org/$slug/admin/settings': typeof OrgSlugAdminSettingsRoute
   '/org/$slug/admin/setup': typeof OrgSlugAdminSetupRoute
   '/org/$slug/admin/space': typeof OrgSlugAdminSpaceRoute
@@ -281,10 +295,12 @@ export interface FileRoutesByTo {
   '/admin/opportunities/new': typeof AdminOpportunitiesNewRoute
   '/org/$slug/events': typeof OrgSlugEventsRoute
   '/org/$slug/join': typeof OrgSlugJoinRoute
+  '/org/$slug/visit': typeof OrgSlugVisitRoute
   '/admin/applications': typeof AdminApplicationsIndexRoute
   '/admin/opportunities': typeof AdminOpportunitiesIndexRoute
   '/org/$slug': typeof OrgSlugIndexRoute
   '/admin/opportunities/$id/edit': typeof AdminOpportunitiesIdEditRoute
+  '/org/$slug/admin/guests': typeof OrgSlugAdminGuestsRoute
   '/org/$slug/admin/settings': typeof OrgSlugAdminSettingsRoute
   '/org/$slug/admin/setup': typeof OrgSlugAdminSetupRoute
   '/org/$slug/admin/space': typeof OrgSlugAdminSpaceRoute
@@ -319,10 +335,12 @@ export interface FileRoutesById {
   '/admin/opportunities/new': typeof AdminOpportunitiesNewRoute
   '/org/$slug/events': typeof OrgSlugEventsRoute
   '/org/$slug/join': typeof OrgSlugJoinRoute
+  '/org/$slug/visit': typeof OrgSlugVisitRoute
   '/admin/applications/': typeof AdminApplicationsIndexRoute
   '/admin/opportunities/': typeof AdminOpportunitiesIndexRoute
   '/org/$slug/': typeof OrgSlugIndexRoute
   '/admin/opportunities/$id/edit': typeof AdminOpportunitiesIdEditRoute
+  '/org/$slug/admin/guests': typeof OrgSlugAdminGuestsRoute
   '/org/$slug/admin/settings': typeof OrgSlugAdminSettingsRoute
   '/org/$slug/admin/setup': typeof OrgSlugAdminSetupRoute
   '/org/$slug/admin/space': typeof OrgSlugAdminSpaceRoute
@@ -358,10 +376,12 @@ export interface FileRouteTypes {
     | '/admin/opportunities/new'
     | '/org/$slug/events'
     | '/org/$slug/join'
+    | '/org/$slug/visit'
     | '/admin/applications/'
     | '/admin/opportunities/'
     | '/org/$slug/'
     | '/admin/opportunities/$id/edit'
+    | '/org/$slug/admin/guests'
     | '/org/$slug/admin/settings'
     | '/org/$slug/admin/setup'
     | '/org/$slug/admin/space'
@@ -391,10 +411,12 @@ export interface FileRouteTypes {
     | '/admin/opportunities/new'
     | '/org/$slug/events'
     | '/org/$slug/join'
+    | '/org/$slug/visit'
     | '/admin/applications'
     | '/admin/opportunities'
     | '/org/$slug'
     | '/admin/opportunities/$id/edit'
+    | '/org/$slug/admin/guests'
     | '/org/$slug/admin/settings'
     | '/org/$slug/admin/setup'
     | '/org/$slug/admin/space'
@@ -428,10 +450,12 @@ export interface FileRouteTypes {
     | '/admin/opportunities/new'
     | '/org/$slug/events'
     | '/org/$slug/join'
+    | '/org/$slug/visit'
     | '/admin/applications/'
     | '/admin/opportunities/'
     | '/org/$slug/'
     | '/admin/opportunities/$id/edit'
+    | '/org/$slug/admin/guests'
     | '/org/$slug/admin/settings'
     | '/org/$slug/admin/setup'
     | '/org/$slug/admin/space'
@@ -460,7 +484,9 @@ export interface RootRouteChildren {
   ProfileIndexRoute: typeof ProfileIndexRoute
   OrgSlugEventsRoute: typeof OrgSlugEventsRoute
   OrgSlugJoinRoute: typeof OrgSlugJoinRoute
+  OrgSlugVisitRoute: typeof OrgSlugVisitRoute
   OrgSlugIndexRoute: typeof OrgSlugIndexRoute
+  OrgSlugAdminGuestsRoute: typeof OrgSlugAdminGuestsRoute
   OrgSlugAdminSettingsRoute: typeof OrgSlugAdminSettingsRoute
   OrgSlugAdminSetupRoute: typeof OrgSlugAdminSetupRoute
   OrgSlugAdminSpaceRoute: typeof OrgSlugAdminSpaceRoute
@@ -622,6 +648,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminApplicationsIndexRouteImport
       parentRoute: typeof AdminApplicationsRouteRoute
     }
+    '/org/$slug/visit': {
+      id: '/org/$slug/visit'
+      path: '/org/$slug/visit'
+      fullPath: '/org/$slug/visit'
+      preLoaderRoute: typeof OrgSlugVisitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/org/$slug/join': {
       id: '/org/$slug/join'
       path: '/org/$slug/join'
@@ -683,6 +716,13 @@ declare module '@tanstack/react-router' {
       path: '/org/$slug/admin/settings'
       fullPath: '/org/$slug/admin/settings'
       preLoaderRoute: typeof OrgSlugAdminSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/org/$slug/admin/guests': {
+      id: '/org/$slug/admin/guests'
+      path: '/org/$slug/admin/guests'
+      fullPath: '/org/$slug/admin/guests'
+      preLoaderRoute: typeof OrgSlugAdminGuestsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/opportunities/$id/edit': {
@@ -799,7 +839,9 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileIndexRoute: ProfileIndexRoute,
   OrgSlugEventsRoute: OrgSlugEventsRoute,
   OrgSlugJoinRoute: OrgSlugJoinRoute,
+  OrgSlugVisitRoute: OrgSlugVisitRoute,
   OrgSlugIndexRoute: OrgSlugIndexRoute,
+  OrgSlugAdminGuestsRoute: OrgSlugAdminGuestsRoute,
   OrgSlugAdminSettingsRoute: OrgSlugAdminSettingsRoute,
   OrgSlugAdminSetupRoute: OrgSlugAdminSetupRoute,
   OrgSlugAdminSpaceRoute: OrgSlugAdminSpaceRoute,
