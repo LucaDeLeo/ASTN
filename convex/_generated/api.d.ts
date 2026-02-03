@@ -73,6 +73,7 @@ import type * as orgs_stats from "../orgs/stats.js";
 import type * as profiles from "../profiles.js";
 import type * as programs from "../programs.js";
 import type * as skills from "../skills.js";
+import type * as spaceBookings from "../spaceBookings.js";
 import type * as upload from "../upload.js";
 
 import type {
@@ -147,6 +148,7 @@ declare const fullApi: ApiFromModules<{
   profiles: typeof profiles;
   programs: typeof programs;
   skills: typeof skills;
+  spaceBookings: typeof spaceBookings;
   upload: typeof upload;
 }>;
 
