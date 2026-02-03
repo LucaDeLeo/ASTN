@@ -64,9 +64,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Completed 32-02-PLAN.md (Member Booking UI + Attendee View)
+Stopped at: Phase 32 complete and verified (14/14 must-haves)
 Resume file: None
-Next action: Plan phase 33 (Guest Booking Flow) or continue milestone
+Next action: `/gsd:plan-phase 33` to plan Guest Access + Visit Applications
 
 ---
 
