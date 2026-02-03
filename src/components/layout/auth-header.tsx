@@ -4,7 +4,6 @@ import { AuthLoading, Authenticated, Unauthenticated } from 'convex/react'
 import { LogOut, Settings, User } from 'lucide-react'
 
 import { NotificationBell } from '~/components/notifications'
-import { ThemeToggle } from '~/components/theme/theme-toggle'
 import { Avatar, AvatarFallback } from '~/components/ui/avatar'
 import { Button } from '~/components/ui/button'
 import {
@@ -46,9 +45,6 @@ export function AuthHeader() {
               Matches
             </Link>
           </Authenticated>
-
-          {/* Theme toggle - visible to all users */}
-          <ThemeToggle />
 
           {/* Auth state: loading, signed out, signed in */}
           <AuthLoading>

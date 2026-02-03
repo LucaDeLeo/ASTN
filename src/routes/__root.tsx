@@ -4,8 +4,6 @@ import {
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
-import { createServerFn } from '@tanstack/react-start'
-import { getRequest } from '@tanstack/react-start/server'
 import * as React from 'react'
 import { Toaster } from 'sonner'
 
@@ -17,23 +15,9 @@ import type { QueryClient } from '@tanstack/react-query'
 import appCss from '~/styles/app.css?url'
 import { ThemeProvider } from '~/components/theme/theme-provider'
 
-// Server function to read theme from cookie for SSR
-const getThemeFromCookie = createServerFn({ method: 'GET' }).handler(() => {
-  const request = getRequest()
-  const cookies = request.headers.get('cookie') || ''
-  const match = cookies.match(/astn-theme=([^;]+)/)
-  if (!match) return 'system'
-  return match[1] as 'dark' | 'light' | 'system'
-})
-
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
-  initialTheme?: 'dark' | 'light' | 'system'
 }>()({
-  beforeLoad: async () => {
-    const initialTheme = await getThemeFromCookie()
-    return { initialTheme }
-  },
   head: () => ({
     meta: [
       {
@@ -115,42 +99,14 @@ function RootComponent() {
   )
 }
 
-// Minimal script only for "system" theme - detects system preference
-const systemThemeScript = `(function(){
-  try {
-    var d=document.documentElement;
-    if(!d.classList.contains('dark')&&!d.classList.contains('light')){
-      d.classList.add(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
-    }
-  }catch(e){}
-})()`
-
 function RootDocument({ children }: { children: React.ReactNode }) {
-  const { initialTheme } = Route.useRouteContext()
-
-  // For explicit dark/light, apply class directly from SSR (no flash)
-  // For system theme, we need the inline script to detect preference
-  const themeClass =
-    initialTheme === 'dark' ? 'dark' : initialTheme === 'light' ? 'light' : ''
-
   return (
-    <html
-      lang="en"
-      className={themeClass || undefined}
-      suppressHydrationWarning
-    >
-      <head suppressHydrationWarning>
-        {/* Only inject script for system theme - dark/light are handled by SSR */}
-        {initialTheme === 'system' && (
-          <script
-            suppressHydrationWarning
-            dangerouslySetInnerHTML={{ __html: systemThemeScript }}
-          />
-        )}
+    <html lang="en" className="light">
+      <head>
         <HeadContent />
       </head>
       <body>
-        <ThemeProvider defaultTheme="system" storageKey="astn-theme">
+        <ThemeProvider>
           {children}
           <Toaster position="top-right" richColors />
         </ThemeProvider>
