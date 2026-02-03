@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-31)
 
 ## Current Position
 
-Phase: 28 of 29 (Quality Gates & Bug Fixes) -- COMPLETE
-Plan: 3 of 3 in phase 28 (all complete)
-Status: Phase 28 complete
-Last activity: 2026-02-02 — Completed 28-03-PLAN.md (dead code, toast, structured logging)
+Phase: 29 of 29 (Performance, Accessibility & Polish)
+Plan: 3 of 3 in phase 29 (all complete)
+Status: Phase 29 complete -- v1.4 COMPLETE
+Last activity: 2026-02-02 — Completed 29-03-PLAN.md (GradientBg + font-display visual consistency)
 
-Progress: [████████░░] 78% of v1.4 (7/9 plans)
+Progress: [██████████] 100% of v1.4 (9/9 plans)
 
 ## Milestone History
 
@@ -23,16 +23,17 @@ Progress: [████████░░] 78% of v1.4 (7/9 plans)
 - v1.2 Org CRM & Events - 6 phases, 20 plans - shipped 2026-01-19
 - v1.3 Visual Overhaul - 4 phases (17-20), 13 plans - shipped 2026-01-20
 - v2.0 Mobile + Tauri (partial) - Phases 21-23, 26 complete (16 plans). Phase 25 deferred.
+- v1.4 Hardening - 3 phases (27-29), 9 plans - shipped 2026-02-02
 
-**Total:** 24 phases, 83 plans across 4 shipped milestones + partial v2.0
+**Total:** 29 phases, 92 plans across 5 shipped milestones + partial v2.0
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 90
-- v1.4 plans completed: 7
-- Total execution time: ~20 hours (across all milestones)
+- Total plans completed: 92
+- v1.4 plans completed: 9
+- Total execution time: ~20.5 hours (across all milestones)
 
 ## Pending Todos
 
@@ -73,15 +74,18 @@ Progress: [████████░░] 78% of v1.4 (7/9 plans)
 | JSON structured logging via convex/lib/logging.ts                          | Machine-parseable logs for Convex dashboard and log aggregation               | 28-03 |
 | Error toasts persist with duration: Infinity                               | Users must see failures; auto-dismiss would hide errors                       | 28-03 |
 | Logging utility is pure module (no "use node")                             | Works in both Node actions and Convex mutations without restrictions          | 28-03 |
+| Admin pages keep dotGridStyle                                              | Intentional admin-specific visual differentiation from user pages             | 29-03 |
+| Login page uses GradientBg component                                       | Centralizes gradient definition instead of inline CSS                         | 29-03 |
+| Remove font-mono from opportunity title h1                                 | Conflicted with font-display; Space Grotesk is the v1.3 heading standard      | 29-03 |
 
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Completed 28-03-PLAN.md (dead code, toast, structured logging)
+Stopped at: Completed 29-03-PLAN.md (GradientBg + font-display visual consistency)
 Resume file: None
-Next action: Begin Phase 29 (final phase of v1.4)
+Next action: v1.4 complete -- all 9 plans across 3 phases shipped
 
 ---
 
 _State initialized: 2026-01-17_
-_Last updated: 2026-02-02 — Completed 28-03 (dead code removal, toast migration, structured logging)_
+_Last updated: 2026-02-02 — Completed 29-03 (GradientBg on all user pages, font-display on all headings)_
