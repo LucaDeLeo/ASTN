@@ -123,6 +123,7 @@ interface Application {
   status: ApplicationStatus
   createdAt: number
   rejectionReason?: string
+  orgSlug?: string | null
 }
 
 const statusConfig: Record<
@@ -201,9 +202,11 @@ function ApplicationCard({ application }: { application: Application }) {
             </div>
           )}
 
-          {application.status === 'approved' && (
+          {application.status === 'approved' && application.orgSlug && (
             <Button size="sm" asChild>
-              <Link to="/orgs">Configure your organization</Link>
+              <Link to={`/org/${application.orgSlug}/admin`}>
+                Configure your organization
+              </Link>
             </Button>
           )}
 

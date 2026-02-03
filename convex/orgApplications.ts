@@ -86,7 +86,23 @@ export const getMyApplications = query({
       .withIndex('by_applicant', (q) => q.eq('applicantUserId', userId))
       .collect()
 
-    return applications.sort((a, b) => b.createdAt - a.createdAt)
+    // For approved applications, find the associated org slug
+    const enriched = await Promise.all(
+      applications.map(async (app) => {
+        if (app.status === 'approved') {
+          const orgs = await ctx.db.query('organizations').collect()
+          const org = orgs.find(
+            (o) =>
+              o.name.toLowerCase().trim() ===
+              app.orgName.toLowerCase().trim(),
+          )
+          return { ...app, orgSlug: org?.slug ?? null }
+        }
+        return { ...app, orgSlug: null }
+      }),
+    )
+
+    return enriched.sort((a, b) => b.createdAt - a.createdAt)
   },
 })
 
@@ -302,5 +318,18 @@ export const checkPlatformAdmin = query({
   args: {},
   handler: async (ctx) => {
     return await isPlatformAdmin(ctx)
+  },
+})
+
+/**
+ * Get the current user's email from auth identity.
+ * Used for pre-filling the application form.
+ */
+export const getMyEmail = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) return null
+    return identity.email ?? null
   },
 })
