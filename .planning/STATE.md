@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** v1.5 Org Onboarding & Co-working -- Phase 34 in progress
+**Current focus:** v1.5 Org Onboarding & Co-working -- Phase 34 complete
 
 ## Current Position
 
 Phase: 34 of 34 (Admin Dashboard & Polish)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-02-03 -- Completed 34-03-PLAN.md (Admin Booking Components)
+Plan: 4 of 4 in current phase
+Status: Phase complete
+Last activity: 2026-02-03 -- Completed 34-04-PLAN.md (Admin Dashboard Integration)
 
-Progress: [███████████████████░] 95% (Phase 34 plan 3 of 4 complete)
+Progress: [████████████████████] 100% (Phase 34 complete)
 
 ## Milestone History
 
@@ -56,13 +56,16 @@ Progress: [███████████████████░] 95% (Ph
 | Booking list groups by date with badge count                   | 34-02 | Clearer organization for multiple bookings per day      |
 | Time options 6 AM to 10 PM in 30-min increments                | 34-03 | Standard coworking hours for booking time selectors     |
 | BookingCard status badges with color variants by status        | 34-03 | Visual distinction: confirmed=green, pending=amber, etc |
+| Stats cards self-contained with own loading states             | 34-04 | Each card fetches data independently                    |
+| Peak days visualization as distribution bars (top 3)           | 34-04 | Reuses OrgStats pattern for consistency                 |
+| Bookings export defaults to last 30 days                       | 34-04 | Reasonable default for common export use case           |
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 103
-- Total execution time: ~21.4 hours (across all milestones)
+- Total plans completed: 104
+- Total execution time: ~21.5 hours (across all milestones)
 
 ## Pending Todos
 
@@ -79,11 +82,11 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Completed 34-03-PLAN.md (Admin Booking Components)
+Stopped at: Completed 34-04-PLAN.md (Admin Dashboard Integration)
 Resume file: None
-Next action: Execute 34-04-PLAN.md (Admin Dashboard Integration)
+Next action: v1.5 milestone complete - ready for final review
 
 ---
 
 _State initialized: 2026-01-17_
-_Last updated: 2026-02-03 -- Phase 34 plan 3 complete_
+_Last updated: 2026-02-03 -- Phase 34 complete (v1.5 milestone done)_
