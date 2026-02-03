@@ -24,6 +24,18 @@ function AdminDashboard() {
             </CardContent>
           </Card>
         </Link>
+        <Link to="/admin/applications">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader>
+              <CardTitle className="text-lg">Org Applications</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-slate-600">
+                Review and approve organization applications to join ASTN.
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
     </div>
   )
