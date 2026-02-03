@@ -7,7 +7,7 @@
 - ✅ **v1.2 Org CRM & Events** - Phases 11-16 (shipped 2026-01-19)
 - ✅ **v1.3 Visual Overhaul** - Phases 17-20 (shipped 2026-01-20)
 - ⏸️ **v2.0 Mobile + Tauri** - Phases 21-23, 26 complete; Phase 25 deferred
-- 🚧 **v1.4 Hardening** - Phases 27-29 (in progress)
+- ✅ **v1.4 Hardening** - Phases 27-29 (shipped 2026-02-02)
 
 ## Overview
 
@@ -17,7 +17,7 @@ v1.4 closes all security vulnerabilities, bugs, and code quality gaps identified
 
 - [x] **Phase 27: Critical Security** - Close exploitable auth gaps, harden OAuth flow, defend LLM calls
 - [x] **Phase 28: Quality Gates & Bug Fixes** - CI pipeline, pre-commit hooks, correctness fixes, error handling
-- [ ] **Phase 29: Performance, Accessibility & Polish** - N+1 query resolution, ARIA/keyboard support, visual coverage
+- [x] **Phase 29: Performance, Accessibility & Polish** - N+1 query resolution, ARIA/keyboard support, visual coverage
 
 ## Phase Details
 
@@ -28,7 +28,7 @@ Previous milestones are documented in `.planning/MILESTONES.md`. Phases 1-23 and
 
 </details>
 
-### v1.4 Hardening (In Progress)
+### v1.4 Hardening (Complete)
 
 **Milestone Goal:** Fix all security vulnerabilities, bugs, performance issues, and code quality gaps from the codebase review before the BAISH pilot launch.
 
@@ -81,21 +81,21 @@ Plans:
 
 Plans:
 
-- [ ] 29-01-PLAN.md -- N+1 query resolution and rate limiting (batch attendance/email/program queries, chained scheduled actions for matching with exponential backoff)
-- [ ] 29-02-PLAN.md -- Accessibility hardening (password inline validation checklist, OrgCard keyboard nav, drag state non-color indicators, aria-describedby on all data-entry forms)
-- [ ] 29-03-PLAN.md -- Visual coverage (GradientBg on remaining user-facing pages, font-display heading sweep across 17 files)
+- [x] 29-01-PLAN.md -- N+1 query resolution and rate limiting (batch attendance/email/program queries, chained scheduled actions for matching with exponential backoff)
+- [x] 29-02-PLAN.md -- Accessibility hardening (password inline validation checklist, OrgCard keyboard nav, drag state non-color indicators, aria-describedby on all data-entry forms)
+- [x] 29-03-PLAN.md -- Visual coverage (GradientBg on remaining user-facing pages, font-display heading sweep across 17 files)
 
 ## Progress
 
 **Execution Order:** Phase 27 -> Phase 28 -> Phase 29
 
-| Phase                                   | Milestone | Plans Complete | Status      | Completed  |
-| --------------------------------------- | --------- | -------------- | ----------- | ---------- |
-| 27. Critical Security                   | v1.4      | 3/3            | ✓ Complete  | 2026-02-02 |
-| 28. Quality Gates & Bug Fixes           | v1.4      | 3/3            | ✓ Complete  | 2026-02-02 |
-| 29. Performance, Accessibility & Polish | v1.4      | 0/3            | Not started | -          |
+| Phase                                   | Milestone | Plans Complete | Status     | Completed  |
+| --------------------------------------- | --------- | -------------- | ---------- | ---------- |
+| 27. Critical Security                   | v1.4      | 3/3            | ✓ Complete | 2026-02-02 |
+| 28. Quality Gates & Bug Fixes           | v1.4      | 3/3            | ✓ Complete | 2026-02-02 |
+| 29. Performance, Accessibility & Polish | v1.4      | 3/3            | Complete   | 2026-02-02 |
 
 ---
 
 _Roadmap created: 2026-01-20_
-_Last updated: 2026-02-02 -- Phase 28 complete (3/3 plans, verified 18/18 must-haves)_
+_Last updated: 2026-02-02 -- Phase 29 complete (3/3 plans, all N+1 patterns resolved, accessibility hardened, visual coverage complete)_

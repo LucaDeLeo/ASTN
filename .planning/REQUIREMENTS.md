@@ -39,10 +39,10 @@ Requirements for security hardening, bug fixes, and code quality improvements id
 
 ### Performance
 
-- [ ] **PERF-01**: N+1 query in programs.ts resolved (batch participant counts)
-- [ ] **PERF-02**: N+1 query in attendance/queries.ts resolved (batch event/org lookups)
-- [ ] **PERF-03**: N+1 query in emails/send.ts resolved (batch user lookups)
-- [ ] **PERF-04**: Rate limiting added between matching batch API calls
+- [x] **PERF-01**: N+1 query in programs.ts resolved (batch participant counts)
+- [x] **PERF-02**: N+1 query in attendance/queries.ts resolved (batch event/org lookups)
+- [x] **PERF-03**: N+1 query in emails/send.ts resolved (batch user lookups)
+- [x] **PERF-04**: Rate limiting added between matching batch API calls
 
 ### Code Quality
 
@@ -58,15 +58,15 @@ Requirements for security hardening, bug fixes, and code quality improvements id
 
 ### Accessibility
 
-- [ ] **A11Y-01**: Interactive org div converted to button with keyboard support and ARIA role
-- [ ] **A11Y-02**: Form validation errors linked to inputs via aria-describedby
-- [ ] **A11Y-03**: Client-side password validation with inline feedback before submission
-- [ ] **A11Y-04**: Drag state indication uses icon/text in addition to color
+- [x] **A11Y-01**: Interactive org div converted to button with keyboard support and ARIA role
+- [x] **A11Y-02**: Form validation errors linked to inputs via aria-describedby
+- [x] **A11Y-03**: Client-side password validation with inline feedback before submission
+- [x] **A11Y-04**: Drag state indication uses icon/text in addition to color
 
 ### Visual Polish
 
-- [ ] **VIS-01**: GradientBg applied to settings, attendance, and org admin pages
-- [ ] **VIS-02**: 35+ headings updated from font-bold to font-display
+- [x] **VIS-01**: GradientBg applied to settings, attendance, and org admin pages
+- [x] **VIS-02**: 35+ headings updated from font-bold to font-display
 
 ## v1.5+ Requirements
 
@@ -120,16 +120,16 @@ Deferred to future releases.
 | QUAL-07     | Phase 28 | Complete              |
 | QUAL-08     | Phase 28 | Complete              |
 | QUAL-09     | Phase 28 | Complete              |
-| PERF-01     | Phase 29 | Pending               |
-| PERF-02     | Phase 29 | Pending               |
-| PERF-03     | Phase 29 | Pending               |
-| PERF-04     | Phase 29 | Pending               |
-| A11Y-01     | Phase 29 | Pending               |
-| A11Y-02     | Phase 29 | Pending               |
-| A11Y-03     | Phase 29 | Pending               |
-| A11Y-04     | Phase 29 | Pending               |
-| VIS-01      | Phase 29 | Pending               |
-| VIS-02      | Phase 29 | Pending               |
+| PERF-01     | Phase 29 | Complete              |
+| PERF-02     | Phase 29 | Complete              |
+| PERF-03     | Phase 29 | Complete              |
+| PERF-04     | Phase 29 | Complete              |
+| A11Y-01     | Phase 29 | Complete              |
+| A11Y-02     | Phase 29 | Complete              |
+| A11Y-03     | Phase 29 | Complete              |
+| A11Y-04     | Phase 29 | Complete              |
+| VIS-01      | Phase 29 | Complete              |
+| VIS-02      | Phase 29 | Complete              |
 
 **Coverage:**
 
@@ -140,4 +140,4 @@ Deferred to future releases.
 ---
 
 _Requirements defined: 2026-01-31_
-_Last updated: 2026-02-02 -- Phase 28 requirements marked Complete (13/13 BUG + QUAL)_
+_Last updated: 2026-02-02 -- Phase 29 requirements marked Complete (10/10 PERF + A11Y + VIS)_
