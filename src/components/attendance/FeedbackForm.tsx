@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { StarRating } from "./StarRating";
-import type { Id } from "../../../convex/_generated/dataModel";
-import { Button } from "~/components/ui/button";
-import { Textarea } from "~/components/ui/textarea";
+import { useId, useState } from 'react'
+import { useMutation } from 'convex/react'
+import { api } from '../../../convex/_generated/api'
+import { StarRating } from './StarRating'
+import type { Id } from '../../../convex/_generated/dataModel'
+import { Button } from '~/components/ui/button'
+import { Textarea } from '~/components/ui/textarea'
 
 interface FeedbackFormProps {
-  eventId: Id<"events">;
-  eventTitle: string;
-  onComplete: () => void;
+  eventId: Id<'events'>
+  eventTitle: string
+  onComplete: () => void
 }
 
 export function FeedbackForm({
@@ -17,40 +17,43 @@ export function FeedbackForm({
   eventTitle,
   onComplete,
 }: FeedbackFormProps) {
-  const [rating, setRating] = useState(0);
-  const [text, setText] = useState("");
-  const [showSkipConfirm, setShowSkipConfirm] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const id = useId()
+  const commentsHelpId = `${id}-comments-help`
 
-  const submitFeedback = useMutation(api.attendance.mutations.submitFeedback);
+  const [rating, setRating] = useState(0)
+  const [text, setText] = useState('')
+  const [showSkipConfirm, setShowSkipConfirm] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+
+  const submitFeedback = useMutation(api.attendance.mutations.submitFeedback)
 
   const handleSubmit = async () => {
-    if (rating === 0) return;
+    if (rating === 0) return
 
-    setSubmitting(true);
+    setSubmitting(true)
     try {
       await submitFeedback({
         eventId,
         rating,
         text: text.trim() || undefined,
-      });
-      onComplete();
+      })
+      onComplete()
     } catch (error) {
-      console.error("Failed to submit feedback:", error);
+      console.error('Failed to submit feedback:', error)
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
-  };
+  }
 
   const handleSkip = () => {
     if (!showSkipConfirm) {
       // First click: show soft nudge
-      setShowSkipConfirm(true);
+      setShowSkipConfirm(true)
     } else {
       // Second click: actually skip
-      onComplete();
+      onComplete()
     }
-  };
+  }
 
   return (
     <div className="py-2 space-y-3">
@@ -67,7 +70,11 @@ export function FeedbackForm({
       </div>
 
       <div className="space-y-1">
-        <label htmlFor="feedback-text" className="text-xs text-muted-foreground">
+        <label
+          id={commentsHelpId}
+          htmlFor="feedback-text"
+          className="text-xs text-muted-foreground"
+        >
           Comments (optional)
         </label>
         <Textarea
@@ -76,6 +83,7 @@ export function FeedbackForm({
           value={text}
           onChange={(e) => setText(e.target.value)}
           className="min-h-16 text-sm"
+          aria-describedby={commentsHelpId}
         />
       </div>
 
@@ -91,7 +99,7 @@ export function FeedbackForm({
           disabled={rating === 0 || submitting}
           size="sm"
         >
-          {submitting ? "Submitting..." : "Submit Feedback"}
+          {submitting ? 'Submitting...' : 'Submit Feedback'}
         </Button>
         <Button
           variant="ghost"
@@ -100,9 +108,9 @@ export function FeedbackForm({
           disabled={submitting}
           className="text-muted-foreground"
         >
-          {showSkipConfirm ? "Yes, skip feedback" : "Skip"}
+          {showSkipConfirm ? 'Yes, skip feedback' : 'Skip'}
         </Button>
       </div>
     </div>
-  );
+  )
 }

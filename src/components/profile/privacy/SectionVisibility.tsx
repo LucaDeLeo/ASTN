@@ -1,51 +1,52 @@
-import { Globe, Lock, Users } from "lucide-react";
+import { useId } from 'react'
+import { Globe, Lock, Users } from 'lucide-react'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select";
+} from '~/components/ui/select'
 
 interface SectionVisibilityProps {
-  section: string;
-  label: string;
-  value: string | undefined;
-  onChange: (value: string | undefined) => void;
-  defaultVisibility: "public" | "connections" | "private";
+  section: string
+  label: string
+  value: string | undefined
+  onChange: (value: string | undefined) => void
+  defaultVisibility: 'public' | 'connections' | 'private'
 }
 
 const VISIBILITY_OPTIONS = [
   {
-    value: "default",
-    label: "Use default",
+    value: 'default',
+    label: 'Use default',
     icon: null,
   },
   {
-    value: "public",
-    label: "Public",
-    description: "Anyone can see",
+    value: 'public',
+    label: 'Public',
+    description: 'Anyone can see',
     icon: Globe,
   },
   {
-    value: "connections",
-    label: "Connections only",
-    description: "Only connected users",
+    value: 'connections',
+    label: 'Connections only',
+    description: 'Only connected users',
     icon: Users,
   },
   {
-    value: "private",
-    label: "Private",
-    description: "Only you",
+    value: 'private',
+    label: 'Private',
+    description: 'Only you',
     icon: Lock,
   },
-];
+]
 
 const DEFAULT_LABELS = {
-  public: "Public",
-  connections: "Connections",
-  private: "Private",
-};
+  public: 'Public',
+  connections: 'Connections',
+  private: 'Private',
+}
 
 export function SectionVisibility({
   label,
@@ -53,11 +54,14 @@ export function SectionVisibility({
   onChange,
   defaultVisibility,
 }: SectionVisibilityProps) {
-  const currentValue = value ?? "default";
-  const effectiveVisibility = value ?? defaultVisibility;
+  const id = useId()
+  const descriptionId = `${id}-description`
+
+  const currentValue = value ?? 'default'
+  const effectiveVisibility = value ?? defaultVisibility
   const EffectiveIcon =
     VISIBILITY_OPTIONS.find((o) => o.value === effectiveVisibility)?.icon ??
-    Globe;
+    Globe
 
   return (
     <div className="flex items-center justify-between py-3 border-b border-slate-100 last:border-b-0">
@@ -67,7 +71,7 @@ export function SectionVisibility({
         </div>
         <div>
           <p className="text-sm font-medium text-foreground">{label}</p>
-          <p className="text-xs text-slate-500">
+          <p id={descriptionId} className="text-xs text-slate-500">
             {value
               ? `Override: ${VISIBILITY_OPTIONS.find((o) => o.value === value)?.label}`
               : `Using default (${DEFAULT_LABELS[defaultVisibility]})`}
@@ -77,9 +81,13 @@ export function SectionVisibility({
 
       <Select
         value={currentValue}
-        onValueChange={(v) => onChange(v === "default" ? undefined : v)}
+        onValueChange={(v) => onChange(v === 'default' ? undefined : v)}
       >
-        <SelectTrigger className="w-44">
+        <SelectTrigger
+          className="w-44"
+          aria-label={`Visibility for ${label}`}
+          aria-describedby={descriptionId}
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -88,9 +96,9 @@ export function SectionVisibility({
               Use default ({DEFAULT_LABELS[defaultVisibility]})
             </span>
           </SelectItem>
-          {VISIBILITY_OPTIONS.filter((o) => o.value !== "default").map(
+          {VISIBILITY_OPTIONS.filter((o) => o.value !== 'default').map(
             (option) => {
-              const Icon = option.icon!;
+              const Icon = option.icon!
               return (
                 <SelectItem key={option.value} value={option.value}>
                   <span className="flex items-center gap-2">
@@ -98,11 +106,11 @@ export function SectionVisibility({
                     {option.label}
                   </span>
                 </SelectItem>
-              );
-            }
+              )
+            },
           )}
         </SelectContent>
       </Select>
     </div>
-  );
+  )
 }

@@ -1,77 +1,102 @@
-import { useState } from "react";
-import { useMutation } from "convex/react";
-import { toast } from "sonner";
-import { api } from "../../../convex/_generated/api";
-import type { Id } from "../../../convex/_generated/dataModel";
-import { Button } from "~/components/ui/button";
+import { useId, useState } from 'react'
+import { useMutation } from 'convex/react'
+import { toast } from 'sonner'
+import { api } from '../../../convex/_generated/api'
+import type { Id } from '../../../convex/_generated/dataModel'
+import { Button } from '~/components/ui/button'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "~/components/ui/dialog";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
+} from '~/components/ui/dialog'
+import { Input } from '~/components/ui/input'
+import { Label } from '~/components/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select";
-import { Spinner } from "~/components/ui/spinner";
-import { Textarea } from "~/components/ui/textarea";
+} from '~/components/ui/select'
+import { Spinner } from '~/components/ui/spinner'
+import { Textarea } from '~/components/ui/textarea'
 
 interface CreateProgramDialogProps {
-  orgId: Id<"organizations">;
-  trigger: React.ReactNode;
-  onSuccess?: () => void;
+  orgId: Id<'organizations'>
+  trigger: React.ReactNode
+  onSuccess?: () => void
 }
 
-export function CreateProgramDialog({ orgId, trigger, onSuccess }: CreateProgramDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+export function CreateProgramDialog({
+  orgId,
+  trigger,
+  onSuccess,
+}: CreateProgramDialogProps) {
+  const [open, setOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const id = useId()
+  const maxParticipantsHelpId = `${id}-max-participants-help`
 
   // Form state
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [type, setType] = useState<"reading_group" | "fellowship" | "mentorship" | "cohort" | "workshop_series" | "custom">("reading_group");
-  const [enrollmentMethod, setEnrollmentMethod] = useState<"admin_only" | "self_enroll" | "approval_required">("admin_only");
-  const [maxParticipants, setMaxParticipants] = useState("");
-  const [completionType, setCompletionType] = useState<"none" | "attendance_count" | "attendance_percentage" | "manual">("none");
-  const [requiredCount, setRequiredCount] = useState("");
-  const [requiredPercentage, setRequiredPercentage] = useState("");
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [type, setType] = useState<
+    | 'reading_group'
+    | 'fellowship'
+    | 'mentorship'
+    | 'cohort'
+    | 'workshop_series'
+    | 'custom'
+  >('reading_group')
+  const [enrollmentMethod, setEnrollmentMethod] = useState<
+    'admin_only' | 'self_enroll' | 'approval_required'
+  >('admin_only')
+  const [maxParticipants, setMaxParticipants] = useState('')
+  const [completionType, setCompletionType] = useState<
+    'none' | 'attendance_count' | 'attendance_percentage' | 'manual'
+  >('none')
+  const [requiredCount, setRequiredCount] = useState('')
+  const [requiredPercentage, setRequiredPercentage] = useState('')
 
-  const createProgram = useMutation(api.programs.createProgram);
+  const createProgram = useMutation(api.programs.createProgram)
 
   const resetForm = () => {
-    setName("");
-    setDescription("");
-    setType("reading_group");
-    setEnrollmentMethod("admin_only");
-    setMaxParticipants("");
-    setCompletionType("none");
-    setRequiredCount("");
-    setRequiredPercentage("");
-  };
+    setName('')
+    setDescription('')
+    setType('reading_group')
+    setEnrollmentMethod('admin_only')
+    setMaxParticipants('')
+    setCompletionType('none')
+    setRequiredCount('')
+    setRequiredPercentage('')
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (!name.trim()) {
-      toast.error("Program name is required");
-      return;
+      toast.error('Program name is required')
+      return
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     try {
-      const completionCriteria = completionType !== "none"
-        ? {
-            type: completionType,
-            requiredCount: completionType === "attendance_count" ? Number(requiredCount) : undefined,
-            requiredPercentage: completionType === "attendance_percentage" ? Number(requiredPercentage) : undefined,
-          }
-        : undefined;
+      const completionCriteria =
+        completionType !== 'none'
+          ? {
+              type: completionType,
+              requiredCount:
+                completionType === 'attendance_count'
+                  ? Number(requiredCount)
+                  : undefined,
+              requiredPercentage:
+                completionType === 'attendance_percentage'
+                  ? Number(requiredPercentage)
+                  : undefined,
+            }
+          : undefined
 
       await createProgram({
         orgId,
@@ -81,19 +106,19 @@ export function CreateProgramDialog({ orgId, trigger, onSuccess }: CreateProgram
         enrollmentMethod,
         maxParticipants: maxParticipants ? Number(maxParticipants) : undefined,
         completionCriteria,
-      });
+      })
 
-      toast.success("Program created");
-      resetForm();
-      setOpen(false);
-      onSuccess?.();
+      toast.success('Program created')
+      resetForm()
+      setOpen(false)
+      onSuccess?.()
     } catch (error) {
-      toast.error("Failed to create program");
-      console.error(error);
+      toast.error('Failed to create program')
+      console.error(error)
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -127,7 +152,10 @@ export function CreateProgramDialog({ orgId, trigger, onSuccess }: CreateProgram
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label>Program Type</Label>
-              <Select value={type} onValueChange={(v) => setType(v as typeof type)}>
+              <Select
+                value={type}
+                onValueChange={(v) => setType(v as typeof type)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -136,7 +164,9 @@ export function CreateProgramDialog({ orgId, trigger, onSuccess }: CreateProgram
                   <SelectItem value="fellowship">Fellowship</SelectItem>
                   <SelectItem value="mentorship">Mentorship</SelectItem>
                   <SelectItem value="cohort">Cohort</SelectItem>
-                  <SelectItem value="workshop_series">Workshop Series</SelectItem>
+                  <SelectItem value="workshop_series">
+                    Workshop Series
+                  </SelectItem>
                   <SelectItem value="custom">Custom</SelectItem>
                 </SelectContent>
               </Select>
@@ -144,14 +174,21 @@ export function CreateProgramDialog({ orgId, trigger, onSuccess }: CreateProgram
 
             <div>
               <Label>Enrollment Method</Label>
-              <Select value={enrollmentMethod} onValueChange={(v) => setEnrollmentMethod(v as typeof enrollmentMethod)}>
+              <Select
+                value={enrollmentMethod}
+                onValueChange={(v) =>
+                  setEnrollmentMethod(v as typeof enrollmentMethod)
+                }
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="admin_only">Admin Only</SelectItem>
                   <SelectItem value="self_enroll">Self Enroll</SelectItem>
-                  <SelectItem value="approval_required">Approval Required</SelectItem>
+                  <SelectItem value="approval_required">
+                    Approval Required
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -166,25 +203,41 @@ export function CreateProgramDialog({ orgId, trigger, onSuccess }: CreateProgram
               value={maxParticipants}
               onChange={(e) => setMaxParticipants(e.target.value)}
               placeholder="Leave empty for unlimited"
+              aria-describedby={maxParticipantsHelpId}
             />
+            <p
+              id={maxParticipantsHelpId}
+              className="text-xs text-muted-foreground mt-1"
+            >
+              Leave empty for unlimited participants
+            </p>
           </div>
 
           <div>
             <Label>Completion Criteria</Label>
-            <Select value={completionType} onValueChange={(v) => setCompletionType(v as typeof completionType)}>
+            <Select
+              value={completionType}
+              onValueChange={(v) =>
+                setCompletionType(v as typeof completionType)
+              }
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">None (no auto-completion)</SelectItem>
-                <SelectItem value="attendance_count">Attendance Count</SelectItem>
-                <SelectItem value="attendance_percentage">Attendance Percentage</SelectItem>
+                <SelectItem value="attendance_count">
+                  Attendance Count
+                </SelectItem>
+                <SelectItem value="attendance_percentage">
+                  Attendance Percentage
+                </SelectItem>
                 <SelectItem value="manual">Manual Only</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {completionType === "attendance_count" && (
+          {completionType === 'attendance_count' && (
             <div>
               <Label htmlFor="requiredCount">Required Sessions</Label>
               <Input
@@ -198,7 +251,7 @@ export function CreateProgramDialog({ orgId, trigger, onSuccess }: CreateProgram
             </div>
           )}
 
-          {completionType === "attendance_percentage" && (
+          {completionType === 'attendance_percentage' && (
             <div>
               <Label htmlFor="requiredPercentage">Required Percentage</Label>
               <Input
@@ -214,7 +267,11 @@ export function CreateProgramDialog({ orgId, trigger, onSuccess }: CreateProgram
           )}
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
@@ -225,5 +282,5 @@ export function CreateProgramDialog({ orgId, trigger, onSuccess }: CreateProgram
         </form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

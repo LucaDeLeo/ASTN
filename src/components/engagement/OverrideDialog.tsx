@@ -1,10 +1,10 @@
-import { useMutation, useQuery } from "convex/react";
-import { useState } from "react";
-import { toast } from "sonner";
-import { api } from "../../../convex/_generated/api";
-import type { Id } from "../../../convex/_generated/dataModel";
-import type {EngagementLevel} from "~/components/engagement/EngagementBadge";
-import { Button } from "~/components/ui/button";
+import { useMutation, useQuery } from 'convex/react'
+import { useId, useState } from 'react'
+import { toast } from 'sonner'
+import { api } from '../../../convex/_generated/api'
+import type { Id } from '../../../convex/_generated/dataModel'
+import type { EngagementLevel } from '~/components/engagement/EngagementBadge'
+import { Button } from '~/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -12,43 +12,40 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "~/components/ui/dialog";
-import { Label } from "~/components/ui/label";
+} from '~/components/ui/dialog'
+import { Label } from '~/components/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select";
-import { Spinner } from "~/components/ui/spinner";
-import { Textarea } from "~/components/ui/textarea";
-import {
-  EngagementBadge
-  
-} from "~/components/engagement/EngagementBadge";
-import { OverrideHistory } from "~/components/engagement/OverrideHistory";
+} from '~/components/ui/select'
+import { Spinner } from '~/components/ui/spinner'
+import { Textarea } from '~/components/ui/textarea'
+import { EngagementBadge } from '~/components/engagement/EngagementBadge'
+import { OverrideHistory } from '~/components/engagement/OverrideHistory'
 
 interface OverrideDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  engagementId: Id<"memberEngagement">;
-  memberName: string;
-  currentLevel: EngagementLevel;
-  currentExplanation: string;
-  hasOverride: boolean;
-  overrideNotes?: string;
-  orgId: Id<"organizations">;
-  userId: string;
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  engagementId: Id<'memberEngagement'>
+  memberName: string
+  currentLevel: EngagementLevel
+  currentExplanation: string
+  hasOverride: boolean
+  overrideNotes?: string
+  orgId: Id<'organizations'>
+  userId: string
 }
 
 const levelOptions: Array<{ value: EngagementLevel; label: string }> = [
-  { value: "highly_engaged", label: "Active" },
-  { value: "moderate", label: "Moderate" },
-  { value: "at_risk", label: "At Risk" },
-  { value: "new", label: "New" },
-  { value: "inactive", label: "Inactive" },
-];
+  { value: 'highly_engaged', label: 'Active' },
+  { value: 'moderate', label: 'Moderate' },
+  { value: 'at_risk', label: 'At Risk' },
+  { value: 'new', label: 'New' },
+  { value: 'inactive', label: 'Inactive' },
+]
 
 export function OverrideDialog({
   open,
@@ -62,56 +59,66 @@ export function OverrideDialog({
   orgId,
   userId,
 }: OverrideDialogProps) {
-  const [selectedLevel, setSelectedLevel] = useState<EngagementLevel>(currentLevel);
-  const [notes, setNotes] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const id = useId()
+  const notesHelpId = `${id}-notes-help`
 
-  const overrideMutation = useMutation(api.engagement.mutations.overrideEngagement);
-  const clearOverrideMutation = useMutation(api.engagement.mutations.clearOverride);
+  const [selectedLevel, setSelectedLevel] =
+    useState<EngagementLevel>(currentLevel)
+  const [notes, setNotes] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const overrideMutation = useMutation(
+    api.engagement.mutations.overrideEngagement,
+  )
+  const clearOverrideMutation = useMutation(
+    api.engagement.mutations.clearOverride,
+  )
 
   // Fetch full engagement data including history
   const engagementData = useQuery(
     api.engagement.queries.getMemberEngagementForAdmin,
-    { orgId, userId }
-  );
+    { orgId, userId },
+  )
 
   const handleOverride = async () => {
     if (!notes.trim()) {
-      toast.error("Notes are required for engagement overrides");
-      return;
+      toast.error('Notes are required for engagement overrides')
+      return
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     try {
       await overrideMutation({
         engagementId,
         newLevel: selectedLevel,
         notes: notes.trim(),
-      });
-      toast.success(`Engagement level updated to ${levelOptions.find(l => l.value === selectedLevel)?.label}`);
-      onOpenChange(false);
-      setNotes("");
+      })
+      toast.success(
+        `Engagement level updated to ${levelOptions.find((l) => l.value === selectedLevel)?.label}`,
+      )
+      onOpenChange(false)
+      setNotes('')
     } catch (error) {
-      toast.error("Failed to override engagement level");
-      console.error(error);
+      toast.error('Failed to override engagement level')
+      console.error(error)
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const handleClearOverride = async () => {
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     try {
-      await clearOverrideMutation({ engagementId });
-      toast.success("Override cleared, returning to computed level");
-      onOpenChange(false);
+      await clearOverrideMutation({ engagementId })
+      toast.success('Override cleared, returning to computed level')
+      onOpenChange(false)
     } catch (error) {
-      toast.error("Failed to clear override");
-      console.error(error);
+      toast.error('Failed to clear override')
+      console.error(error)
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -146,7 +153,9 @@ export function OverrideDialog({
             <Label htmlFor="level">New Level</Label>
             <Select
               value={selectedLevel}
-              onValueChange={(value) => setSelectedLevel(value as EngagementLevel)}
+              onValueChange={(value) =>
+                setSelectedLevel(value as EngagementLevel)
+              }
             >
               <SelectTrigger id="level" className="w-full">
                 <SelectValue placeholder="Select level" />
@@ -172,8 +181,9 @@ export function OverrideDialog({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="min-h-[80px]"
+              aria-describedby={notesHelpId}
             />
-            <p className="text-xs text-slate-500">
+            <p id={notesHelpId} className="text-xs text-slate-500">
               Required. Briefly explain why you're overriding.
             </p>
           </div>
@@ -199,12 +209,15 @@ export function OverrideDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleOverride} disabled={isSubmitting || !notes.trim()}>
+          <Button
+            onClick={handleOverride}
+            disabled={isSubmitting || !notes.trim()}
+          >
             {isSubmitting ? <Spinner className="size-4 mr-2" /> : null}
             Override
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
