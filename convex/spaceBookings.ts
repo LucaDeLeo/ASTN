@@ -1,5 +1,5 @@
 import { v } from 'convex/values'
-import { mutation } from './_generated/server'
+import { mutation, query } from './_generated/server'
 import { auth } from './auth'
 import type { MutationCtx, QueryCtx } from './_generated/server'
 import type { Id } from './_generated/dataModel'
@@ -220,5 +220,158 @@ export const updateBookingTags = mutation({
     await ctx.db.patch('spaceBookings', bookingId, patch)
 
     return { success: true }
+  },
+})
+
+// Get all bookings for a specific date (org member access)
+export const getBookingsForDate = query({
+  args: {
+    spaceId: v.id('coworkingSpaces'),
+    date: v.string(),
+  },
+  handler: async (ctx, { spaceId, date }) => {
+    await requireOrgMember(ctx, spaceId)
+
+    const bookings = await ctx.db
+      .query('spaceBookings')
+      .withIndex('by_space_date', (q) =>
+        q.eq('spaceId', spaceId).eq('date', date),
+      )
+      .collect()
+
+    return bookings
+  },
+})
+
+// Get the current user's bookings for a space
+export const getMyBookings = query({
+  args: {
+    spaceId: v.id('coworkingSpaces'),
+  },
+  handler: async (ctx, { spaceId }) => {
+    const userId = await auth.getUserId(ctx)
+    if (!userId) return []
+
+    const bookings = await ctx.db
+      .query('spaceBookings')
+      .withIndex('by_space_user', (q) =>
+        q.eq('spaceId', spaceId).eq('userId', userId),
+      )
+      .filter((q) =>
+        q.or(
+          q.eq(q.field('status'), 'confirmed'),
+          q.eq(q.field('status'), 'pending'),
+        ),
+      )
+      .collect()
+
+    // Sort by date ascending
+    return bookings.sort((a, b) => a.date.localeCompare(b.date))
+  },
+})
+
+// Get attendees for a date with consented profile data
+export const getBookingAttendees = query({
+  args: {
+    spaceId: v.id('coworkingSpaces'),
+    date: v.string(),
+  },
+  handler: async (ctx, { spaceId, date }) => {
+    await requireOrgMember(ctx, spaceId)
+
+    // Get confirmed bookings with profile sharing consent
+    const bookings = await ctx.db
+      .query('spaceBookings')
+      .withIndex('by_space_date', (q) =>
+        q.eq('spaceId', spaceId).eq('date', date),
+      )
+      .filter((q) =>
+        q.and(
+          q.eq(q.field('status'), 'confirmed'),
+          q.eq(q.field('consentToProfileSharing'), true),
+        ),
+      )
+      .collect()
+
+    // Fetch profile data for each booking
+    const attendees = await Promise.all(
+      bookings.map(async (booking) => {
+        const profile = await ctx.db
+          .query('profiles')
+          .withIndex('by_user', (q) => q.eq('userId', booking.userId))
+          .first()
+
+        return {
+          bookingId: booking._id,
+          userId: booking.userId,
+          date: booking.date,
+          startMinutes: booking.startMinutes,
+          endMinutes: booking.endMinutes,
+          workingOn: booking.workingOn,
+          interestedInMeeting: booking.interestedInMeeting,
+          profile: profile
+            ? {
+                name: profile.name,
+                headline: profile.headline,
+                skills: profile.skills,
+              }
+            : null,
+        }
+      }),
+    )
+
+    return attendees
+  },
+})
+
+// Get capacity status for a date range (for calendar view)
+export const getCapacityForDateRange = query({
+  args: {
+    spaceId: v.id('coworkingSpaces'),
+    startDate: v.string(),
+    endDate: v.string(),
+  },
+  handler: async (ctx, { spaceId, startDate, endDate }) => {
+    const { space } = await requireOrgMember(ctx, spaceId)
+
+    // Get all confirmed bookings in the date range
+    const bookings = await ctx.db
+      .query('spaceBookings')
+      .withIndex('by_space_date', (q) => q.eq('spaceId', spaceId))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field('status'), 'confirmed'),
+          q.gte(q.field('date'), startDate),
+          q.lte(q.field('date'), endDate),
+        ),
+      )
+      .collect()
+
+    // Group by date and count
+    const dateCountMap: Record<string, number> = {}
+    for (const booking of bookings) {
+      dateCountMap[booking.date] = (dateCountMap[booking.date] || 0) + 1
+    }
+
+    // Build result with status per date
+    const dates: Record<
+      string,
+      { count: number; status: 'available' | 'nearing' | 'at_capacity' }
+    > = {}
+
+    for (const [date, count] of Object.entries(dateCountMap)) {
+      let status: 'available' | 'nearing' | 'at_capacity' = 'available'
+      if (count >= space.capacity) {
+        status = 'at_capacity'
+      } else if (count >= space.capacity * 0.7) {
+        status = 'nearing'
+      }
+      dates[date] = { count, status }
+    }
+
+    return {
+      capacity: space.capacity,
+      dates,
+    }
   },
 })
