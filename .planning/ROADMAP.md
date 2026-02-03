@@ -77,13 +77,13 @@ Plans:
 3. User can navigate all interactive elements (org cards, drag handles, form fields) via keyboard with visible focus indicators and correct ARIA roles
 4. Form validation errors are programmatically linked to their inputs via aria-describedby, and password validation shows inline feedback before form submission
 5. GradientBg warm background appears on settings, attendance, and org admin pages, and all 35+ headings use font-display class instead of font-bold
-   **Plans**: TBD
+   **Plans:** 3 plans
 
 Plans:
 
-- [ ] 29-01: N+1 query resolution and rate limiting (programs, attendance, email batch queries, matching API rate limits, events query pagination)
-- [ ] 29-02: Accessibility hardening (org card keyboard/ARIA, form aria-describedby, password inline validation, drag state non-color indication)
-- [ ] 29-03: Visual coverage (GradientBg on remaining pages, font-display headings)
+- [ ] 29-01-PLAN.md -- N+1 query resolution and rate limiting (batch attendance/email/program queries, chained scheduled actions for matching with exponential backoff)
+- [ ] 29-02-PLAN.md -- Accessibility hardening (password inline validation checklist, OrgCard keyboard nav, drag state non-color indicators, aria-describedby on all data-entry forms)
+- [ ] 29-03-PLAN.md -- Visual coverage (GradientBg on remaining user-facing pages, font-display heading sweep across 17 files)
 
 ## Progress
 
