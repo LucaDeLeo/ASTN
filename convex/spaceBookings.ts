@@ -1,5 +1,6 @@
 import { v } from 'convex/values'
 import { mutation, query } from './_generated/server'
+import { isValidDateString, validateBookingTime } from './lib/bookingValidation'
 import { auth } from './auth'
 import type { MutationCtx, QueryCtx } from './_generated/server'
 import type { Id } from './_generated/dataModel'
@@ -24,14 +25,6 @@ async function requireOrgMember(
   if (!membership) throw new Error('Not a member of this organization')
 
   return { userId, space, membership }
-}
-
-// Validate ISO date string format (YYYY-MM-DD)
-function isValidDateString(date: string): boolean {
-  const regex = /^\d{4}-\d{2}-\d{2}$/
-  if (!regex.test(date)) return false
-  const parsed = new Date(date)
-  return !isNaN(parsed.getTime())
 }
 
 // Create a member booking
@@ -72,6 +65,18 @@ export const createMemberBooking = mutation({
     // Validate time range
     if (startMinutes >= endMinutes) {
       throw new Error('End time must be after start time')
+    }
+
+    // Validate against operating hours and past dates
+    const validation = validateBookingTime(
+      date,
+      startMinutes,
+      endMinutes,
+      space.operatingHours,
+      space.timezone,
+    )
+    if (!validation.valid) {
+      throw new Error(validation.reason)
     }
 
     // Validate tag lengths
@@ -223,7 +228,8 @@ export const updateBookingTags = mutation({
   },
 })
 
-// Get all bookings for a specific date (org member access)
+// Get confirmed bookings for a specific date (org member access)
+// Only returns confirmed bookings - use getBookingAttendees for profile data
 export const getBookingsForDate = query({
   args: {
     spaceId: v.id('coworkingSpaces'),
@@ -232,11 +238,13 @@ export const getBookingsForDate = query({
   handler: async (ctx, { spaceId, date }) => {
     await requireOrgMember(ctx, spaceId)
 
+    // Filter to confirmed bookings only - members shouldn't see pending/rejected
     const bookings = await ctx.db
       .query('spaceBookings')
       .withIndex('by_space_date', (q) =>
         q.eq('spaceId', spaceId).eq('date', date),
       )
+      .filter((q) => q.eq(q.field('status'), 'confirmed'))
       .collect()
 
     return bookings

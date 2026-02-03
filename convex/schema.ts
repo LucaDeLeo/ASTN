@@ -511,11 +511,12 @@ export default defineSchema({
 
     // Org info from application
     orgName: v.string(),
+    orgNameNormalized: v.optional(v.string()), // Lowercase/trimmed for case-insensitive duplicate detection
     description: v.string(),
     city: v.string(),
     country: v.string(),
     website: v.optional(v.string()),
-    reasonForJoining: v.string(),
+    reasonForJoining: v.optional(v.string()), // Made optional - field removed from UI
 
     // Status machine: pending -> approved | rejected | withdrawn
     status: v.union(
@@ -535,7 +536,8 @@ export default defineSchema({
   })
     .index('by_applicant', ['applicantUserId'])
     .index('by_status', ['status'])
-    .index('by_orgName', ['orgName']),
+    .index('by_orgName', ['orgName'])
+    .index('by_orgNameNormalized', ['orgNameNormalized']),
 
   // In-app notifications (bell icon notification center)
   notifications: defineTable({

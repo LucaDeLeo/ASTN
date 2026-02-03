@@ -48,6 +48,7 @@ import type * as guestBookings from "../guestBookings.js";
 import type * as guestProfiles from "../guestProfiles.js";
 import type * as http from "../http.js";
 import type * as lib_auth from "../lib/auth.js";
+import type * as lib_bookingValidation from "../lib/bookingValidation.js";
 import type * as lib_limits from "../lib/limits.js";
 import type * as lib_logging from "../lib/logging.js";
 import type * as lib_seedPlatformAdmin from "../lib/seedPlatformAdmin.js";
@@ -126,6 +127,7 @@ declare const fullApi: ApiFromModules<{
   guestProfiles: typeof guestProfiles;
   http: typeof http;
   "lib/auth": typeof lib_auth;
+  "lib/bookingValidation": typeof lib_bookingValidation;
   "lib/limits": typeof lib_limits;
   "lib/logging": typeof lib_logging;
   "lib/seedPlatformAdmin": typeof lib_seedPlatformAdmin;

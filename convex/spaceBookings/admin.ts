@@ -1,27 +1,13 @@
 import { v } from 'convex/values'
 import { mutation, query } from '../_generated/server'
+import {
+  getDayOfWeekFromDateString,
+  getTodayInTimezone,
+  isValidDateString,
+  validateBookingTime,
+} from '../lib/bookingValidation'
 import { requireSpaceAdmin } from '../lib/auth'
 import type { Id } from '../_generated/dataModel'
-
-// Validate ISO date string format (YYYY-MM-DD)
-function isValidDateString(date: string): boolean {
-  const regex = /^\d{4}-\d{2}-\d{2}$/
-  if (!regex.test(date)) return false
-  const parsed = new Date(date)
-  return !isNaN(parsed.getTime())
-}
-
-// Get today's date in a given timezone
-function getTodayInTimezone(timezone: string): string {
-  const now = new Date()
-  const formatter = new Intl.DateTimeFormat('en-CA', {
-    timeZone: timezone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
-  return formatter.format(now)
-}
 
 // ---------- Queries ----------
 
@@ -337,8 +323,8 @@ export const getSpaceUtilizationStats = query({
     // Peak days (day of week distribution)
     const dayOfWeekCounts: Record<number, number> = {}
     for (const booking of bookings) {
-      const bookingDate = new Date(booking.date)
-      const dayOfWeek = bookingDate.getDay() // 0-6, Sunday-Saturday
+      // Use helper that correctly parses date string without timezone issues
+      const dayOfWeek = getDayOfWeekFromDateString(booking.date)
       dayOfWeekCounts[dayOfWeek] = (dayOfWeekCounts[dayOfWeek] || 0) + 1
     }
 
@@ -449,6 +435,7 @@ export const adminCreateBooking = mutation({
     endMinutes: v.number(),
     workingOn: v.optional(v.string()),
     interestedInMeeting: v.optional(v.string()),
+    consentToProfileSharing: v.optional(v.boolean()),
   },
   handler: async (
     ctx,
@@ -460,6 +447,7 @@ export const adminCreateBooking = mutation({
       endMinutes,
       workingOn,
       interestedInMeeting,
+      consentToProfileSharing,
     },
   ) => {
     const { space } = await requireSpaceAdmin(ctx, spaceId)
@@ -472,6 +460,18 @@ export const adminCreateBooking = mutation({
     // Validate time range
     if (startMinutes >= endMinutes) {
       throw new Error('End time must be after start time')
+    }
+
+    // Validate against operating hours and past dates
+    const validation = validateBookingTime(
+      date,
+      startMinutes,
+      endMinutes,
+      space.operatingHours,
+      space.timezone,
+    )
+    if (!validation.valid) {
+      throw new Error(validation.reason)
     }
 
     // Validate tag lengths
@@ -546,7 +546,7 @@ export const adminCreateBooking = mutation({
       status: 'confirmed',
       workingOn,
       interestedInMeeting,
-      consentToProfileSharing: true, // Admin creating on behalf implies consent
+      consentToProfileSharing: consentToProfileSharing ?? false, // Default to private unless explicitly consented
       createdAt: now,
       updatedAt: now,
     })

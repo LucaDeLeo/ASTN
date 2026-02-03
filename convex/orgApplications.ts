@@ -1,7 +1,7 @@
-import { v } from 'convex/values'
+import { ConvexError, v } from 'convex/values'
 import { internal } from './_generated/api'
 import { mutation, query } from './_generated/server'
-import { requireAuth, isPlatformAdmin, requirePlatformAdmin } from './lib/auth'
+import { isPlatformAdmin, requireAuth, requirePlatformAdmin } from './lib/auth'
 import { generateSlug } from './lib/slug'
 
 // ---------- Mutations ----------
@@ -17,7 +17,6 @@ export const submit = mutation({
     city: v.string(),
     country: v.string(),
     website: v.optional(v.string()),
-    reasonForJoining: v.string(),
     applicantName: v.string(),
     applicantEmail: v.string(),
   },
@@ -37,22 +36,28 @@ export const submit = mutation({
       )
     }
 
-    // Check for pending or approved application with same org name
-    const existingApplications = await ctx.db
+    // Check for pending or approved application with same org name (case-insensitive)
+    const existingApplication = await ctx.db
       .query('orgApplications')
-      .withIndex('by_orgName', (q) => q.eq('orgName', args.orgName))
-      .collect()
-    const activeApplication = existingApplications.find(
-      (app) =>
-        app.orgName.toLowerCase().trim() === normalizedName &&
-        (app.status === 'pending' || app.status === 'approved'),
-    )
-    if (activeApplication) {
-      throw new Error(
-        activeApplication.status === 'pending'
-          ? `An application for "${args.orgName}" is already pending review.`
-          : `An organization named "${args.orgName}" has already been approved.`,
+      .withIndex('by_orgNameNormalized', (q) =>
+        q.eq('orgNameNormalized', normalizedName),
       )
+      .filter((q) =>
+        q.or(
+          q.eq(q.field('status'), 'pending'),
+          q.eq(q.field('status'), 'approved'),
+        ),
+      )
+      .first()
+
+    if (existingApplication) {
+      throw new ConvexError({
+        code: 'DUPLICATE_APPLICATION',
+        message:
+          existingApplication.status === 'pending'
+            ? `An application for "${args.orgName}" is already pending review.`
+            : `An organization named "${args.orgName}" has already been approved.`,
+      })
     }
 
     const applicationId = await ctx.db.insert('orgApplications', {
@@ -60,11 +65,11 @@ export const submit = mutation({
       applicantName: args.applicantName,
       applicantEmail: args.applicantEmail,
       orgName: args.orgName,
+      orgNameNormalized: normalizedName,
       description: args.description,
       city: args.city,
       country: args.country,
       website: args.website,
-      reasonForJoining: args.reasonForJoining,
       status: 'pending',
       createdAt: Date.now(),
     })
@@ -93,8 +98,7 @@ export const getMyApplications = query({
           const orgs = await ctx.db.query('organizations').collect()
           const org = orgs.find(
             (o) =>
-              o.name.toLowerCase().trim() ===
-              app.orgName.toLowerCase().trim(),
+              o.name.toLowerCase().trim() === app.orgName.toLowerCase().trim(),
           )
           return { ...app, orgSlug: org?.slug ?? null }
         }
@@ -148,7 +152,7 @@ export const getApplication = query({
   handler: async (ctx, { applicationId }) => {
     const userId = await requireAuth(ctx)
 
-    const application = await ctx.db.get(applicationId)
+    const application = await ctx.db.get('orgApplications', applicationId)
     if (!application) {
       throw new Error('Application not found')
     }
@@ -176,7 +180,7 @@ export const approve = mutation({
   handler: async (ctx, { applicationId }) => {
     const adminUserId = await requirePlatformAdmin(ctx)
 
-    const application = await ctx.db.get(applicationId)
+    const application = await ctx.db.get('orgApplications', applicationId)
     if (!application) {
       throw new Error('Application not found')
     }
@@ -187,7 +191,7 @@ export const approve = mutation({
     }
 
     // Update application status
-    await ctx.db.patch(applicationId, {
+    await ctx.db.patch('orgApplications', applicationId, {
       status: 'approved',
       reviewedBy: adminUserId,
       reviewedAt: Date.now(),
@@ -203,6 +207,8 @@ export const approve = mutation({
       description: application.description,
       city: application.city,
       country: application.country,
+      contactEmail: application.applicantEmail,
+      ...(application.website && { website: application.website }),
     })
 
     // Create org membership for applicant as admin
@@ -245,7 +251,7 @@ export const reject = mutation({
   handler: async (ctx, { applicationId, rejectionReason }) => {
     const adminUserId = await requirePlatformAdmin(ctx)
 
-    const application = await ctx.db.get(applicationId)
+    const application = await ctx.db.get('orgApplications', applicationId)
     if (!application) {
       throw new Error('Application not found')
     }
@@ -256,7 +262,7 @@ export const reject = mutation({
     }
 
     // Update application status
-    await ctx.db.patch(applicationId, {
+    await ctx.db.patch('orgApplications', applicationId, {
       status: 'rejected',
       rejectionReason,
       reviewedBy: adminUserId,
@@ -289,7 +295,7 @@ export const withdraw = mutation({
   handler: async (ctx, { applicationId }) => {
     const userId = await requireAuth(ctx)
 
-    const application = await ctx.db.get(applicationId)
+    const application = await ctx.db.get('orgApplications', applicationId)
     if (!application) {
       throw new Error('Application not found')
     }
@@ -302,7 +308,7 @@ export const withdraw = mutation({
       )
     }
 
-    await ctx.db.patch(applicationId, {
+    await ctx.db.patch('orgApplications', applicationId, {
       status: 'withdrawn',
     })
   },
