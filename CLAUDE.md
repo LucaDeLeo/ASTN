@@ -41,7 +41,7 @@ bun run build
 ### Backend Stack
 
 - **Convex** for database, real-time sync, and serverless functions
-- **@convex-dev/auth** for authentication (GitHub, Google, Password providers)
+- **Clerk** for authentication (GitHub, Google, Email+Password) via `@clerk/clerk-react` + `convex/react-clerk`
 - **Claude API** for LLM features (Sonnet 4.5 for quality, Haiku 4.5 for speed)
 
 ### Convex Structure
@@ -49,7 +49,7 @@ bun run build
 ```
 convex/
 ├── schema.ts          # Database schema (profiles, opportunities, matches, etc.)
-├── auth.ts            # Auth configuration with password validation
+├── auth.config.ts     # Clerk JWT provider configuration
 ├── profiles.ts        # Profile CRUD and completeness tracking
 ├── opportunities.ts   # Opportunity queries
 ├── crons.ts           # Daily opportunity sync at 6 AM UTC
@@ -85,4 +85,9 @@ convex/
 Required in `.env.local`:
 
 - `VITE_CONVEX_URL` - Convex deployment URL
-- `ANTHROPIC_API_KEY` - Set in Convex dashboard for LLM features
+- `VITE_CLERK_PUBLISHABLE_KEY` - Clerk publishable key
+
+Set via Convex dashboard:
+
+- `ANTHROPIC_API_KEY` - For LLM features
+- `CLERK_JWT_ISSUER_DOMAIN` - Clerk JWT issuer domain

@@ -1,12 +1,12 @@
-import { getAuthUserId } from '@convex-dev/auth/server'
 import { v } from 'convex/values'
 import { internal } from '../_generated/api'
 import { internalMutation, mutation } from '../_generated/server'
+import { getUserId } from '../lib/auth'
 
 export const markAsRead = mutation({
   args: { notificationId: v.id('notifications') },
   handler: async (ctx, { notificationId }) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) throw new Error('Not authenticated')
 
     const notification = await ctx.db.get('notifications', notificationId)
@@ -21,7 +21,7 @@ export const markAsRead = mutation({
 export const markAllAsRead = mutation({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) throw new Error('Not authenticated')
 
     const unread = await ctx.db
@@ -72,7 +72,7 @@ export const createNotification = internalMutation({
 export const recordEventView = mutation({
   args: { eventId: v.id('events') },
   handler: async (ctx, { eventId }) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) return
 
     // Check if already viewed

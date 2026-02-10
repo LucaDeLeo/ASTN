@@ -1,7 +1,7 @@
 import { v } from 'convex/values'
 import { internal } from './_generated/api'
 import { mutation, query } from './_generated/server'
-import { auth } from './auth'
+import { getUserId } from './lib/auth'
 
 // Section completeness rules
 const COMPLETENESS_SECTIONS = [
@@ -55,7 +55,7 @@ const COMPLETENESS_SECTIONS = [
 export const getOrCreateProfile = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       return null
     }
@@ -79,7 +79,7 @@ export const getOrCreateProfile = query({
 export const create = mutation({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       throw new Error('Not authenticated')
     }
@@ -172,7 +172,7 @@ export const updateField = mutation({
     }),
   },
   handler: async (ctx, { profileId, updates }) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       throw new Error('Not authenticated')
     }
@@ -197,7 +197,7 @@ export const getCompleteness = query({
   args: { profileId: v.id('profiles') },
   handler: async (ctx, { profileId }) => {
     // Auth + ownership check (returns null for unauthenticated/unauthorized)
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) return null
 
     const profile = await ctx.db.get('profiles', profileId)
@@ -228,7 +228,7 @@ export const getCompleteness = query({
 export const getNotificationPreferences = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       return null
     }
@@ -267,7 +267,7 @@ export const updateNotificationPreferences = mutation({
     ctx,
     { matchAlertsEnabled, weeklyDigestEnabled, timezone },
   ) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       throw new Error('Not authenticated')
     }
@@ -321,7 +321,7 @@ export const updateNotificationPreferences = mutation({
 export const getMyCompleteness = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       return null
     }
@@ -412,7 +412,7 @@ export const applyExtractedProfile = mutation({
     }),
   },
   handler: async (ctx, { extractedData }) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       throw new Error('Not authenticated')
     }
@@ -490,7 +490,7 @@ export const applyExtractedProfile = mutation({
 export const getLocationPrivacy = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       return null
     }
@@ -515,7 +515,7 @@ export const getLocationPrivacy = query({
 export const updateLocationPrivacy = mutation({
   args: { locationDiscoverable: v.boolean() },
   handler: async (ctx, { locationDiscoverable }) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       throw new Error('Not authenticated')
     }
@@ -550,7 +550,7 @@ export const updateLocationPrivacy = mutation({
 export const getEventNotificationPreferences = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) return null
 
     const profile = await ctx.db
@@ -595,7 +595,7 @@ export const updateEventNotificationPreferences = mutation({
     mutedOrgIds: v.array(v.id('organizations')),
   },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) throw new Error('Not authenticated')
 
     const profile = await ctx.db

@@ -17,8 +17,6 @@ import type * as aggregation_syncMutations from "../aggregation/syncMutations.js
 import type * as attendance_mutations from "../attendance/mutations.js";
 import type * as attendance_queries from "../attendance/queries.js";
 import type * as attendance_scheduler from "../attendance/scheduler.js";
-import type * as auth from "../auth.js";
-import type * as authTauri from "../authTauri.js";
 import type * as coworkingSpaces from "../coworkingSpaces.js";
 import type * as crons from "../crons.js";
 import type * as emails_batchActions from "../emails/batchActions.js";
@@ -79,6 +77,7 @@ import type * as skills from "../skills.js";
 import type * as spaceBookings from "../spaceBookings.js";
 import type * as spaceBookings_admin from "../spaceBookings/admin.js";
 import type * as upload from "../upload.js";
+import type * as userMigration from "../userMigration.js";
 
 import type {
   ApiFromModules,
@@ -96,8 +95,6 @@ declare const fullApi: ApiFromModules<{
   "attendance/mutations": typeof attendance_mutations;
   "attendance/queries": typeof attendance_queries;
   "attendance/scheduler": typeof attendance_scheduler;
-  auth: typeof auth;
-  authTauri: typeof authTauri;
   coworkingSpaces: typeof coworkingSpaces;
   crons: typeof crons;
   "emails/batchActions": typeof emails_batchActions;
@@ -158,6 +155,7 @@ declare const fullApi: ApiFromModules<{
   spaceBookings: typeof spaceBookings;
   "spaceBookings/admin": typeof spaceBookings_admin;
   upload: typeof upload;
+  userMigration: typeof userMigration;
 }>;
 
 /**

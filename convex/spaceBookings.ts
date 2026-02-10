@@ -1,7 +1,7 @@
 import { v } from 'convex/values'
 import { mutation, query } from './_generated/server'
 import { isValidDateString, validateBookingTime } from './lib/bookingValidation'
-import { auth } from './auth'
+import { getUserId } from './lib/auth'
 import type { MutationCtx, QueryCtx } from './_generated/server'
 import type { Id } from './_generated/dataModel'
 
@@ -10,7 +10,7 @@ async function requireOrgMember(
   ctx: QueryCtx | MutationCtx,
   spaceId: Id<'coworkingSpaces'>,
 ) {
-  const userId = await auth.getUserId(ctx)
+  const userId = await getUserId(ctx)
   if (!userId) throw new Error('Not authenticated')
 
   const space = await ctx.db.get('coworkingSpaces', spaceId)
@@ -155,7 +155,7 @@ export const cancelBooking = mutation({
     bookingId: v.id('spaceBookings'),
   },
   handler: async (ctx, { bookingId }) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) throw new Error('Not authenticated')
 
     const booking = await ctx.db.get('spaceBookings', bookingId)
@@ -190,7 +190,7 @@ export const updateBookingTags = mutation({
     interestedInMeeting: v.optional(v.string()),
   },
   handler: async (ctx, { bookingId, workingOn, interestedInMeeting }) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) throw new Error('Not authenticated')
 
     const booking = await ctx.db.get('spaceBookings', bookingId)
@@ -257,7 +257,7 @@ export const getMyBookings = query({
     spaceId: v.id('coworkingSpaces'),
   },
   handler: async (ctx, { spaceId }) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) return []
 
     const bookings = await ctx.db

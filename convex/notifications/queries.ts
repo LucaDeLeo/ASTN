@@ -1,11 +1,11 @@
-import { getAuthUserId } from '@convex-dev/auth/server'
 import { v } from 'convex/values'
 import { query } from '../_generated/server'
+import { getUserId } from '../lib/auth'
 
 export const getUnreadCount = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) return 0
 
     const unread = await ctx.db
@@ -22,7 +22,7 @@ export const getUnreadCount = query({
 export const getRecentNotifications = query({
   args: { limit: v.optional(v.number()) },
   handler: async (ctx, { limit = 10 }) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) return []
 
     const notifications = await ctx.db

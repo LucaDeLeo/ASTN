@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
 import { query } from '../_generated/server'
-import { auth } from '../auth'
+import { getUserId } from '../lib/auth'
 import type { Doc, Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
 
@@ -9,7 +9,7 @@ async function requireOrgAdmin(
   ctx: QueryCtx,
   orgId: Id<'organizations'>,
 ): Promise<Doc<'orgMemberships'>> {
-  const userId = await auth.getUserId(ctx)
+  const userId = await getUserId(ctx)
   if (!userId) throw new Error('Not authenticated')
 
   const membership = await ctx.db

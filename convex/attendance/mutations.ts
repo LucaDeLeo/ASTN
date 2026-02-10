@@ -1,9 +1,9 @@
-import { getAuthUserId } from '@convex-dev/auth/server'
 import { v } from 'convex/values'
 import { fromZonedTime, toZonedTime } from 'date-fns-tz'
 import { addDays, setHours, setMinutes } from 'date-fns'
 import { internal } from '../_generated/api'
 import { mutation } from '../_generated/server'
+import { getUserId } from '../lib/auth'
 
 const FOURTEEN_DAYS = 14 * 24 * 60 * 60 * 1000
 
@@ -22,7 +22,7 @@ export const recordAttendance = mutation({
     notificationId: v.optional(v.id('notifications')),
   },
   handler: async (ctx, { eventId, status, notificationId }) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) throw new Error('Not authenticated')
 
     const event = await ctx.db.get('events', eventId)
@@ -102,7 +102,7 @@ export const submitFeedback = mutation({
     text: v.optional(v.string()),
   },
   handler: async (ctx, { eventId, rating, text }) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) throw new Error('Not authenticated')
 
     // Validate rating
@@ -146,7 +146,7 @@ export const snoozeAttendancePrompt = mutation({
     notificationId: v.id('notifications'),
   },
   handler: async (ctx, { notificationId }) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) throw new Error('Not authenticated')
 
     const notification = await ctx.db.get('notifications', notificationId)
@@ -217,7 +217,7 @@ export const updateAttendancePrivacy = mutation({
     updateExisting: v.optional(v.boolean()), // Whether to update existing records too
   },
   handler: async (ctx, { showOnProfile, showToOtherOrgs, updateExisting }) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) throw new Error('Not authenticated')
 
     // Get or create profile

@@ -1,7 +1,7 @@
 import { v } from 'convex/values'
 import { action, mutation, query } from './_generated/server'
 import { internal } from './_generated/api'
-import { auth } from './auth'
+import { getUserId } from './lib/auth'
 import type { Id } from './_generated/dataModel'
 
 // Type for match computation result (chained scheduled action architecture)
@@ -15,7 +15,7 @@ interface MatchComputationResult {
 export const getMyMatches = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       return null
     }
@@ -134,7 +134,7 @@ export const getMyMatches = query({
 export const getMatchById = query({
   args: { matchId: v.id('matches') },
   handler: async (ctx, { matchId }) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       return null
     }
@@ -167,7 +167,7 @@ export const getMatchById = query({
 export const getNewMatchCount = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       return 0
     }
@@ -196,7 +196,7 @@ export const getNewMatchCount = query({
 export const triggerMatchComputation = action({
   args: {},
   handler: async (ctx): Promise<MatchComputationResult> => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       throw new Error('Not authenticated')
     }
@@ -225,7 +225,7 @@ export const triggerMatchComputation = action({
 export const markMatchesViewed = action({
   args: {},
   handler: async (ctx): Promise<{ markedCount: number }> => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       throw new Error('Not authenticated')
     }
@@ -254,7 +254,7 @@ export const markMatchesViewed = action({
 export const dismissMatch = mutation({
   args: { matchId: v.id('matches') },
   handler: async (ctx, { matchId }) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) throw new Error('Not authenticated')
 
     const match = await ctx.db.get('matches', matchId)
@@ -279,7 +279,7 @@ export const dismissMatch = mutation({
 export const saveMatch = mutation({
   args: { matchId: v.id('matches') },
   handler: async (ctx, { matchId }) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) throw new Error('Not authenticated')
 
     const match = await ctx.db.get('matches', matchId)

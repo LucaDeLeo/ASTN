@@ -1,6 +1,6 @@
-import { getAuthUserId } from '@convex-dev/auth/server'
 import { v } from 'convex/values'
 import { query } from '../_generated/server'
+import { getUserId } from '../lib/auth'
 import { log } from '../lib/logging'
 import type { QueryCtx } from '../_generated/server'
 import type { Doc, Id } from '../_generated/dataModel'
@@ -56,7 +56,7 @@ async function batchFetchEventsAndOrgs(
 export const getMyAttendanceHistory = query({
   args: { limit: v.optional(v.number()) },
   handler: async (ctx, { limit = 50 }) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) return []
 
     const attendance = await ctx.db
@@ -124,7 +124,7 @@ export const getMyAttendanceHistory = query({
 export const getPendingPrompts = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) return []
 
     const prompts = await ctx.db
@@ -195,7 +195,7 @@ export const getPendingPrompts = query({
 export const getAttendancePrivacyDefaults = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) return null
 
     const profile = await ctx.db
@@ -220,7 +220,7 @@ export const getAttendancePrivacyDefaults = query({
 export const getMyAttendanceSummary = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) return null
 
     // Get all attendance records for counting

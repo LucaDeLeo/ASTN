@@ -1,6 +1,16 @@
-import { auth } from '../auth'
 import type { ActionCtx, MutationCtx, QueryCtx } from '../_generated/server'
 import type { Doc, Id } from '../_generated/dataModel'
+
+/**
+ * Get the current user's ID from Clerk identity.
+ * Returns the Clerk subject (user_xxx) or null if not authenticated.
+ */
+export async function getUserId(
+  ctx: QueryCtx | MutationCtx | ActionCtx,
+): Promise<string | null> {
+  const identity = await ctx.auth.getUserIdentity()
+  return identity?.subject ?? null
+}
 
 /**
  * Require the current user to be authenticated.
@@ -10,7 +20,7 @@ import type { Doc, Id } from '../_generated/dataModel'
 export async function requireAuth(
   ctx: QueryCtx | MutationCtx | ActionCtx,
 ): Promise<string> {
-  const userId = await auth.getUserId(ctx)
+  const userId = await getUserId(ctx)
   if (!userId) {
     throw new Error('Not authenticated')
   }
@@ -28,7 +38,7 @@ export async function requireAuth(
 export async function requireAnyOrgAdmin(
   ctx: QueryCtx | MutationCtx,
 ): Promise<string> {
-  const userId = await auth.getUserId(ctx)
+  const userId = await getUserId(ctx)
   if (!userId) {
     throw new Error('Not authenticated')
   }
@@ -56,7 +66,7 @@ export async function requireAnyOrgAdmin(
 export async function requirePlatformAdmin(
   ctx: QueryCtx | MutationCtx,
 ): Promise<string> {
-  const userId = await auth.getUserId(ctx)
+  const userId = await getUserId(ctx)
   if (!userId) {
     throw new Error('Not authenticated')
   }
@@ -82,7 +92,7 @@ export async function requirePlatformAdmin(
 export async function isPlatformAdmin(
   ctx: QueryCtx | MutationCtx,
 ): Promise<boolean> {
-  const userId = await auth.getUserId(ctx)
+  const userId = await getUserId(ctx)
   if (!userId) return false
 
   const admin = await ctx.db

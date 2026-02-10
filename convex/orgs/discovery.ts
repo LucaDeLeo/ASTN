@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
 import { query } from '../_generated/server'
-import { auth } from '../auth'
+import { getUserId } from '../lib/auth'
 import type { Doc } from '../_generated/dataModel'
 
 // Helper to parse city from user's location string
@@ -25,7 +25,7 @@ function parseCity(location: string | undefined): string | null {
 export const getSuggestedOrgs = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) return []
 
     const profile = await ctx.db

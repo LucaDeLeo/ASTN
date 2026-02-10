@@ -1,7 +1,7 @@
 import { v } from 'convex/values'
 import { paginationOptsValidator } from 'convex/server'
 import { query } from './_generated/server'
-import { auth } from './auth'
+import { getUserId } from './lib/auth'
 
 // List active opportunities with optional filters
 export const list = query({
@@ -131,7 +131,7 @@ export const listAll = query({
   },
   handler: async (ctx, args) => {
     // Admin auth check (returns [] for unauthenticated/non-admin)
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) return []
     const adminMembership = await ctx.db
       .query('orgMemberships')
