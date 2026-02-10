@@ -16,8 +16,9 @@ export function MobileHeader({ user }: MobileHeaderProps) {
       style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
       <div className="flex h-14 items-center justify-between px-4">
-        <Link to="/" className="font-semibold font-mono text-foreground">
-          ASTN
+        <Link to="/" className="flex items-center gap-2">
+          <img src="/logo.png" alt="" className="h-6" />
+          <span className="font-semibold font-mono text-foreground">ASTN</span>
         </Link>
         <HamburgerMenu user={user} />
       </div>

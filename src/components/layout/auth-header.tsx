@@ -10,8 +10,11 @@ export function AuthHeader() {
   return (
     <header className="border-b bg-background">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link to="/" className="font-semibold text-foreground font-mono">
-          AI Safety Talent Network
+        <Link to="/" className="flex items-center gap-2.5">
+          <img src="/logo.png" alt="" className="h-7" />
+          <span className="font-semibold text-foreground font-mono">
+            AI Safety Talent Network
+          </span>
         </Link>
         <nav className="flex items-center gap-4">
           <Link
