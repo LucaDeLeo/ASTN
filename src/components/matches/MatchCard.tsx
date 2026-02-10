@@ -6,6 +6,7 @@ import {
   Compass,
   Sparkles,
   ThumbsUp,
+  X,
 } from 'lucide-react'
 import { Card } from '~/components/ui/card'
 import { Badge } from '~/components/ui/badge'
@@ -39,6 +40,10 @@ interface MatchCardProps {
   isSaved?: boolean
   /** Callback to unsave this match */
   onUnsave?: () => void
+  /** Callback to save/bookmark this match (desktop hover action) */
+  onSave?: () => void
+  /** Callback to dismiss this match (desktop hover action) */
+  onDismiss?: () => void
 }
 
 const tierConfig = {
@@ -83,7 +88,13 @@ function formatDeadline(timestamp: number): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-export function MatchCard({ match, isSaved, onUnsave }: MatchCardProps) {
+export function MatchCard({
+  match,
+  isSaved,
+  onUnsave,
+  onSave,
+  onDismiss,
+}: MatchCardProps) {
   const tier = tierConfig[match.tier]
   const TierIcon = tier.icon
 
@@ -118,7 +129,39 @@ export function MatchCard({ match, isSaved, onUnsave }: MatchCardProps) {
         if (strength) strength.style.viewTransitionName = 'match-strength'
       }}
     >
-      <Card className="p-4 transition-shadow hover:shadow-md cursor-pointer">
+      <Card className="group/card relative p-4 transition-shadow hover:shadow-md cursor-pointer">
+        {/* Desktop hover actions: save & dismiss */}
+        {(onSave || onDismiss) && (
+          <div className="absolute top-2 right-2 hidden items-center gap-1 group-hover/card:flex">
+            {onSave && !isSaved && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onSave()
+                }}
+                className="rounded-full p-1.5 text-muted-foreground hover:bg-emerald-100 hover:text-emerald-700 transition-colors"
+                title="Save match"
+              >
+                <Bookmark className="size-4" />
+              </button>
+            )}
+            {onDismiss && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onDismiss()
+                }}
+                className="rounded-full p-1.5 text-muted-foreground hover:bg-red-100 hover:text-red-700 transition-colors"
+                title="Dismiss match"
+              >
+                <X className="size-4" />
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Row 1: Badges */}
         <div className="flex flex-wrap items-center gap-2 mb-3">
           <Badge className={tier.color}>
