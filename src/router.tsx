@@ -2,14 +2,27 @@ import { createRouter } from '@tanstack/react-router'
 import { QueryClient } from '@tanstack/react-query'
 import { routerWithQueryClient } from '@tanstack/react-router-with-query'
 import { ConvexQueryClient } from '@convex-dev/react-query'
-import { ConvexAuthProvider } from '@convex-dev/auth/react'
+import { ClerkProvider, useAuth } from '@clerk/clerk-react'
+import { ConvexProviderWithClerk } from 'convex/react-clerk'
+import { useEffect, useRef } from 'react'
+import { Authenticated, useMutation } from 'convex/react'
+import { api } from '../convex/_generated/api'
 import { routeTree } from './routeTree.gen'
-import { isTauri } from '~/lib/platform'
-import {
-  exchangeOAuthCode,
-  initDeepLinkAuth,
-  setConvexClient,
-} from '~/lib/tauri/auth'
+
+function UserMigration() {
+  const migrateUser = useMutation(api.userMigration.migrateUserIfNeeded)
+  const didRun = useRef(false)
+
+  useEffect(() => {
+    if (didRun.current) return
+    didRun.current = true
+    migrateUser().catch(() => {
+      // Silent failure — migration is best-effort
+    })
+  }, [migrateUser])
+
+  return null
+}
 
 export function getRouter() {
   const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!
@@ -29,40 +42,6 @@ export function getRouter() {
   })
   convexQueryClient.connect(queryClient)
 
-  // Initialize deep link auth listener for Tauri mobile OAuth
-  if (typeof window !== 'undefined' && isTauri()) {
-    // Set the Convex client for OAuth code exchange
-    setConvexClient(convexQueryClient.convexClient)
-
-    // Initialize deep link auth listener
-    // The callback now receives codeVerifier from PKCE store via handleDeepLinkUrl
-    initDeepLinkAuth(async ({ code, state, provider, codeVerifier }) => {
-      try {
-        // Exchange the code for tokens via Convex action, passing codeVerifier for PKCE
-        const result = await exchangeOAuthCode(
-          code,
-          state,
-          provider,
-          codeVerifier,
-        )
-
-        if (result.success) {
-          // Navigate to profile or intended destination
-          // Note: This exchanges the code for user info, but doesn't create
-          // a Convex auth session. The checkpoint will test if this works
-          // with @convex-dev/auth or if we need custom session handling.
-          window.location.href = '/profile'
-        } else {
-          console.error('OAuth login failed:', result.error)
-          window.location.href = '/login?error=oauth_failed'
-        }
-      } catch (error) {
-        console.error('OAuth callback error:', error)
-        window.location.href = '/login?error=oauth_failed'
-      }
-    })
-  }
-
   const router = routerWithQueryClient(
     createRouter({
       routeTree,
@@ -74,9 +53,19 @@ export function getRouter() {
       defaultErrorComponent: (err) => <p>{err.error.stack}</p>,
       defaultNotFoundComponent: () => <p>not found</p>,
       Wrap: ({ children }) => (
-        <ConvexAuthProvider client={convexQueryClient.convexClient}>
-          {children}
-        </ConvexAuthProvider>
+        <ClerkProvider
+          publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
+        >
+          <ConvexProviderWithClerk
+            client={convexQueryClient.convexClient}
+            useAuth={useAuth}
+          >
+            <Authenticated>
+              <UserMigration />
+            </Authenticated>
+            {children}
+          </ConvexProviderWithClerk>
+        </ClerkProvider>
       ),
     }),
     queryClient,

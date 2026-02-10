@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
 import { mutation } from './_generated/server'
-import { auth } from './auth'
+import { getUserId } from './lib/auth'
 
 /**
  * Generate a one-time upload URL for file uploads.
@@ -9,7 +9,7 @@ import { auth } from './auth'
 export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       throw new Error('Not authenticated')
     }
@@ -30,7 +30,7 @@ export const saveDocument = mutation({
     mimeType: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       throw new Error('Not authenticated')
     }

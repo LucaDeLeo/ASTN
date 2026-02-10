@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Link } from '@tanstack/react-router'
-import { useAuthActions } from '@convex-dev/auth/react'
+import { useClerk } from '@clerk/clerk-react'
 import { HelpCircle, LogOut, Menu, Shield, User } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
@@ -22,7 +22,7 @@ interface HamburgerMenuProps {
 
 export function HamburgerMenu({ user }: HamburgerMenuProps) {
   const [open, setOpen] = React.useState(false)
-  const { signOut } = useAuthActions()
+  const { signOut } = useClerk()
 
   const handleNavigation = () => {
     setOpen(false)

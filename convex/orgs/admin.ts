@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
 import { mutation, query } from '../_generated/server'
-import { auth } from '../auth'
+import { getUserId } from '../lib/auth'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import type { Doc, Id } from '../_generated/dataModel'
 
@@ -9,7 +9,7 @@ async function requireOrgAdmin(
   ctx: QueryCtx | MutationCtx,
   orgId: Id<'organizations'>,
 ): Promise<Doc<'orgMemberships'>> {
-  const userId = await auth.getUserId(ctx)
+  const userId = await getUserId(ctx)
   if (!userId) {
     throw new Error('Not authenticated')
   }
@@ -376,7 +376,8 @@ export const updateOrgProfile = mutation({
 
     // Build patch object, only including provided fields
     const patch: Record<string, unknown> = {}
-    if (updates.description !== undefined) patch.description = updates.description
+    if (updates.description !== undefined)
+      patch.description = updates.description
     if (updates.contactEmail !== undefined)
       patch.contactEmail = updates.contactEmail
     if (updates.website !== undefined) patch.website = updates.website

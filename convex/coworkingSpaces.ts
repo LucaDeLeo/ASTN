@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
 import { mutation, query } from './_generated/server'
-import { auth } from './auth'
+import { getUserId } from './lib/auth'
 import type { MutationCtx, QueryCtx } from './_generated/server'
 import type { Id } from './_generated/dataModel'
 
@@ -9,7 +9,7 @@ async function requireOrgAdmin(
   ctx: QueryCtx | MutationCtx,
   orgId: Id<'organizations'>,
 ) {
-  const userId = await auth.getUserId(ctx)
+  const userId = await getUserId(ctx)
   if (!userId) throw new Error('Not authenticated')
 
   const membership = await ctx.db
@@ -42,7 +42,7 @@ export const getSpaceByOrg = query({
 export const getSpaceByOrgPublic = query({
   args: { orgId: v.id('organizations') },
   handler: async (ctx, { orgId }) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) return null
 
     // Verify user is at least a member of this org

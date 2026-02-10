@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
 import { internalMutation, mutation } from '../_generated/server'
-import { auth } from '../auth'
+import { getUserId } from '../lib/auth'
 import type { Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
 
@@ -101,7 +101,7 @@ export const clearExpiredOverride = internalMutation({
 
 // Helper: Require current user is an admin of the given org
 async function requireOrgAdmin(ctx: MutationCtx, orgId: Id<'organizations'>) {
-  const userId = await auth.getUserId(ctx)
+  const userId = await getUserId(ctx)
   if (!userId) {
     throw new Error('Not authenticated')
   }

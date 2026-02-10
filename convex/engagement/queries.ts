@@ -1,7 +1,6 @@
-import { getAuthUserId } from '@convex-dev/auth/server'
 import { v } from 'convex/values'
 import { internalQuery, query } from '../_generated/server'
-import { auth } from '../auth'
+import { getUserId } from '../lib/auth'
 import type { Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
 
@@ -123,7 +122,7 @@ export const getOrgMembersForEngagement = internalQuery({
 export const getMemberEngagement = query({
   args: { orgId: v.id('organizations') },
   handler: async (ctx, { orgId }) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) return null
 
     const engagement = await ctx.db
@@ -148,7 +147,7 @@ export const getMemberEngagement = query({
 
 // Helper: Require current user is an admin of the given org
 async function requireOrgAdmin(ctx: QueryCtx, orgId: Id<'organizations'>) {
-  const userId = await auth.getUserId(ctx)
+  const userId = await getUserId(ctx)
   if (!userId) {
     throw new Error('Not authenticated')
   }

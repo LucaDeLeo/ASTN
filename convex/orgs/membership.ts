@@ -1,13 +1,13 @@
 import { v } from 'convex/values'
 import { mutation, query } from '../_generated/server'
-import { auth } from '../auth'
+import { getUserId } from '../lib/auth'
 import type { Id } from '../_generated/dataModel'
 
 // Get current user's membership for a given org
 export const getMembership = query({
   args: { orgId: v.id('organizations') },
   handler: async (ctx, { orgId }) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       return null
     }
@@ -24,7 +24,7 @@ export const getMembership = query({
 export const getUserMemberships = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       return []
     }
@@ -57,7 +57,7 @@ export const joinOrg = mutation({
     directoryVisibility: v.union(v.literal('visible'), v.literal('hidden')),
   },
   handler: async (ctx, { orgId, inviteToken, directoryVisibility }) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       throw new Error('Not authenticated')
     }
@@ -130,7 +130,7 @@ export const joinOrg = mutation({
 export const leaveOrg = mutation({
   args: { orgId: v.id('organizations') },
   handler: async (ctx, { orgId }) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       throw new Error('Not authenticated')
     }
@@ -179,7 +179,7 @@ export const setDirectoryVisibility = mutation({
     visibility: v.union(v.literal('visible'), v.literal('hidden')),
   },
   handler: async (ctx, { orgId, visibility }) => {
-    const userId = await auth.getUserId(ctx)
+    const userId = await getUserId(ctx)
     if (!userId) {
       throw new Error('Not authenticated')
     }

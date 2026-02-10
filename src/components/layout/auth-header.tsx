@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { useAuthActions } from '@convex-dev/auth/react'
+import { useClerk } from '@clerk/clerk-react'
 import { AuthLoading, Authenticated, Unauthenticated } from 'convex/react'
 import { LogOut, Settings, User } from 'lucide-react'
 
@@ -68,7 +68,7 @@ export function AuthHeader() {
 }
 
 function UserMenu() {
-  const { signOut } = useAuthActions()
+  const { signOut } = useClerk()
 
   return (
     <DropdownMenu>
