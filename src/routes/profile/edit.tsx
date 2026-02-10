@@ -1,6 +1,13 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useEffect, useRef } from 'react'
 import { z } from 'zod'
-import { AuthLoading, Authenticated, Unauthenticated } from 'convex/react'
+import {
+  AuthLoading,
+  Authenticated,
+  Unauthenticated,
+  useQuery,
+} from 'convex/react'
+import { api } from '../../../convex/_generated/api'
 import { UnauthenticatedRedirect } from '~/components/auth/unauthenticated-redirect'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { GradientBg } from '~/components/layout/GradientBg'
@@ -52,6 +59,28 @@ function ProfileEditPage() {
 function AuthenticatedContent() {
   const { step, fromExtraction, chatFirst } = Route.useSearch()
   const navigate = useNavigate()
+  const profile = useQuery(api.profiles.getOrCreateProfile)
+  const isOnboardingSession = useRef(
+    profile === undefined ? null : !profile?.hasEnrichmentConversation,
+  )
+
+  // Set onboarding flag once profile loads (if it was undefined on mount)
+  useEffect(() => {
+    if (isOnboardingSession.current === null && profile !== undefined) {
+      isOnboardingSession.current = !profile?.hasEnrichmentConversation
+    }
+  }, [profile])
+
+  // Reactive redirect to matches when enrichment completes during onboarding
+  useEffect(() => {
+    if (
+      step === 'enrichment' &&
+      profile?.hasEnrichmentConversation === true &&
+      isOnboardingSession.current === true
+    ) {
+      navigate({ to: '/matches' })
+    }
+  }, [step, profile?.hasEnrichmentConversation, navigate])
 
   // Type guard for manual wizard steps
   type ManualStepId =

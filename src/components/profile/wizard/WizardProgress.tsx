@@ -33,8 +33,8 @@ const STEPS: Array<{ id: StepId; label: string; shortLabel: string }> = [
   { id: 'work', label: 'Work History', shortLabel: 'Work' },
   { id: 'goals', label: 'Career Goals', shortLabel: 'Goals' },
   { id: 'skills', label: 'Skills', shortLabel: 'Skills' },
-  { id: 'enrichment', label: 'Profile Enrichment', shortLabel: 'Enrich' },
   { id: 'privacy', label: 'Privacy Settings', shortLabel: 'Privacy' },
+  { id: 'enrichment', label: 'Profile Enrichment', shortLabel: 'Enrich' },
 ]
 
 const UNLOCK_THRESHOLD = 4

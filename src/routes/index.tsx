@@ -8,6 +8,7 @@ import {
 import { Calendar, MapPin, Settings } from 'lucide-react'
 import { api } from '../../convex/_generated/api'
 import { AnimatedCard } from '~/components/animation/AnimatedCard'
+import { OnboardingGuard } from '~/components/auth/onboarding-guard'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { GradientBg } from '~/components/layout/GradientBg'
 import { MobileShell } from '~/components/layout/mobile-shell'
@@ -42,7 +43,9 @@ function Home() {
         <LandingPage />
       </Unauthenticated>
       <Authenticated>
-        <Dashboard />
+        <OnboardingGuard>
+          <Dashboard />
+        </OnboardingGuard>
       </Authenticated>
     </>
   )

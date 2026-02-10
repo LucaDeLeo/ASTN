@@ -6,6 +6,7 @@ import {
   useQuery,
 } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
+import { OnboardingGuard } from '~/components/auth/onboarding-guard'
 import { UnauthenticatedRedirect } from '~/components/auth/unauthenticated-redirect'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { GradientBg } from '~/components/layout/GradientBg'
@@ -41,7 +42,9 @@ function SettingsLayout() {
         </Unauthenticated>
         <Authenticated>
           <MobileShell user={user}>
-            <Outlet />
+            <OnboardingGuard>
+              <Outlet />
+            </OnboardingGuard>
           </MobileShell>
         </Authenticated>
       </GradientBg>
@@ -56,7 +59,9 @@ function SettingsLayout() {
         <UnauthenticatedRedirect />
       </Unauthenticated>
       <Authenticated>
-        <Outlet />
+        <OnboardingGuard>
+          <Outlet />
+        </OnboardingGuard>
       </Authenticated>
     </GradientBg>
   )

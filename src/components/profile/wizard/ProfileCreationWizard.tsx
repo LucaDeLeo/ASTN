@@ -229,10 +229,6 @@ export function ProfileCreationWizard({
     setWizardState({ step: 'enrich', fromExtraction: true })
   }
 
-  const handleSkipEnrichment = () => {
-    onComplete()
-  }
-
   const handleBackToManualFromSummary = () => {
     setWizardState({ step: 'manual' })
   }
@@ -301,11 +297,6 @@ export function ProfileCreationWizard({
           profile={profile ?? null}
           fromExtraction={wizardState.fromExtraction}
         />
-        <div className="flex justify-center pt-4">
-          <Button variant="outline" onClick={onComplete}>
-            Done with enrichment
-          </Button>
-        </div>
       </div>
     )
   }
@@ -317,7 +308,6 @@ export function ProfileCreationWizard({
         <WizardStepIndicator currentStep="enrich" showReviewStep={true} />
         <PostApplySummary
           onContinueToEnrichment={handleContinueToEnrichment}
-          onSkip={handleSkipEnrichment}
           onBackToManual={handleBackToManualFromSummary}
         />
       </div>

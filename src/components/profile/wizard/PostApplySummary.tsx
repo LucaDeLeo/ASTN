@@ -6,13 +6,11 @@ import { Card } from '~/components/ui/card'
 
 interface PostApplySummaryProps {
   onContinueToEnrichment: () => void
-  onSkip: () => void
   onBackToManual: () => void
 }
 
 export function PostApplySummary({
   onContinueToEnrichment,
-  onSkip,
   onBackToManual,
 }: PostApplySummaryProps) {
   const completeness = useQuery(api.profiles.getMyCompleteness)
@@ -75,14 +73,8 @@ export function PostApplySummary({
           </Button>
         </div>
 
-        {/* Secondary options */}
+        {/* Secondary option */}
         <div className="flex flex-col items-center gap-2 pt-2 text-sm">
-          <button
-            onClick={onSkip}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Skip enrichment for now
-          </button>
           <button
             onClick={onBackToManual}
             className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"

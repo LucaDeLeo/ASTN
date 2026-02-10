@@ -17,6 +17,7 @@ import {
   User,
 } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
+import { OnboardingGuard } from '~/components/auth/onboarding-guard'
 import { UnauthenticatedRedirect } from '~/components/auth/unauthenticated-redirect'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { GradientBg } from '~/components/layout/GradientBg'
@@ -49,7 +50,9 @@ function ProfilePage() {
         <UnauthenticatedRedirect />
       </Unauthenticated>
       <Authenticated>
-        <ProfileContent />
+        <OnboardingGuard>
+          <ProfileContent />
+        </OnboardingGuard>
       </Authenticated>
     </>
   )

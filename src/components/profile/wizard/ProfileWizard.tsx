@@ -36,8 +36,8 @@ const STEPS: Array<StepId> = [
   'work',
   'goals',
   'skills',
-  'enrichment',
   'privacy',
+  'enrichment',
 ]
 
 export function ProfileWizard({
@@ -165,7 +165,7 @@ export function ProfileWizard({
         <div className="bg-white dark:bg-card rounded-lg border p-4 sm:p-6">
           {renderCurrentStep()}
 
-          {/* Hide navigation on privacy step - it has its own Complete button */}
+          {/* Hide navigation on last step (enrichment) */}
           {!isLastStep && (
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-8 pt-6 border-t">
               <Button
