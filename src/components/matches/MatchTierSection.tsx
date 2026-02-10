@@ -70,11 +70,10 @@ export function MatchTierSection({ tier, matches }: MatchTierSectionProps) {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {matches.map((match, index) => {
-          const card = (
-            <MatchCard match={match} isSaved={match.status === 'saved'} />
-          )
-
           if (isMobile) {
+            const card = (
+              <MatchCard match={match} isSaved={match.status === 'saved'} />
+            )
             return (
               <SwipeableCard
                 key={match._id}
@@ -85,6 +84,15 @@ export function MatchTierSection({ tier, matches }: MatchTierSectionProps) {
               </SwipeableCard>
             )
           }
+
+          const card = (
+            <MatchCard
+              match={match}
+              isSaved={match.status === 'saved'}
+              onSave={() => saveMatch({ matchId: match._id })}
+              onDismiss={() => dismissMatch({ matchId: match._id })}
+            />
+          )
 
           return (
             <AnimatedCard key={match._id} index={index}>
