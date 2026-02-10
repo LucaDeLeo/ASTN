@@ -28,6 +28,11 @@ export const Route = createRootRouteWithContext<{
         content: 'width=device-width, initial-scale=1.0, viewport-fit=cover',
       },
       {
+        name: 'description',
+        content:
+          'Find your next role in AI safety. Build your profile, get matched to opportunities in research, policy, and engineering.',
+      },
+      {
         name: 'apple-mobile-web-app-capable',
         content: 'yes',
       },
@@ -41,6 +46,58 @@ export const Route = createRootRouteWithContext<{
       },
       {
         title: 'AI Safety Talent Network',
+      },
+      // Open Graph
+      {
+        property: 'og:type',
+        content: 'website',
+      },
+      {
+        property: 'og:url',
+        content: 'https://safetytalent.org',
+      },
+      {
+        property: 'og:title',
+        content: 'AI Safety Talent Network',
+      },
+      {
+        property: 'og:description',
+        content:
+          'Find your next role in AI safety. Build your profile, get matched to opportunities in research, policy, and engineering.',
+      },
+      {
+        property: 'og:image',
+        content: 'https://safetytalent.org/og-image.png',
+      },
+      {
+        property: 'og:image:width',
+        content: '1200',
+      },
+      {
+        property: 'og:image:height',
+        content: '630',
+      },
+      {
+        property: 'og:site_name',
+        content: 'AI Safety Talent Network',
+      },
+      // Twitter Card
+      {
+        name: 'twitter:card',
+        content: 'summary_large_image',
+      },
+      {
+        name: 'twitter:title',
+        content: 'AI Safety Talent Network',
+      },
+      {
+        name: 'twitter:description',
+        content:
+          'Find your next role in AI safety. Build your profile, get matched to opportunities in research, policy, and engineering.',
+      },
+      {
+        name: 'twitter:image',
+        content: 'https://safetytalent.org/og-image.png',
       },
     ],
     links: [
