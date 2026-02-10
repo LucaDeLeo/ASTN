@@ -30,7 +30,7 @@ export const Route = createRootRouteWithContext<{
       {
         name: 'description',
         content:
-          'Find your next role in AI safety. Build your profile, get matched to opportunities in research, policy, and engineering.',
+          'Find your next role in AI safety. Build your profile, get matched to opportunities in research, policy, and operations.',
       },
       {
         name: 'apple-mobile-web-app-capable',
@@ -63,7 +63,7 @@ export const Route = createRootRouteWithContext<{
       {
         property: 'og:description',
         content:
-          'Find your next role in AI safety. Build your profile, get matched to opportunities in research, policy, and engineering.',
+          'Find your next role in AI safety. Build your profile, get matched to opportunities in research, policy, and operations.',
       },
       {
         property: 'og:image',
@@ -93,7 +93,7 @@ export const Route = createRootRouteWithContext<{
       {
         name: 'twitter:description',
         content:
-          'Find your next role in AI safety. Build your profile, get matched to opportunities in research, policy, and engineering.',
+          'Find your next role in AI safety. Build your profile, get matched to opportunities in research, policy, and operations.',
       },
       {
         name: 'twitter:image',
