@@ -5,7 +5,7 @@ import {
   Unauthenticated,
   useQuery,
 } from 'convex/react'
-import { Calendar, MapPin, Settings } from 'lucide-react'
+import { Bookmark, Calendar, MapPin, Settings, Sparkles } from 'lucide-react'
 import { api } from '../../convex/_generated/api'
 import { AnimatedCard } from '~/components/animation/AnimatedCard'
 import { OnboardingGuard } from '~/components/auth/onboarding-guard'
@@ -13,6 +13,7 @@ import { AuthHeader } from '~/components/layout/auth-header'
 import { GradientBg } from '~/components/layout/GradientBg'
 import { MobileShell } from '~/components/layout/mobile-shell'
 import { EventCard } from '~/components/events/EventCard'
+import { MatchCard } from '~/components/matches/MatchCard'
 import { OrgCarousel } from '~/components/org/OrgCarousel'
 import { useIsMobile } from '~/hooks/use-media-query'
 import { Button } from '~/components/ui/button'
@@ -92,9 +93,14 @@ function Dashboard() {
   const suggestedOrgs = useQuery(api.orgs.discovery.getSuggestedOrgs)
   const locationPrivacy = useQuery(api.profiles.getLocationPrivacy)
   const dashboardEvents = useQuery(api.events.queries.getDashboardEvents)
+  const matchesData = useQuery(api.matches.getMyMatches)
 
   // Determine if user has location discovery enabled
   const locationEnabled = locationPrivacy?.locationDiscoverable ?? false
+
+  // Extract saved + great matches for dashboard preview
+  const savedMatches = matchesData?.savedMatches ?? []
+  const greatMatches = matchesData?.matches.great ?? []
 
   // Group user's org events by org for display
   const eventsByOrg = dashboardEvents?.userOrgEvents.reduce(
@@ -111,6 +117,56 @@ function Dashboard() {
 
   return (
     <main className="container mx-auto px-4 py-8">
+      {/* Saved & Great Matches */}
+      {(savedMatches.length > 0 || greatMatches.length > 0) && (
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-display font-semibold text-foreground">
+              Your Top Matches
+            </h2>
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/matches">View all</Link>
+            </Button>
+          </div>
+
+          {savedMatches.length > 0 && (
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Bookmark className="size-4 text-emerald-600 fill-emerald-600" />
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  Saved ({savedMatches.length})
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {savedMatches.slice(0, 3).map((match, index) => (
+                  <AnimatedCard key={match._id} index={index}>
+                    <MatchCard match={match} isSaved />
+                  </AnimatedCard>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {greatMatches.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="size-4 text-emerald-600" />
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  Great Matches ({greatMatches.length})
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {greatMatches.slice(0, 3).map((match, index) => (
+                  <AnimatedCard key={match._id} index={index}>
+                    <MatchCard match={match} />
+                  </AnimatedCard>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
       {/* Org Suggestions Section */}
       <section className="mb-8">
         <h2 className="text-xl font-display font-semibold text-foreground mb-2">
