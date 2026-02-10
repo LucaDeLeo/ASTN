@@ -1,18 +1,10 @@
 import { Link } from '@tanstack/react-router'
-import { useClerk } from '@clerk/clerk-react'
+import { UserButton } from '@clerk/clerk-react'
 import { AuthLoading, Authenticated, Unauthenticated } from 'convex/react'
-import { LogOut, Settings, User } from 'lucide-react'
+import { User } from 'lucide-react'
 
 import { NotificationBell } from '~/components/notifications'
-import { Avatar, AvatarFallback } from '~/components/ui/avatar'
 import { Button } from '~/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '~/components/ui/dropdown-menu'
 
 export function AuthHeader() {
   return (
@@ -59,50 +51,18 @@ export function AuthHeader() {
 
           <Authenticated>
             <NotificationBell />
-            <UserMenu />
+            <UserButton>
+              <UserButton.MenuItems>
+                <UserButton.Link
+                  label="ASTN Profile"
+                  labelIcon={<User className="size-4" />}
+                  href="/profile"
+                />
+              </UserButton.MenuItems>
+            </UserButton>
           </Authenticated>
         </nav>
       </div>
     </header>
-  )
-}
-
-function UserMenu() {
-  const { signOut } = useClerk()
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full">
-          <Avatar>
-            <AvatarFallback className="bg-primary/10 text-primary">
-              <User className="size-4" />
-            </AvatarFallback>
-          </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem asChild>
-          <Link to="/profile" className="cursor-pointer">
-            <User className="mr-2 size-4" />
-            Profile
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/settings" className="cursor-pointer">
-            <Settings className="mr-2 size-4" />
-            Settings
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => signOut()}
-          className="cursor-pointer text-destructive focus:text-destructive"
-        >
-          <LogOut className="mr-2 size-4" />
-          Logout
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
   )
 }
