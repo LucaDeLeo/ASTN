@@ -9,7 +9,7 @@ import {
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
 import { RefreshCw, Sparkles, User } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import { OnboardingGuard } from '~/components/auth/onboarding-guard'
 import { AuthHeader } from '~/components/layout/auth-header'
@@ -160,10 +160,19 @@ function MatchesContent() {
     }
   }
 
-  // Auto-trigger computation if needed
+  // Auto-trigger computation if needed (ref prevents runaway re-triggers)
+  const hasAutoTriggered = useRef(false)
   useEffect(() => {
-    if (matchesData?.needsComputation && !isComputing) {
+    if (
+      matchesData?.needsComputation &&
+      !isComputing &&
+      !hasAutoTriggered.current
+    ) {
+      hasAutoTriggered.current = true
       handleCompute()
+    }
+    if (!matchesData?.needsComputation) {
+      hasAutoTriggered.current = false
     }
   }, [matchesData?.needsComputation, isComputing])
 

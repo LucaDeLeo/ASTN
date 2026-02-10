@@ -295,7 +295,7 @@ export const processMatchBatch = internalAction({
           tier: m.tier,
           score: m.score,
           strengths: m.strengths,
-          gap: m.gap,
+          gap: m.gap ?? undefined,
           interviewChance: m.interviewChance,
           ranking: m.ranking,
           confidence: m.confidence,
