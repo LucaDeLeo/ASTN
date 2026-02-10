@@ -98,9 +98,12 @@ function Dashboard() {
   // Determine if user has location discovery enabled
   const locationEnabled = locationPrivacy?.locationDiscoverable ?? false
 
-  // Extract saved + great matches for dashboard preview
+  // Extract saved + top matches for dashboard preview (great first, then good)
   const savedMatches = matchesData?.savedMatches ?? []
-  const greatMatches = matchesData?.matches.great ?? []
+  const topMatches = [
+    ...(matchesData?.matches.great ?? []),
+    ...(matchesData?.matches.good ?? []),
+  ].slice(0, 3)
 
   // Group user's org events by org for display
   const eventsByOrg = dashboardEvents?.userOrgEvents.reduce(
@@ -117,8 +120,8 @@ function Dashboard() {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      {/* Saved & Great Matches */}
-      {(savedMatches.length > 0 || greatMatches.length > 0) && (
+      {/* Saved & Top Matches */}
+      {(savedMatches.length > 0 || topMatches.length > 0) && (
         <section className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-display font-semibold text-foreground">
@@ -147,16 +150,16 @@ function Dashboard() {
             </div>
           )}
 
-          {greatMatches.length > 0 && (
+          {topMatches.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="size-4 text-emerald-600" />
                 <h3 className="text-sm font-medium text-muted-foreground">
-                  Great Matches ({greatMatches.length})
+                  Best Matches
                 </h3>
               </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {greatMatches.slice(0, 3).map((match, index) => (
+                {topMatches.map((match, index) => (
                   <AnimatedCard key={match._id} index={index}>
                     <MatchCard match={match} />
                   </AnimatedCard>
