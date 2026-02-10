@@ -11,6 +11,7 @@ import { convexQuery } from '@convex-dev/react-query'
 import { RefreshCw, Sparkles, User } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../../../convex/_generated/api'
+import { OnboardingGuard } from '~/components/auth/onboarding-guard'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { GradientBg } from '~/components/layout/GradientBg'
 import { MobileShell } from '~/components/layout/mobile-shell'
@@ -85,7 +86,9 @@ function MatchesPage() {
         <UnauthenticatedRedirect />
       </Unauthenticated>
       <Authenticated>
-        <MatchesContent />
+        <OnboardingGuard>
+          <MatchesContent />
+        </OnboardingGuard>
       </Authenticated>
     </>
   )

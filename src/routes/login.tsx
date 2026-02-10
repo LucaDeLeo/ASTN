@@ -1,7 +1,13 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { AuthLoading, Authenticated, Unauthenticated } from 'convex/react'
+import {
+  AuthLoading,
+  Authenticated,
+  Unauthenticated,
+  useQuery,
+} from 'convex/react'
 import { SignIn } from '@clerk/clerk-react'
 import { useEffect } from 'react'
+import { api } from '../../convex/_generated/api'
 import { GradientBg } from '~/components/layout/GradientBg'
 
 export const Route = createFileRoute('/login')({
@@ -28,13 +34,17 @@ function LoginPage() {
 
 function AuthenticatedRedirect() {
   const navigate = useNavigate()
+  const profile = useQuery(api.profiles.getOrCreateProfile)
 
   useEffect(() => {
-    // Redirect authenticated users to home
-    navigate({ to: '/' })
-  }, [navigate])
+    if (profile === undefined) return // still loading
+    if (profile === null || profile.hasEnrichmentConversation !== true) {
+      navigate({ to: '/profile/edit' })
+    } else {
+      navigate({ to: '/' })
+    }
+  }, [profile, navigate])
 
-  // Show loading state while redirecting
   return (
     <div className="flex items-center justify-center">
       <div className="size-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
