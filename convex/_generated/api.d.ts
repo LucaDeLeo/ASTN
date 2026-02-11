@@ -17,6 +17,11 @@ import type * as aggregation_syncMutations from "../aggregation/syncMutations.js
 import type * as attendance_mutations from "../attendance/mutations.js";
 import type * as attendance_queries from "../attendance/queries.js";
 import type * as attendance_scheduler from "../attendance/scheduler.js";
+import type * as careerActions_compute from "../careerActions/compute.js";
+import type * as careerActions_mutations from "../careerActions/mutations.js";
+import type * as careerActions_prompts from "../careerActions/prompts.js";
+import type * as careerActions_queries from "../careerActions/queries.js";
+import type * as careerActions_validation from "../careerActions/validation.js";
 import type * as coworkingSpaces from "../coworkingSpaces.js";
 import type * as crons from "../crons.js";
 import type * as emails_batchActions from "../emails/batchActions.js";
@@ -95,6 +100,11 @@ declare const fullApi: ApiFromModules<{
   "attendance/mutations": typeof attendance_mutations;
   "attendance/queries": typeof attendance_queries;
   "attendance/scheduler": typeof attendance_scheduler;
+  "careerActions/compute": typeof careerActions_compute;
+  "careerActions/mutations": typeof careerActions_mutations;
+  "careerActions/prompts": typeof careerActions_prompts;
+  "careerActions/queries": typeof careerActions_queries;
+  "careerActions/validation": typeof careerActions_validation;
   coworkingSpaces: typeof coworkingSpaces;
   crons: typeof crons;
   "emails/batchActions": typeof emails_batchActions;

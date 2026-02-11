@@ -36,7 +36,7 @@ interface ActionCardProps {
     title: string
     description: string
     rationale: string
-    status: 'active' | 'saved' | 'in_progress' | 'done'
+    status: 'active' | 'saved' | 'dismissed' | 'in_progress' | 'done'
     completedAt?: number
   }
   onSave?: () => void
