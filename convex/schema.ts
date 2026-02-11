@@ -414,6 +414,39 @@ export default defineSchema({
     .index('by_user', ['userId'])
     .index('by_space_user', ['spaceId', 'userId']),
 
+  // Career actions (LLM-generated personalized career steps)
+  careerActions: defineTable({
+    profileId: v.id('profiles'),
+    type: v.union(
+      v.literal('replicate'),
+      v.literal('collaborate'),
+      v.literal('start_org'),
+      v.literal('identify_gaps'),
+      v.literal('volunteer'),
+      v.literal('build_tools'),
+      v.literal('teach_write'),
+      v.literal('develop_skills'),
+    ),
+    title: v.string(),
+    description: v.string(),
+    rationale: v.string(), // User-facing reasoning referencing profile elements
+    profileBasis: v.optional(v.array(v.string())), // Machine-readable profile signal identifiers (GEN-07)
+    status: v.union(
+      v.literal('active'),
+      v.literal('saved'),
+      v.literal('dismissed'),
+      v.literal('in_progress'),
+      v.literal('done'),
+    ),
+    generatedAt: v.number(),
+    startedAt: v.optional(v.number()),
+    completedAt: v.optional(v.number()),
+    modelVersion: v.string(),
+    completionConversationStarted: v.optional(v.boolean()), // Phase 36 flag
+  })
+    .index('by_profile', ['profileId'])
+    .index('by_profile_status', ['profileId', 'status']),
+
   // Match results (per CONTEXT.md: tier labels, not percentages)
   matches: defineTable({
     profileId: v.id('profiles'),
