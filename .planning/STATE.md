@@ -5,14 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** v1.6 Career Actions -- Defining requirements
+**Current focus:** v1.6 Career Actions -- Phase 35 ready to plan
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 35 of 36 (Generation, Display & Interactions)
 Plan: --
-Status: Defining requirements
-Last activity: 2026-02-10 -- Milestone v1.6 started
+Status: Ready to plan
+Last activity: 2026-02-10 -- Roadmap created for v1.6 Career Actions
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Milestone History
 
@@ -28,36 +30,7 @@ Last activity: 2026-02-10 -- Milestone v1.6 started
 
 ## Accumulated Decisions
 
-| Decision                                                       | Phase | Rationale                                               |
-| -------------------------------------------------------------- | ----- | ------------------------------------------------------- |
-| Platform admin is separate `platformAdmins` table              | 30-01 | Clean separation from org-level admin role              |
-| Slug generation with db uniqueness in `convex/lib/slug.ts`     | 30-01 | Reusable utility, appends -2, -3 for collisions         |
-| Case-insensitive normalized org name for duplicate detection   | 30-01 | Checks both organizations and orgApplications tables    |
-| Pre-fill applicant name from profile, email from auth identity | 30-02 | Profile has no email field; auth identity does          |
-| Desktop table + mobile card list for admin review queue        | 30-02 | Responsive pattern matching existing member list        |
-| Rejection reason minimum 10 characters                         | 30-02 | Ensures meaningful feedback to applicants               |
-| Soft capacity warnings without blocking                        | 32-01 | Allows admin flexibility for overbooking if needed      |
-| Consent required for booking                                   | 32-01 | consentToProfileSharing must be true to create booking  |
-| Profile subset for attendees: name, headline, skills only      | 32-01 | Minimal PII exposure for attendee visibility            |
-| react-day-picker v9 with custom DayButton                      | 32-02 | Availability indicators via green/yellow/red dots       |
-| Inline guest profile creation in mutations                     | 33-01 | Convex runMutation cannot call internal mutations       |
-| Guest profiles preserved after member conversion               | 33-01 | Audit trail for visit history                           |
-| requireSpaceAdmin helper for space-level admin checks          | 33-01 | Consistent auth pattern for space operations            |
-| GuestSignupForm defaults to Create Account tab                 | 33-02 | Most guests are new users                               |
-| Pre-fill guest form from existing guestProfile                 | 33-02 | Returning guests have faster submission                 |
-| Generic auth errors in guest signup                            | 33-02 | Avoid revealing account existence                       |
-| Client-side guest grouping in history view                     | 33-03 | Simpler than server-side aggregation for this use case  |
-| Expandable custom field responses                              | 33-03 | Reduces visual clutter in approval queue                |
-| Cursor-based pagination for admin booking queries              | 34-01 | Efficient pagination using booking ID as cursor         |
-| Combined queries + mutations in spaceBookings/admin.ts         | 34-01 | Follows orgs/admin.ts nested folder pattern             |
-| Admin calendar shows all dates (past + future)                 | 34-02 | Unlike member calendar which disables past dates        |
-| History defaults to last 30 days with all statuses             | 34-02 | Reasonable default for admin review                     |
-| Booking list groups by date with badge count                   | 34-02 | Clearer organization for multiple bookings per day      |
-| Time options 6 AM to 10 PM in 30-min increments                | 34-03 | Standard coworking hours for booking time selectors     |
-| BookingCard status badges with color variants by status        | 34-03 | Visual distinction: confirmed=green, pending=amber, etc |
-| Stats cards self-contained with own loading states             | 34-04 | Each card fetches data independently                    |
-| Peak days visualization as distribution bars (top 3)           | 34-04 | Reuses OrgStats pattern for consistency                 |
-| Bookings export defaults to last 30 days                       | 34-04 | Reasonable default for common export use case           |
+No v1.6 decisions yet. See PROJECT.md Key Decisions for v1.0-v1.5 history.
 
 ## Performance Metrics
 
@@ -81,11 +54,11 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Milestone v1.6 initialization
+Stopped at: v1.6 roadmap created (Phases 35-36)
 Resume file: None
-Next action: Define requirements and create roadmap
+Next action: Plan Phase 35
 
 ---
 
 _State initialized: 2026-01-17_
-_Last updated: 2026-02-10 -- Milestone v1.6 Career Actions started_
+_Last updated: 2026-02-10 -- v1.6 roadmap created_
