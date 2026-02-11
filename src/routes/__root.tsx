@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-router'
 import * as React from 'react'
 import formbricks from '@formbricks/js'
+import { MessageCircleHeart } from 'lucide-react'
 import { Toaster } from 'sonner'
 
 // Font preloads for FOIT/FOUT prevention
@@ -174,6 +175,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <ThemeProvider>
           {children}
           <Toaster position="top-right" richColors />
+          <button
+            onClick={() => formbricks.track('feedback_clicked')}
+            className="fixed bottom-5 right-5 z-50 flex size-12 items-center justify-center rounded-full bg-coral-500 text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
+            aria-label="Share feedback"
+          >
+            <MessageCircleHeart className="size-5" />
+          </button>
         </ThemeProvider>
         {/* Leaflet JS for map component - loaded in body for global L */}
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" />
