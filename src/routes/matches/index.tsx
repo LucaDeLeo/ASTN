@@ -23,6 +23,7 @@ import { Spinner } from '~/components/ui/spinner'
 import { PullToRefresh } from '~/components/ui/pull-to-refresh'
 import { MatchTierSection } from '~/components/matches/MatchTierSection'
 import { SavedMatchesSection } from '~/components/matches/SavedMatchesSection'
+import { CareerActionsSection } from '~/components/actions/CareerActionsSection'
 import { GrowthAreas } from '~/components/matches/GrowthAreas'
 
 // Aggregate recommendations into growth areas
@@ -313,6 +314,9 @@ function MatchesContent() {
               <MatchTierSection tier="exploring" matches={matches.exploring} />
             </>
           )}
+
+          {/* Career actions - "Your Next Moves" between tiers and growth areas */}
+          <CareerActionsSection />
 
           {/* Growth areas - keep visible even when all matches dismissed */}
           {growthAreas.length > 0 && (

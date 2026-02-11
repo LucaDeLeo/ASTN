@@ -186,3 +186,22 @@ export const unsaveAction = mutation({
     await ctx.db.patch('careerActions', actionId, { status: 'active' })
   },
 })
+
+// Cancel progress on an action (in_progress -> active)
+export const cancelAction = mutation({
+  args: { actionId: v.id('careerActions') },
+  handler: async (ctx, { actionId }) => {
+    const { action } = await verifyActionOwnership(ctx, actionId)
+
+    if (action.status !== 'in_progress') {
+      throw new Error(
+        `Cannot cancel action with status "${action.status}" - must be "in_progress"`,
+      )
+    }
+
+    await ctx.db.patch('careerActions', actionId, {
+      status: 'active',
+      startedAt: undefined,
+    })
+  },
+})
