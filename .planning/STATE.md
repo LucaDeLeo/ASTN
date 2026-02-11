@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** v1.6 Career Actions -- Phase 35 executing
+**Current focus:** v1.6 Career Actions -- Phase 36 executing
 
 ## Current Position
 
-Phase: 35 of 36 (Generation, Display & Interactions)
-Plan: 3 of 3 complete
-Status: Phase Complete
-Last activity: 2026-02-11 -- Plan 03 (UI display and interactions) complete
+Phase: 36 of 36 (Completion Loop)
+Plan: 1 of 2 complete
+Status: Executing
+Last activity: 2026-02-11 -- Plan 01 (completion enrichment backend) complete
 
-Progress: [██████████] 100%
+Progress: [█████████▒] 95%
 
 ## Milestone History
 
@@ -36,12 +36,14 @@ Progress: [██████████] 100%
 - 35-02: Used shadow-mode Zod validation matching existing matching pipeline pattern
 - 35-03: Added cancelAction mutation for in_progress -> active transition (not in Plan 01)
 - 35-03: CareerActionsSection is self-contained (fetches own data, wires own mutations)
+- 36-01: Extracted buildProfileContext helper to DRY profile context logic between sendMessage and sendCompletionMessage
+- 36-01: Completion messages queried via by_action index -- no changes to existing by_profile enrichment flow
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 105
+- Total plans completed: 106
 - Total execution time: ~21.5 hours (across all milestones)
 
 | Phase | Plan | Duration | Tasks | Files |
@@ -49,6 +51,7 @@ Progress: [██████████] 100%
 | 35    | 01   | 4min     | 2     | 4     |
 | 35    | 02   | 6min     | 2     | 6     |
 | 35    | 03   | 7min     | 2     | 6     |
+| 36    | 01   | 4min     | 4     | 4     |
 
 ## Pending Todos
 
@@ -65,11 +68,11 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Completed 35-03-PLAN.md -- Phase 35 complete
+Stopped at: Completed 36-01-PLAN.md
 Resume file: None
-Next action: Phase 36 (Completion Loop)
+Next action: Execute 36-02-PLAN.md (completion UI)
 
 ---
 
 _State initialized: 2026-01-17_
-_Last updated: 2026-02-11 -- Phase 35 complete (all 3 plans)_
+_Last updated: 2026-02-11 -- Phase 36, Plan 01 complete_
