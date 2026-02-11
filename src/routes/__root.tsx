@@ -150,14 +150,14 @@ export const Route = createRootRouteWithContext<{
   component: RootComponent,
 })
 
-if (typeof window !== 'undefined') {
-  formbricks.setup({
-    environmentId: 'cmli71lmhal0dy401ma6s3lbm',
-    appUrl: 'https://app.formbricks.com',
-  })
-}
-
 function RootComponent() {
+  React.useEffect(() => {
+    formbricks.setup({
+      environmentId: 'cmli71lmhal0dy401ma6s3lbm',
+      appUrl: 'https://app.formbricks.com',
+    })
+  }, [])
+
   return (
     <RootDocument>
       <Outlet />
