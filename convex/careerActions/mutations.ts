@@ -205,3 +205,21 @@ export const cancelAction = mutation({
     })
   },
 })
+
+// Mark a completed action as having started a completion conversation
+export const markCompletionStarted = mutation({
+  args: { actionId: v.id('careerActions') },
+  handler: async (ctx, { actionId }) => {
+    const { action } = await verifyActionOwnership(ctx, actionId)
+
+    if (action.status !== 'done') {
+      throw new Error(
+        `Cannot start completion conversation for action with status "${action.status}" - must be "done"`,
+      )
+    }
+
+    await ctx.db.patch('careerActions', actionId, {
+      completionConversationStarted: true,
+    })
+  },
+})
