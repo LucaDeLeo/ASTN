@@ -182,8 +182,11 @@ export default defineSchema({
     profileId: v.id('profiles'),
     role: v.union(v.literal('user'), v.literal('assistant')),
     content: v.string(),
+    actionId: v.optional(v.id('careerActions')), // Links to completed action for completion chat
     createdAt: v.number(),
-  }).index('by_profile', ['profileId', 'createdAt']),
+  })
+    .index('by_profile', ['profileId', 'createdAt'])
+    .index('by_action', ['actionId', 'createdAt']),
 
   // Extractions from enrichment (pending review)
   enrichmentExtractions: defineTable({
