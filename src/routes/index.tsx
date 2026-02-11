@@ -3,10 +3,12 @@ import {
   AuthLoading,
   Authenticated,
   Unauthenticated,
+  useMutation,
   useQuery,
 } from 'convex/react'
 import { Bookmark, Calendar, MapPin, Settings, Sparkles } from 'lucide-react'
 import { api } from '../../convex/_generated/api'
+import { ActionCard } from '~/components/actions/ActionCard'
 import { AnimatedCard } from '~/components/animation/AnimatedCard'
 import { OnboardingGuard } from '~/components/auth/onboarding-guard'
 import { AuthHeader } from '~/components/layout/auth-header'
@@ -94,6 +96,14 @@ function Dashboard() {
   const locationPrivacy = useQuery(api.profiles.getLocationPrivacy)
   const dashboardEvents = useQuery(api.events.queries.getDashboardEvents)
   const matchesData = useQuery(api.matches.getMyMatches)
+  const actionsData = useQuery(api.careerActions.queries.getMyActions)
+
+  // Action mutations for dashboard cards
+  const saveActionMut = useMutation(api.careerActions.mutations.saveAction)
+  const dismissActionMut = useMutation(
+    api.careerActions.mutations.dismissAction,
+  )
+  const startActionMut = useMutation(api.careerActions.mutations.startAction)
 
   // Determine if user has location discovery enabled
   const locationEnabled = locationPrivacy?.locationDiscoverable ?? false
@@ -104,6 +114,9 @@ function Dashboard() {
     ...(matchesData?.matches.great ?? []),
     ...(matchesData?.matches.good ?? []),
   ].slice(0, 3)
+
+  // Top 2 active actions for dashboard preview
+  const topActions = actionsData?.active.slice(0, 2) ?? []
 
   // Group user's org events by org for display
   const eventsByOrg = dashboardEvents?.userOrgEvents.reduce(
@@ -167,6 +180,32 @@ function Dashboard() {
               </div>
             </div>
           )}
+        </section>
+      )}
+
+      {/* Your Next Moves - top 2 career actions */}
+      {topActions.length > 0 && (
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-display font-semibold text-foreground">
+              Your Next Moves
+            </h2>
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/matches">View all</Link>
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {topActions.map((action, index) => (
+              <AnimatedCard key={action._id} index={index}>
+                <ActionCard
+                  action={action}
+                  onSave={() => saveActionMut({ actionId: action._id })}
+                  onDismiss={() => dismissActionMut({ actionId: action._id })}
+                  onStart={() => startActionMut({ actionId: action._id })}
+                />
+              </AnimatedCard>
+            ))}
+          </div>
         </section>
       )}
 
