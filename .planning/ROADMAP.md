@@ -42,9 +42,9 @@ Add LLM-generated personalized career actions -- self-directed things a person c
 
 Plans:
 
-- [ ] 35-01-PLAN.md -- Schema, queries & mutations (data layer foundation)
-- [ ] 35-02-PLAN.md -- LLM generation pipeline (prompts, compute, trigger wiring)
-- [ ] 35-03-PLAN.md -- Frontend components & page integration (ActionCard, sections, matches page, dashboard)
+- [x] 35-01-PLAN.md -- Schema, queries & mutations (data layer foundation)
+- [x] 35-02-PLAN.md -- LLM generation pipeline (prompts, compute, trigger wiring)
+- [x] 35-03-PLAN.md -- Frontend components & page integration (ActionCard, sections, matches page, dashboard)
 
 ### Phase 36: Completion Loop
 
@@ -65,12 +65,12 @@ Plans:
 
 **Execution Order:** 35 -> 36
 
-| Phase                                  | Plans Complete | Status      | Completed |
-| -------------------------------------- | -------------- | ----------- | --------- |
-| 35. Generation, Display & Interactions | 0/3            | Planned     | -         |
-| 36. Completion Loop                    | 0/TBD          | Not started | -         |
+| Phase                                  | Plans Complete | Status      | Completed  |
+| -------------------------------------- | -------------- | ----------- | ---------- |
+| 35. Generation, Display & Interactions | 3/3            | Complete    | 2026-02-11 |
+| 36. Completion Loop                    | 0/TBD          | Not started | -          |
 
 ---
 
 _Roadmap created: 2026-01-20_
-_Last updated: 2026-02-10 -- Phase 35 planned (3 plans in 2 waves)_
+_Last updated: 2026-02-11 -- Phase 35 complete (3/3 plans executed)_
