@@ -932,4 +932,12 @@ export default defineSchema({
     value: v.string(),
     createdAt: v.number(),
   }).index('by_booking', ['spaceBookingId']),
+
+  // Anonymous feedback submissions
+  feedback: defineTable({
+    featureRequests: v.optional(v.string()),
+    bugReports: v.optional(v.string()),
+    page: v.string(),
+    createdAt: v.number(),
+  }).index('by_created', ['createdAt']),
 })
