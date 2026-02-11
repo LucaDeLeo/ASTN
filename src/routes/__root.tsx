@@ -5,9 +5,9 @@ import {
   createRootRouteWithContext,
 } from '@tanstack/react-router'
 import * as React from 'react'
-import formbricks from '@formbricks/js'
 import { MessageCircleHeart } from 'lucide-react'
 import { Toaster } from 'sonner'
+import formbricks from '@formbricks/js'
 
 // Font preloads for FOIT/FOUT prevention
 import plusJakartaWoff2 from '@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2?url'
@@ -176,6 +176,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           {children}
           <Toaster position="top-right" richColors />
           <button
+            type="button"
             onClick={() => formbricks.track('feedback_clicked')}
             className="fixed bottom-5 right-5 z-50 flex size-12 items-center justify-center rounded-full bg-coral-500 text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
             aria-label="Share feedback"
