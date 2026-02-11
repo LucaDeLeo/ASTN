@@ -150,22 +150,47 @@ export const Route = createRootRouteWithContext<{
   component: RootComponent,
 })
 
+const FORMBRICKS_ENV_ID = import.meta.env.VITE_FORMBRICKS_ENV_ID
+const FEEDBACK_FALLBACK_URL =
+  'https://app.formbricks.com/s/cmli7c5fp97v9wv01rlya9has'
+
 function RootComponent() {
+  const formbricksReady = React.useRef(false)
+
   React.useEffect(() => {
-    formbricks.setup({
-      environmentId: 'cmli71lmhal0dy401ma6s3lbm',
-      appUrl: 'https://app.formbricks.com',
-    })
+    if (!FORMBRICKS_ENV_ID) return
+    formbricks
+      .setup({
+        environmentId: FORMBRICKS_ENV_ID,
+        appUrl: 'https://app.formbricks.com',
+      })
+      .then(() => {
+        formbricksReady.current = true
+      })
   }, [])
 
   return (
-    <RootDocument>
+    <RootDocument formbricksReady={formbricksReady}>
       <Outlet />
     </RootDocument>
   )
 }
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootDocument({
+  children,
+  formbricksReady,
+}: {
+  children: React.ReactNode
+  formbricksReady: React.RefObject<boolean>
+}) {
+  const handleFeedback = React.useCallback(() => {
+    if (formbricksReady.current) {
+      formbricks.track('feedback_clicked')
+    } else {
+      window.open(FEEDBACK_FALLBACK_URL, '_blank', 'noopener,noreferrer')
+    }
+  }, [formbricksReady])
+
   return (
     <html lang="en" className="light">
       <head>
@@ -177,7 +202,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <Toaster position="top-right" richColors />
           <button
             type="button"
-            onClick={() => formbricks.track('feedback_clicked')}
+            onClick={handleFeedback}
             className="fixed bottom-5 right-5 z-50 flex size-12 items-center justify-center rounded-full bg-coral-500 text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
             aria-label="Share feedback"
           >
