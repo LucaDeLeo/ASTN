@@ -217,6 +217,13 @@ export const triggerMatchComputation = action({
       { profileId: profile._id },
     )
 
+    // Generate career actions in parallel (fire-and-forget via scheduler)
+    await ctx.scheduler.runAfter(
+      0,
+      internal.careerActions.compute.computeActionsForProfile,
+      { profileId: profile._id },
+    )
+
     return result
   },
 })
