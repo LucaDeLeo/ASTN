@@ -1,4 +1,3 @@
-import formbricks from '@formbricks/js'
 import { Link, createFileRoute } from '@tanstack/react-router'
 import {
   AuthLoading,
@@ -14,7 +13,6 @@ import {
   Calendar,
   FileText,
   MapPin,
-  MessageCircleHeart,
   MessageSquare,
   Settings,
   Sparkles,
@@ -185,30 +183,6 @@ function LandingPage() {
             </AnimatedCard>
           ))}
         </div>
-      </section>
-
-      {/* Feedback CTA */}
-      <section className="max-w-3xl mx-auto text-center pb-8">
-        <div className="flex items-center justify-center mb-4">
-          <div className="size-12 rounded-full bg-coral-100 flex items-center justify-center">
-            <MessageCircleHeart className="size-6 text-coral-600" />
-          </div>
-        </div>
-        <h2 className="text-2xl font-display font-semibold text-foreground mb-2">
-          Help us improve
-        </h2>
-        <p className="text-muted-foreground mb-6">
-          ASTN is an early prototype. Your feedback shapes what we build next.
-        </p>
-        <Button
-          variant="outline"
-          size="lg"
-          className="transition-transform hover:scale-[1.02] active:scale-[0.98]"
-          onClick={() => formbricks.track('feedback_clicked')}
-        >
-          Share Feedback
-          <ArrowRight className="ml-2 size-4" />
-        </Button>
       </section>
     </main>
   )
