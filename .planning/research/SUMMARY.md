@@ -1,212 +1,252 @@
-# Project Research Summary: v1.2 Org CRM & Events
+# Project Research Summary
 
-**Project:** AI Safety Talent Network (ASTN) - Milestone v1.2
-**Domain:** Community management, event management, engagement scoring
-**Researched:** 2026-01-19
+**Project:** ASTN v1.6 - Career Actions
+**Domain:** LLM-generated personalized career coaching actions
+**Researched:** 2026-02-10
 **Confidence:** HIGH
 
 ## Executive Summary
 
-- **Zero new dependencies required**: The existing ASTN stack (Convex, TanStack, Resend, Claude Haiku) handles 100% of v1.2 requirements. No npm installs needed.
-- **Self-updating CRM is the key differentiator**: Unlike traditional org CRMs where members never update data, ASTN's members maintain their own profiles (for matching value) while orgs get a CRM view. This solves the fundamental CRM data-decay problem.
-- **Three critical pitfalls to design around**: (1) notification fatigue will destroy engagement if not architected with batching from day one, (2) post-event attendance tracking fails at <10% completion if feedback is required before confirmation, (3) real-time CRM dashboards will create performance/cost explosion at 50+ members.
-- **LLM engagement scoring must be explainable with admin override**: The AI safety community is particularly sensitive to opaque AI systems. Scores need visible input signals and human override capability.
-- **Build order is critical**: Events depend on org discovery, attendance depends on events, engagement scoring depends on attendance data. Cannot parallelize these phases.
+Career actions extend ASTN beyond "apply to these jobs" into "do these things to build your career" — inspired by the EA Forum post "Stop Applying And Get To Work." The feature generates 3-5 personalized actions per user (replicate research, find collaborators, start initiatives, build tools, etc.) using Claude Haiku 4.5 and the existing ASTN infrastructure.
+
+The research reveals excellent news: this requires zero new npm dependencies. The existing stack (Convex, Anthropic SDK, shadcn/ui, Tailwind v4 with OKLCH tokens) handles everything needed. Action generation chains after matching via the same scheduler pattern, LLM calls use the same forced-tool-use approach, and the UI extends existing component patterns with violet accent colors. The work is schema extension, prompt engineering, Convex function authoring, CSS token addition, and React component creation.
+
+The highest-value differentiator is the completion loop: users mark actions done, optionally enter an enrichment chat about what they learned, extractions update their profile, which triggers match recomputation and action regeneration. This virtuous cycle makes ASTN career actions fundamentally different from static todo lists. The highest risks are generic LLM output (fortune cookies), resource hallucinations, and destroying user state on regeneration — all mitigated through prompt engineering, resource-name bans, and status preservation logic.
 
 ## Key Findings
 
-### Stack Decisions
+### Recommended Stack
 
-**Use (already installed):**
+**No new dependencies required.** The entire feature builds on existing infrastructure:
 
-- **Convex scheduler + crons**: Event reminders, attendance prompts, engagement recomputation
-- **date-fns + date-fns-tz**: Timezone handling for events (already has IANA timezone pattern)
-- **@convex-dev/resend**: Event notifications using existing email batch patterns
-- **Claude Haiku 4.5**: Engagement scoring (same pattern as matching/compute.ts)
-- **Convex search indexes**: Member directory search (already using for skillsTaxonomy)
+**Core technologies:**
 
-**Do NOT add:**
+- **Claude Haiku 4.5** (`claude-haiku-4-5-20251001`) — Fast, cheap ($0.001/call), appropriate for structured action generation. Already used in matching pipeline.
+- **Convex** (1.31.7) — Schema extension only. Add `careerActions` table with status state machine. Reuse scheduler patterns for generation chaining.
+- **OKLCH color system** (Tailwind v4) — Add violet palette (hue ~290) following existing coral/teal pattern. Violet-500 at `oklch(0.62 0.18 290)` for light mode, `oklch(0.72 0.20 290)` for dark mode.
+- **shadcn/ui components** — Card, Badge, Button with violet variant classes. No new components from Radix needed.
 
-- **FullCalendar/react-big-calendar**: Overkill for simple event list. Use shadcn/ui cards.
-- **rrule**: Only if recurring events become a requirement (not in initial scope)
-- **Push notification services**: Email sufficient for pilot phase
-- **moment-timezone/dayjs/luxon**: Already have date-fns-tz
+**What NOT to add:**
 
-### Table Stakes vs Differentiators
+- State machine libraries (XState) — 5 states with simple linear transitions don't warrant a library
+- Progress bar library — Action completion is discrete (3/5 done), not continuous
+- Animation library — Existing tw-animate-css + CSS keyframes handle violet card entrance
+- Separate LLM orchestration — Extend existing matching pipeline scheduler pattern
 
-**Must have (orgs expect these):**
+### Expected Features
 
-- Member directory with search/filter
-- Event creation, listing, RSVP
-- Event notifications (email reminders)
-- Attendance tracking (post-event confirmation)
-- Basic org stats (member counts, breakdown by career stage)
-- CSV export of member data
+**Must have (table stakes):**
 
-**Differentiators (competitive advantage):**
+- Profile-driven generation (3-5 actions referencing specific profile signals)
+- Generated alongside matching (chain after last batch, fire-and-forget via scheduler)
+- Action-specific reasoning ("why this for ME" not generic advice)
+- Save/dismiss/in-progress/done status tracking
+- Violet visual distinction from match tiers (emerald/blue/amber)
+- Actions on matches page (natural home for career guidance)
+- On-demand refresh (same "Refresh Matches" trigger regenerates both)
 
-- Self-updating profiles (members maintain for personal value, orgs benefit)
-- LLM-computed engagement levels with transparency
-- Admin override for engagement with audit trail
-- Post-event "Did you attend?" with 1-click confirmation (separate from feedback)
-- Geography-based org suggestions
-- Configurable notification preferences per-org
+**Should have (differentiators):**
 
-**Defer to v2+:**
+- **Completion → enrichment chat → profile update loop** — The killer feature. Actions improve your profile, which improves matches, which generates new actions. This virtuous cycle is unique to ASTN.
+- Actions informed by match gaps — Feed aggregated growth areas into generation prompt
+- Cross-pollination with growth areas — Growth areas show "what to build," actions show "how"
+- Action type variety enforcement — LLM prompted to distribute across at least 3 of 8 types
+- Dashboard integration — Show 1-2 top actions alongside top matches
 
-- Real-time chat/messaging (creates spam burden, LinkedIn 2.0 problem)
-- Event ticketing/payments (Luma/Eventbrite do this well)
-- Complex event check-in (QR codes, NFC badges)
-- Gamification (badges, streaks)
-- Recurring event management (manual duplication is fine at current scale)
+**Defer (v2+):**
 
-### Architecture Highlights
+- Action-to-match bridging (showing related actions on match detail pages)
+- Opportunities page integration (matches page covers primary use case)
+- Dismissed action resurfacing intelligence (simple regeneration handles this)
+- Detailed step-by-step plans (keeps actions directive, not project management)
 
-**New tables required:**
+**Anti-features (explicitly NOT build):**
 
-1. `events` - Event details, timing, location, status
-2. `eventAttendance` - RSVP status, attendance confirmation, feedback
-3. `engagementLogs` - Activity records (event_attended, profile_updated, etc.)
-4. `memberEngagement` - Computed engagement level per member per org
+- Specific resource links (papers, courses, URLs) — high hallucination risk, creates false dependencies
+- Gamification (points, streaks, badges) — trivializes existential risk work, creates perverse incentives
+- Action deadlines or time estimates — false pressure for self-directed work
+- Social/public sharing — performance pressure, dilutes personal nature
+- Continuous progress bars — actions are discrete (done/not done), not gradual completion
 
-**Key patterns to follow:**
+### Architecture Approach
 
-- LLM scoring pattern from `matching/compute.ts` (Haiku 4.5, tool_use, internal actions)
-- Cron pattern from `crons.ts` (hourly reminders, daily recomputation)
-- Email batch pattern from `emails/batchActions.ts`
+Career actions follow the existing chained-scheduled-action pattern from matching. Action generation runs in parallel with matching (via `ctx.scheduler.runAfter`), reads matches from DB for context, generates 3-5 actions via single Haiku call with forced tool_choice, and saves to dedicated `careerActions` table.
 
-**Anti-patterns to avoid:**
+**Major components:**
 
-- Real-time subscriptions for aggregate CRM views (use pagination + refresh)
-- Storing engagement in profile (coupling; use separate table)
-- Single engagement score across orgs (per-membership, not per-user)
-- Blocking attendance on feedback (separate 1-click confirmation from optional feedback)
+1. **convex/careerActions/** directory — Mirrors `convex/matching/` structure (compute.ts, prompts.ts, mutations.ts, queries.ts, validation.ts). Single Haiku call with forced `generate_career_actions` tool.
+2. **Schema extension** — New `careerActions` table with 5-state machine (suggested → saved|dismissed|in_progress → done). Preserves user state on regeneration (only replace `suggested`, never touch `saved`/`in_progress`/`done`).
+3. **Enrichment integration** — Extend `convex/enrichment/conversation.ts` with optional `seedContext` parameter. Completion flow seeds chat with action title + description, reuses existing extraction/review UI.
+4. **UI components** — `ActionCard.tsx` (violet accent, type badge, status-dependent CTAs), `CareerActionsSection.tsx` (section wrapper), `CompletionFlow.tsx` (done modal with enrichment chat entry).
 
-### Top Pitfalls to Avoid
+**Data flow:** Profile + matches → buildActionGenerationContext() → Haiku tool call → Zod validation (shadow mode) → saveGeneratedActions (preserve user state) → real-time UI update via Convex sync.
 
-1. **Notification fatigue** - Design with batching/digest as default. Implement notification budget (max 3 non-urgent per day). Build granular per-org preferences from start.
+### Critical Pitfalls
 
-2. **Post-event attendance abandonment** - Separate attendance confirmation (1-click "Yes/No") from feedback (optional follow-up). Send within 2-4 hours of event end. Never require feedback before confirming attendance.
+1. **Generic Actions (Fortune Cookies)** — LLM generates vague advice ("Learn more about AI safety") instead of personalized actions. **Prevention:** Feed specific profile details (skills, work history, AI safety interests) into prompt. Include match gaps. Prompt instruction: "Each action MUST reference specific profile elements." Add `profileBasis` field to tool schema forcing LLM to cite which profile data drove each action. Test against 5+ real BAISH profiles before shipping.
 
-3. **CRM dashboard performance explosion** - Do NOT use real-time subscriptions for member lists. Use server-side pagination, denormalized stats documents, fetch full profiles only on member detail click.
+2. **Hallucinated Resources** — LLM invents specific papers, organizations, programs, URLs that don't exist. User follows action, discovers resource is fake, loses trust. **Prevention:** Ban resource names in prompt. "Do NOT reference specific papers, programs, fellowships by name. Describe what the user should LOOK FOR, not specific resources." Grep generated actions for citation patterns (et al., arXiv), program names, URLs and flag for review.
 
-4. **LLM engagement trust collapse** - Make scoring explainable (show input signals). Provide admin override with audit trail. Use engagement "levels" not numeric scores to avoid false precision.
+3. **Destroying User State on Regeneration** — Bulk-replacing all actions (including saved/in-progress ones) when matching refreshes. **Prevention:** `saveGeneratedActions` MUST check status before deleting. Only delete `suggested` actions. Preserve `saved`, `in_progress`, `done` across all regenerations. Unit test this logic explicitly (highest-risk mutation).
 
-5. **Location privacy exposure** - Explicit consent for location-based suggestions. Filter on backend, never expose user location to org admins. Allow opt-out of location-based discovery.
+4. **Completion Flow Corrupts Enrichment Chat** — Starting action-completion chat conflicts with existing profile enrichment conversation. **Prevention:** Check if active enrichment conversation exists before starting completion chat. Warn user: "You have an active conversation. Complete it first or start fresh." For v2, add `conversationType` discriminator to enrichmentMessages.
+
+5. **Action Generation Fails Silently** — Haiku call fails but user sees no feedback (generation is fire-and-forget via scheduler). **Prevention:** Log failures via existing pattern. UI shows "No actions yet — try refreshing" if no actions exist after matching completes. Consider `careerActionsStatus` field on profile (`generating`, `generated`, `failed`) for loading/error UI states.
 
 ## Implications for Roadmap
 
-### Phase 1: Org Discovery Foundation
+Based on research, suggested two-phase structure:
 
-**Rationale:** Events and CRM require discoverable orgs. Foundation must exist first.
-**Delivers:** Searchable org list, geography-based suggestions, invite links
-**Addresses:** Org discovery features from FEATURES.md
-**Avoids:** Location privacy exposure (design consent model)
-**Schema:** Add location, coordinates, description, website to organizations table
+### Phase 1: Generation + Display + Status Tracking
 
-### Phase 2: Events Core
+**Rationale:** Core value delivery without high-complexity enrichment integration. Users see personalized actions, can save/dismiss/track progress. Validates action quality and engagement before investing in completion loop.
 
-**Rationale:** Attendance tracking (Phase 3) requires events to exist
-**Delivers:** Event creation by admins, event listing, RSVP functionality
-**Uses:** Convex scheduler for reminders, date-fns-tz for timezone handling
-**Avoids:** RSVP no-shows (implement waitlist, reminders with easy cancel)
-**Schema:** New events table, eventAttendance table
+**Delivers:**
 
-### Phase 3: Attendance Tracking
+- 3-5 personalized career actions per user
+- Violet-accented cards on matches page
+- Save/dismiss/in-progress/done status tracking
+- Dashboard preview (1-2 top actions)
+- Regeneration alongside match refresh
 
-**Rationale:** Engagement scoring (Phase 4) requires attendance data
-**Delivers:** Post-event "Did you attend?" flow, feedback collection, attendance history on profiles
-**Implements:** Email notifications via Resend (existing pattern)
-**Avoids:** Low completion rate (1-click confirmation, send within 2-4 hours)
+**Features addressed (from FEATURES.md):**
 
-### Phase 4: Notification System
+- Profile-driven generation (table stakes)
+- 3-5 actions per person (table stakes)
+- Generated with matching (table stakes)
+- Action-specific reasoning (table stakes)
+- Save/bookmark/dismiss (table stakes)
+- Mark in-progress/done (table stakes)
+- Violet visual distinction (table stakes)
+- Actions on matches page (table stakes)
+- Actions informed by match gaps (differentiator)
+- Type variety enforcement (differentiator)
+- Dashboard integration (differentiator)
 
-**Rationale:** Events and attendance create notification needs; must batch properly
-**Delivers:** Configurable event reminders, notification preferences UI, batched delivery
-**Avoids:** Notification fatigue (budget, batching, granular preferences)
-**Schema:** Extend notificationPreferences with eventReminders, orgAnnouncements
+**Stack elements (from STACK.md):**
 
-### Phase 5: Engagement Scoring
+- Convex schema extension (`careerActions` table)
+- Haiku 4.5 LLM call (forced tool_choice, Zod validation)
+- Violet OKLCH tokens in app.css
+- ActionCard, CareerActionsSection components
+- Scheduler chaining after matching
 
-**Rationale:** Requires attendance data from Phase 3 to be meaningful
-**Delivers:** LLM-computed engagement levels, admin override capability, engagement signals display
-**Uses:** Claude Haiku 4.5 (same as matching), internal actions pattern
-**Avoids:** Trust collapse (explainable scores, override with audit trail)
-**Schema:** engagementLogs table, memberEngagement table
+**Avoids pitfalls:**
 
-### Phase 6: CRM Dashboard
+- #1 Generic Actions: Profile context + growth areas in prompt, `profileBasis` field required
+- #2 Hallucinated Resources: Ban resource names in system prompt
+- #3 Destroying State: Status-aware deletion in `saveGeneratedActions`
+- #5 Silent Failures: Status field for UI feedback, log errors
 
-**Rationale:** Pulls together all data from previous phases
-**Delivers:** Member directory with engagement, filtering by level, export, org stats
-**Avoids:** Performance explosion (server-side pagination, no real-time aggregates)
-**Implements:** Virtual scrolling for member lists (TanStack Virtual)
+**File plan:**
+
+- Schema: ~35 lines in `convex/schema.ts`
+- Backend: ~545 lines in `convex/careerActions/` (compute, prompts, mutations, queries, validation)
+- Styling: ~20 lines violet tokens in `src/styles/app.css`
+- Components: ~220 lines (ActionCard, CareerActionsSection)
+- Integration: ~15 lines in `convex/matches.ts` + `src/routes/matches/index.tsx`
+
+**Estimated effort:** 5-7 days (schema + generation pipeline + UI + testing)
+
+### Phase 2: Completion Loop (Enrichment Integration)
+
+**Rationale:** The highest-value differentiator. Actions that improve your profile create a virtuous cycle unique to ASTN. Ship after Phase 1 validates action quality with real users — no point building completion flow if actions aren't good.
+
+**Delivers:**
+
+- "Tell us about it" vs "Just mark done" completion paths
+- Action-seeded enrichment chat (short conversation, 2-4 exchanges)
+- Extraction review with action context shown
+- Profile update triggers match + action regeneration
+- Full virtuous cycle: action → profile growth → better matches → new actions
+
+**Features addressed (from FEATURES.md):**
+
+- Completion → enrichment → profile update loop (differentiator, killer feature)
+
+**Uses (from STACK.md):**
+
+- Extend `convex/enrichment/conversation.ts` with `seedContext` parameter
+- Reuse `convex/enrichment/extraction.ts` and review UI
+- Reuse existing enrichment system prompt patterns
+
+**Implements (from ARCHITECTURE.md):**
+
+- CompletionFlow.tsx component (done modal)
+- Enrichment chat seeding with action context
+- Extraction → profile update → regeneration cascade
+
+**Avoids pitfalls:**
+
+- #4 Enrichment Chat Conflict: Check for active conversation before starting completion chat
+- #9 Completion Cascade Waterfall: Don't auto-recompute. Show "Profile updated. Refresh matches to see changes" prompt instead.
+
+**File plan:**
+
+- Component: ~100 lines `CompletionFlow.tsx`
+- Backend: ~15 lines extending `conversation.ts` for seedContext
+- Integration: ~10 lines connecting completion to enrichment
+
+**Estimated effort:** 3-4 days (modal + chat seeding + extraction flow + cascade logic + testing)
 
 ### Phase Ordering Rationale
 
-- **Sequential dependencies**: Org discovery -> Events -> Attendance -> Engagement -> CRM. Each phase produces data the next phase consumes.
-- **Notification system must be designed early** (Phase 4) before multiple notification sources (events, reminders, attendance prompts) create fatigue.
-- **Engagement scoring waits for attendance data** to avoid computing meaningless scores.
-- **CRM dashboard comes last** because it aggregates data from all other features.
+- **Why Generation first:** Core value is personalized actions. Completion loop adds marginal value if the actions themselves aren't good. Ship generation + display to validate quality and engagement with real BAISH users before investing in completion infrastructure.
+- **Why Status tracking in Phase 1:** Save/dismiss/in-progress/done are fundamental to action UX. Without state tracking, actions feel ephemeral and users can't curate them. This is table-stakes, not a Phase 2 add-on.
+- **Why Completion second:** Touches 3 major systems (actions, enrichment, matching) and requires careful state management. Deferring it allows Phase 1 to validate the action taxonomy, prompt quality, and UI patterns before building the most complex integration.
+- **Dependency structure:** Phase 2 depends on Phase 1 (can't complete actions that don't exist). Phase 1 stands alone as valuable feature. Clear critical path.
 
 ### Research Flags
 
-**Phases needing deeper research during planning:**
-
-- **Phase 4 (Notifications)**: Need to finalize notification budget rules, batching windows, preference schema details
-- **Phase 5 (Engagement)**: Need to refine LLM prompt for engagement scoring, decide engagement level thresholds
-
 **Phases with standard patterns (skip research-phase):**
 
-- **Phase 1 (Org Discovery)**: Standard search + location patterns, well-documented
-- **Phase 2 (Events Core)**: Common event CRUD, many examples
-- **Phase 3 (Attendance)**: Simple confirmation flow, existing email patterns
-- **Phase 6 (CRM Dashboard)**: Extends existing admin patterns, pagination well-documented
+- **Phase 1:** Well-documented. Reuses existing matching pipeline scheduler pattern, enrichment prompt patterns, match card UI patterns. All patterns exist in codebase. Research provided taxonomy (8 action types), prompt strategy (forced tool use, profile grounding), and state machine (5 states, 8 transitions).
+- **Phase 2:** Well-documented. Reuses existing enrichment infrastructure (`conversation.ts`, `extraction.ts`, review UI). Research identified the key risk (conversation conflict) and mitigation (status check before starting). Completion → extraction → profile update is all existing code paths.
+
+**No phases need deeper research during planning.** This is a feature built entirely on existing infrastructure with well-understood patterns. The research has already covered the full scope.
 
 ## Confidence Assessment
 
-| Area         | Confidence  | Notes                                                                        |
-| ------------ | ----------- | ---------------------------------------------------------------------------- |
-| Stack        | HIGH        | Zero new deps; all patterns verified against existing codebase               |
-| Features     | MEDIUM-HIGH | Table stakes clear; differentiators validated against Oxford OAISI reference |
-| Architecture | HIGH        | Builds on proven Convex patterns; schema extensions straightforward          |
-| Pitfalls     | MEDIUM-HIGH | Industry patterns well-documented; Convex-specific warnings verified         |
+| Area         | Confidence | Notes                                                                                                                                                                                                                                         |
+| ------------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stack        | HIGH       | Verified all dependencies exist in node_modules. No new installs required. OKLCH pattern matches existing coral/teal.                                                                                                                         |
+| Features     | HIGH       | Taxonomy derived from 80K Hours, SPAR, AI Safety Camp, EA Forum post. Table stakes identified via matching pipeline analogy. Differentiators grounded in ASTN's unique profile enrichment system.                                             |
+| Architecture | HIGH       | Direct codebase analysis of matching pipeline, enrichment system, schema patterns. All proposed patterns exist in current code. File line counts based on existing analogues.                                                                 |
+| Pitfalls     | HIGH       | Critical pitfalls (#1-#3) identified from existing matching/enrichment behavior patterns. LLM hallucination risks well-documented in AI safety community. State preservation logic is the highest-risk area and flagged for explicit testing. |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Notification frequency defaults**: Need user testing to find optimal defaults for event reminders
-- **Engagement level thresholds**: "Highly engaged = 3+ events" is arbitrary; may need adjustment per org
-- **Privacy consent UX**: Location consent flow needs design; research provides principles, not specifics
-
-## Open Questions for Requirements
-
-1. **Should engagement scores be visible to members?** Research suggests admin-only, but AI safety community values transparency.
-2. **What's the maximum notification frequency users will tolerate?** Start conservative (weekly digest) or aggressive (every event)?
-3. **Should invite links require admin approval for new members?** Some orgs want gatekeeping, others want open access.
-4. **How granular should event type filtering be?** Start with broad categories or let orgs define custom types?
+- **Violet hue selection:** OKLCH hue 290 is a design recommendation, not a technical requirement. Should be validated visually during implementation. Dark mode violet values (lightness 0.72) follow coral pattern but need visual QA on actual dark backgrounds.
+- **Action quality evaluation:** The 8-type taxonomy is derived from career pathway research, but actual LLM output quality can only be validated with real BAISH profiles. Plan to test against 5+ diverse profiles before shipping Phase 1.
+- **Growth areas overlap:** Research identifies potential redundancy between existing "Growth Areas" section and new career actions. Mitigation is to feed growth areas into action generation and update growth areas copy to reference actions. May discover during implementation that growth areas should be removed entirely — defer this decision until seeing both features side-by-side.
+- **Completion cascade timing:** Pitfall #9 recommends NOT auto-recomputing on action completion (show prompt instead). This is a UX recommendation that should be validated with user behavior. If users consistently forget to manually refresh, may need to revisit the auto-trigger decision.
 
 ## Sources
 
 ### Primary (HIGH confidence)
 
-- ASTN codebase (package.json, schema.ts, matching/compute.ts, crons.ts)
-- Convex documentation on scheduled functions, cron jobs, search indexes
-- date-fns and date-fns-tz documentation
+- Existing ASTN codebase: `convex/matching/compute.ts`, `convex/matching/prompts.ts`, `convex/enrichment/conversation.ts`, `convex/schema.ts`, `src/styles/app.css`, `src/components/matches/MatchCard.tsx` — Implementation patterns, schema patterns, UI patterns, OKLCH color system
+- [Stop Applying And Get To Work — EA Forum](https://forum.effectivealtruism.org/posts/NfDbPsFmaXqajQP4J/stop-applying-and-get-to-work) — Feature inspiration, action philosophy, self-directed project validation
+- [AI Safety Technical Research Career Review — 80,000 Hours](https://80000hours.org/career-reviews/ai-safety-researcher/) — Action type taxonomy, hiring signals (DeepMind: "if you can reproduce a typical ML paper in a few hundred hours, we're interested")
+- [Technical AI Safety Upskilling Resources — 80,000 Hours](https://80000hours.org/2025/06/technical-ai-safety-upskilling-resources/) — Self-directed project types, program references (ARENA, SPAR, AI Safety Camp)
+- Package versions verified from installed `node_modules/` — Convex 1.31.7, Anthropic SDK 0.71.2, shadcn/ui components
 
 ### Secondary (MEDIUM confidence)
 
-- iMIS, Association Analytics, Rhythm Software on engagement scoring models
-- EventX, vFairs, Qualtrics on event attendance tracking
-- Typeform on post-event survey timing (42% higher response within 2 hours)
-- MagicBell, Courier.com on notification fatigue patterns
+- [An Outsider's Roadmap into AI Safety Research 2025 — LessWrong](https://www.lesswrong.com/posts/bcuzjKmNZHWDuEwBz/an-outsider-s-roadmap-into-ai-safety-research-2025) — Career pathway patterns
+- [SPAR — Research Program for AI Risks](https://sparai.org/) — Collaboration model (3-month mentor pairings)
+- [AI Safety Camp](https://www.aisafety.camp/) — Project-based entry patterns
+- [AI Safety and Governance Career Paths — Probably Good](https://probablygood.org/career-profiles/ai-safety-governance/) — Governance action types
+- [shadcn/ui Progress component docs](https://ui.shadcn.com/docs/components/radix/progress) — Confirmed Radix dependency, informed decision against continuous progress bar
 
-### Tertiary (validation needed)
+### Tertiary (LOW confidence, informational only)
 
-- Engagement level thresholds (3+ events = highly engaged) - needs org-specific tuning
-- Notification budget (max 3/day) - needs user testing
+- [Dynamic Career Path Recommendation System (Jiang, 2025)](https://journals.sagepub.com/doi/abs/10.1177/14727978241313261) — Academic reference for career recommendation systems
+- [Personalized Career Pathway: Hybrid ML Approach](https://www.researchgate.net/publication/388618425_PERSONALIZED_CAREER_PATHWAY_A_HYBRID_MACHINE_LEARNING_APPROACH_FOR_DYNAMIC_RECOMMENDATIONS) — Recommendation system patterns
 
 ---
 
-_Research completed: 2026-01-19_
+_Research completed: 2026-02-10_
 _Ready for roadmap: yes_
