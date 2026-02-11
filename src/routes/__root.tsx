@@ -5,6 +5,7 @@ import {
   createRootRouteWithContext,
 } from '@tanstack/react-router'
 import * as React from 'react'
+import formbricks from '@formbricks/js'
 import { Toaster } from 'sonner'
 
 // Font preloads for FOIT/FOUT prevention
@@ -147,6 +148,13 @@ export const Route = createRootRouteWithContext<{
   notFoundComponent: () => <div>Route not found</div>,
   component: RootComponent,
 })
+
+if (typeof window !== 'undefined') {
+  formbricks.setup({
+    environmentId: 'cmli71lmhal0dy401ma6s3lbm',
+    appUrl: 'https://app.formbricks.com',
+  })
+}
 
 function RootComponent() {
   return (

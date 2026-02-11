@@ -1,3 +1,4 @@
+import formbricks from '@formbricks/js'
 import { Link, createFileRoute } from '@tanstack/react-router'
 import {
   AuthLoading,
@@ -6,7 +7,20 @@ import {
   useMutation,
   useQuery,
 } from 'convex/react'
-import { Bookmark, Calendar, MapPin, Settings, Sparkles } from 'lucide-react'
+import {
+  ArrowRight,
+  Bookmark,
+  Building2,
+  Calendar,
+  FileText,
+  MapPin,
+  MessageCircleHeart,
+  MessageSquare,
+  Settings,
+  Sparkles,
+  Target,
+  Zap,
+} from 'lucide-react'
 import { api } from '../../convex/_generated/api'
 import { ActionCard } from '~/components/actions/ActionCard'
 import { AnimatedCard } from '~/components/animation/AnimatedCard'
@@ -18,6 +32,7 @@ import { EventCard } from '~/components/events/EventCard'
 import { MatchCard } from '~/components/matches/MatchCard'
 import { OrgCarousel } from '~/components/org/OrgCarousel'
 import { useIsMobile } from '~/hooks/use-media-query'
+import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Card } from '~/components/ui/card'
 import { Spinner } from '~/components/ui/spinner'
@@ -70,23 +85,131 @@ function Home() {
 }
 
 function LandingPage() {
+  const features = [
+    {
+      icon: MessageSquare,
+      title: 'AI Profile Enrichment',
+      description:
+        'Conversational AI that understands your background and goals',
+    },
+    {
+      icon: FileText,
+      title: 'Resume Upload',
+      description: 'Upload your CV and auto-populate your profile',
+    },
+    {
+      icon: Target,
+      title: 'Smart Matching',
+      description:
+        'Get matched to relevant roles from across the AI safety ecosystem',
+    },
+    {
+      icon: Sparkles,
+      title: 'Match Explanations',
+      description: 'See your strengths, gaps, and probability for each role',
+    },
+    {
+      icon: Zap,
+      title: 'Career Actions',
+      description: 'Personalized next steps tailored to your goals',
+    },
+    {
+      icon: Building2,
+      title: 'Organizations & Events',
+      description:
+        'Discover AI safety orgs, join events, connect with community',
+    },
+  ]
+
   return (
-    <main className="container mx-auto px-4 py-16">
-      <div className="max-w-2xl mx-auto text-center">
-        <h1 className="text-4xl font-display font-semibold text-foreground mb-4 tracking-tight">
+    <main className="container mx-auto px-4 py-12 md:py-16">
+      {/* Hero */}
+      <section className="max-w-3xl mx-auto text-center mb-16 md:mb-20">
+        <Badge variant="secondary" className="mb-4">
+          Prototype
+        </Badge>
+        <h1 className="text-4xl md:text-5xl font-display font-semibold text-foreground mb-4 tracking-tight">
           AI Safety Talent Network
         </h1>
-        <p className="text-lg text-muted-foreground mb-8">
-          Find opportunities in AI safety research, policy, and engineering.
+        <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+          Your career command center for AI safety. Get matched to opportunities
+          and receive AI-powered career guidance — all in one place.
+        </p>
+        <div className="flex items-center justify-center gap-3">
+          <Button
+            asChild
+            size="lg"
+            className="transition-transform hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <Link to="/login">
+              Get Started
+              <ArrowRight className="ml-2 size-4" />
+            </Link>
+          </Button>
+          <Button asChild variant="ghost" size="lg">
+            <a href="#about">Learn more</a>
+          </Button>
+        </div>
+      </section>
+
+      {/* What is ASTN */}
+      <section
+        id="about"
+        className="max-w-3xl mx-auto text-center mb-16 md:mb-20"
+      >
+        <h2 className="text-2xl font-display font-semibold text-foreground mb-4">
+          What is ASTN?
+        </h2>
+        <p className="text-muted-foreground leading-relaxed">
+          ASTN is a matching platform for AI safety talent. Build your profile
+          through AI-powered conversations, get matched to open roles, and
+          receive personalized career actions to close your skill gaps. Started
+          as a pilot for BAISH (Buenos Aires AI Safety Hub), ASTN is designed to
+          connect the right people with the right opportunities in AI safety.
+        </p>
+      </section>
+
+      {/* What's Built */}
+      <section className="max-w-4xl mx-auto mb-16 md:mb-20">
+        <h2 className="text-2xl font-display font-semibold text-foreground text-center mb-8">
+          What's Built
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {features.map((feature, index) => (
+            <AnimatedCard key={feature.title} index={index}>
+              <FeatureCard
+                icon={feature.icon}
+                title={feature.title}
+                description={feature.description}
+              />
+            </AnimatedCard>
+          ))}
+        </div>
+      </section>
+
+      {/* Feedback CTA */}
+      <section className="max-w-3xl mx-auto text-center pb-8">
+        <div className="flex items-center justify-center mb-4">
+          <div className="size-12 rounded-full bg-coral-100 flex items-center justify-center">
+            <MessageCircleHeart className="size-6 text-coral-600" />
+          </div>
+        </div>
+        <h2 className="text-2xl font-display font-semibold text-foreground mb-2">
+          Help us improve
+        </h2>
+        <p className="text-muted-foreground mb-6">
+          ASTN is an early prototype. Your feedback shapes what we build next.
         </p>
         <Button
-          asChild
+          variant="outline"
           size="lg"
           className="transition-transform hover:scale-[1.02] active:scale-[0.98]"
+          onClick={() => formbricks.track('feedback_clicked')}
         >
-          <Link to="/opportunities">Browse Opportunities</Link>
+          Share Feedback
+          <ArrowRight className="ml-2 size-4" />
         </Button>
-      </div>
+      </section>
     </main>
   )
 }
@@ -382,6 +505,30 @@ function EventsEmptyState() {
       <Button asChild variant="outline" size="sm">
         <Link to="/orgs">Browse Organizations</Link>
       </Button>
+    </Card>
+  )
+}
+
+function FeatureCard({
+  icon: Icon,
+  title,
+  description,
+}: {
+  icon: React.ComponentType<{ className?: string }>
+  title: string
+  description: string
+}) {
+  return (
+    <Card className="p-5 flex items-start gap-4">
+      <div className="size-10 rounded-full bg-coral-100 flex items-center justify-center shrink-0">
+        <Icon className="size-5 text-coral-600" />
+      </div>
+      <div>
+        <h3 className="font-display font-medium text-foreground mb-1">
+          {title}
+        </h3>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </div>
     </Card>
   )
 }
