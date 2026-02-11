@@ -9,7 +9,7 @@
 - **v2.0 Mobile + Tauri** - Phases 21-23, 26 complete; Phase 25 deferred
 - **v1.4 Hardening** - Phases 27-29 (shipped 2026-02-02) — [details](milestones/v1.4-ROADMAP.md)
 - **v1.5 Org Onboarding & Co-working** - Phases 30-34 (shipped 2026-02-03) — [details](milestones/v1.5-ROADMAP.md)
-- **v1.6 Career Actions** - Phases 35-36 (in progress)
+- 🚧 **v1.6 Career Actions** - Phases 35-36 (in progress)
 
 ## Current
 
@@ -19,7 +19,7 @@ Add LLM-generated personalized career actions -- self-directed things a person c
 
 | Phase                                   | Goal                                                  | Plans | Requirements                                                  |
 | --------------------------------------- | ----------------------------------------------------- | ----- | ------------------------------------------------------------- |
-| 35 - Generation, Display & Interactions | Users see personalized career actions and manage them | TBD   | 17 (GEN-01 to GEN-07, DISP-01 to DISP-05, ACTN-01 to ACTN-05) |
+| 35 - Generation, Display & Interactions | Users see personalized career actions and manage them | 3     | 17 (GEN-01 to GEN-07, DISP-01 to DISP-05, ACTN-01 to ACTN-05) |
 | 36 - Completion Loop                    | Done actions feed back into profile enrichment        | TBD   | 4 (COMP-01 to COMP-04)                                        |
 
 ### Phase 35: Generation, Display & Interactions
@@ -38,7 +38,13 @@ Add LLM-generated personalized career actions -- self-directed things a person c
 4. Refreshing matches regenerates actions while preserving any actions the user has saved, marked in-progress, or marked done
 5. 1-2 top actions appear as preview cards on the dashboard alongside top matches
 
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans:
+
+- [ ] 35-01-PLAN.md -- Schema, queries & mutations (data layer foundation)
+- [ ] 35-02-PLAN.md -- LLM generation pipeline (prompts, compute, trigger wiring)
+- [ ] 35-03-PLAN.md -- Frontend components & page integration (ActionCard, sections, matches page, dashboard)
 
 ### Phase 36: Completion Loop
 
@@ -61,10 +67,10 @@ Add LLM-generated personalized career actions -- self-directed things a person c
 
 | Phase                                  | Plans Complete | Status      | Completed |
 | -------------------------------------- | -------------- | ----------- | --------- |
-| 35. Generation, Display & Interactions | 0/TBD          | Not started | -         |
+| 35. Generation, Display & Interactions | 0/3            | Not started | -         |
 | 36. Completion Loop                    | 0/TBD          | Not started | -         |
 
 ---
 
 _Roadmap created: 2026-01-20_
-_Last updated: 2026-02-10 -- v1.6 Career Actions roadmap added (Phases 35-36)_
+_Last updated: 2026-02-10 -- Phase 35 planned (3 plans in 2 waves)_
