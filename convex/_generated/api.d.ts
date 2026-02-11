@@ -47,6 +47,7 @@ import type * as extraction_queries from "../extraction/queries.js";
 import type * as extraction_skills from "../extraction/skills.js";
 import type * as extraction_text from "../extraction/text.js";
 import type * as extraction_validation from "../extraction/validation.js";
+import type * as feedback from "../feedback.js";
 import type * as guestBookings from "../guestBookings.js";
 import type * as guestProfiles from "../guestProfiles.js";
 import type * as http from "../http.js";
@@ -130,6 +131,7 @@ declare const fullApi: ApiFromModules<{
   "extraction/skills": typeof extraction_skills;
   "extraction/text": typeof extraction_text;
   "extraction/validation": typeof extraction_validation;
+  feedback: typeof feedback;
   guestBookings: typeof guestBookings;
   guestProfiles: typeof guestProfiles;
   http: typeof http;

@@ -144,9 +144,6 @@ function LandingPage() {
               <ArrowRight className="ml-2 size-4" />
             </Link>
           </Button>
-          <Button asChild variant="ghost" size="lg">
-            <a href="#about">Learn more</a>
-          </Button>
         </div>
       </section>
 

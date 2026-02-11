@@ -5,9 +5,7 @@ import {
   createRootRouteWithContext,
 } from '@tanstack/react-router'
 import * as React from 'react'
-import { MessageCircleHeart } from 'lucide-react'
 import { Toaster } from 'sonner'
-import formbricks from '@formbricks/js'
 
 // Font preloads for FOIT/FOUT prevention
 import plusJakartaWoff2 from '@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2?url'
@@ -16,6 +14,7 @@ import type { QueryClient } from '@tanstack/react-query'
 
 import appCss from '~/styles/app.css?url'
 import { ThemeProvider } from '~/components/theme/theme-provider'
+import { FeedbackDialog } from '~/components/feedback-dialog'
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
@@ -150,47 +149,15 @@ export const Route = createRootRouteWithContext<{
   component: RootComponent,
 })
 
-const FORMBRICKS_ENV_ID = import.meta.env.VITE_FORMBRICKS_ENV_ID
-const FEEDBACK_FALLBACK_URL =
-  'https://app.formbricks.com/s/cmli7c5fp97v9wv01rlya9has'
-
 function RootComponent() {
-  const formbricksReady = React.useRef(false)
-
-  React.useEffect(() => {
-    if (!FORMBRICKS_ENV_ID) return
-    formbricks
-      .setup({
-        environmentId: FORMBRICKS_ENV_ID,
-        appUrl: 'https://app.formbricks.com',
-      })
-      .then(() => {
-        formbricksReady.current = true
-      })
-  }, [])
-
   return (
-    <RootDocument formbricksReady={formbricksReady}>
+    <RootDocument>
       <Outlet />
     </RootDocument>
   )
 }
 
-function RootDocument({
-  children,
-  formbricksReady,
-}: {
-  children: React.ReactNode
-  formbricksReady: React.RefObject<boolean>
-}) {
-  const handleFeedback = React.useCallback(() => {
-    if (formbricksReady.current) {
-      formbricks.track('feedback_clicked')
-    } else {
-      window.open(FEEDBACK_FALLBACK_URL, '_blank', 'noopener,noreferrer')
-    }
-  }, [formbricksReady])
-
+function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="light">
       <head>
@@ -200,14 +167,7 @@ function RootDocument({
         <ThemeProvider>
           {children}
           <Toaster position="top-right" richColors />
-          <button
-            type="button"
-            onClick={handleFeedback}
-            className="fixed bottom-5 right-5 z-50 flex size-12 items-center justify-center rounded-full bg-coral-500 text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
-            aria-label="Share feedback"
-          >
-            <MessageCircleHeart className="size-5" />
-          </button>
+          <FeedbackDialog />
         </ThemeProvider>
         {/* Leaflet JS for map component - loaded in body for global L */}
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" />
