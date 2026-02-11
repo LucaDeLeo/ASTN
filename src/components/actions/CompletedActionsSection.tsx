@@ -24,6 +24,7 @@ interface CompletedActionsSectionProps {
     rationale: string
     status: 'active' | 'saved' | 'dismissed' | 'in_progress' | 'done'
     completedAt?: number
+    completionConversationStarted?: boolean
   }>
   totalCount: number
 }

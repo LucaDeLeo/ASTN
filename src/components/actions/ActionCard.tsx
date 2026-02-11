@@ -8,6 +8,7 @@ import {
   Play,
   Rocket,
   Search,
+  Sparkles,
   Users,
   Wrench,
   X,
@@ -38,6 +39,7 @@ interface ActionCardProps {
     rationale: string
     status: 'active' | 'saved' | 'dismissed' | 'in_progress' | 'done'
     completedAt?: number
+    completionConversationStarted?: boolean
   }
   onSave?: () => void
   onDismiss?: () => void
@@ -97,6 +99,7 @@ export function ActionCard({
       <StatusButtons
         status={action.status}
         completedAt={action.completedAt}
+        completionConversationStarted={action.completionConversationStarted}
         onStart={onStart}
         onComplete={onComplete}
         onUnsave={onUnsave}
@@ -156,6 +159,7 @@ function HoverActions({
 function StatusButtons({
   status,
   completedAt,
+  completionConversationStarted,
   onStart,
   onComplete,
   onUnsave,
@@ -163,6 +167,7 @@ function StatusButtons({
 }: {
   status: string
   completedAt?: number
+  completionConversationStarted?: boolean
   onStart?: () => void
   onComplete?: () => void
   onUnsave?: () => void
@@ -236,6 +241,12 @@ function StatusButtons({
             <span className="text-xs">
               {new Date(completedAt).toLocaleDateString()}
             </span>
+          )}
+          {completionConversationStarted && (
+            <Badge className="ml-auto bg-violet-100 text-violet-700 border-violet-200 text-xs">
+              <Sparkles className="size-3" />
+              Enriched
+            </Badge>
           )}
         </div>
       )
