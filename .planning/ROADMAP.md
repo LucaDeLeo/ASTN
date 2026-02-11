@@ -20,7 +20,7 @@ Add LLM-generated personalized career actions -- self-directed things a person c
 | Phase                                   | Goal                                                  | Plans | Requirements                                                  |
 | --------------------------------------- | ----------------------------------------------------- | ----- | ------------------------------------------------------------- |
 | 35 - Generation, Display & Interactions | Users see personalized career actions and manage them | 3     | 17 (GEN-01 to GEN-07, DISP-01 to DISP-05, ACTN-01 to ACTN-05) |
-| 36 - Completion Loop                    | Done actions feed back into profile enrichment        | TBD   | 4 (COMP-01 to COMP-04)                                        |
+| 36 - Completion Loop                    | Done actions feed back into profile enrichment        | 2     | 4 (COMP-01 to COMP-04)                                        |
 
 ### Phase 35: Generation, Display & Interactions
 
@@ -61,16 +61,23 @@ Plans:
 3. Extracted profile updates from the completion chat go through the existing review UI where the user approves changes before they apply
 4. After profile updates are applied, user is prompted to refresh matches, which regenerates both matches and actions reflecting the updated profile
 
+**Plans:** 2 plans
+
+Plans:
+
+- [x] 36-01-PLAN.md -- Backend: schema extension, completion chat action, mutations
+- [x] 36-02-PLAN.md -- Frontend: CompletionChoiceDialog, CompletionEnrichmentDialog, section wiring
+
 ## Progress
 
 **Execution Order:** 35 -> 36
 
-| Phase                                  | Plans Complete | Status      | Completed  |
-| -------------------------------------- | -------------- | ----------- | ---------- |
-| 35. Generation, Display & Interactions | 3/3            | Complete    | 2026-02-11 |
-| 36. Completion Loop                    | 0/TBD          | Not started | -          |
+| Phase                                  | Plans Complete | Status   | Completed  |
+| -------------------------------------- | -------------- | -------- | ---------- |
+| 35. Generation, Display & Interactions | 3/3            | Complete | 2026-02-11 |
+| 36. Completion Loop                    | 2/2            | Complete | 2026-02-11 |
 
 ---
 
 _Roadmap created: 2026-01-20_
-_Last updated: 2026-02-11 -- Phase 35 complete (3/3 plans executed)_
+_Last updated: 2026-02-11 -- Phase 36 complete (2/2 plans)_
