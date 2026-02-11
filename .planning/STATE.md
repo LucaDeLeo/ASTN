@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** v1.6 Career Actions -- Phase 35 planned, ready to execute
+**Current focus:** v1.6 Career Actions -- Phase 35 executing
 
 ## Current Position
 
 Phase: 35 of 36 (Generation, Display & Interactions)
-Plan: 3 plans in 2 waves
-Status: Planned — ready to execute
-Last activity: 2026-02-10 -- Phase 35 planned (3 plans, 2 waves)
+Plan: 1 of 3 complete
+Status: Executing
+Last activity: 2026-02-11 -- Plan 01 (data layer) complete
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [███░░░░░░░] 33%
 
 ## Milestone History
 
@@ -30,14 +30,19 @@ Progress: [░░░░░░░░░░] 0%
 
 ## Accumulated Decisions
 
-No v1.6 decisions yet. See PROJECT.md Key Decisions for v1.0-v1.5 history.
+- 35-01: Used verifyActionOwnership helper to DRY ownership checks across 5 public mutations
+- 35-01: Cleared stale prototype data from careerActions table before schema push
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 104
+- Total plans completed: 105
 - Total execution time: ~21.5 hours (across all milestones)
+
+| Phase | Plan | Duration | Tasks | Files |
+| ----- | ---- | -------- | ----- | ----- |
+| 35    | 01   | 4min     | 2     | 4     |
 
 ## Pending Todos
 
@@ -53,12 +58,12 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-10
-Stopped at: Phase 35 planned
+Last session: 2026-02-11
+Stopped at: Completed 35-01-PLAN.md
 Resume file: None
-Next action: Execute Phase 35
+Next action: Execute 35-02-PLAN.md (LLM generation pipeline)
 
 ---
 
 _State initialized: 2026-01-17_
-_Last updated: 2026-02-10 -- Phase 35 planned (3 plans, 2 waves)_
+_Last updated: 2026-02-11 -- Plan 35-01 complete (data layer)_
