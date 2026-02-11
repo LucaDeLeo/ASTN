@@ -75,6 +75,20 @@ export const getExistingMatches = internalQuery({
   },
 })
 
+// Get opportunities by IDs (for snapshot-based batch processing)
+export const getOpportunitiesByIds = internalQuery({
+  args: { ids: v.array(v.id('opportunities')) },
+  handler: async (ctx, { ids }) => {
+    const results = await Promise.all(
+      ids.map((id) => ctx.db.get('opportunities', id)),
+    )
+    return results.filter(
+      (opp): opp is NonNullable<typeof opp> =>
+        opp !== null && opp.status === 'active',
+    )
+  },
+})
+
 // Get profile by userId (for public query to find profile)
 export const getProfileByUserId = internalQuery({
   args: { userId: v.string() },

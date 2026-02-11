@@ -8,7 +8,7 @@ import {
 } from 'convex/react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
-import { RefreshCw, Sparkles, User } from 'lucide-react'
+import { AlertTriangle, RefreshCw, Sparkles, User } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import { OnboardingGuard } from '~/components/auth/onboarding-guard'
@@ -135,6 +135,10 @@ function MatchesContent() {
   const markViewed = useAction(api.matches.markMatchesViewed)
   const [isComputing, setIsComputing] = useState(false)
   const [computeError, setComputeError] = useState<string | null>(null)
+  // Track the computedAt value when refresh was triggered to detect when fresh results arrive
+  const [waitingForComputedAt, setWaitingForComputedAt] = useState<
+    number | null
+  >(null)
 
   // Mark matches as viewed on mount
   useEffect(() => {
@@ -150,16 +154,47 @@ function MatchesContent() {
   const handleCompute = async () => {
     setIsComputing(true)
     setComputeError(null)
+    // Remember current computedAt - we'll clear loading when it changes
+    setWaitingForComputedAt(matchesData?.computedAt ?? -1)
     try {
       await triggerComputation()
+      // Don't clear isComputing here - wait for matches to actually update
     } catch (err) {
       setComputeError(
         err instanceof Error ? err.message : 'Failed to compute matches',
       )
-    } finally {
       setIsComputing(false)
+      setWaitingForComputedAt(null)
     }
   }
+
+  // Clear computing state when fresh matches arrive (computedAt changes)
+  useEffect(() => {
+    if (
+      waitingForComputedAt !== null &&
+      matchesData &&
+      !matchesData.needsComputation &&
+      matchesData.computedAt != null &&
+      matchesData.computedAt !== waitingForComputedAt
+    ) {
+      setIsComputing(false)
+      setWaitingForComputedAt(null)
+    }
+  }, [
+    matchesData?.computedAt,
+    waitingForComputedAt,
+    matchesData?.needsComputation,
+  ])
+
+  // Safety timeout - if matches don't update within 90s, stop loading
+  useEffect(() => {
+    if (waitingForComputedAt === null) return
+    const timer = setTimeout(() => {
+      setIsComputing(false)
+      setWaitingForComputedAt(null)
+    }, 90_000)
+    return () => clearTimeout(timer)
+  }, [waitingForComputedAt])
 
   // Auto-trigger computation if needed (ref prevents runaway re-triggers)
   const hasAutoTriggered = useRef(false)
@@ -244,7 +279,7 @@ function MatchesContent() {
     )
   }
 
-  const { matches, savedMatches, computedAt } = matchesData
+  const { matches, savedMatches, computedAt, matchesStaleAt } = matchesData
   const hasMatches =
     matches.great.length + matches.good.length + matches.exploring.length > 0
   const hasSavedMatches = savedMatches.length > 0
@@ -277,6 +312,26 @@ function MatchesContent() {
             Refresh Matches
           </Button>
         </div>
+
+        {/* Staleness banner */}
+        {matchesStaleAt && (
+          <div className="mb-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900 dark:bg-amber-950">
+            <AlertTriangle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <p className="flex-1 text-sm text-amber-800 dark:text-amber-200">
+              Your profile has changed since these matches were computed.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCompute}
+              disabled={isComputing}
+              className="shrink-0"
+            >
+              <RefreshCw className="size-3 mr-1.5" />
+              Refresh
+            </Button>
+          </div>
+        )}
 
         <PullToRefresh
           onRefresh={handleCompute}

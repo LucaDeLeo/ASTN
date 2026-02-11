@@ -29,89 +29,6 @@ const matchResultValidator = v.object({
   ),
 })
 
-// Growth area validator for batch results
-const growthAreaValidator = v.object({
-  theme: v.string(),
-  items: v.array(v.string()),
-})
-
-// Save batch of matches for a profile
-export const saveMatches = internalMutation({
-  args: {
-    profileId: v.id('profiles'),
-    matches: v.array(matchResultValidator),
-    modelVersion: v.string(),
-  },
-  handler: async (ctx, { profileId, matches, modelVersion }) => {
-    const now = Date.now()
-
-    // Get existing match opportunity IDs to determine which are "new"
-    const existingMatches = await ctx.db
-      .query('matches')
-      .withIndex('by_profile', (q) => q.eq('profileId', profileId))
-      .collect()
-
-    const existingOppIds = new Set(existingMatches.map((m) => m.opportunityId))
-
-    // Delete old matches for this profile
-    for (const match of existingMatches) {
-      await ctx.db.delete('matches', match._id)
-    }
-
-    // Insert new matches
-    for (const match of matches) {
-      const isNew = !existingOppIds.has(match.opportunityId)
-
-      await ctx.db.insert('matches', {
-        profileId,
-        opportunityId: match.opportunityId,
-        tier: match.tier,
-        score: match.score,
-        explanation: {
-          strengths: match.strengths,
-          ...(match.gap != null && { gap: match.gap }),
-        },
-        probability: {
-          interviewChance: match.interviewChance,
-          ranking: match.ranking,
-          confidence: match.confidence,
-        },
-        recommendations: match.recommendations,
-        isNew,
-        computedAt: now,
-        modelVersion,
-      })
-    }
-
-    return { savedCount: matches.length }
-  },
-})
-
-// Deduplicate growth areas accumulated across multiple matching batches.
-function deduplicateGrowthAreas(
-  areas: Array<{ theme: string; items: Array<string> }>,
-): Array<{ theme: string; items: Array<string> }> {
-  const themeMap = new Map<string, Map<string, number>>()
-  for (const area of areas) {
-    const normalizedTheme = area.theme.toLowerCase().trim()
-    if (!themeMap.has(normalizedTheme)) {
-      themeMap.set(normalizedTheme, new Map())
-    }
-    const itemMap = themeMap.get(normalizedTheme)!
-    for (const item of area.items) {
-      const normalizedItem = item.toLowerCase().trim()
-      itemMap.set(normalizedItem, (itemMap.get(normalizedItem) || 0) + 1)
-    }
-  }
-  return Array.from(themeMap.entries()).map(([theme, items]) => ({
-    theme: theme.charAt(0).toUpperCase() + theme.slice(1),
-    items: Array.from(items.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10)
-      .map(([item]) => item.charAt(0).toUpperCase() + item.slice(1)),
-  }))
-}
-
 // Save a single batch of match results incrementally (chained action architecture)
 export const saveBatchResults = internalMutation({
   args: {
@@ -121,7 +38,6 @@ export const saveBatchResults = internalMutation({
     modelVersion: v.string(),
     isLastBatch: v.boolean(),
     previousOppIds: v.array(v.string()),
-    accumulatedGrowthAreas: v.array(growthAreaValidator),
     runTimestamp: v.number(),
   },
   handler: async (
@@ -133,7 +49,6 @@ export const saveBatchResults = internalMutation({
       modelVersion,
       isLastBatch,
       previousOppIds,
-      accumulatedGrowthAreas,
       runTimestamp,
     },
   ) => {
@@ -142,33 +57,37 @@ export const saveBatchResults = internalMutation({
       .withIndex('by_profile', (q) => q.eq('profileId', profileId))
       .collect()
 
-    if (batchIndex > 0) {
-      const alreadySaved = existingMatches.some(
-        (m) => m.computedAt === runTimestamp,
-      )
-      if (!alreadySaved) {
-        log('warn', 'saveBatchResults: no prior batch matches found', {
-          batchIndex,
-          profileId,
-        })
-      }
-    }
-
-    if (batchIndex === 0) {
-      for (const match of existingMatches) {
-        await ctx.db.delete('matches', match._id)
-      }
-    }
+    // Build lookup of existing matches by opportunityId for status preservation
+    const existingByOppId = new Map(
+      existingMatches.map((m) => [m.opportunityId, m]),
+    )
 
     const previousOppSet = new Set(previousOppIds)
 
+    // Per-match replacement with status preservation
     for (const match of matches) {
+      const existing = existingByOppId.get(match.opportunityId)
       const isNew = !previousOppSet.has(match.opportunityId)
+
+      // Preserve saved/dismissed status from old match
+      const preservedStatus =
+        existing &&
+        existing.computedAt !== runTimestamp &&
+        (existing.status === 'saved' || existing.status === 'dismissed')
+          ? existing.status
+          : ('active' as const)
+
+      // Delete old match for this opportunity if it exists and is from a previous run
+      if (existing && existing.computedAt !== runTimestamp) {
+        await ctx.db.delete('matches', existing._id)
+      }
+
       await ctx.db.insert('matches', {
         profileId,
         opportunityId: match.opportunityId,
         tier: match.tier,
         score: match.score,
+        status: preservedStatus,
         explanation: {
           strengths: match.strengths,
           ...(match.gap != null && { gap: match.gap }),
@@ -185,14 +104,21 @@ export const saveBatchResults = internalMutation({
       })
     }
 
-    if (isLastBatch && accumulatedGrowthAreas.length > 0) {
-      const deduplicated = deduplicateGrowthAreas(accumulatedGrowthAreas)
-      log('info', 'saveBatchResults: final growth areas', {
-        profileId,
-        rawCount: accumulatedGrowthAreas.length,
-        deduplicatedCount: deduplicated.length,
-        themes: deduplicated.map((g) => g.theme),
-      })
+    // Last-batch cleanup: remove stale matches for opportunities no longer matched
+    if (isLastBatch) {
+      const remainingOld = await ctx.db
+        .query('matches')
+        .withIndex('by_profile', (q) => q.eq('profileId', profileId))
+        .collect()
+
+      for (const match of remainingOld) {
+        if (match.computedAt !== runTimestamp) {
+          await ctx.db.delete('matches', match._id)
+        }
+      }
+
+      // Clear staleness flag
+      await ctx.db.patch('profiles', profileId, { matchesStaleAt: undefined })
     }
 
     log('info', 'saveBatchResults', {
@@ -206,7 +132,7 @@ export const saveBatchResults = internalMutation({
   },
 })
 
-// Clear all matches for a profile (used before recomputation)
+// Clear all matches for a profile (used when there are 0 opportunities)
 export const clearMatchesForProfile = internalMutation({
   args: { profileId: v.id('profiles') },
   handler: async (ctx, { profileId }) => {
@@ -218,6 +144,9 @@ export const clearMatchesForProfile = internalMutation({
     for (const match of matches) {
       await ctx.db.delete('matches', match._id)
     }
+
+    // Clear staleness flag since there's nothing to refresh against
+    await ctx.db.patch('profiles', profileId, { matchesStaleAt: undefined })
 
     return { deletedCount: matches.length }
   },
