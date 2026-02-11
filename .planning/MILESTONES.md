@@ -1,5 +1,58 @@
 # Project Milestones: AI Safety Talent Network (ASTN)
 
+## v1.6 Career Actions (Shipped: 2026-02-11)
+
+**Delivered:** LLM-generated personalized career actions with a full lifecycle (save, dismiss, in-progress, done) and a completion-to-enrichment loop that feeds accomplished actions back into profiles for better matching.
+
+**Phases completed:** 35-36 (5 plans, 14 tasks)
+
+**Key accomplishments:**
+
+- Personalized career action generation via Claude Haiku 4.5 producing 3-5 targeted actions per person across 8 types, referencing specific profile elements
+- Violet-accented action card UI with type badges, personalized rationale, and status-dependent interaction buttons
+- Full action lifecycle: save, dismiss, in-progress, done states with regeneration preservation of user-modified actions
+- Fire-and-forget generation pipeline alongside matching via scheduler trigger, with growth area context from match recommendations
+- Completion-to-enrichment loop: done actions feed into enrichment chat (pre-seeded with action context), extraction review, profile update, and match refresh
+- Zero component duplication: completion flow reuses existing EnrichmentChat and ExtractionReview directly
+
+**Stats:**
+
+- 31 files changed
+- +2,097 / -49 lines TypeScript (source)
+- 2 phases, 5 plans, 14 tasks
+- 1 day execution (2026-02-11)
+- 23 commits
+
+**Git range:** `2ebee02` → `0667247`
+
+**Tech debt noted:** None accumulated.
+
+**What's next:** v1.7+ for action-to-match bridging, opportunities page actions, intelligent resurfacing
+
+---
+
+## v1.5 Org Onboarding & Co-working (Shipped: 2026-02-03)
+
+**Delivered:** Org self-onboarding with application flow and admin approval, co-working space management with capacity tracking, member direct booking, lightweight guest access, and admin dashboard with bookings calendar and utilization stats.
+
+**Phases completed:** 30-34 (17 plans)
+
+**Key accomplishments:**
+
+- Org application flow with ASTN admin approval and org self-configuration
+- Co-working space definition with capacity, operating hours, and custom visit forms
+- Member direct booking with flexible hours and soft capacity warnings
+- Lightweight guest access with quick account creation and org approval
+- Guest visit info pre-fills ASTN profile on later signup
+- Admin dashboard with bookings calendar, attendance history, and utilization stats
+
+**Stats:**
+
+- 5 phases, 17 plans
+- Shipped 2026-02-03
+
+---
+
 ## v1.4 Hardening (Shipped: 2026-02-02)
 
 **Delivered:** Security hardening, bug fixes, performance optimization, accessibility, and code quality improvements closing all issues from the comprehensive codebase review before the BAISH pilot.
