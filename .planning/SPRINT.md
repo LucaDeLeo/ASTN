@@ -6,3 +6,8 @@
 | 33 | 03:05 | passed | code | OK |
 | 34 | 03:16 | passed | plan | OK |
 | 34 | 03:45 | passed | code | OK |
+| 35 | 22:20 | passed | plan | OK |
+| 35 | 22:42 | passed | code | OK |
+| 36 | - | passed | plan | 2 plans created |
+| 36 | 22:54 | passed | plan | OK |
+| 36 | 23:18 | passed | code | OK |
