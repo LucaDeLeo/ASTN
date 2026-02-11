@@ -67,7 +67,7 @@ Plans:
 
 | Phase                                  | Plans Complete | Status      | Completed |
 | -------------------------------------- | -------------- | ----------- | --------- |
-| 35. Generation, Display & Interactions | 0/3            | Not started | -         |
+| 35. Generation, Display & Interactions | 0/3            | Planned     | -         |
 | 36. Completion Loop                    | 0/TBD          | Not started | -         |
 
 ---
