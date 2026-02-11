@@ -63,35 +63,35 @@
 
 | Requirement | Phase | Status  |
 | ----------- | ----- | ------- |
-| GEN-01      | —     | Pending |
-| GEN-02      | —     | Pending |
-| GEN-03      | —     | Pending |
-| GEN-04      | —     | Pending |
-| GEN-05      | —     | Pending |
-| GEN-06      | —     | Pending |
-| GEN-07      | —     | Pending |
-| DISP-01     | —     | Pending |
-| DISP-02     | —     | Pending |
-| DISP-03     | —     | Pending |
-| DISP-04     | —     | Pending |
-| DISP-05     | —     | Pending |
-| ACTN-01     | —     | Pending |
-| ACTN-02     | —     | Pending |
-| ACTN-03     | —     | Pending |
-| ACTN-04     | —     | Pending |
-| ACTN-05     | —     | Pending |
-| COMP-01     | —     | Pending |
-| COMP-02     | —     | Pending |
-| COMP-03     | —     | Pending |
-| COMP-04     | —     | Pending |
+| GEN-01      | 35    | Pending |
+| GEN-02      | 35    | Pending |
+| GEN-03      | 35    | Pending |
+| GEN-04      | 35    | Pending |
+| GEN-05      | 35    | Pending |
+| GEN-06      | 35    | Pending |
+| GEN-07      | 35    | Pending |
+| DISP-01     | 35    | Pending |
+| DISP-02     | 35    | Pending |
+| DISP-03     | 35    | Pending |
+| DISP-04     | 35    | Pending |
+| DISP-05     | 35    | Pending |
+| ACTN-01     | 35    | Pending |
+| ACTN-02     | 35    | Pending |
+| ACTN-03     | 35    | Pending |
+| ACTN-04     | 35    | Pending |
+| ACTN-05     | 35    | Pending |
+| COMP-01     | 36    | Pending |
+| COMP-02     | 36    | Pending |
+| COMP-03     | 36    | Pending |
+| COMP-04     | 36    | Pending |
 
 **Coverage:**
 
 - v1.6 requirements: 21 total
-- Mapped to phases: 0
-- Unmapped: 21 ⚠️
+- Mapped to phases: 21
+- Unmapped: 0
 
 ---
 
 _Requirements defined: 2026-02-10_
-_Last updated: 2026-02-10 after initial definition_
+_Last updated: 2026-02-10 -- Traceability updated with phase mappings_
