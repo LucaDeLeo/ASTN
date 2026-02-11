@@ -12,7 +12,6 @@ import {
   matchOpportunitiesTool,
 } from './prompts'
 import { matchResultSchema } from './validation'
-import type { MatchingResult } from './prompts'
 import type { Id } from '../_generated/dataModel'
 
 const MODEL_VERSION = 'claude-haiku-4-5-20251001'
@@ -71,6 +70,11 @@ export const computeMatchesForProfile = internalAction({
       (m: { opportunityId: string }) => m.opportunityId,
     )
 
+    // Snapshot opportunity IDs so batches work against a consistent set
+    const snapshotOpportunityIds = opportunities.map(
+      (o: { _id: Id<'opportunities'> }) => o._id,
+    )
+
     const totalBatches = Math.ceil(opportunities.length / BATCH_SIZE)
     const runTimestamp = Date.now()
 
@@ -90,7 +94,7 @@ export const computeMatchesForProfile = internalAction({
         totalBatches,
         retryCount: 0,
         previousOppIds,
-        accumulatedGrowthAreas: [],
+        snapshotOpportunityIds,
         runTimestamp,
       },
     )
@@ -107,12 +111,7 @@ export const processMatchBatch = internalAction({
     totalBatches: v.number(),
     retryCount: v.number(),
     previousOppIds: v.array(v.string()),
-    accumulatedGrowthAreas: v.array(
-      v.object({
-        theme: v.string(),
-        items: v.array(v.string()),
-      }),
-    ),
+    snapshotOpportunityIds: v.array(v.id('opportunities')),
     runTimestamp: v.number(),
   },
   handler: async (
@@ -123,7 +122,7 @@ export const processMatchBatch = internalAction({
       totalBatches,
       retryCount,
       previousOppIds,
-      accumulatedGrowthAreas,
+      snapshotOpportunityIds,
       runTimestamp,
     },
   ) => {
@@ -141,18 +140,13 @@ export const processMatchBatch = internalAction({
       return
     }
 
-    const hiddenOrgs = profile.privacySettings?.hiddenFromOrgs || []
-    const opportunities = await ctx.runQuery(
-      internal.matching.queries.getCandidateOpportunities,
-      { hiddenOrgs, limit: 50 },
-    )
-
-    const batch = opportunities.slice(
+    // Slice batch from snapshot IDs, then fetch current data
+    const batchIds = snapshotOpportunityIds.slice(
       batchIndex * BATCH_SIZE,
       (batchIndex + 1) * BATCH_SIZE,
     )
 
-    if (batch.length === 0) {
+    if (batchIds.length === 0) {
       log('warn', 'processMatchBatch: empty batch, skipping', {
         batchIndex,
         totalBatches,
@@ -160,9 +154,61 @@ export const processMatchBatch = internalAction({
       return
     }
 
+    const batch = await ctx.runQuery(
+      internal.matching.queries.getOpportunitiesByIds,
+      { ids: batchIds },
+    )
+
     const isLastBatch = batchIndex + 1 >= totalBatches
-    const batchMatches: MatchingResult['matches'] = []
-    let batchGrowthAreas: MatchingResult['growthAreas'] = []
+
+    if (batch.length === 0) {
+      log('warn', 'processMatchBatch: all opportunities in batch inactive', {
+        batchIndex,
+        totalBatches,
+      })
+      // If this is the last batch, still run saveBatchResults to trigger cleanup
+      if (isLastBatch) {
+        await ctx.runMutation(internal.matching.mutations.saveBatchResults, {
+          profileId,
+          batchIndex,
+          matches: [],
+          modelVersion: MODEL_VERSION,
+          isLastBatch: true,
+          previousOppIds,
+          runTimestamp,
+        })
+      } else {
+        await ctx.scheduler.runAfter(
+          RATE_LIMIT_DELAY_MS,
+          internal.matching.compute.processMatchBatch,
+          {
+            profileId,
+            batchIndex: batchIndex + 1,
+            totalBatches,
+            retryCount: 0,
+            previousOppIds,
+            snapshotOpportunityIds,
+            runTimestamp,
+          },
+        )
+      }
+      return
+    }
+    const batchMatches: Array<{
+      opportunityId: Id<'opportunities'>
+      tier: 'great' | 'good' | 'exploring'
+      score: number
+      strengths: Array<string>
+      gap?: string
+      interviewChance: string
+      ranking: string
+      confidence: string
+      recommendations: Array<{
+        type: 'specific' | 'skill' | 'experience'
+        action: string
+        priority: 'high' | 'medium' | 'low'
+      }>
+    }> = []
 
     try {
       const profileContext = buildProfileContext(profile)
@@ -193,14 +239,14 @@ export const processMatchBatch = internalAction({
       } else {
         const parseResult = matchResultSchema.safeParse(toolUse.input)
         if (!parseResult.success) {
-          log('error', 'processMatchBatch: LLM validation failed', {
-            batchIndex,
-            issues: parseResult.error.issues,
-          })
+          const issues = parseResult.error.issues
+            .map((i) => `${i.path.join('.')}: ${i.message}`)
+            .join('; ')
+          throw new Error(
+            `LLM validation failed for batch ${batchIndex}: ${issues}`,
+          )
         }
-        const batchResult = (
-          parseResult.success ? parseResult.data : toolUse.input
-        ) as MatchingResult
+        const batchResult = parseResult.data
 
         if (!Array.isArray(batchResult.matches)) {
           log('error', 'processMatchBatch: invalid matches array', {
@@ -217,13 +263,6 @@ export const processMatchBatch = internalAction({
               })
             }
           }
-        }
-
-        if (
-          Array.isArray(batchResult.growthAreas) &&
-          batchResult.growthAreas.length > 0
-        ) {
-          batchGrowthAreas = batchResult.growthAreas
         }
       }
     } catch (error: unknown) {
@@ -246,7 +285,7 @@ export const processMatchBatch = internalAction({
             totalBatches,
             retryCount: retryCount + 1,
             previousOppIds,
-            accumulatedGrowthAreas,
+            snapshotOpportunityIds,
             runTimestamp,
           },
         )
@@ -267,7 +306,7 @@ export const processMatchBatch = internalAction({
             totalBatches,
             retryCount: 1,
             previousOppIds,
-            accumulatedGrowthAreas,
+            snapshotOpportunityIds,
             runTimestamp,
           },
         )
@@ -280,18 +319,13 @@ export const processMatchBatch = internalAction({
       })
     }
 
-    const newAccumulatedGrowthAreas = [
-      ...accumulatedGrowthAreas,
-      ...batchGrowthAreas,
-    ]
-
     // Save results when we have matches or this is the final batch
     if (batchMatches.length > 0 || isLastBatch) {
       await ctx.runMutation(internal.matching.mutations.saveBatchResults, {
         profileId,
         batchIndex,
         matches: batchMatches.map((m) => ({
-          opportunityId: m.opportunityId as Id<'opportunities'>,
+          opportunityId: m.opportunityId,
           tier: m.tier,
           score: m.score,
           strengths: m.strengths,
@@ -304,7 +338,6 @@ export const processMatchBatch = internalAction({
         modelVersion: MODEL_VERSION,
         isLastBatch,
         previousOppIds,
-        accumulatedGrowthAreas: newAccumulatedGrowthAreas,
         runTimestamp,
       })
     }
@@ -329,7 +362,7 @@ export const processMatchBatch = internalAction({
           totalBatches,
           retryCount: 0,
           previousOppIds,
-          accumulatedGrowthAreas: newAccumulatedGrowthAreas,
+          snapshotOpportunityIds,
           runTimestamp,
         },
       )

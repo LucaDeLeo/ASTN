@@ -136,6 +136,9 @@ export default defineSchema({
       }),
     ),
 
+    // Match staleness tracking (set when match-affecting fields change)
+    matchesStaleAt: v.optional(v.number()),
+
     // Completeness tracking
     completedSections: v.optional(v.array(v.string())),
 

@@ -123,6 +123,7 @@ export const getMyMatches = query({
       allRecommendations,
       newMatchCount,
       computedAt,
+      matchesStaleAt: profile.matchesStaleAt ?? null,
       needsProfile: false,
       needsComputation: false,
       profileId: profile._id,

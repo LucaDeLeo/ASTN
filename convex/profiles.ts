@@ -183,9 +183,26 @@ export const updateField = mutation({
       throw new Error('Profile not found or not authorized')
     }
 
+    // Fields that affect match quality - trigger staleness indicator
+    const MATCH_AFFECTING_FIELDS = new Set([
+      'skills',
+      'education',
+      'workHistory',
+      'careerGoals',
+      'aiSafetyInterests',
+      'seeking',
+      'enrichmentSummary',
+      'privacySettings',
+    ])
+
+    const affectsMatches = Object.keys(updates).some((f) =>
+      MATCH_AFFECTING_FIELDS.has(f),
+    )
+
     await ctx.db.patch('profiles', profileId, {
       ...updates,
       updatedAt: Date.now(),
+      ...(affectsMatches ? { matchesStaleAt: Date.now() } : {}),
     })
 
     return { success: true }
@@ -476,9 +493,20 @@ export const applyExtractedProfile = mutation({
 
     // Only update if there's something to update
     if (Object.keys(updates).length > 0) {
+      // Resume data affects match quality - mark matches as stale
+      const MATCH_AFFECTING_EXTRACTED = new Set([
+        'education',
+        'workHistory',
+        'skills',
+      ])
+      const affectsMatches = Object.keys(updates).some((f) =>
+        MATCH_AFFECTING_EXTRACTED.has(f),
+      )
+
       await ctx.db.patch('profiles', profile._id, {
         ...updates,
         updatedAt: now,
+        ...(affectsMatches ? { matchesStaleAt: now } : {}),
       })
     }
 
