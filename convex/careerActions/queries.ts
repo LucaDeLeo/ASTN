@@ -78,6 +78,7 @@ export const getMyActions = query({
         saved: [],
         completed: [],
         hasProfile: false,
+        profileId: null,
       }
     }
 
@@ -101,6 +102,7 @@ export const getMyActions = query({
       saved,
       completed,
       hasProfile: true,
+      profileId: profile._id,
     }
   },
 })
