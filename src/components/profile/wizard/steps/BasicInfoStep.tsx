@@ -27,15 +27,19 @@ export function BasicInfoStep({
   const [location, setLocation] = useState(profile?.location ?? '')
   const [headline, setHeadline] = useState(profile?.headline ?? '')
 
-  // Sync local state with profile when it changes
+  // Sync local state with profile — per-field to avoid resetting other fields mid-edit
   useEffect(() => {
-    if (profile) {
-      setName(profile.name ?? '')
-      setPronouns(profile.pronouns ?? '')
-      setLocation(profile.location ?? '')
-      setHeadline(profile.headline ?? '')
-    }
-  }, [profile])
+    setName(profile?.name ?? '')
+  }, [profile?.name])
+  useEffect(() => {
+    setPronouns(profile?.pronouns ?? '')
+  }, [profile?.pronouns])
+  useEffect(() => {
+    setLocation(profile?.location ?? '')
+  }, [profile?.location])
+  useEffect(() => {
+    setHeadline(profile?.headline ?? '')
+  }, [profile?.headline])
 
   return (
     <div className="space-y-6">
