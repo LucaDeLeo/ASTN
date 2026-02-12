@@ -119,11 +119,6 @@ export const Route = createRootRouteWithContext<{
       },
       // Stylesheet (after preloads)
       { rel: 'stylesheet', href: appCss },
-      // Leaflet CSS for map component
-      {
-        rel: 'stylesheet',
-        href: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-      },
       {
         rel: 'apple-touch-icon',
         sizes: '180x180',
@@ -169,8 +164,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <Toaster position="top-right" richColors />
           <FeedbackDialog />
         </ThemeProvider>
-        {/* Leaflet JS for map component - loaded in body for global L */}
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" />
         <Scripts />
       </body>
     </html>

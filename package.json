@@ -52,6 +52,7 @@
     "convex": "^1.31.7",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.562.0",
     "nitro": "^3.0.1-alpha.1",
     "react": "^19.2.1",
