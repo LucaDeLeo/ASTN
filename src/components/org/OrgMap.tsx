@@ -1,10 +1,18 @@
 import { useEffect, useRef } from 'react'
-import type * as L from 'leaflet'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
+import markerIcon from 'leaflet/dist/images/marker-icon.png'
+import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 import type { Id } from '../../../convex/_generated/dataModel'
 
-// Get Leaflet from window (loaded via CDN)
-const getLeaflet = (): typeof L | undefined =>
-  (window as unknown as { L?: typeof L }).L
+// Fix default marker icons for bundled Leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+})
 
 interface OrgMapProps {
   orgs: Array<{
@@ -25,17 +33,14 @@ export function OrgMap({ orgs, selectedOrgId, onOrgSelect }: OrgMapProps) {
 
   // Initialize map
   useEffect(() => {
-    const leaflet = getLeaflet()
-    if (!mapRef.current || !leaflet || mapInstanceRef.current) return
+    if (!mapRef.current || mapInstanceRef.current) return
 
-    const map = leaflet.map(mapRef.current).setView([20, 0], 2)
-    leaflet
-      .tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 18,
-      })
-      .addTo(map)
+    const map = L.map(mapRef.current).setView([20, 0], 2)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 18,
+    }).addTo(map)
 
     mapInstanceRef.current = map
 
@@ -47,9 +52,8 @@ export function OrgMap({ orgs, selectedOrgId, onOrgSelect }: OrgMapProps) {
 
   // Update markers when orgs change
   useEffect(() => {
-    const leaflet = getLeaflet()
     const map = mapInstanceRef.current
-    if (!map || !leaflet) return
+    if (!map) return
 
     // Clear existing markers
     markersRef.current.forEach((marker) => marker.remove())
@@ -59,8 +63,7 @@ export function OrgMap({ orgs, selectedOrgId, onOrgSelect }: OrgMapProps) {
     const orgsWithCoords = orgs.filter((o) => o.coordinates)
 
     orgsWithCoords.forEach((org) => {
-      const marker = leaflet
-        .marker([org.coordinates!.lat, org.coordinates!.lng])
+      const marker = L.marker([org.coordinates!.lat, org.coordinates!.lng])
         .addTo(map)
         .bindPopup(
           `<b>${org.name}</b><br/>${[org.city, org.country].filter(Boolean).join(', ')}`,
@@ -72,7 +75,7 @@ export function OrgMap({ orgs, selectedOrgId, onOrgSelect }: OrgMapProps) {
 
     // Fit bounds if we have markers
     if (orgsWithCoords.length > 0) {
-      const bounds = leaflet.latLngBounds(
+      const bounds = L.latLngBounds(
         orgsWithCoords.map((o) => [o.coordinates!.lat, o.coordinates!.lng]),
       )
       map.fitBounds(bounds, { padding: [50, 50], maxZoom: 10 })

@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /profile/
+Disallow: /opportunities/
+Disallow: /matches/
+Disallow: /admin/
+
+Sitemap: https://safetytalent.org/sitemap.xml
