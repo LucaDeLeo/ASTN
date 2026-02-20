@@ -1,7 +1,10 @@
-import { useCallback, useState } from 'react'
-import { useAction, useQuery } from 'convex/react'
+import { useCallback, useEffect, useState } from 'react'
+import { useAuth } from '@clerk/clerk-react'
+import { useStream } from '@convex-dev/persistent-text-streaming/react'
+import { useAction, useMutation, useQuery } from 'convex/react'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
+import type { StreamId } from '@convex-dev/persistent-text-streaming'
 import type {
   ExtractionFields,
   ExtractionItem,
@@ -13,10 +16,33 @@ interface UseCompletionEnrichmentArgs {
   actionId: Id<'careerActions'> | null
 }
 
-interface ActionContext {
-  title: string
-  description: string
-  type: string
+// Derive Convex site URL from the cloud URL
+const CONVEX_SITE_URL = import.meta.env.VITE_CONVEX_URL.replace(
+  '.cloud',
+  '.site',
+)
+
+const EXTRACTION_KEYWORDS = [
+  'save what we',
+  'save these',
+  'save this to your profile',
+  'save it to your profile',
+  'add this to your profile',
+  'capture these',
+  "here's what i'd highlight",
+  "here's what i'd capture",
+  'shall i save',
+  'summarize',
+  'update your profile',
+  'good picture',
+  "what i've learned",
+  'what i learned',
+  'what you accomplished',
+]
+
+function checkShouldExtract(text: string): boolean {
+  const lower = text.toLowerCase()
+  return EXTRACTION_KEYWORDS.some((kw) => lower.includes(kw))
 }
 
 export function useCompletionEnrichment({
@@ -30,9 +56,9 @@ export function useCompletionEnrichment({
       actionId && profileId ? { actionId, profileId } : 'skip',
     ) ?? []
 
-  // Actions
-  const sendCompletionMessageAction = useAction(
-    api.enrichment.conversation.sendCompletionMessage,
+  // Mutations & actions
+  const startCompletionChatMutation = useMutation(
+    api.enrichment.streaming.startCompletionChat,
   )
   const extractAction = useAction(
     api.enrichment.extraction.extractFromConversation,
@@ -48,34 +74,79 @@ export function useCompletionEnrichment({
     null,
   )
 
-  // Send a completion message
+  // Streaming state
+  const [activeStreamId, setActiveStreamId] = useState<string | null>(null)
+  const [authToken, setAuthToken] = useState<string | null>(null)
+  const [streamHeaders, setStreamHeaders] = useState<Record<string, string>>({})
+  const { getToken } = useAuth()
+
+  // useStream hook
+  const { text: streamingText, status: streamStatus } = useStream(
+    api.enrichment.streaming.getChatBody,
+    new URL(`${CONVEX_SITE_URL}/enrichment-stream`),
+    !!activeStreamId,
+    (activeStreamId ?? undefined) as StreamId | undefined,
+    {
+      authToken: authToken ?? undefined,
+      headers: streamHeaders,
+    },
+  )
+
+  // When stream completes, finalize state
+  useEffect(() => {
+    if (streamStatus === 'done' && activeStreamId) {
+      if (streamingText && checkShouldExtract(streamingText)) {
+        setShouldShowExtract(true)
+      }
+      setActiveStreamId(null)
+      setAuthToken(null)
+      setStreamHeaders({})
+      setIsLoading(false)
+    }
+    if (streamStatus === 'error' && activeStreamId) {
+      setError('Streaming failed. Please try again.')
+      setActiveStreamId(null)
+      setAuthToken(null)
+      setStreamHeaders({})
+      setIsLoading(false)
+    }
+  }, [streamStatus, activeStreamId, streamingText])
+
+  // Send a completion message with streaming
   const sendMessage = useCallback(
-    async (messageText: string, actionContext?: ActionContext) => {
+    async (
+      messageText: string,
+      _actionContext?: { title: string; description: string; type: string },
+    ) => {
       if (!profileId || !actionId || !messageText.trim()) return
 
       setIsLoading(true)
       setError(null)
 
       try {
-        const result = await sendCompletionMessageAction({
+        const token = await getToken({ template: 'convex' })
+        if (!token) throw new Error('Not authenticated')
+
+        const { streamId } = await startCompletionChatMutation({
           profileId,
           actionId,
           message: messageText.trim(),
-          // Only pass actionContext on the first message (when no messages exist yet)
-          ...(actionContext && { actionContext }),
         })
 
-        // Check if LLM signaled extraction
-        if (result.shouldExtract) {
-          setShouldShowExtract(true)
-        }
+        // Set headers for the HTTP action (useStream will include these)
+        setStreamHeaders({
+          'X-Profile-Id': profileId,
+          'X-Mode': 'completion',
+          'X-Action-Id': actionId,
+        })
+        setAuthToken(token)
+        setActiveStreamId(streamId)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to send message')
-      } finally {
         setIsLoading(false)
       }
     },
-    [profileId, actionId, sendCompletionMessageAction],
+    [profileId, actionId, startCompletionChatMutation, getToken],
   )
 
   // Extract profile data from completion conversation
@@ -96,7 +167,6 @@ export function useCompletionEnrichment({
         messages: conversationMessages,
       })
 
-      // Transform extraction result into items with status
       const items: Array<ExtractionItem> = []
 
       if (result.skills_mentioned.length > 0) {
@@ -104,7 +174,7 @@ export function useCompletionEnrichment({
           field: 'skills_mentioned',
           label: 'Skills',
           value: result.skills_mentioned,
-          status: 'pending',
+          status: 'accepted',
         })
       }
 
@@ -113,7 +183,7 @@ export function useCompletionEnrichment({
           field: 'career_interests',
           label: 'AI Safety Interests',
           value: result.career_interests,
-          status: 'pending',
+          status: 'accepted',
         })
       }
 
@@ -122,7 +192,7 @@ export function useCompletionEnrichment({
           field: 'career_goals',
           label: 'Career Goals',
           value: result.career_goals,
-          status: 'pending',
+          status: 'accepted',
         })
       }
 
@@ -131,7 +201,7 @@ export function useCompletionEnrichment({
           field: 'background_summary',
           label: 'Background Summary',
           value: result.background_summary,
-          status: 'pending',
+          status: 'accepted',
         })
       }
 
@@ -140,7 +210,7 @@ export function useCompletionEnrichment({
           field: 'seeking',
           label: "What You're Seeking",
           value: result.seeking,
-          status: 'pending',
+          status: 'accepted',
         })
       }
 
@@ -198,6 +268,10 @@ export function useCompletionEnrichment({
     shouldShowExtract,
     isExtracting,
     extractions,
+    streamingText: activeStreamId ? streamingText : '',
+    isStreaming:
+      !!activeStreamId &&
+      (streamStatus === 'streaming' || streamStatus === 'pending'),
 
     // Actions
     sendMessage,

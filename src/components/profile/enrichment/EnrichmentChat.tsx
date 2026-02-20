@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { Loader2, MessageSquare, Send } from 'lucide-react'
+import { MessageSquare, Send } from 'lucide-react'
 import { Button } from '~/components/ui/button'
-import { Input } from '~/components/ui/input'
+import { Textarea } from '~/components/ui/textarea'
 import { cn } from '~/lib/utils'
 
 /**
@@ -35,6 +35,8 @@ interface EnrichmentChatProps {
   onSendMessage: (message: string) => void
   isLoading: boolean
   disabled?: boolean
+  streamingText?: string
+  isStreaming?: boolean
 }
 
 export function EnrichmentChat({
@@ -44,19 +46,21 @@ export function EnrichmentChat({
   onSendMessage,
   isLoading,
   disabled = false,
+  streamingText = '',
+  isStreaming = false,
 }: EnrichmentChatProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Scroll to bottom on new messages
+  // Scroll to bottom on new messages or streaming text changes
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages.length, streamingText])
 
   // Focus input on mount
   useEffect(() => {
     if (!disabled) {
-      inputRef.current?.focus()
+      textareaRef.current?.focus()
     }
   }, [disabled])
 
@@ -75,11 +79,14 @@ export function EnrichmentChat({
     }
   }
 
+  // Filter out empty messages
+  const visibleMessages = messages.filter((m) => m.content.trim())
+
   return (
     <div className="flex flex-col h-[500px]">
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 ? (
+        {visibleMessages.length === 0 && !streamingText ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="size-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
               <MessageSquare className="size-6 text-blue-600" />
@@ -93,50 +100,64 @@ export function EnrichmentChat({
             </p>
           </div>
         ) : (
-          messages.map((message, index) => (
-            <div
-              key={message._id}
-              className={cn(
-                'flex animate-in fade-in slide-in-from-bottom-2 duration-300',
-                message.role === 'user' ? 'justify-end' : 'justify-start',
-              )}
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
+          <>
+            {visibleMessages.map((message, index) => (
               <div
+                key={message._id}
                 className={cn(
-                  'max-w-[80%] rounded-2xl px-4 py-2.5',
-                  message.role === 'user'
-                    ? 'bg-primary text-primary-foreground rounded-br-md'
-                    : 'bg-muted text-foreground rounded-bl-md',
+                  'flex animate-in fade-in slide-in-from-bottom-2 duration-300',
+                  message.role === 'user' ? 'justify-end' : 'justify-start',
                 )}
+                style={{ animationDelay: `${index * 50}ms` }}
               >
-                <p className="text-sm whitespace-pre-wrap">
-                  {message.role === 'assistant'
-                    ? renderMarkdown(message.content)
-                    : message.content}
-                </p>
+                <div
+                  className={cn(
+                    'max-w-[80%] rounded-2xl px-4 py-2.5',
+                    message.role === 'user'
+                      ? 'bg-primary text-primary-foreground rounded-br-md'
+                      : 'bg-muted text-foreground rounded-bl-md',
+                  )}
+                >
+                  <p className="text-sm whitespace-pre-wrap">
+                    {message.role === 'assistant'
+                      ? renderMarkdown(message.content)
+                      : message.content}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))
-        )}
+            ))}
 
-        {/* Typing indicator */}
-        {isLoading && (
-          <div className="flex justify-start animate-in fade-in duration-200">
-            <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
-              <div className="flex gap-1">
-                <span className="size-2 bg-muted-foreground/50 rounded-full animate-bounce" />
-                <span
-                  className="size-2 bg-muted-foreground/50 rounded-full animate-bounce"
-                  style={{ animationDelay: '0.1s' }}
-                />
-                <span
-                  className="size-2 bg-muted-foreground/50 rounded-full animate-bounce"
-                  style={{ animationDelay: '0.2s' }}
-                />
+            {/* Streaming assistant message */}
+            {isStreaming && streamingText && (
+              <div className="flex justify-start animate-in fade-in duration-200">
+                <div className="max-w-[80%] rounded-2xl rounded-bl-md px-4 py-2.5 bg-muted text-foreground">
+                  <p className="text-sm whitespace-pre-wrap">
+                    {renderMarkdown(streamingText)}
+                    <span className="inline-block w-1.5 h-4 ml-0.5 bg-muted-foreground/70 animate-pulse align-text-bottom" />
+                  </p>
+                </div>
               </div>
-            </div>
-          </div>
+            )}
+
+            {/* Bouncing dots: waiting for first token */}
+            {isLoading && !streamingText && (
+              <div className="flex justify-start animate-in fade-in duration-200">
+                <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
+                  <div className="flex gap-1">
+                    <span className="size-2 bg-muted-foreground/50 rounded-full animate-bounce" />
+                    <span
+                      className="size-2 bg-muted-foreground/50 rounded-full animate-bounce"
+                      style={{ animationDelay: '0.1s' }}
+                    />
+                    <span
+                      className="size-2 bg-muted-foreground/50 rounded-full animate-bounce"
+                      style={{ animationDelay: '0.2s' }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         <div ref={messagesEndRef} />
@@ -145,10 +166,10 @@ export function EnrichmentChat({
       {/* Input area */}
       <form
         onSubmit={handleSubmit}
-        className="border-t p-4 flex gap-2 bg-muted/50"
+        className="border-t p-4 flex gap-2 items-end bg-muted/50"
       >
-        <Input
-          ref={inputRef}
+        <Textarea
+          ref={textareaRef}
           value={input}
           onChange={(e) => onInputChange(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -158,18 +179,16 @@ export function EnrichmentChat({
               : 'Continue the conversation...'
           }
           disabled={isLoading || disabled}
-          className="flex-1"
+          className="flex-1 min-h-9 max-h-[120px] resize-none"
+          rows={1}
         />
         <Button
           type="submit"
           disabled={!input.trim() || isLoading || disabled}
           size="icon"
+          className="shrink-0"
         >
-          {isLoading ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Send className="size-4" />
-          )}
+          <Send className="size-4" />
         </Button>
       </form>
     </div>

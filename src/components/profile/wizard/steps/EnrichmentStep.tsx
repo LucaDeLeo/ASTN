@@ -51,6 +51,8 @@ export function EnrichmentStep({
     updateExtractionStatus,
     updateExtractionValue,
     resetExtractions,
+    streamingText,
+    isStreaming,
   } = useEnrichment(profile?._id ?? null)
 
   // Auto-send greeting when arriving from resume extraction or chat-first entry
@@ -235,6 +237,8 @@ export function EnrichmentStep({
             onSendMessage={sendMessage}
             isLoading={isLoading}
             disabled={applied}
+            streamingText={streamingText}
+            isStreaming={isStreaming}
           />
         ) : extractions ? (
           <div className="p-6">
@@ -256,7 +260,7 @@ export function EnrichmentStep({
           <p className="text-sm text-slate-500">
             {shouldShowExtract ? (
               <span className="text-green-600 font-medium">
-                Ready to extract your profile information!
+                Ready to save what we discussed
               </span>
             ) : (
               'Continue the conversation to share more about your background.'
@@ -276,7 +280,7 @@ export function EnrichmentStep({
             ) : (
               <>
                 <Sparkles className="size-4" />
-                See what I learned
+                Save to profile
               </>
             )}
           </Button>

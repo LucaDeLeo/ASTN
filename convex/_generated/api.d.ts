@@ -35,6 +35,7 @@ import type * as engagement_validation from "../engagement/validation.js";
 import type * as enrichment_conversation from "../enrichment/conversation.js";
 import type * as enrichment_extraction from "../enrichment/extraction.js";
 import type * as enrichment_queries from "../enrichment/queries.js";
+import type * as enrichment_streaming from "../enrichment/streaming.js";
 import type * as enrichment_validation from "../enrichment/validation.js";
 import type * as events_lumaClient from "../events/lumaClient.js";
 import type * as events_mutations from "../events/mutations.js";
@@ -120,6 +121,7 @@ declare const fullApi: ApiFromModules<{
   "enrichment/conversation": typeof enrichment_conversation;
   "enrichment/extraction": typeof enrichment_extraction;
   "enrichment/queries": typeof enrichment_queries;
+  "enrichment/streaming": typeof enrichment_streaming;
   "enrichment/validation": typeof enrichment_validation;
   "events/lumaClient": typeof events_lumaClient;
   "events/mutations": typeof events_mutations;
@@ -345,6 +347,41 @@ export declare const components: {
             | "failed";
         },
         null
+      >;
+    };
+  };
+  persistentTextStreaming: {
+    lib: {
+      addChunk: FunctionReference<
+        "mutation",
+        "internal",
+        { final: boolean; streamId: string; text: string },
+        any
+      >;
+      createStream: FunctionReference<"mutation", "internal", {}, any>;
+      getStreamStatus: FunctionReference<
+        "query",
+        "internal",
+        { streamId: string },
+        "pending" | "streaming" | "done" | "error" | "timeout"
+      >;
+      getStreamText: FunctionReference<
+        "query",
+        "internal",
+        { streamId: string },
+        {
+          status: "pending" | "streaming" | "done" | "error" | "timeout";
+          text: string;
+        }
+      >;
+      setStreamStatus: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          status: "pending" | "streaming" | "done" | "error" | "timeout";
+          streamId: string;
+        },
+        any
       >;
     };
   };

@@ -1,7 +1,10 @@
-import { useCallback, useState } from 'react'
-import { useAction, useQuery } from 'convex/react'
+import { useCallback, useEffect, useState } from 'react'
+import { useAuth } from '@clerk/clerk-react'
+import { useStream } from '@convex-dev/persistent-text-streaming/react'
+import { useAction, useMutation, useQuery } from 'convex/react'
 import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
+import type { StreamId } from '@convex-dev/persistent-text-streaming'
 
 // Extraction field type
 export interface ExtractionFields {
@@ -23,6 +26,35 @@ export interface ExtractionItem {
   status: ExtractionStatus
 }
 
+// Derive Convex site URL from the cloud URL
+const CONVEX_SITE_URL = import.meta.env.VITE_CONVEX_URL.replace(
+  '.cloud',
+  '.site',
+)
+
+// Keywords that signal the assistant is ready to extract profile data
+const EXTRACTION_KEYWORDS = [
+  'save what we',
+  'save these',
+  'save this to your profile',
+  'save it to your profile',
+  'add this to your profile',
+  'capture these',
+  "here's what i'd highlight",
+  "here's what i'd capture",
+  'shall i save',
+  'summarize',
+  'update your profile',
+  'good picture',
+  "what i've learned",
+  'what i learned',
+]
+
+function checkShouldExtract(text: string): boolean {
+  const lower = text.toLowerCase()
+  return EXTRACTION_KEYWORDS.some((kw) => lower.includes(kw))
+}
+
 export function useEnrichment(profileId: Id<'profiles'> | null) {
   // Load messages from database
   const messages =
@@ -31,8 +63,8 @@ export function useEnrichment(profileId: Id<'profiles'> | null) {
       profileId ? { profileId } : 'skip',
     ) ?? []
 
-  // Actions
-  const sendMessageAction = useAction(api.enrichment.conversation.sendMessage)
+  // Mutations & actions
+  const startChatMutation = useMutation(api.enrichment.streaming.startChat)
   const extractAction = useAction(
     api.enrichment.extraction.extractFromConversation,
   )
@@ -47,7 +79,45 @@ export function useEnrichment(profileId: Id<'profiles'> | null) {
     null,
   )
 
-  // Send a message
+  // Streaming state
+  const [activeStreamId, setActiveStreamId] = useState<string | null>(null)
+  const [authToken, setAuthToken] = useState<string | null>(null)
+  const [streamHeaders, setStreamHeaders] = useState<Record<string, string>>({})
+  const { getToken } = useAuth()
+
+  // useStream hook — driven when we have an active stream
+  const { text: streamingText, status: streamStatus } = useStream(
+    api.enrichment.streaming.getChatBody,
+    new URL(`${CONVEX_SITE_URL}/enrichment-stream`),
+    !!activeStreamId,
+    (activeStreamId ?? undefined) as StreamId | undefined,
+    {
+      authToken: authToken ?? undefined,
+      headers: streamHeaders,
+    },
+  )
+
+  // When stream completes, finalize state
+  useEffect(() => {
+    if (streamStatus === 'done' && activeStreamId) {
+      if (streamingText && checkShouldExtract(streamingText)) {
+        setShouldShowExtract(true)
+      }
+      setActiveStreamId(null)
+      setAuthToken(null)
+      setStreamHeaders({})
+      setIsLoading(false)
+    }
+    if (streamStatus === 'error' && activeStreamId) {
+      setError('Streaming failed. Please try again.')
+      setActiveStreamId(null)
+      setAuthToken(null)
+      setStreamHeaders({})
+      setIsLoading(false)
+    }
+  }, [streamStatus, activeStreamId, streamingText])
+
+  // Send a message with streaming
   const sendMessage = useCallback(
     async (messageText: string) => {
       if (!profileId || !messageText.trim()) return
@@ -56,22 +126,24 @@ export function useEnrichment(profileId: Id<'profiles'> | null) {
       setError(null)
 
       try {
-        const result = await sendMessageAction({
+        const token = await getToken({ template: 'convex' })
+        if (!token) throw new Error('Not authenticated')
+
+        const { streamId } = await startChatMutation({
           profileId,
           message: messageText.trim(),
         })
 
-        // Check if LLM signaled extraction
-        if (result.shouldExtract) {
-          setShouldShowExtract(true)
-        }
+        // Set headers for the HTTP action (useStream will include these)
+        setStreamHeaders({ 'X-Profile-Id': profileId })
+        setAuthToken(token)
+        setActiveStreamId(streamId)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to send message')
-      } finally {
         setIsLoading(false)
       }
     },
-    [profileId, sendMessageAction],
+    [profileId, startChatMutation, getToken],
   )
 
   // Extract profile data from conversation
@@ -88,11 +160,10 @@ export function useEnrichment(profileId: Id<'profiles'> | null) {
       }))
 
       const result = await extractAction({
-        profileId: profileId,
+        profileId,
         messages: conversationMessages,
       })
 
-      // Transform extraction result into items with status
       const items: Array<ExtractionItem> = []
 
       if (result.skills_mentioned.length > 0) {
@@ -100,7 +171,7 @@ export function useEnrichment(profileId: Id<'profiles'> | null) {
           field: 'skills_mentioned',
           label: 'Skills',
           value: result.skills_mentioned,
-          status: 'pending',
+          status: 'accepted',
         })
       }
 
@@ -109,7 +180,7 @@ export function useEnrichment(profileId: Id<'profiles'> | null) {
           field: 'career_interests',
           label: 'AI Safety Interests',
           value: result.career_interests,
-          status: 'pending',
+          status: 'accepted',
         })
       }
 
@@ -118,7 +189,7 @@ export function useEnrichment(profileId: Id<'profiles'> | null) {
           field: 'career_goals',
           label: 'Career Goals',
           value: result.career_goals,
-          status: 'pending',
+          status: 'accepted',
         })
       }
 
@@ -127,7 +198,7 @@ export function useEnrichment(profileId: Id<'profiles'> | null) {
           field: 'background_summary',
           label: 'Background Summary',
           value: result.background_summary,
-          status: 'pending',
+          status: 'accepted',
         })
       }
 
@@ -136,7 +207,7 @@ export function useEnrichment(profileId: Id<'profiles'> | null) {
           field: 'seeking',
           label: "What You're Seeking",
           value: result.seeking,
-          status: 'pending',
+          status: 'accepted',
         })
       }
 
@@ -194,6 +265,10 @@ export function useEnrichment(profileId: Id<'profiles'> | null) {
     shouldShowExtract,
     isExtracting,
     extractions,
+    streamingText: activeStreamId ? streamingText : '',
+    isStreaming:
+      !!activeStreamId &&
+      (streamStatus === 'streaming' || streamStatus === 'pending'),
 
     // Actions
     sendMessage,

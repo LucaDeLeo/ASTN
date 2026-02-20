@@ -8,6 +8,6 @@ export const extractionResultSchema = z
     background_summary: z.string().optional(),
     seeking: z.string().optional(),
   })
-  .passthrough()
+  .strip()
 
 export type ExtractionResultValidated = z.infer<typeof extractionResultSchema>

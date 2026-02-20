@@ -55,6 +55,8 @@ export function CompletionEnrichmentDialog({
     extractProfile,
     updateExtractionStatus,
     updateExtractionValue,
+    streamingText,
+    isStreaming,
   } = useCompletionEnrichment({ profileId, actionId })
 
   // Auto-send opening message on mount
@@ -167,7 +169,7 @@ export function CompletionEnrichmentDialog({
           <DialogTitle className="flex items-center justify-between">
             <span>
               {mode === 'chat' && 'Completion Debrief'}
-              {mode === 'review' && 'Review Extracted Info'}
+              {mode === 'review' && "Here's What I Picked Up"}
               {mode === 'success' && 'Profile Updated'}
             </span>
           </DialogTitle>
@@ -192,6 +194,8 @@ export function CompletionEnrichmentDialog({
                 onInputChange={setInput}
                 onSendMessage={(msg) => void sendMessage(msg)}
                 isLoading={isLoading}
+                streamingText={streamingText}
+                isStreaming={isStreaming}
               />
             </div>
 
@@ -201,7 +205,7 @@ export function CompletionEnrichmentDialog({
                 <p className="text-sm text-muted-foreground">
                   {shouldShowExtract ? (
                     <span className="text-green-600 font-medium">
-                      Ready to extract profile updates!
+                      Ready to save what we discussed
                     </span>
                   ) : (
                     'Continue chatting to share more about what you did.'
@@ -222,7 +226,7 @@ export function CompletionEnrichmentDialog({
                   ) : (
                     <>
                       <Sparkles className="size-3.5" />
-                      See what I learned
+                      Save to profile
                     </>
                   )}
                 </Button>
