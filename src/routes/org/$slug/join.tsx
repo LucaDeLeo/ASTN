@@ -16,6 +16,7 @@ import { GradientBg } from '~/components/layout/GradientBg'
 import { Card } from '~/components/ui/card'
 import { Button } from '~/components/ui/button'
 import { Spinner } from '~/components/ui/spinner'
+import { savePendingInvite } from '~/lib/pendingInvite'
 
 export const Route = createFileRoute('/org/$slug/join')({
   component: JoinOrgPage,
@@ -25,25 +26,74 @@ export const Route = createFileRoute('/org/$slug/join')({
 })
 
 function JoinOrgPage() {
+  const { slug } = Route.useParams()
   const { token } = Route.useSearch()
+
+  // If token provided, validate it
   const validation = useQuery(
     api.orgs.directory.validateInviteToken,
     token ? { token } : 'skip',
   )
 
-  // No token provided
+  // If no token, look up org by slug directly
+  const orgBySlug = useQuery(
+    api.orgs.directory.getOrgBySlug,
+    !token ? { slug } : 'skip',
+  )
+
+  // No token: use slug-based lookup
   if (!token) {
+    if (orgBySlug === undefined) {
+      return (
+        <GradientBg>
+          <AuthHeader />
+          <main className="container mx-auto px-4 py-8">
+            <div className="flex items-center justify-center min-h-[60vh]">
+              <Spinner />
+            </div>
+          </main>
+        </GradientBg>
+      )
+    }
+
+    if (orgBySlug === null) {
+      return (
+        <GradientBg>
+          <AuthHeader />
+          <main className="container mx-auto px-4 py-8">
+            <InvalidTokenMessage message="Organization not found. Please check the link and try again." />
+          </main>
+        </GradientBg>
+      )
+    }
+
     return (
       <GradientBg>
         <AuthHeader />
         <main className="container mx-auto px-4 py-8">
-          <InvalidTokenMessage message="No invite link provided. Please request an invite link from an organization admin." />
+          <AuthLoading>
+            <div className="flex items-center justify-center min-h-[60vh]">
+              <Spinner />
+            </div>
+          </AuthLoading>
+
+          <Unauthenticated>
+            <SignInPrompt orgName={orgBySlug.name} slug={slug} />
+          </Unauthenticated>
+
+          <Authenticated>
+            <JoinForm
+              orgId={orgBySlug._id}
+              orgName={orgBySlug.name}
+              orgSlug={slug}
+            />
+          </Authenticated>
         </main>
       </GradientBg>
     )
   }
 
-  // Loading validation
+  // Token-based flow
   if (validation === undefined) {
     return (
       <GradientBg>
@@ -57,7 +107,6 @@ function JoinOrgPage() {
     )
   }
 
-  // Invalid or expired token
   if (!validation.valid) {
     return (
       <GradientBg>
@@ -80,7 +129,11 @@ function JoinOrgPage() {
         </AuthLoading>
 
         <Unauthenticated>
-          <SignInPrompt orgName={validation.orgName} />
+          <SignInPrompt
+            orgName={validation.orgName}
+            slug={slug}
+            token={token}
+          />
         </Unauthenticated>
 
         <Authenticated>
@@ -110,8 +163,21 @@ function InvalidTokenMessage({ message }: { message: string }) {
   )
 }
 
-function SignInPrompt({ orgName }: { orgName: string }) {
+function SignInPrompt({
+  orgName,
+  slug,
+  token,
+}: {
+  orgName: string
+  slug: string
+  token?: string
+}) {
   const navigate = useNavigate()
+
+  const handleSignIn = () => {
+    savePendingInvite({ slug, token: token || undefined })
+    navigate({ to: '/login' })
+  }
 
   return (
     <Card className="max-w-md mx-auto p-8 text-center">
@@ -124,15 +190,13 @@ function SignInPrompt({ orgName }: { orgName: string }) {
       <p className="text-slate-600 mb-6">
         Sign in to join this organization and access the member directory.
       </p>
-      <Button onClick={() => navigate({ to: '/login' })}>
-        Sign In to Continue
-      </Button>
+      <Button onClick={handleSignIn}>Sign In to Continue</Button>
     </Card>
   )
 }
 
 interface JoinFormProps {
-  token: string
+  token?: string
   orgId: Id<'organizations'>
   orgName: string
   orgSlug?: string
@@ -141,6 +205,7 @@ interface JoinFormProps {
 function JoinForm({ token, orgId, orgName, orgSlug }: JoinFormProps) {
   const navigate = useNavigate()
   const joinOrg = useMutation(api.orgs.membership.joinOrg)
+  const profile = useQuery(api.profiles.getOrCreateProfile)
   const existingMembership = useQuery(api.orgs.membership.getMembership, {
     orgId,
   })
@@ -188,10 +253,16 @@ function JoinForm({ token, orgId, orgName, orgSlug }: JoinFormProps) {
         directoryVisibility: visibility,
       })
       toast.success(`Welcome to ${orgName}!`)
-      navigate({
-        to: '/org/$slug',
-        params: { slug: orgSlug || 'unknown' },
-      })
+
+      // Redirect based on profile status
+      if (!profile || profile.hasEnrichmentConversation !== true) {
+        navigate({ to: '/profile/edit' })
+      } else {
+        navigate({
+          to: '/org/$slug',
+          params: { slug: orgSlug || 'unknown' },
+        })
+      }
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : 'Failed to join organization',

@@ -255,7 +255,7 @@ function OrgAdminDashboard() {
               </Link>
             </Button>
 
-            <InviteLinkButton orgId={org._id} />
+            <InviteLinkButton orgId={org._id} slug={slug} />
 
             <Button variant="outline" className="h-auto py-4" asChild>
               <Link to="/org/$slug/admin/setup" params={{ slug }}>
@@ -344,7 +344,13 @@ function OrgAdminDashboard() {
 }
 
 // Separate component for invite link creation
-function InviteLinkButton({ orgId }: { orgId: Id<'organizations'> }) {
+function InviteLinkButton({
+  orgId,
+  slug,
+}: {
+  orgId: Id<'organizations'>
+  slug: string
+}) {
   const inviteLinks = useQuery(api.orgs.admin.getInviteLinks, { orgId })
   const createInvite = useMutation(api.orgs.admin.createInviteLink)
   const [isCreating, setIsCreating] = useState(false)
@@ -353,7 +359,7 @@ function InviteLinkButton({ orgId }: { orgId: Id<'organizations'> }) {
   const activeLink = inviteLinks?.[0]
 
   if (activeLink) {
-    const inviteUrl = `${window.location.origin}/org/join?token=${activeLink.token}`
+    const inviteUrl = `${window.location.origin}/org/${slug}/join?token=${activeLink.token}`
 
     const copyToClipboard = () => {
       navigator.clipboard.writeText(inviteUrl)

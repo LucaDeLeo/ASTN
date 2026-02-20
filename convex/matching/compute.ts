@@ -5,6 +5,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { internalAction } from '../_generated/server'
 import { internal } from '../_generated/api'
 import { log } from '../lib/logging'
+import { MODEL_QUALITY } from '../lib/models'
 import {
   MATCHING_SYSTEM_PROMPT,
   buildOpportunitiesContext,
@@ -14,7 +15,6 @@ import {
 import { matchResultSchema } from './validation'
 import type { Id } from '../_generated/dataModel'
 
-const MODEL_VERSION = 'claude-haiku-4-5-20251001'
 const BATCH_SIZE = 15 // Process up to 15 opportunities per LLM call
 const MAX_RETRIES = 10
 const RATE_LIMIT_DELAY_MS = 1000
@@ -172,7 +172,7 @@ export const processMatchBatch = internalAction({
           profileId,
           batchIndex,
           matches: [],
-          modelVersion: MODEL_VERSION,
+          modelVersion: MODEL_QUALITY,
           isLastBatch: true,
           previousOppIds,
           runTimestamp,
@@ -216,7 +216,7 @@ export const processMatchBatch = internalAction({
 
       const anthropic = new Anthropic()
       const response = await anthropic.messages.create({
-        model: MODEL_VERSION,
+        model: MODEL_QUALITY,
         max_tokens: 4096,
         tools: [matchOpportunitiesTool],
         tool_choice: { type: 'tool', name: 'score_opportunities' },
@@ -335,7 +335,7 @@ export const processMatchBatch = internalAction({
           confidence: m.confidence,
           recommendations: m.recommendations,
         })),
-        modelVersion: MODEL_VERSION,
+        modelVersion: MODEL_QUALITY,
         isLastBatch,
         previousOppIds,
         runTimestamp,

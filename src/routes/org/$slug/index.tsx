@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { AuthLoading, Authenticated, useQuery } from 'convex/react'
-import { Building2, Calendar, Settings, Users } from 'lucide-react'
+import { Building2, Calendar, Settings, UserPlus, Users } from 'lucide-react'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { AuthHeader } from '~/components/layout/auth-header'
@@ -153,7 +153,18 @@ function MembershipStatus({ orgId, orgSlug }: MembershipStatusProps) {
   }
 
   if (membership === null) {
-    return null
+    return (
+      <Button variant="outline" size="sm" asChild>
+        <Link
+          to="/org/$slug/join"
+          params={{ slug: orgSlug || 'unknown' }}
+          search={{ token: '' }}
+        >
+          <UserPlus className="size-4 mr-1" />
+          Join
+        </Link>
+      </Button>
+    )
   }
 
   return (

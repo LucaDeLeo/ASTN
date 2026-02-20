@@ -6,6 +6,7 @@ import { action } from '../_generated/server'
 import { internal } from '../_generated/api'
 import { requireAuth } from '../lib/auth'
 import { FIELD_LIMITS } from '../lib/limits'
+import { MODEL_QUALITY } from '../lib/models'
 
 // Career coach system prompt
 const CAREER_COACH_PROMPT = `You are a friendly career coach helping someone build their AI safety career profile.
@@ -191,10 +192,10 @@ export const sendMessage = action({
       { role: 'user' as const, content: message },
     ]
 
-    // Call Claude Haiku
+    // Call Claude Sonnet
     const anthropic = new Anthropic()
     const response = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: MODEL_QUALITY,
       max_tokens: 500,
       system: CAREER_COACH_PROMPT.replace(
         '{profileContext}',
@@ -302,10 +303,10 @@ export const sendCompletionMessage = action({
       `<profile_data>\n${profileContext}\n</profile_data>`,
     )
 
-    // Call Claude Haiku
+    // Call Claude Sonnet
     const anthropic = new Anthropic()
     const response = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: MODEL_QUALITY,
       max_tokens: 500,
       system: systemPrompt,
       messages: claudeMessages,

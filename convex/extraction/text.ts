@@ -6,12 +6,12 @@ import { action } from '../_generated/server'
 import { internal } from '../_generated/api'
 import { FIELD_LIMITS } from '../lib/limits'
 import { log } from '../lib/logging'
+import { MODEL_FAST } from '../lib/models'
 import { matchSkillsToTaxonomy } from './skills'
 import { EXTRACTION_SYSTEM_PROMPT, extractProfileTool } from './prompts'
 import { documentExtractionResultSchema } from './validation'
 import type { ExtractionResult } from './prompts'
 
-const MODEL_VERSION = 'claude-haiku-4-5-20251001'
 const MAX_RETRIES = 3
 
 export const extractFromText = action({
@@ -52,7 +52,7 @@ async function extractWithRetry(text: string): Promise<ExtractionResult> {
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
       const response = await anthropic.messages.create({
-        model: MODEL_VERSION,
+        model: MODEL_FAST,
         max_tokens: 4096,
         tools: [extractProfileTool],
         tool_choice: { type: 'tool', name: 'extract_profile_info' },

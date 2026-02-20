@@ -6,6 +6,7 @@ import { action } from '../_generated/server'
 import { internal } from '../_generated/api'
 import { requireAuth } from '../lib/auth'
 import { log } from '../lib/logging'
+import { MODEL_QUALITY } from '../lib/models'
 import { extractionResultSchema } from './validation'
 
 // Tool definition for profile extraction
@@ -77,7 +78,7 @@ export const extractFromConversation = action({
     const anthropic = new Anthropic()
 
     const response = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: MODEL_QUALITY,
       max_tokens: 1024,
       tools: [profileExtractionTool],
       tool_choice: { type: 'tool', name: 'extract_profile_info' },

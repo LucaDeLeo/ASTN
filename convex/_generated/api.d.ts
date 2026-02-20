@@ -55,6 +55,7 @@ import type * as lib_auth from "../lib/auth.js";
 import type * as lib_bookingValidation from "../lib/bookingValidation.js";
 import type * as lib_limits from "../lib/limits.js";
 import type * as lib_logging from "../lib/logging.js";
+import type * as lib_models from "../lib/models.js";
 import type * as lib_seedPlatformAdmin from "../lib/seedPlatformAdmin.js";
 import type * as lib_slug from "../lib/slug.js";
 import type * as matches from "../matches.js";
@@ -139,6 +140,7 @@ declare const fullApi: ApiFromModules<{
   "lib/bookingValidation": typeof lib_bookingValidation;
   "lib/limits": typeof lib_limits;
   "lib/logging": typeof lib_logging;
+  "lib/models": typeof lib_models;
   "lib/seedPlatformAdmin": typeof lib_seedPlatformAdmin;
   "lib/slug": typeof lib_slug;
   matches: typeof matches;

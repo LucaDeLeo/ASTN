@@ -9,6 +9,7 @@ import { SignIn } from '@clerk/clerk-react'
 import { useEffect } from 'react'
 import { api } from '../../convex/_generated/api'
 import { GradientBg } from '~/components/layout/GradientBg'
+import { clearPendingInvite, getPendingInvite } from '~/lib/pendingInvite'
 
 export const Route = createFileRoute('/login')({
   component: LoginPage,
@@ -38,6 +39,19 @@ function AuthenticatedRedirect() {
 
   useEffect(() => {
     if (profile === undefined) return // still loading
+
+    // Check for pending org invite saved before auth redirect
+    const pendingInvite = getPendingInvite()
+    if (pendingInvite) {
+      clearPendingInvite()
+      navigate({
+        to: '/org/$slug/join',
+        params: { slug: pendingInvite.slug },
+        search: { token: pendingInvite.token || '' },
+      })
+      return
+    }
+
     if (profile === null || profile.hasEnrichmentConversation !== true) {
       navigate({ to: '/profile/edit' })
     } else {

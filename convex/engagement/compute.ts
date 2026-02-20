@@ -5,6 +5,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { internalAction } from '../_generated/server'
 import { internal } from '../_generated/api'
 import { log } from '../lib/logging'
+import { MODEL_FAST } from '../lib/models'
 import {
   DEFAULT_THRESHOLDS,
   ENGAGEMENT_SYSTEM_PROMPT,
@@ -15,8 +16,6 @@ import { engagementResultSchema } from './validation'
 import type { Id } from '../_generated/dataModel'
 import type { ActionCtx } from '../_generated/server'
 import type { EngagementResult, EngagementSignals } from './prompts'
-
-const MODEL_VERSION = 'claude-haiku-4-5-20251001'
 
 // Helper: Gather engagement signals for a member
 async function getEngagementSignals(
@@ -114,7 +113,7 @@ export const computeMemberEngagement = internalAction({
     // Call Claude with forced tool_choice
     const anthropic = new Anthropic()
     const response = await anthropic.messages.create({
-      model: MODEL_VERSION,
+      model: MODEL_FAST,
       max_tokens: 500,
       tools: [classifyEngagementTool],
       tool_choice: { type: 'tool', name: 'classify_engagement' },
@@ -234,7 +233,7 @@ export const computeOrgEngagement = internalAction({
             adminExplanation: result.adminExplanation,
             userExplanation: result.userExplanation,
             signals: result.signals,
-            modelVersion: MODEL_VERSION,
+            modelVersion: MODEL_FAST,
           },
         )
 

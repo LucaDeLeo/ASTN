@@ -5,6 +5,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { internalAction } from '../_generated/server'
 import { internal } from '../_generated/api'
 import { log } from '../lib/logging'
+import { MODEL_QUALITY } from '../lib/models'
 import {
   ACTION_GENERATION_SYSTEM_PROMPT,
   buildActionGenerationContext,
@@ -12,8 +13,6 @@ import {
   generateCareerActionsTool,
 } from './prompts'
 import { actionResultSchema } from './validation'
-
-const MODEL_VERSION = 'claude-haiku-4-5-20251001'
 
 export const computeActionsForProfile = internalAction({
   args: { profileId: v.id('profiles') },
@@ -64,10 +63,10 @@ export const computeActionsForProfile = internalAction({
         preservedActions,
       )
 
-      // 5. Call Haiku for action generation
+      // 5. Call Sonnet for action generation
       const anthropic = new Anthropic()
       const response = await anthropic.messages.create({
-        model: MODEL_VERSION,
+        model: MODEL_QUALITY,
         max_tokens: 4096,
         tools: [generateCareerActionsTool],
         tool_choice: { type: 'tool', name: 'generate_career_actions' },
@@ -134,7 +133,7 @@ export const computeActionsForProfile = internalAction({
             rationale: a.rationale,
             profileBasis: a.profileBasis,
           })),
-          modelVersion: MODEL_VERSION,
+          modelVersion: MODEL_QUALITY,
         },
       )
 
