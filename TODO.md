@@ -1,33 +1,73 @@
-Let's make it not give info you already know.
+# TODO
 
-Have it get to the point faster.
+> For detailed UX audit with page-by-page breakdowns, see [`.planning/review/ux-review.md`](.planning/review/ux-review.md)
 
-Make it conciser for the matches.
+---
 
-Location doesn't work.
+## Bugs
 
-Some matches are duplicated.
+- [ ] Location doesn't work
+- [ ] Some matches are duplicated
+- [ ] Location string formatting inconsistent ("San Francisco Bay Area.USA" — period instead of comma) — _see UX review_
 
-Should have you make your profile immediatly upon getting on the page, when not signed up.
+---
 
-Add robust feedback feature.
+## LLM / Matching Quality
 
-Organizations in nav bar
+- [ ] Extraction biased toward technical profiles — ignores governance/policy interests, prioritizes short courses over actual degrees and current work experience _(Augusto: BlueDot courses weighted more than his Sociology degree and current comms/governance role)_
+- [ ] Matches skew too senior and too technical — suggests AI Engineer / Research Manager to beginners, scarce governance/communications options _(Augusto)_
+- [ ] Need more tags for non-technical profiles (governance, policy, communications, operations)
+- [ ] "Research communications" as the only communications tag is too narrow _(Augusto)_
+- [ ] Match explanations repeat info you already know — make them conciser, get to the point faster
+- [ ] Model feels sycophantic in enrichment chat _(Augusto)_
+- [ ] Put better info about the org in each match
 
-Maybe remove opportunities, as a simple directory list.
+---
 
-Move "your next steps" to it's own section.
+## Chat / Enrichment Experience
 
-Make it easy to apply to orgs and see which are near.
+- [ ] Chat input box too small — should be multi-line like WhatsApp Web, not a single line _(Augusto)_
+- [ ] Can't do line breaks when chatting — need Shift+Enter for newlines _(Augusto)_
+- [ ] Add streaming to chat
+- [ ] Extract info in a better, clearer way
+- [ ] Consider moving chat to its own separate section/page
 
-Make it an explicit part of the onboarding to set privacy and notification preferences. Figure out how to unify all setting and make them easily accessible.
+---
 
-Fix the flow for editing your profile.
+## Onboarding / Profile Flow
 
-Let's add info to the landing page explaining it's a prototype and what features are available.
+- [ ] Should prompt profile creation immediately upon landing (when not signed up)
+- [ ] Fix the flow for editing your profile (heading says "Create" even when editing) — _see UX review_
+- [ ] Make privacy and notification preferences an explicit part of onboarding; unify all settings and make them easily accessible
+- [ ] Add info to landing page explaining it's a prototype and what features are available
 
-Improve chat experience. Add streaming.
+---
 
-And make it extract info in a better clearer way. Maybe move the chat to it's own separate thing.
+## Opportunities / Matches UX
 
-Put better info about the org in each match.
+- [ ] Maybe remove opportunities as a standalone page, simplify to a directory list
+- [ ] Move "your next steps" to its own section
+- [ ] Add visa/residency/citizenship eligibility filters — some positions require NDAs or citizenship _(Augusto: RAND example)_
+- [ ] Replace "Not Found" salary displays — hide or say "Salary not listed" — _see UX review_
+- [ ] Make match cards fully clickable (currently only title text is clickable) — _see UX review_
+
+---
+
+## Navigation / Global
+
+- [ ] Organizations in nav bar — _done (1ad29c4)_
+- [ ] Make it easy to apply to orgs and see which are near
+- [ ] Add robust feedback feature
+- [ ] Add active states to navigation — _see UX review_
+
+---
+
+## User Feedback (Augusto, 12 Feb 2026)
+
+**Positive:**
+
+- Overall experience good, intuitive and fast
+- Enrichment conversation good for orienting and niching, gave good feedback
+- Auto-fill from conversation worked well, only minor tweaks needed
+
+**Issues:** captured in sections above, marked with _(Augusto)_
