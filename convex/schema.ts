@@ -143,6 +143,16 @@ export default defineSchema({
     // Match staleness tracking (set when match-affecting fields change)
     matchesStaleAt: v.optional(v.number()),
 
+    // Match computation progress (set during batch processing, cleared on completion)
+    matchProgress: v.optional(
+      v.object({
+        totalBatches: v.number(),
+        completedBatches: v.number(),
+        totalOpportunities: v.number(),
+        startedAt: v.number(),
+      }),
+    ),
+
     // Completeness tracking
     completedSections: v.optional(v.array(v.string())),
 
@@ -499,12 +509,14 @@ export default defineSchema({
       gap: v.optional(v.string()), // One actionable thing to strengthen application
     }),
 
-    // Probability (MATCH-03: dual framing with experimental label)
-    probability: v.object({
-      interviewChance: v.string(), // "Strong chance", "Good chance", "Moderate chance"
-      ranking: v.string(), // "Top 10%", "Top 20%", etc.
-      confidence: v.string(), // "HIGH", "MEDIUM", "LOW"
-    }),
+    // Probability (legacy — no longer generated, kept optional for existing documents)
+    probability: v.optional(
+      v.object({
+        interviewChance: v.string(),
+        ranking: v.string(),
+        confidence: v.string(),
+      }),
+    ),
 
     // Recommendations (MATCH-04: 1 specific + 1-2 general per match)
     recommendations: v.array(

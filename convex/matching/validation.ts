@@ -9,9 +9,6 @@ export const matchItemSchema = z.object({
     .string()
     .nullish()
     .transform((v) => v ?? undefined),
-  interviewChance: z.string(),
-  ranking: z.string(),
-  confidence: z.string(),
   recommendations: z
     .array(
       z.object({

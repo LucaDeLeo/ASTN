@@ -265,7 +265,8 @@ function LandingPage() {
     {
       icon: Sparkles,
       title: 'Match Explanations',
-      description: 'See your strengths, gaps, and probability for each role',
+      description:
+        'See your strengths, gaps, and recommendations for each role',
     },
     {
       icon: Zap,

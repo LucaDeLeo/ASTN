@@ -15,7 +15,6 @@ interface MatchTierSectionProps {
     isNew: boolean
     status?: 'active' | 'dismissed' | 'saved'
     explanation: { strengths: Array<string> }
-    probability?: { interviewChance: string; ranking: string }
     opportunity: {
       _id: string
       title: string

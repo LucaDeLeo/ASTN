@@ -9,9 +9,6 @@ const matchResultValidator = v.object({
   score: v.number(),
   strengths: v.array(v.string()),
   gap: v.optional(v.string()),
-  interviewChance: v.string(),
-  ranking: v.string(),
-  confidence: v.string(),
   recommendations: v.array(
     v.object({
       type: v.union(
@@ -29,11 +26,43 @@ const matchResultValidator = v.object({
   ),
 })
 
+// Set initial match progress on profile (called before first batch)
+export const setMatchProgress = internalMutation({
+  args: {
+    profileId: v.id('profiles'),
+    totalBatches: v.number(),
+    totalOpportunities: v.number(),
+  },
+  returns: v.null(),
+  handler: async (ctx, { profileId, totalBatches, totalOpportunities }) => {
+    await ctx.db.patch('profiles', profileId, {
+      matchProgress: {
+        totalBatches,
+        completedBatches: 0,
+        totalOpportunities,
+        startedAt: Date.now(),
+      },
+    })
+  },
+})
+
+// Clear match progress from profile (called on completion or error)
+export const clearMatchProgress = internalMutation({
+  args: { profileId: v.id('profiles') },
+  returns: v.null(),
+  handler: async (ctx, { profileId }) => {
+    await ctx.db.patch('profiles', profileId, {
+      matchProgress: undefined,
+    })
+  },
+})
+
 // Save a single batch of match results incrementally (chained action architecture)
 export const saveBatchResults = internalMutation({
   args: {
     profileId: v.id('profiles'),
     batchIndex: v.number(),
+    totalBatches: v.number(),
     matches: v.array(matchResultValidator),
     modelVersion: v.string(),
     isLastBatch: v.boolean(),
@@ -45,6 +74,7 @@ export const saveBatchResults = internalMutation({
     {
       profileId,
       batchIndex,
+      totalBatches,
       matches,
       modelVersion,
       isLastBatch,
@@ -92,15 +122,30 @@ export const saveBatchResults = internalMutation({
           strengths: match.strengths,
           ...(match.gap != null && { gap: match.gap }),
         },
-        probability: {
-          interviewChance: match.interviewChance,
-          ranking: match.ranking,
-          confidence: match.confidence,
-        },
         recommendations: match.recommendations,
         isNew,
         computedAt: runTimestamp,
         modelVersion,
+      })
+    }
+
+    // Update progress on profile
+    if (isLastBatch) {
+      // Clear progress entirely on completion
+      await ctx.db.patch('profiles', profileId, {
+        matchProgress: undefined,
+      })
+    } else {
+      // Read current progress to preserve totalOpportunities and startedAt
+      const profile = await ctx.db.get('profiles', profileId)
+      const existing = profile?.matchProgress
+      await ctx.db.patch('profiles', profileId, {
+        matchProgress: {
+          totalBatches,
+          completedBatches: batchIndex + 1,
+          totalOpportunities: existing?.totalOpportunities ?? 0,
+          startedAt: existing?.startedAt ?? Date.now(),
+        },
       })
     }
 

@@ -23,7 +23,6 @@ import { Button } from '~/components/ui/button'
 import { Card } from '~/components/ui/card'
 import { Badge } from '~/components/ui/badge'
 import { Spinner } from '~/components/ui/spinner'
-import { ProbabilityBadge } from '~/components/matches/ProbabilityBadge'
 
 export const Route = createFileRoute('/matches/$id')({
   loader: async ({ context, params }) => {
@@ -222,11 +221,6 @@ function MatchDetailContent() {
               <p className="text-slate-600 pl-6">{match.explanation.gap}</p>
             </div>
           )}
-        </Card>
-
-        {/* Probability assessment */}
-        <Card className="p-6 mb-6">
-          <ProbabilityBadge probability={match.probability} />
         </Card>
 
         {/* Recommendations */}

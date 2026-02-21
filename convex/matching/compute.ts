@@ -85,6 +85,13 @@ export const computeMatchesForProfile = internalAction({
       runTimestamp,
     })
 
+    // Set initial progress so the frontend can show a progress bar
+    await ctx.runMutation(internal.matching.mutations.setMatchProgress, {
+      profileId,
+      totalBatches,
+      totalOpportunities: opportunities.length,
+    })
+
     await ctx.scheduler.runAfter(
       0,
       internal.matching.compute.processMatchBatch,
@@ -171,6 +178,7 @@ export const processMatchBatch = internalAction({
         await ctx.runMutation(internal.matching.mutations.saveBatchResults, {
           profileId,
           batchIndex,
+          totalBatches,
           matches: [],
           modelVersion: MODEL_QUALITY,
           isLastBatch: true,
@@ -200,9 +208,6 @@ export const processMatchBatch = internalAction({
       score: number
       strengths: Array<string>
       gap?: string
-      interviewChance: string
-      ranking: string
-      confidence: string
       recommendations: Array<{
         type: 'specific' | 'skill' | 'experience'
         action: string
@@ -324,15 +329,13 @@ export const processMatchBatch = internalAction({
       await ctx.runMutation(internal.matching.mutations.saveBatchResults, {
         profileId,
         batchIndex,
+        totalBatches,
         matches: batchMatches.map((m) => ({
           opportunityId: m.opportunityId,
           tier: m.tier,
           score: m.score,
           strengths: m.strengths,
           gap: m.gap ?? undefined,
-          interviewChance: m.interviewChance,
-          ranking: m.ranking,
-          confidence: m.confidence,
           recommendations: m.recommendations,
         })),
         modelVersion: MODEL_QUALITY,

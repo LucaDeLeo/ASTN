@@ -22,10 +22,6 @@ interface MatchCardProps {
     explanation: {
       strengths: Array<string>
     }
-    probability?: {
-      interviewChance: string
-      ranking: string
-    }
     opportunity: {
       _id: string
       title: string
@@ -243,21 +239,11 @@ export function MatchCard({
           </p>
         )}
 
-        {/* Row 4: Probability + Deadline */}
-        {(match.probability || match.opportunity.deadline) && (
-          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-            {match.probability && (
-              <span className="font-medium text-primary">
-                {match.probability.ranking} ·{' '}
-                {match.probability.interviewChance}
-              </span>
-            )}
-            {match.opportunity.deadline && (
-              <span className="flex items-center gap-1">
-                <Calendar className="size-3" />
-                {formatDeadline(match.opportunity.deadline)}
-              </span>
-            )}
+        {/* Row 4: Deadline */}
+        {match.opportunity.deadline && (
+          <div className="mt-3 flex items-center gap-1 text-xs text-muted-foreground">
+            <Calendar className="size-3" />
+            {formatDeadline(match.opportunity.deadline)}
           </div>
         )}
       </Card>
