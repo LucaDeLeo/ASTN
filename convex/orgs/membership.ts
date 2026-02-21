@@ -126,6 +126,81 @@ export const joinOrg = mutation({
   },
 })
 
+// Join org by slug (used for auto-join after signup via invite link)
+export const joinOrgBySlug = mutation({
+  args: {
+    slug: v.string(),
+    inviteToken: v.optional(v.string()),
+  },
+  returns: v.union(
+    v.object({ success: v.literal(true), orgSlug: v.string() }),
+    v.object({ success: v.literal(false), reason: v.string() }),
+  ),
+  handler: async (ctx, { slug, inviteToken }) => {
+    const userId = await getUserId(ctx)
+    if (!userId) {
+      return { success: false as const, reason: 'Not authenticated' }
+    }
+
+    // Look up org by slug
+    const org = await ctx.db
+      .query('organizations')
+      .withIndex('by_slug', (q) => q.eq('slug', slug))
+      .first()
+
+    if (!org) {
+      return { success: false as const, reason: 'Organization not found' }
+    }
+
+    // Already a member? That's fine, just return success
+    const existing = await ctx.db
+      .query('orgMemberships')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .filter((q) => q.eq(q.field('orgId'), org._id))
+      .first()
+
+    if (existing) {
+      return { success: true as const, orgSlug: slug }
+    }
+
+    // Validate invite token if provided
+    let inviteMembership: { _id: Id<'orgMemberships'> } | null = null
+    if (inviteToken) {
+      const invite = await ctx.db
+        .query('orgInviteLinks')
+        .withIndex('by_token', (q) => q.eq('token', inviteToken))
+        .first()
+
+      if (!invite || invite.orgId !== org._id) {
+        return { success: false as const, reason: 'Invalid invite link' }
+      }
+      if (invite.expiresAt && invite.expiresAt < Date.now()) {
+        return { success: false as const, reason: 'Invite link has expired' }
+      }
+      inviteMembership = await ctx.db.get('orgMemberships', invite.createdBy)
+    }
+
+    // First member becomes admin
+    const existingMembers = await ctx.db
+      .query('orgMemberships')
+      .withIndex('by_org', (q) => q.eq('orgId', org._id))
+      .first()
+
+    const role = existingMembers ? 'member' : 'admin'
+
+    await ctx.db.insert('orgMemberships', {
+      userId,
+      orgId: org._id,
+      role,
+      directoryVisibility: 'visible',
+      joinedAt: Date.now(),
+      invitedBy: inviteMembership?._id,
+    })
+
+    return { success: true as const, orgSlug: slug }
+  },
+})
+
 // Leave an organization
 export const leaveOrg = mutation({
   args: { orgId: v.id('organizations') },

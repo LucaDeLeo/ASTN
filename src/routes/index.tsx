@@ -218,6 +218,8 @@ function PostAuthSetup() {
   const claimGuestApplications = useMutation(
     api.opportunityApplications.claimGuestApplications,
   )
+  const joinOrgBySlug = useMutation(api.orgs.membership.joinOrgBySlug)
+  const joiningRef = useRef(false)
 
   useEffect(() => {
     if (profile === undefined) return
@@ -230,15 +232,27 @@ function PostAuthSetup() {
     }
 
     const pendingInvite = getPendingInvite()
-    if (pendingInvite) {
+    if (pendingInvite && !joiningRef.current) {
       clearPendingInvite()
-      navigate({
-        to: '/org/$slug/join',
-        params: { slug: pendingInvite.slug },
-        search: { token: pendingInvite.token || '' },
+      joiningRef.current = true
+      joinOrgBySlug({
+        slug: pendingInvite.slug,
+        inviteToken: pendingInvite.token,
       })
+        .then((result) => {
+          if (result.success) {
+            navigate({
+              to: '/org/$slug',
+              params: { slug: result.orgSlug },
+            })
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          joiningRef.current = false
+        })
     }
-  }, [profile, navigate, claimGuestApplications])
+  }, [profile, navigate, claimGuestApplications, joinOrgBySlug])
 
   return null
 }
