@@ -2,6 +2,23 @@ import type { ActionCtx, MutationCtx, QueryCtx } from '../_generated/server'
 import type { Doc, Id } from '../_generated/dataModel'
 
 /**
+ * Try to look up a user's email from the legacy auth users table.
+ * Post-Clerk-migration, userId is a Clerk subject string (not a valid Convex
+ * document ID), so this will return null for migrated users.
+ */
+export async function getLegacyUserEmail(
+  ctx: QueryCtx | MutationCtx,
+  userId: string,
+): Promise<string | null> {
+  try {
+    const user = await ctx.db.get('users', userId as Id<'users'>)
+    return user?.email ?? null
+  } catch {
+    return null
+  }
+}
+
+/**
  * Get the current user's ID from Clerk identity.
  * Returns the Clerk subject (user_xxx) or null if not authenticated.
  */

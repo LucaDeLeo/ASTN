@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
 import { mutation, query } from '../_generated/server'
-import { getUserId } from '../lib/auth'
+import { getLegacyUserEmail, getUserId } from '../lib/auth'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import type { Doc, Id } from '../_generated/dataModel'
 
@@ -238,10 +238,7 @@ export const getAllMembersWithProfiles = query({
           .withIndex('by_user', (q) => q.eq('userId', membership.userId))
           .first()
 
-        // Get user email from auth users table
-        // userId is the string representation of the user's Id
-        const user = await ctx.db.get('users', membership.userId as Id<'users'>)
-        const email = user?.email ?? null
+        const email = await getLegacyUserEmail(ctx, membership.userId)
 
         // Calculate profile completeness
         let completeness = 0

@@ -4,7 +4,7 @@ import { Resend } from '@convex-dev/resend'
 import { internalMutation, internalQuery } from '../_generated/server'
 import { components } from '../_generated/api'
 import { log } from '../lib/logging'
-import type { Id } from '../_generated/dataModel'
+import { getLegacyUserEmail } from '../lib/auth'
 
 // Initialize Resend component
 // For production: set RESEND_API_KEY in Convex dashboard
@@ -103,9 +103,9 @@ export const getUsersForMatchAlertBatch = internalQuery({
       return userLocalHour === targetLocalHour
     })
 
-    // Pass 2: Batch fetch users with direct ID access
-    const users = await Promise.all(
-      eligible.map((p) => ctx.db.get('users', p.userId as Id<'users'>)),
+    // Pass 2: Batch fetch user emails from legacy auth table
+    const emails = await Promise.all(
+      eligible.map((p) => getLegacyUserEmail(ctx, p.userId)),
     )
 
     log('info', 'getUsersForMatchAlertBatch', {
@@ -124,12 +124,12 @@ export const getUsersForMatchAlertBatch = internalQuery({
     }> = []
 
     for (let i = 0; i < eligible.length; i++) {
-      const user = users[i]
+      const email = emails[i]
       const profile = eligible[i]
-      if (user?.email) {
+      if (email) {
         usersToNotify.push({
           userId: profile.userId,
-          email: user.email,
+          email,
           timezone: profile.notificationPreferences?.timezone || 'UTC',
           profileId: profile._id,
           userName: profile.name || 'there',
@@ -158,9 +158,9 @@ export const getUsersForWeeklyDigestBatch = internalQuery({
         profile.notificationPreferences.weeklyDigest.enabled,
     )
 
-    // Pass 2: Batch fetch users with direct ID access
-    const users = await Promise.all(
-      eligible.map((p) => ctx.db.get('users', p.userId as Id<'users'>)),
+    // Pass 2: Batch fetch user emails from legacy auth table
+    const emails = await Promise.all(
+      eligible.map((p) => getLegacyUserEmail(ctx, p.userId)),
     )
 
     log('info', 'getUsersForWeeklyDigestBatch', {
@@ -180,12 +180,12 @@ export const getUsersForWeeklyDigestBatch = internalQuery({
     }> = []
 
     for (let i = 0; i < eligible.length; i++) {
-      const user = users[i]
+      const email = emails[i]
       const profile = eligible[i]
-      if (user?.email) {
+      if (email) {
         usersToNotify.push({
           userId: profile.userId,
-          email: user.email,
+          email,
           profileId: profile._id,
           userName: profile.name || 'there',
           completedSections: profile.completedSections || [],
@@ -316,9 +316,9 @@ export const getUsersForDailyEventDigestBatch = internalQuery({
       return userLocalHour === targetLocalHour
     })
 
-    // Pass 2: Batch fetch users with direct ID access
-    const users = await Promise.all(
-      eligible.map((p) => ctx.db.get('users', p.userId as Id<'users'>)),
+    // Pass 2: Batch fetch user emails from legacy auth table
+    const emails = await Promise.all(
+      eligible.map((p) => getLegacyUserEmail(ctx, p.userId)),
     )
 
     log('info', 'getUsersForDailyEventDigestBatch', {
@@ -338,12 +338,12 @@ export const getUsersForDailyEventDigestBatch = internalQuery({
     }> = []
 
     for (let i = 0; i < eligible.length; i++) {
-      const user = users[i]
+      const email = emails[i]
       const profile = eligible[i]
-      if (user?.email) {
+      if (email) {
         usersToNotify.push({
           userId: profile.userId,
-          email: user.email,
+          email,
           timezone: profile.notificationPreferences?.timezone || 'UTC',
           profileId: profile._id,
           userName: profile.name || 'there',
@@ -375,9 +375,9 @@ export const getUsersForWeeklyEventDigestBatch = internalQuery({
       (profile) => profile.eventNotificationPreferences?.frequency === 'weekly',
     )
 
-    // Pass 2: Batch fetch users with direct ID access
-    const users = await Promise.all(
-      eligible.map((p) => ctx.db.get('users', p.userId as Id<'users'>)),
+    // Pass 2: Batch fetch user emails from legacy auth table
+    const emails = await Promise.all(
+      eligible.map((p) => getLegacyUserEmail(ctx, p.userId)),
     )
 
     log('info', 'getUsersForWeeklyEventDigestBatch', {
@@ -396,12 +396,12 @@ export const getUsersForWeeklyEventDigestBatch = internalQuery({
     }> = []
 
     for (let i = 0; i < eligible.length; i++) {
-      const user = users[i]
+      const email = emails[i]
       const profile = eligible[i]
-      if (user?.email) {
+      if (email) {
         usersToNotify.push({
           userId: profile.userId,
-          email: user.email,
+          email,
           profileId: profile._id,
           userName: profile.name || 'there',
           mutedOrgIds: profile.eventNotificationPreferences!.mutedOrgIds || [],

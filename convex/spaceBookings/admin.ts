@@ -6,8 +6,7 @@ import {
   isValidDateString,
   validateBookingTime,
 } from '../lib/bookingValidation'
-import { requireSpaceAdmin } from '../lib/auth'
-import type { Id } from '../_generated/dataModel'
+import { getLegacyUserEmail, requireSpaceAdmin } from '../lib/auth'
 
 // ---------- Queries ----------
 
@@ -197,8 +196,8 @@ export const getAdminBookingsForDateRange = query({
             .withIndex('by_user', (q) => q.eq('userId', booking.userId))
             .first()
 
-          // Get email from users table
-          const user = await ctx.db.get('users', booking.userId as Id<'users'>)
+          // Get email from legacy auth users table
+          const email = await getLegacyUserEmail(ctx, booking.userId)
 
           if (memberProfile) {
             profile = {
@@ -206,7 +205,7 @@ export const getAdminBookingsForDateRange = query({
               headline: memberProfile.headline,
               organization: undefined,
               title: undefined,
-              email: user?.email,
+              email: email ?? undefined,
               isGuest: false,
             }
           }

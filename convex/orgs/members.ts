@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
 import { query } from '../_generated/server'
-import { getUserId } from '../lib/auth'
+import { getLegacyUserEmail, getUserId } from '../lib/auth'
 import type { Doc, Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
 
@@ -74,9 +74,7 @@ export const getMemberProfileForAdmin = query({
       return sectionVis !== 'private'
     }
 
-    // Get user email
-    const user = await ctx.db.get('users', userId as Id<'users'>)
-    const email = user?.email ?? null
+    const email = await getLegacyUserEmail(ctx, userId)
 
     return {
       restricted: false,
