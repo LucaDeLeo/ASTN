@@ -242,6 +242,7 @@ function AdminOpportunitiesPage() {
 
           {/* Dialog */}
           <OpportunityFormDialog
+            key={editingOpp?._id ?? 'new'}
             open={dialogOpen}
             onOpenChange={(open) => {
               setDialogOpen(open)
