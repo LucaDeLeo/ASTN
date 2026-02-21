@@ -1,25 +1,10 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import { MessageSquare, Send } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import { Textarea } from '~/components/ui/textarea'
 import { cn } from '~/lib/utils'
-
-/**
- * Simple markdown renderer for chat messages.
- * Handles **bold** and *italic* formatting.
- */
-function renderMarkdown(text: string): React.ReactNode {
-  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g)
-  return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i}>{part.slice(2, -2)}</strong>
-    }
-    if (part.startsWith('*') && part.endsWith('*')) {
-      return <em key={i}>{part.slice(1, -1)}</em>
-    }
-    return part
-  })
-}
+import { renderMarkdown } from '~/lib/render-markdown'
 
 interface Message {
   _id: string
@@ -49,6 +34,7 @@ export function EnrichmentChat({
   streamingText = '',
   isStreaming = false,
 }: EnrichmentChatProps) {
+  const navigate = useNavigate()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -63,6 +49,20 @@ export function EnrichmentChat({
       textareaRef.current?.focus()
     }
   }, [disabled])
+
+  // Intercept clicks on internal links for SPA navigation
+  const handleMessagesClick = useCallback(
+    (e: React.MouseEvent) => {
+      const target = (e.target as HTMLElement).closest('a[href]')
+      if (!target) return
+      const href = target.getAttribute('href')
+      if (href && href.startsWith('/')) {
+        e.preventDefault()
+        navigate({ to: href })
+      }
+    },
+    [navigate],
+  )
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -85,7 +85,10 @@ export function EnrichmentChat({
   return (
     <div className="flex flex-col h-[500px]">
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div
+        className="flex-1 overflow-y-auto p-4 space-y-4"
+        onClick={handleMessagesClick}
+      >
         {visibleMessages.length === 0 && !streamingText ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="size-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">

@@ -1,4 +1,5 @@
 import { Component, useCallback, useEffect, useRef, useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import { useMutation, useQuery } from 'convex/react'
 import {
   optimisticallySendMessage,
@@ -34,6 +35,7 @@ import { Button } from '~/components/ui/button'
 import { Textarea } from '~/components/ui/textarea'
 import { Switch } from '~/components/ui/switch'
 import { cn } from '~/lib/utils'
+import { renderMarkdown } from '~/lib/render-markdown'
 
 // ErrorBoundary to prevent one bad message from crashing the entire chat
 class MessageErrorBoundary extends Component<
@@ -88,6 +90,8 @@ export function AgentChat({
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  const navigate = useNavigate()
 
   // Smart input: LinkedIn URLs, CV pastes, file uploads
   const smartInput = useSmartInput({ profileId, threadId })
@@ -264,6 +268,20 @@ export function AgentChat({
     })
   }
 
+  // Intercept clicks on internal links for SPA navigation
+  const handleMessagesClick = useCallback(
+    (e: React.MouseEvent) => {
+      const target = (e.target as HTMLElement).closest('a[href]')
+      if (!target) return
+      const href = target.getAttribute('href')
+      if (href && href.startsWith('/')) {
+        e.preventDefault()
+        navigate({ to: href })
+      }
+    },
+    [navigate],
+  )
+
   // Context label for pages where rich data is loaded into the agent
   const contextLabel = (() => {
     if (!pageContext) return null
@@ -319,6 +337,7 @@ export function AgentChat({
       <div
         ref={messagesContainerRef}
         className="relative flex-1 overflow-y-auto p-4 space-y-4"
+        onClick={handleMessagesClick}
       >
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-6">
@@ -836,20 +855,4 @@ function ToolCallInline({
       )}
     </div>
   )
-}
-
-// Simple markdown renderer (bold and italic)
-function renderMarkdown(text: string): React.ReactNode {
-  // Runtime guard: defensive — text may not be a string at runtime
-  if (typeof text !== 'string') return String((text as unknown) ?? '')
-  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g)
-  return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i}>{part.slice(2, -2)}</strong>
-    }
-    if (part.startsWith('*') && part.endsWith('*')) {
-      return <em key={i}>{part.slice(1, -1)}</em>
-    }
-    return part
-  })
 }

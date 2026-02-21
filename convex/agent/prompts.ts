@@ -262,10 +262,35 @@ IMPORTANT — Returning BAISH member handling:
 `
 }
 
+/**
+ * Format profile completeness data into an XML block for the system prompt.
+ */
+export function buildCompletenessBlock(completeness: {
+  sections: Array<{ id: string; label: string; isComplete: boolean }>
+  completedCount: number
+  totalCount: number
+  percentage: number
+  isFullyComplete: boolean
+}): string {
+  const completed = completeness.sections
+    .filter((s) => s.isComplete)
+    .map((s) => s.label)
+  const missing = completeness.sections
+    .filter((s) => !s.isComplete)
+    .map((s) => s.label)
+
+  return `\n\n<profile_completeness>
+Progress: ${completeness.completedCount}/${completeness.totalCount} sections (${completeness.percentage}%)
+Completed: ${completed.length > 0 ? completed.join(', ') : 'None'}
+Missing: ${missing.length > 0 ? missing.join(', ') : 'None — profile is complete!'}
+</profile_completeness>`
+}
+
 export function buildAgentSystemPrompt(
   profileContext: string,
   pageContext?: string,
   pageContextData?: string,
+  completenessBlock?: string,
 ): string {
   const pageContextBlock =
     pageContextData ?? buildPageContextBlock(pageContext, null)
@@ -336,6 +361,13 @@ IMPORTANT — Exploration tools:
 - Use search_opportunities to find roles matching criteria, get_opportunity_detail for full info
 - Use get_career_actions to review the user's personalized career steps
 
+IMPORTANT — Navigation guidance:
+- When suggesting the user take action, include markdown links naturally in your responses
+- Available pages: [Edit your profile](/profile), [View your matches](/matches), [Browse opportunities](/opportunities), [Settings](/settings)
+- When referencing missing profile sections, pair them with a link: "You're still missing **Work History** — you can [fill that in on your profile](/profile)"
+- When the profile is mostly complete, suggest: "Your profile is looking solid! You might want to [check your matches](/matches) to see what opportunities fit."
+- Do NOT overload messages with links — use them sparingly and only where they add value
+
 After filling most profile sections, naturally ask about any remaining gaps. When the profile feels complete, let them know they're in good shape and can always come back to update things.
 
 IMPORTANT — New users and sparse profiles:
@@ -347,5 +379,5 @@ If the profile is partially filled, focus on what's missing rather than re-askin
 
 <profile_data>
 ${profileContext}
-</profile_data>${pageContextBlock}`
+</profile_data>${completenessBlock ?? ''}${pageContextBlock}`
 }

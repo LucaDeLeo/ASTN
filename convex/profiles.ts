@@ -45,16 +45,6 @@ const COMPLETENESS_SECTIONS = [
     },
   },
   {
-    id: 'matchPreferences',
-    label: 'Match Preferences',
-    check: (profile: Record<string, unknown>) => {
-      const prefs = profile.matchPreferences as
-        | { remotePreference?: string }
-        | undefined
-      return prefs !== undefined && prefs.remotePreference !== undefined
-    },
-  },
-  {
     id: 'privacy',
     label: 'Privacy Settings',
     check: (profile: Record<string, unknown>) =>
@@ -64,6 +54,42 @@ const COMPLETENESS_SECTIONS = [
       'defaultVisibility' in profile.privacySettings,
   },
 ]
+
+/** Compute profile completeness from a profile record (shared logic). */
+export function computeProfileCompleteness(
+  profile: Record<string, unknown> | null,
+) {
+  if (!profile) {
+    return {
+      sections: COMPLETENESS_SECTIONS.map((section) => ({
+        id: section.id,
+        label: section.label,
+        isComplete: false,
+      })),
+      completedCount: 0,
+      totalCount: COMPLETENESS_SECTIONS.length,
+      percentage: 0,
+      isFullyComplete: false,
+    }
+  }
+
+  const sections = COMPLETENESS_SECTIONS.map((section) => ({
+    id: section.id,
+    label: section.label,
+    isComplete: section.check(profile),
+  }))
+
+  const completedCount = sections.filter((s) => s.isComplete).length
+  const totalCount = sections.length
+
+  return {
+    sections,
+    completedCount,
+    totalCount,
+    percentage: Math.round((completedCount / totalCount) * 100),
+    isFullyComplete: completedCount === totalCount,
+  }
+}
 
 // Get or create profile for current user
 export const getOrCreateProfile = query({
@@ -274,22 +300,9 @@ export const getCompleteness = query({
       return null
     }
 
-    const sections = COMPLETENESS_SECTIONS.map((section) => ({
-      id: section.id,
-      label: section.label,
-      isComplete: section.check(profile as unknown as Record<string, unknown>),
-    }))
-
-    const completedCount = sections.filter((s) => s.isComplete).length
-    const totalCount = sections.length
-
-    return {
-      sections,
-      completedCount,
-      totalCount,
-      percentage: Math.round((completedCount / totalCount) * 100),
-      isFullyComplete: completedCount === totalCount,
-    }
+    return computeProfileCompleteness(
+      profile as unknown as Record<string, unknown>,
+    )
   },
 })
 
@@ -400,37 +413,9 @@ export const getMyCompleteness = query({
       .withIndex('by_user', (q) => q.eq('userId', userId))
       .first()
 
-    if (!profile) {
-      // Return empty completeness for non-existent profile
-      return {
-        sections: COMPLETENESS_SECTIONS.map((section) => ({
-          id: section.id,
-          label: section.label,
-          isComplete: false,
-        })),
-        completedCount: 0,
-        totalCount: COMPLETENESS_SECTIONS.length,
-        percentage: 0,
-        isFullyComplete: false,
-      }
-    }
-
-    const sections = COMPLETENESS_SECTIONS.map((section) => ({
-      id: section.id,
-      label: section.label,
-      isComplete: section.check(profile as unknown as Record<string, unknown>),
-    }))
-
-    const completedCount = sections.filter((s) => s.isComplete).length
-    const totalCount = sections.length
-
-    return {
-      sections,
-      completedCount,
-      totalCount,
-      percentage: Math.round((completedCount / totalCount) * 100),
-      isFullyComplete: completedCount === totalCount,
-    }
+    return computeProfileCompleteness(
+      profile ? (profile as unknown as Record<string, unknown>) : null,
+    )
   },
 })
 

@@ -4,9 +4,11 @@ import { v } from 'convex/values'
 import { internal } from '../_generated/api'
 import { internalAction } from '../_generated/server'
 import { buildProfileContext } from '../enrichment/conversation'
+import { computeProfileCompleteness } from '../profiles'
 import {
   buildAgentSystemPrompt,
   buildBaishContextBlock,
+  buildCompletenessBlock,
   buildPageContextBlock,
 } from './prompts'
 import { profileAgent } from './index'
@@ -83,6 +85,12 @@ export const streamResponse = internalAction({
 
     const pageContextData = buildPageContextBlock(pageContext, entityData)
 
+    // Compute profile completeness for the system prompt
+    const completeness = computeProfileCompleteness(
+      profile as unknown as Record<string, unknown> | null,
+    )
+    const completenessBlock = buildCompletenessBlock(completeness)
+
     // Check for BAISH CRM data for new profiles
     // Profile from DB has hasEnrichmentConversation but ProfileData type doesn't include it
     const fullProfile = profile as
@@ -104,8 +112,12 @@ export const streamResponse = internalAction({
     }
 
     const system =
-      buildAgentSystemPrompt(profileContext, pageContext, pageContextData) +
-      baishContextBlock
+      buildAgentSystemPrompt(
+        profileContext,
+        pageContext,
+        pageContextData,
+        completenessBlock,
+      ) + baishContextBlock
 
     const { thread } = await profileAgent.continueThread(ctx, { threadId })
     // Type assertion needed: @convex-dev/agent generic resolution for
