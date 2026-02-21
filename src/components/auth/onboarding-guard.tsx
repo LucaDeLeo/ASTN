@@ -1,4 +1,5 @@
-import { useQuery } from 'convex/react'
+import { useEffect, useRef } from 'react'
+import { useMutation, useQuery } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import { Spinner } from '~/components/ui/spinner'
 
@@ -9,18 +10,21 @@ import { Spinner } from '~/components/ui/spinner'
  */
 export function OnboardingGuard({ children }: { children: React.ReactNode }) {
   const profile = useQuery(api.profiles.getOrCreateProfile)
+  const createProfile = useMutation(api.profiles.create)
+  const creating = useRef(false)
 
-  // Loading
-  if (profile === undefined) {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">
-        <Spinner />
-      </div>
-    )
-  }
+  // Auto-create profile for authenticated users who don't have one yet
+  useEffect(() => {
+    if (profile === null && !creating.current) {
+      creating.current = true
+      createProfile().finally(() => {
+        creating.current = false
+      })
+    }
+  }, [profile, createProfile])
 
-  // Profile will be auto-created by getOrCreateProfile, but guard just in case
-  if (profile === null) {
+  // Loading or creating
+  if (!profile) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">
         <Spinner />
