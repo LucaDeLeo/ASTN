@@ -585,7 +585,7 @@ function MessageBubble({
   isLastUserMessage?: boolean
   onEdit?: (text: string, order: number) => void
 }) {
-  // Guard: ensure text is always a string (ai@5/6 compat — runtime type may differ)
+  // Guard: ensure text is always a string (defensive — runtime type may differ)
   const rawText = message.text as unknown
   const messageText =
     typeof rawText === 'string' ? rawText : String(rawText ?? '')
@@ -651,7 +651,7 @@ function MessageBubble({
 
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i]
-    // Guard: ensure part.text is a string (ai@5/6 compat — runtime type may differ)
+    // Guard: ensure part.text is a string (defensive — runtime type may differ)
     const rawPartText = part.type === 'text' ? (part.text as unknown) : null
     const partText =
       rawPartText != null
@@ -788,7 +788,7 @@ function ToolCallInline({
 
 // Simple markdown renderer (bold and italic)
 function renderMarkdown(text: string): React.ReactNode {
-  // Runtime guard: ai@5/6 compat — text may not be a string at runtime
+  // Runtime guard: defensive — text may not be a string at runtime
   if (typeof text !== 'string') return String((text as unknown) ?? '')
   const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g)
   return parts.map((part, i) => {

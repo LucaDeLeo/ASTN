@@ -19,7 +19,7 @@
     "@ai-sdk/anthropic": "^3.0.46",
     "@anthropic-ai/sdk": "^0.71.2",
     "@clerk/clerk-react": "^5.60.0",
-    "@convex-dev/agent": "^0.3.2",
+    "@convex-dev/agent": "0.6.0-alpha.1",
     "@convex-dev/persistent-text-streaming": "^0.3.0",
     "@convex-dev/react-query": "^0.0.0-alpha.11",
     "@convex-dev/resend": "^0.2.3",

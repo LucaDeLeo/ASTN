@@ -55,7 +55,7 @@ async function getProfile(ctx: {
 export const updateBasicInfo = createTool({
   description:
     "Update the user's basic profile info. Call with any subset of: name, pronouns, location, headline, linkedinUrl.",
-  args: z.object({
+  inputSchema: z.object({
     name: z.string().optional().describe("The user's full name"),
     pronouns: z
       .string()
@@ -78,32 +78,32 @@ export const updateBasicInfo = createTool({
         'LinkedIn profile URL, e.g. "https://linkedin.com/in/username"',
       ),
   }),
-  handler: async (ctx, args): Promise<string> => {
+  execute: async (ctx, input): Promise<string> => {
     const profile = await getProfile(ctx)
     if (!profile) return 'Error: profile not found'
 
     const updates: Record<string, string> = {}
     const previousValues: Record<string, string | undefined> = {}
 
-    if (args.name !== undefined) {
+    if (input.name !== undefined) {
       previousValues.name = profile.name
-      updates.name = args.name
+      updates.name = input.name
     }
-    if (args.pronouns !== undefined) {
+    if (input.pronouns !== undefined) {
       previousValues.pronouns = profile.pronouns
-      updates.pronouns = args.pronouns
+      updates.pronouns = input.pronouns
     }
-    if (args.location !== undefined) {
+    if (input.location !== undefined) {
       previousValues.location = profile.location
-      updates.location = args.location
+      updates.location = input.location
     }
-    if (args.headline !== undefined) {
+    if (input.headline !== undefined) {
       previousValues.headline = profile.headline
-      updates.headline = args.headline
+      updates.headline = input.headline
     }
-    if (args.linkedinUrl !== undefined) {
+    if (input.linkedinUrl !== undefined) {
       previousValues.linkedinUrl = profile.linkedinUrl
-      updates.linkedinUrl = args.linkedinUrl
+      updates.linkedinUrl = input.linkedinUrl
     }
 
     if (Object.keys(updates).length === 0) return 'No updates provided'
@@ -135,7 +135,7 @@ export const updateBasicInfo = createTool({
 export const addEducation = createTool({
   description:
     "Add an education entry to the user's profile. Appends to existing education array.",
-  args: z.object({
+  inputSchema: z.object({
     institution: z.string().describe('Name of the institution'),
     degree: z
       .string()
@@ -149,22 +149,22 @@ export const addEducation = createTool({
     endYear: z.number().optional().describe('Year completed'),
     current: z.boolean().optional().describe('Whether currently studying here'),
   }),
-  handler: async (ctx, args): Promise<string> => {
+  execute: async (ctx, input): Promise<string> => {
     const profile = await getProfile(ctx)
     if (!profile) return 'Error: profile not found'
 
     const existing = profile.education ?? []
     const newEntry = {
-      institution: args.institution,
-      degree: args.degree,
-      field: args.field,
-      startYear: args.startYear,
-      endYear: args.endYear,
-      current: args.current,
+      institution: input.institution,
+      degree: input.degree,
+      field: input.field,
+      startYear: input.startYear,
+      endYear: input.endYear,
+      current: input.current,
     }
     const updated = [...existing, newEntry]
 
-    const displayText = `Added education: ${args.degree ? `${args.degree} ` : ''}${args.field ? `in ${args.field} ` : ''}at ${args.institution}`
+    const displayText = `Added education: ${input.degree ? `${input.degree} ` : ''}${input.field ? `in ${input.field} ` : ''}at ${input.institution}`
 
     await ctx.runMutation(
       internal.agent.mutations.applyToolChange as never,
@@ -185,7 +185,7 @@ export const addEducation = createTool({
 export const addWorkExperience = createTool({
   description:
     "Add a work experience entry to the user's profile. Appends to existing work history array. Dates should be YYYY-MM format strings which will be converted to timestamps.",
-  args: z.object({
+  inputSchema: z.object({
     organization: z.string().describe('Company or organization name'),
     title: z.string().describe('Job title'),
     startDate: z
@@ -202,22 +202,22 @@ export const addWorkExperience = createTool({
       .describe('Whether this is the current role'),
     description: z.string().optional().describe('Brief role description'),
   }),
-  handler: async (ctx, args): Promise<string> => {
+  execute: async (ctx, input): Promise<string> => {
     const profile = await getProfile(ctx)
     if (!profile) return 'Error: profile not found'
 
     const existing = profile.workHistory ?? []
     const newEntry = {
-      organization: args.organization,
-      title: args.title,
-      startDate: convertDateString(args.startDate),
-      endDate: convertDateString(args.endDate),
-      current: args.current,
-      description: args.description,
+      organization: input.organization,
+      title: input.title,
+      startDate: convertDateString(input.startDate),
+      endDate: convertDateString(input.endDate),
+      current: input.current,
+      description: input.description,
     }
     const updated = [...existing, newEntry]
 
-    const displayText = `Added work experience: ${args.title} at ${args.organization}`
+    const displayText = `Added work experience: ${input.title} at ${input.organization}`
 
     await ctx.runMutation(
       internal.agent.mutations.applyToolChange as never,
@@ -237,12 +237,12 @@ export const addWorkExperience = createTool({
 
 export const setSkills = createTool({
   description: `Replace the user's skills array. Use ONLY skill names from the taxonomy: ${SKILLS_LIST_STRING}. Map mentioned skills to the closest match in the taxonomy.`,
-  args: z.object({
+  inputSchema: z.object({
     skills: z
       .array(z.string())
       .describe('Array of skill names from the taxonomy'),
   }),
-  handler: async (ctx, args): Promise<string> => {
+  execute: async (ctx, input): Promise<string> => {
     const profile = await getProfile(ctx)
     if (!profile) return 'Error: profile not found'
 
@@ -256,7 +256,7 @@ export const setSkills = createTool({
         threadId: ctx.threadId,
         toolName: 'set_skills',
         displayText,
-        updates: JSON.stringify({ skills: args.skills }),
+        updates: JSON.stringify({ skills: input.skills }),
         previousValues: JSON.stringify({ skills: existing }),
       } as never,
     )
@@ -268,10 +268,10 @@ export const setSkills = createTool({
 export const setCareerGoals = createTool({
   description:
     "Set the user's career goals description. A paragraph summarizing their aspirations and direction.",
-  args: z.object({
+  inputSchema: z.object({
     careerGoals: z.string().describe('Career goals paragraph'),
   }),
-  handler: async (ctx, args): Promise<string> => {
+  execute: async (ctx, input): Promise<string> => {
     const profile = await getProfile(ctx)
     if (!profile) return 'Error: profile not found'
 
@@ -285,7 +285,7 @@ export const setCareerGoals = createTool({
         threadId: ctx.threadId,
         toolName: 'set_career_goals',
         displayText,
-        updates: JSON.stringify({ careerGoals: args.careerGoals }),
+        updates: JSON.stringify({ careerGoals: input.careerGoals }),
         previousValues: JSON.stringify({ careerGoals: existing }),
       } as never,
     )
@@ -297,12 +297,12 @@ export const setCareerGoals = createTool({
 export const setAiSafetyInterests = createTool({
   description:
     "Set the user's AI safety interest areas. Examples: technical alignment, governance, policy, interpretability, field-building, coordination, red teaming.",
-  args: z.object({
+  inputSchema: z.object({
     interests: z
       .array(z.string())
       .describe('Array of AI safety interest areas'),
   }),
-  handler: async (ctx, args): Promise<string> => {
+  execute: async (ctx, input): Promise<string> => {
     const profile = await getProfile(ctx)
     if (!profile) return 'Error: profile not found'
 
@@ -316,7 +316,7 @@ export const setAiSafetyInterests = createTool({
         threadId: ctx.threadId,
         toolName: 'set_ai_safety_interests',
         displayText,
-        updates: JSON.stringify({ aiSafetyInterests: args.interests }),
+        updates: JSON.stringify({ aiSafetyInterests: input.interests }),
         previousValues: JSON.stringify({ aiSafetyInterests: existing }),
       } as never,
     )
@@ -328,10 +328,10 @@ export const setAiSafetyInterests = createTool({
 export const setSeeking = createTool({
   description:
     "Set what the user is seeking — their desired role type or contribution. E.g. 'Full-time research position in alignment', 'Part-time policy consulting', 'Volunteer field-building'.",
-  args: z.object({
+  inputSchema: z.object({
     seeking: z.string().describe('What the user is looking for'),
   }),
-  handler: async (ctx, args): Promise<string> => {
+  execute: async (ctx, input): Promise<string> => {
     const profile = await getProfile(ctx)
     if (!profile) return 'Error: profile not found'
 
@@ -345,7 +345,7 @@ export const setSeeking = createTool({
         threadId: ctx.threadId,
         toolName: 'set_seeking',
         displayText,
-        updates: JSON.stringify({ seeking: args.seeking }),
+        updates: JSON.stringify({ seeking: input.seeking }),
         previousValues: JSON.stringify({ seeking: existing }),
       } as never,
     )
@@ -357,7 +357,7 @@ export const setSeeking = createTool({
 export const setMatchPreferences = createTool({
   description:
     "Set the user's match preferences for opportunity filtering. Call when they mention constraints like remote-only, role types, relocation, visa, salary, availability, or commitment type. Merges with existing preferences — only sets fields you provide.",
-  args: z.object({
+  inputSchema: z.object({
     remotePreference: z
       .enum(['remote_only', 'on_site_ok', 'no_preference'])
       .optional()
@@ -410,7 +410,7 @@ export const setMatchPreferences = createTool({
       .optional()
       .describe('Acceptable commitment types'),
   }),
-  handler: async (ctx, args): Promise<string> => {
+  execute: async (ctx, input): Promise<string> => {
     const profile = await getProfile(ctx)
     if (!profile) return 'Error: profile not found'
 
@@ -418,43 +418,44 @@ export const setMatchPreferences = createTool({
     const existing = profile.matchPreferences ?? {}
     const merged = { ...existing }
 
-    if (args.remotePreference !== undefined)
-      merged.remotePreference = args.remotePreference
-    if (args.roleTypes !== undefined) merged.roleTypes = args.roleTypes
-    if (args.experienceLevels !== undefined)
-      merged.experienceLevels = args.experienceLevels
-    if (args.willingToRelocate !== undefined)
-      merged.willingToRelocate = args.willingToRelocate
-    if (args.workAuthorization !== undefined)
-      merged.workAuthorization = args.workAuthorization
-    if (args.minimumSalaryUSD !== undefined)
-      merged.minimumSalaryUSD = args.minimumSalaryUSD
-    if (args.availability !== undefined) merged.availability = args.availability
-    if (args.commitmentTypes !== undefined)
-      merged.commitmentTypes = args.commitmentTypes
+    if (input.remotePreference !== undefined)
+      merged.remotePreference = input.remotePreference
+    if (input.roleTypes !== undefined) merged.roleTypes = input.roleTypes
+    if (input.experienceLevels !== undefined)
+      merged.experienceLevels = input.experienceLevels
+    if (input.willingToRelocate !== undefined)
+      merged.willingToRelocate = input.willingToRelocate
+    if (input.workAuthorization !== undefined)
+      merged.workAuthorization = input.workAuthorization
+    if (input.minimumSalaryUSD !== undefined)
+      merged.minimumSalaryUSD = input.minimumSalaryUSD
+    if (input.availability !== undefined)
+      merged.availability = input.availability
+    if (input.commitmentTypes !== undefined)
+      merged.commitmentTypes = input.commitmentTypes
 
     const displayParts: Array<string> = []
-    if (args.remotePreference)
-      displayParts.push(`remote: ${args.remotePreference.replace(/_/g, ' ')}`)
-    if (args.roleTypes?.length)
-      displayParts.push(`roles: ${args.roleTypes.join(', ')}`)
-    if (args.experienceLevels?.length)
-      displayParts.push(`levels: ${args.experienceLevels.join(', ')}`)
-    if (args.willingToRelocate !== undefined)
+    if (input.remotePreference)
+      displayParts.push(`remote: ${input.remotePreference.replace(/_/g, ' ')}`)
+    if (input.roleTypes?.length)
+      displayParts.push(`roles: ${input.roleTypes.join(', ')}`)
+    if (input.experienceLevels?.length)
+      displayParts.push(`levels: ${input.experienceLevels.join(', ')}`)
+    if (input.willingToRelocate !== undefined)
       displayParts.push(
-        args.willingToRelocate ? 'willing to relocate' : 'not relocating',
+        input.willingToRelocate ? 'willing to relocate' : 'not relocating',
       )
-    if (args.workAuthorization)
-      displayParts.push(`authorization: ${args.workAuthorization}`)
-    if (args.minimumSalaryUSD)
+    if (input.workAuthorization)
+      displayParts.push(`authorization: ${input.workAuthorization}`)
+    if (input.minimumSalaryUSD)
       displayParts.push(
-        `min salary: $${args.minimumSalaryUSD.toLocaleString()}`,
+        `min salary: $${input.minimumSalaryUSD.toLocaleString()}`,
       )
-    if (args.availability)
-      displayParts.push(`available: ${args.availability.replace(/_/g, ' ')}`)
-    if (args.commitmentTypes?.length)
+    if (input.availability)
+      displayParts.push(`available: ${input.availability.replace(/_/g, ' ')}`)
+    if (input.commitmentTypes?.length)
       displayParts.push(
-        `commitment: ${args.commitmentTypes.map((t) => t.replace(/_/g, ' ')).join(', ')}`,
+        `commitment: ${input.commitmentTypes.map((t) => t.replace(/_/g, ' ')).join(', ')}`,
       )
 
     const displayText =
@@ -496,8 +497,8 @@ function convertDateString(dateStr?: string): number | undefined {
 export const getMyMatchesSummary = createTool({
   description:
     "Get a summary of the user's opportunity matches — counts per tier and top 5 per tier.",
-  args: z.object({}),
-  handler: async (ctx): Promise<string> => {
+  inputSchema: z.object({}),
+  execute: async (ctx): Promise<string> => {
     const profile = await getProfile(ctx)
     if (!profile) return 'Error: profile not found'
 
@@ -553,16 +554,16 @@ export const getMyMatchesSummary = createTool({
 export const getMatchDetail = createTool({
   description:
     'Get full details about a specific match including explanation, strengths, gaps, and recommendations.',
-  args: z.object({
+  inputSchema: z.object({
     matchId: z.string().describe('The match ID to look up'),
   }),
-  handler: async (ctx, args): Promise<string> => {
+  execute: async (ctx, input): Promise<string> => {
     const profile = await getProfile(ctx)
     if (!profile) return 'Error: profile not found'
 
     const data = (await ctx.runQuery(
       internal.agent.queries.getMatchWithOpportunity as never,
-      { matchId: args.matchId, profileId: profile._id } as never,
+      { matchId: input.matchId, profileId: profile._id } as never,
     )) as {
       match: {
         tier: string
@@ -620,7 +621,7 @@ export const getMatchDetail = createTool({
 export const searchOpportunities = createTool({
   description:
     'Search for AI safety opportunities by keyword, role type, or remote preference.',
-  args: z.object({
+  inputSchema: z.object({
     query: z
       .string()
       .optional()
@@ -637,7 +638,7 @@ export const searchOpportunities = createTool({
       .describe('Filter for remote-only opportunities'),
     limit: z.number().optional().describe('Max results to return (default 10)'),
   }),
-  handler: async (ctx, args): Promise<string> => {
+  execute: async (ctx, input): Promise<string> => {
     let results: Array<{
       _id: string
       title: string
@@ -650,23 +651,23 @@ export const searchOpportunities = createTool({
       sourceUrl: string
     }>
 
-    if (args.query) {
+    if (input.query) {
       results = (await ctx.runQuery(
         internal.agent.queries.searchOpportunitiesInternal as never,
         {
-          searchTerm: args.query,
-          roleType: args.roleType,
-          isRemote: args.isRemote,
-          limit: args.limit,
+          searchTerm: input.query,
+          roleType: input.roleType,
+          isRemote: input.isRemote,
+          limit: input.limit,
         } as never,
       )) as typeof results
     } else {
       results = (await ctx.runQuery(
         internal.agent.queries.listOpportunitiesInternal as never,
         {
-          roleType: args.roleType,
-          isRemote: args.isRemote,
-          limit: args.limit,
+          roleType: input.roleType,
+          isRemote: input.isRemote,
+          limit: input.limit,
         } as never,
       )) as typeof results
     }
@@ -688,16 +689,16 @@ export const searchOpportunities = createTool({
 export const getOpportunityDetail = createTool({
   description:
     "Get full details about a specific opportunity, including the user's existing match if any.",
-  args: z.object({
+  inputSchema: z.object({
     opportunityId: z.string().describe('The opportunity ID to look up'),
   }),
-  handler: async (ctx, args): Promise<string> => {
+  execute: async (ctx, input): Promise<string> => {
     const profile = await getProfile(ctx)
     if (!profile) return 'Error: profile not found'
 
     const data = (await ctx.runQuery(
       internal.agent.queries.getOpportunityForContext as never,
-      { opportunityId: args.opportunityId, profileId: profile._id } as never,
+      { opportunityId: input.opportunityId, profileId: profile._id } as never,
     )) as {
       opportunity: {
         title: string
@@ -760,8 +761,8 @@ export const getOpportunityDetail = createTool({
 
 export const getCareerActions = createTool({
   description: "Get the user's personalized career actions grouped by status.",
-  args: z.object({}),
-  handler: async (ctx): Promise<string> => {
+  inputSchema: z.object({}),
+  execute: async (ctx): Promise<string> => {
     const profile = await getProfile(ctx)
     if (!profile) return 'Error: profile not found'
 
