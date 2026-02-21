@@ -12,7 +12,9 @@ import {
 } from 'lucide-react'
 import { api } from '../../../../../../convex/_generated/api'
 import type { Id } from '../../../../../../convex/_generated/dataModel'
+import type { FormField } from '../../../../../../convex/lib/formFields'
 import { AuthHeader } from '~/components/layout/auth-header'
+import { DynamicResponseViewer } from '~/components/opportunities/DynamicResponseViewer'
 import { Card } from '~/components/ui/card'
 import { Button } from '~/components/ui/button'
 import { Badge } from '~/components/ui/badge'
@@ -62,10 +64,12 @@ function AdminApplicationsPage() {
     api.orgs.membership.getMembership,
     org ? { orgId: org._id } : 'skip',
   )
-  const featured = useQuery(
-    api.orgOpportunities.getFeatured,
-    org ? { orgId: org._id } : 'skip',
+  const allOpportunities = useQuery(
+    api.orgOpportunities.listAllByOrg,
+    org && membership?.role === 'admin' ? { orgId: org._id } : 'skip',
   )
+
+  const [selectedOpportunityId, setSelectedOpportunityId] = useState<string>('')
 
   // Loading
   if (org === undefined || membership === undefined) {
@@ -118,6 +122,13 @@ function AdminApplicationsPage() {
     )
   }
 
+  // Determine which opportunity to show
+  const opportunities = allOpportunities ?? []
+  const featured = opportunities.find((o) => o.featured)
+  const currentId =
+    selectedOpportunityId || featured?._id || opportunities[0]?._id || ''
+  const currentOpportunity = opportunities.find((o) => o._id === currentId)
+
   return (
     <div className="min-h-screen" style={dotGridStyle}>
       <AuthHeader />
@@ -147,17 +158,43 @@ function AdminApplicationsPage() {
             </div>
           </div>
 
-          {featured ? (
+          {/* Opportunity Picker */}
+          {opportunities.length > 1 && (
+            <div className="mb-4">
+              <Select
+                value={currentId}
+                onValueChange={setSelectedOpportunityId}
+              >
+                <SelectTrigger className="w-full max-w-md">
+                  <SelectValue placeholder="Select opportunity..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {opportunities.map((opp) => (
+                    <SelectItem key={opp._id} value={opp._id}>
+                      {opp.title}
+                      {opp.featured ? ' (Featured)' : ''}
+                      {opp.status !== 'active' ? ` [${opp.status}]` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {currentOpportunity ? (
             <ApplicationsTable
-              opportunityId={featured._id}
-              opportunityTitle={featured.title}
+              opportunityId={currentOpportunity._id}
+              opportunityTitle={currentOpportunity.title}
+              formFields={
+                (currentOpportunity.formFields ?? []) as Array<FormField>
+              }
             />
           ) : (
             <Card className="p-8 text-center">
               <FileText className="size-8 text-slate-400 mx-auto mb-4" />
               <p className="text-muted-foreground">
-                No opportunities created yet. Create a featured opportunity to
-                start receiving applications.
+                No opportunities created yet. Create an opportunity to start
+                receiving applications.
               </p>
             </Card>
           )}
@@ -170,9 +207,11 @@ function AdminApplicationsPage() {
 function ApplicationsTable({
   opportunityId,
   opportunityTitle,
+  formFields,
 }: {
   opportunityId: Id<'orgOpportunities'>
   opportunityTitle: string
+  formFields: Array<FormField>
 }) {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -210,6 +249,10 @@ function ApplicationsTable({
   ) => {
     await updateStatus({ applicationId, status: newStatus })
   }
+
+  // Derive summary columns from first 3 input fields
+  const inputFields = formFields.filter((f) => f.kind !== 'section_header')
+  const summaryFields = inputFields.slice(0, 3)
 
   return (
     <div>
@@ -258,11 +301,18 @@ function ApplicationsTable({
         </Card>
       ) : (
         <div className="space-y-2">
-          {/* Header */}
-          <div className="grid grid-cols-[1fr_1fr_120px_120px_100px_32px] gap-2 px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            <span>Name</span>
-            <span>Email</span>
-            <span>Career Stage</span>
+          {/* Header — dynamic columns */}
+          <div
+            className="grid gap-2 px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider"
+            style={{
+              gridTemplateColumns: `${summaryFields.map(() => '1fr').join(' ')} 120px 100px 32px`,
+            }}
+          >
+            {summaryFields.map((f) => (
+              <span key={f.key} className="truncate">
+                {f.label}
+              </span>
+            ))}
             <span>Submitted</span>
             <span>Status</span>
             <span />
@@ -278,16 +328,20 @@ function ApplicationsTable({
                   className="w-full text-left"
                   onClick={() => setExpandedId(isExpanded ? null : app._id)}
                 >
-                  <div className="grid grid-cols-[1fr_1fr_120px_120px_100px_32px] gap-2 items-center px-4 py-3 text-sm">
-                    <span className="font-medium truncate">
-                      {String(r.firstName ?? '')} {String(r.lastName ?? '')}
-                    </span>
-                    <span className="text-muted-foreground truncate">
-                      {String(r.email ?? '')}
-                    </span>
-                    <span className="text-muted-foreground truncate text-xs">
-                      {String(r.careerStage ?? '')}
-                    </span>
+                  <div
+                    className="grid gap-2 items-center px-4 py-3 text-sm"
+                    style={{
+                      gridTemplateColumns: `${summaryFields.map(() => '1fr').join(' ')} 120px 100px 32px`,
+                    }}
+                  >
+                    {summaryFields.map((f) => (
+                      <span
+                        key={f.key}
+                        className="truncate text-muted-foreground"
+                      >
+                        {formatCellValue(r[f.key])}
+                      </span>
+                    ))}
                     <span className="text-muted-foreground text-xs">
                       {new Date(app.submittedAt).toLocaleDateString()}
                     </span>
@@ -313,6 +367,7 @@ function ApplicationsTable({
                   <div className="border-t px-4 py-4">
                     <ApplicationDetail
                       responses={r}
+                      formFields={formFields}
                       status={app.status as ApplicationStatus}
                       applicationId={app._id}
                       onStatusChange={handleStatusChange}
@@ -328,13 +383,22 @@ function ApplicationsTable({
   )
 }
 
+function formatCellValue(val: unknown): string {
+  if (val === undefined || val === null) return ''
+  if (Array.isArray(val)) return val.join(', ')
+  if (typeof val === 'boolean') return val ? 'Yes' : 'No'
+  return String(val)
+}
+
 function ApplicationDetail({
   responses,
+  formFields,
   status,
   applicationId,
   onStatusChange,
 }: {
   responses: Record<string, unknown>
+  formFields: Array<FormField>
   status: ApplicationStatus
   applicationId: Id<'opportunityApplications'>
   onStatusChange: (
@@ -342,126 +406,13 @@ function ApplicationDetail({
     s: ApplicationStatus,
   ) => void
 }) {
-  const r = responses
-
-  const sections = [
-    {
-      title: 'Course Preferences',
-      fields: [
-        {
-          label: 'Applying as',
-          value: Array.isArray(r.applyingAs)
-            ? (r.applyingAs as Array<string>).join(', ')
-            : String(r.applyingAs ?? ''),
-        },
-        { label: 'Round', value: String(r.roundPreference ?? '') },
-        {
-          label: 'Open to alternative placement',
-          value: r.openToAlternativePlacement ? 'Yes' : 'No',
-        },
-      ],
-    },
-    {
-      title: 'Personal Info',
-      fields: [
-        {
-          label: 'Name',
-          value: `${String(r.firstName ?? '')} ${String(r.lastName ?? '')}`,
-        },
-        { label: 'Email', value: String(r.email ?? '') },
-        { label: 'Profile URL', value: String(r.profileUrl ?? '') },
-        {
-          label: 'Other profile',
-          value: String(r.otherProfileLink ?? ''),
-        },
-        {
-          label: 'Fields of study',
-          value: Array.isArray(r.fieldsOfStudy)
-            ? (r.fieldsOfStudy as Array<string>).join(', ')
-            : String(r.fieldsOfStudy ?? ''),
-        },
-        { label: 'Career stage', value: String(r.careerStage ?? '') },
-        { label: 'Location', value: String(r.location ?? '') },
-      ],
-    },
-    {
-      title: 'Essays',
-      fields: [
-        {
-          label: 'How course helps contribute to AI safety',
-          value: String(r.howCourseHelps ?? ''),
-        },
-        {
-          label: 'AI safety engagement',
-          value: String(r.aiSafetyEngagement ?? ''),
-        },
-        {
-          label: 'Relevant skills',
-          value: String(r.relevantSkills ?? ''),
-        },
-        {
-          label: 'Proudest achievement',
-          value: String(r.proudestAchievement ?? ''),
-        },
-      ],
-    },
-    {
-      title: 'Referral & Consents',
-      fields: [
-        {
-          label: 'Where heard about course',
-          value: String(r.howHeardAbout ?? ''),
-        },
-        {
-          label: 'Nominee email',
-          value: String(r.nomineeEmail ?? ''),
-        },
-        {
-          label: 'Can mention name',
-          value:
-            r.canMentionName === true
-              ? 'Yes'
-              : r.canMentionName === false
-                ? 'No'
-                : '',
-        },
-        {
-          label: 'Form feedback',
-          value: String(r.applicationFeedback ?? ''),
-        },
-        {
-          label: 'Data sharing consent',
-          value: r.dataShareConsent ? 'Yes' : 'No',
-        },
-        {
-          label: 'Diversity data consent',
-          value: r.diversityDataConsent ? 'Yes' : 'No',
-        },
-      ],
-    },
-  ]
-
   return (
     <div className="space-y-6">
-      {sections.map((section) => (
-        <div key={section.title}>
-          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            {section.title}
-          </h4>
-          <div className="space-y-2">
-            {section.fields
-              .filter((f) => f.value)
-              .map((field) => (
-                <div key={field.label}>
-                  <span className="text-xs text-muted-foreground">
-                    {field.label}
-                  </span>
-                  <p className="text-sm whitespace-pre-wrap">{field.value}</p>
-                </div>
-              ))}
-          </div>
-        </div>
-      ))}
+      {formFields.length > 0 ? (
+        <DynamicResponseViewer formFields={formFields} responses={responses} />
+      ) : (
+        <FallbackResponseViewer responses={responses} />
+      )}
 
       {/* Status update */}
       <div className="flex items-center gap-3 pt-4 border-t">
@@ -484,6 +435,28 @@ function ApplicationDetail({
           </SelectContent>
         </Select>
       </div>
+    </div>
+  )
+}
+
+/** Fallback for opportunities without formFields — shows raw key/value pairs */
+function FallbackResponseViewer({
+  responses,
+}: {
+  responses: Record<string, unknown>
+}) {
+  return (
+    <div className="space-y-2">
+      {Object.entries(responses)
+        .filter(([, v]) => v !== undefined && v !== null && v !== '')
+        .map(([key, val]) => (
+          <div key={key}>
+            <span className="text-xs text-muted-foreground">{key}</span>
+            <p className="text-sm whitespace-pre-wrap">
+              {formatCellValue(val)}
+            </p>
+          </div>
+        ))}
     </div>
   )
 }

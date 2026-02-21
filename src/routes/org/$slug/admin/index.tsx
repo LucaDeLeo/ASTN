@@ -2,6 +2,7 @@ import { Link, createFileRoute } from '@tanstack/react-router'
 import { useMutation, useQuery } from 'convex/react'
 import { useState } from 'react'
 import {
+  Briefcase,
   Building2,
   Calendar,
   CalendarCheck,
@@ -271,6 +272,13 @@ function OrgAdminDashboard() {
               <Link to="/org/$slug/admin/applications" params={{ slug }}>
                 <FileText className="size-5 mr-2" />
                 Applications
+              </Link>
+            </Button>
+
+            <Button variant="outline" className="h-auto py-4" asChild>
+              <Link to="/org/$slug/admin/opportunities" params={{ slug }}>
+                <Briefcase className="size-5 mr-2" />
+                Opportunities
               </Link>
             </Button>
 

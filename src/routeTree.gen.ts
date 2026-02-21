@@ -46,6 +46,7 @@ import { Route as OrgSlugAdminGuestsRouteImport } from './routes/org/$slug/admin
 import { Route as OrgSlugAdminBookingsRouteImport } from './routes/org/$slug/admin/bookings'
 import { Route as AdminOpportunitiesIdEditRouteImport } from './routes/admin/opportunities/$id/edit'
 import { Route as OrgSlugAdminProgramsIndexRouteImport } from './routes/org/$slug/admin/programs/index'
+import { Route as OrgSlugAdminOpportunitiesIndexRouteImport } from './routes/org/$slug/admin/opportunities/index'
 import { Route as OrgSlugAdminMembersIndexRouteImport } from './routes/org/$slug/admin/members/index'
 import { Route as OrgSlugAdminApplicationsIndexRouteImport } from './routes/org/$slug/admin/applications/index'
 import { Route as OrgSlugAdminProgramsProgramIdRouteImport } from './routes/org/$slug/admin/programs/$programId'
@@ -239,6 +240,12 @@ const OrgSlugAdminProgramsIndexRoute =
     path: '/org/$slug/admin/programs/',
     getParentRoute: () => rootRouteImport,
   } as any)
+const OrgSlugAdminOpportunitiesIndexRoute =
+  OrgSlugAdminOpportunitiesIndexRouteImport.update({
+    id: '/org/$slug/admin/opportunities/',
+    path: '/org/$slug/admin/opportunities/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const OrgSlugAdminMembersIndexRoute =
   OrgSlugAdminMembersIndexRouteImport.update({
     id: '/org/$slug/admin/members/',
@@ -305,6 +312,7 @@ export interface FileRoutesByFullPath {
   '/org/$slug/admin/programs/$programId': typeof OrgSlugAdminProgramsProgramIdRoute
   '/org/$slug/admin/applications/': typeof OrgSlugAdminApplicationsIndexRoute
   '/org/$slug/admin/members/': typeof OrgSlugAdminMembersIndexRoute
+  '/org/$slug/admin/opportunities/': typeof OrgSlugAdminOpportunitiesIndexRoute
   '/org/$slug/admin/programs/': typeof OrgSlugAdminProgramsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -344,6 +352,7 @@ export interface FileRoutesByTo {
   '/org/$slug/admin/programs/$programId': typeof OrgSlugAdminProgramsProgramIdRoute
   '/org/$slug/admin/applications': typeof OrgSlugAdminApplicationsIndexRoute
   '/org/$slug/admin/members': typeof OrgSlugAdminMembersIndexRoute
+  '/org/$slug/admin/opportunities': typeof OrgSlugAdminOpportunitiesIndexRoute
   '/org/$slug/admin/programs': typeof OrgSlugAdminProgramsIndexRoute
 }
 export interface FileRoutesById {
@@ -388,6 +397,7 @@ export interface FileRoutesById {
   '/org/$slug/admin/programs/$programId': typeof OrgSlugAdminProgramsProgramIdRoute
   '/org/$slug/admin/applications/': typeof OrgSlugAdminApplicationsIndexRoute
   '/org/$slug/admin/members/': typeof OrgSlugAdminMembersIndexRoute
+  '/org/$slug/admin/opportunities/': typeof OrgSlugAdminOpportunitiesIndexRoute
   '/org/$slug/admin/programs/': typeof OrgSlugAdminProgramsIndexRoute
 }
 export interface FileRouteTypes {
@@ -433,6 +443,7 @@ export interface FileRouteTypes {
     | '/org/$slug/admin/programs/$programId'
     | '/org/$slug/admin/applications/'
     | '/org/$slug/admin/members/'
+    | '/org/$slug/admin/opportunities/'
     | '/org/$slug/admin/programs/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -472,6 +483,7 @@ export interface FileRouteTypes {
     | '/org/$slug/admin/programs/$programId'
     | '/org/$slug/admin/applications'
     | '/org/$slug/admin/members'
+    | '/org/$slug/admin/opportunities'
     | '/org/$slug/admin/programs'
   id:
     | '__root__'
@@ -515,6 +527,7 @@ export interface FileRouteTypes {
     | '/org/$slug/admin/programs/$programId'
     | '/org/$slug/admin/applications/'
     | '/org/$slug/admin/members/'
+    | '/org/$slug/admin/opportunities/'
     | '/org/$slug/admin/programs/'
   fileRoutesById: FileRoutesById
 }
@@ -550,6 +563,7 @@ export interface RootRouteChildren {
   OrgSlugAdminProgramsProgramIdRoute: typeof OrgSlugAdminProgramsProgramIdRoute
   OrgSlugAdminApplicationsIndexRoute: typeof OrgSlugAdminApplicationsIndexRoute
   OrgSlugAdminMembersIndexRoute: typeof OrgSlugAdminMembersIndexRoute
+  OrgSlugAdminOpportunitiesIndexRoute: typeof OrgSlugAdminOpportunitiesIndexRoute
   OrgSlugAdminProgramsIndexRoute: typeof OrgSlugAdminProgramsIndexRoute
 }
 
@@ -814,6 +828,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrgSlugAdminProgramsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/org/$slug/admin/opportunities/': {
+      id: '/org/$slug/admin/opportunities/'
+      path: '/org/$slug/admin/opportunities'
+      fullPath: '/org/$slug/admin/opportunities/'
+      preLoaderRoute: typeof OrgSlugAdminOpportunitiesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/org/$slug/admin/members/': {
       id: '/org/$slug/admin/members/'
       path: '/org/$slug/admin/members'
@@ -937,6 +958,7 @@ const rootRouteChildren: RootRouteChildren = {
   OrgSlugAdminProgramsProgramIdRoute: OrgSlugAdminProgramsProgramIdRoute,
   OrgSlugAdminApplicationsIndexRoute: OrgSlugAdminApplicationsIndexRoute,
   OrgSlugAdminMembersIndexRoute: OrgSlugAdminMembersIndexRoute,
+  OrgSlugAdminOpportunitiesIndexRoute: OrgSlugAdminOpportunitiesIndexRoute,
   OrgSlugAdminProgramsIndexRoute: OrgSlugAdminProgramsIndexRoute,
 }
 export const routeTree = rootRouteImport

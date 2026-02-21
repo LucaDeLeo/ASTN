@@ -434,6 +434,7 @@ export const listForExport = internalQuery({
 })
 
 // Admin: export applications as CSV (returns string for client-side download)
+// Dynamically generates columns from the opportunity's formFields.
 export const exportApplications = action({
   args: { opportunityId: v.id('orgOpportunities') },
   returns: v.string(),
@@ -441,38 +442,24 @@ export const exportApplications = action({
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) throw new ConvexError('Not authenticated')
 
-    const applications = await ctx.runQuery(
-      internal.opportunityApplications.listForExport,
-      { opportunityId },
-    )
-
-    // CSV header matching Airtable column names
-    const headers = [
-      "Course you're applying for",
-      'Are you applying as a participant or facilitator?',
-      'Round',
-      'Alternative course placement',
-      'First name',
-      'Last name',
-      'Email address',
-      'Profile URL',
-      'Link to any other profile',
-      'Fields of study',
-      'Current career stage',
-      'Location',
-      'How do you expect this course will help you contribute to reducing risks from AI?',
-      'How have you engaged with AI safety so far?',
-      'What skills or experiences do you have that are relevant to AI safety?',
-      'One achievement you are proud of',
-      'Where did you hear about this course?',
-      'Nominee email',
-      'Can we mention your name to the nominee?',
-      'Feedback on application form',
-      'Data sharing consent',
-      'Diversity data consent',
-      'Submitted at',
-      'Status',
-    ]
+    const [applications, opportunity] = await Promise.all([
+      ctx.runQuery(internal.opportunityApplications.listForExport, {
+        opportunityId,
+      }) as Promise<
+        Array<{
+          _id: string
+          responses: Record<string, unknown>
+          submittedAt: number
+          status: string
+          guestEmail?: string
+        }>
+      >,
+      ctx.runQuery(internal.orgOpportunities.getInternal, {
+        id: opportunityId,
+      }) as Promise<{
+        formFields?: Array<{ key: string; kind: string; label: string }>
+      } | null>,
+    ])
 
     const escapeCSV = (val: string): string => {
       if (val.includes(',') || val.includes('"') || val.includes('\n')) {
@@ -481,42 +468,31 @@ export const exportApplications = action({
       return val
     }
 
-    const rows = applications.map((app: (typeof applications)[number]) => {
-      const r = app.responses as Record<string, unknown>
-      const applyingAs = Array.isArray(r.applyingAs)
-        ? (r.applyingAs as Array<string>).join('; ')
-        : String(r.applyingAs ?? '')
-      const fieldsOfStudy = Array.isArray(r.fieldsOfStudy)
-        ? (r.fieldsOfStudy as Array<string>).join('; ')
-        : String(r.fieldsOfStudy ?? '')
+    const formatCell = (val: unknown): string => {
+      if (val === undefined || val === null) return ''
+      if (Array.isArray(val)) return val.join('; ')
+      if (typeof val === 'boolean') return val ? 'Yes' : 'No'
+      return String(val)
+    }
 
+    const formFields = (opportunity?.formFields ?? []) as Array<{
+      key: string
+      kind: string
+      label: string
+    }>
+    const inputFields = formFields.filter((f) => f.kind !== 'section_header')
+
+    // Build headers: form field labels + metadata columns
+    const headers = [
+      ...inputFields.map((f) => f.label),
+      'Submitted at',
+      'Status',
+    ]
+
+    const rows = applications.map((app) => {
+      const r = app.responses
       return [
-        'Technical AI Safety',
-        applyingAs,
-        String(r.roundPreference ?? ''),
-        r.openToAlternativePlacement ? 'Yes' : 'No',
-        String(r.firstName ?? ''),
-        String(r.lastName ?? ''),
-        String(r.email ?? ''),
-        String(r.profileUrl ?? ''),
-        String(r.otherProfileLink ?? ''),
-        fieldsOfStudy,
-        String(r.careerStage ?? ''),
-        String(r.location ?? ''),
-        String(r.howCourseHelps ?? ''),
-        String(r.aiSafetyEngagement ?? ''),
-        String(r.relevantSkills ?? ''),
-        String(r.proudestAchievement ?? ''),
-        String(r.howHeardAbout ?? ''),
-        String(r.nomineeEmail ?? ''),
-        r.canMentionName === true
-          ? 'Yes'
-          : r.canMentionName === false
-            ? 'No'
-            : String(r.canMentionName ?? ''),
-        String(r.applicationFeedback ?? ''),
-        r.dataShareConsent ? 'Yes' : 'No',
-        r.diversityDataConsent ? 'Yes' : 'No',
+        ...inputFields.map((f) => formatCell(r[f.key])),
         new Date(app.submittedAt).toISOString(),
         app.status,
       ].map((cell) => escapeCSV(cell))

@@ -974,6 +974,7 @@ export default defineSchema({
     deadline: v.optional(v.number()),
     externalUrl: v.optional(v.string()),
     featured: v.boolean(),
+    formFields: v.optional(v.any()), // Array<FormField> — see convex/lib/formFields.ts
     createdAt: v.number(),
     updatedAt: v.number(),
   })
