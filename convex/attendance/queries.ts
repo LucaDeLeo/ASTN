@@ -23,6 +23,7 @@ function buildLookupMap<T extends { _id: string }>(
 
 /**
  * Batch-fetch events and orgs for a set of IDs, returning lookup Maps.
+ * Resolves fresh logo URLs from Convex storage (stored URLs expire).
  */
 async function batchFetchEventsAndOrgs(
   ctx: QueryCtx,
@@ -31,6 +32,7 @@ async function batchFetchEventsAndOrgs(
 ): Promise<{
   eventMap: Map<string, Doc<'events'>>
   orgMap: Map<string, Doc<'organizations'>>
+  orgLogoUrls: Map<string, string | undefined>
   eventCount: number
   orgCount: number
 }> {
@@ -40,9 +42,25 @@ async function batchFetchEventsAndOrgs(
     Promise.all(eventIdArr.map((id) => ctx.db.get('events', id))),
     Promise.all(orgIdArr.map((id) => ctx.db.get('organizations', id))),
   ])
+
+  // Resolve fresh logo URLs from storage
+  const orgLogoUrls = new Map<string, string | undefined>()
+  await Promise.all(
+    orgs.map(async (org, i) => {
+      if (!org) return
+      let logoUrl = org.logoUrl
+      if (org.logoStorageId) {
+        const url = await ctx.storage.getUrl(org.logoStorageId)
+        if (url) logoUrl = url
+      }
+      orgLogoUrls.set(orgIdArr[i], logoUrl)
+    }),
+  )
+
   return {
     eventMap: buildLookupMap(eventIdArr, events),
     orgMap: buildLookupMap(orgIdArr, orgs),
+    orgLogoUrls,
     eventCount: eventIdArr.length,
     orgCount: orgIdArr.length,
   }
@@ -76,7 +94,7 @@ export const getMyAttendanceHistory = query({
     }
 
     // Batch fetch and build lookup Maps
-    const { eventMap, orgMap, eventCount, orgCount } =
+    const { eventMap, orgMap, orgLogoUrls, eventCount, orgCount } =
       await batchFetchEventsAndOrgs(ctx, eventIds, orgIds)
 
     log('info', 'getMyAttendanceHistory', {
@@ -103,7 +121,7 @@ export const getMyAttendanceHistory = query({
         org: org
           ? {
               name: org.name,
-              logoUrl: org.logoUrl,
+              logoUrl: orgLogoUrls.get(record.orgId) ?? org.logoUrl,
             }
           : null,
       }
@@ -147,7 +165,7 @@ export const getPendingPrompts = query({
     }
 
     // Batch fetch and build lookup Maps
-    const { eventMap, orgMap, eventCount, orgCount } =
+    const { eventMap, orgMap, orgLogoUrls, eventCount, orgCount } =
       await batchFetchEventsAndOrgs(ctx, eventIds, orgIds)
 
     log('info', 'getPendingPrompts', {
@@ -176,7 +194,9 @@ export const getPendingPrompts = query({
         org: org
           ? {
               name: org.name,
-              logoUrl: org.logoUrl,
+              logoUrl:
+                (prompt.orgId ? orgLogoUrls.get(prompt.orgId) : undefined) ??
+                org.logoUrl,
             }
           : null,
       }

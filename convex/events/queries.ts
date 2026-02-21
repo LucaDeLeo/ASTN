@@ -57,6 +57,18 @@ export const getDashboardEvents = query({
       allEvents.map((event) => ctx.db.get('organizations', event.orgId)),
     )
 
+    // Resolve fresh logo URLs from storage (stored URLs expire)
+    const resolvedLogos = await Promise.all(
+      orgsData.map(async (org) => {
+        if (!org) return undefined
+        if (org.logoStorageId) {
+          const url = await ctx.storage.getUrl(org.logoStorageId)
+          if (url) return url
+        }
+        return org.logoUrl
+      }),
+    )
+
     // Create org map using string keys for reliable comparison
     const orgMap: Record<
       string,
@@ -68,7 +80,7 @@ export const getDashboardEvents = query({
         orgMap[allEvents[i].orgId.toString()] = {
           name: org.name,
           slug: org.slug,
-          logoUrl: org.logoUrl,
+          logoUrl: resolvedLogos[i],
         }
       }
     }

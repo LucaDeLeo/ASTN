@@ -5,10 +5,20 @@ import { query } from '../_generated/server'
 export const getOrgBySlug = query({
   args: { slug: v.string() },
   handler: async (ctx, { slug }) => {
-    return await ctx.db
+    const org = await ctx.db
       .query('organizations')
       .withIndex('by_slug', (q) => q.eq('slug', slug))
       .first()
+    if (!org) return null
+
+    // Resolve fresh logo URL from storage (stored URLs expire)
+    let logoUrl = org.logoUrl
+    if (org.logoStorageId) {
+      const url = await ctx.storage.getUrl(org.logoStorageId)
+      if (url) logoUrl = url
+    }
+
+    return { ...org, logoUrl }
   },
 })
 

@@ -51,9 +51,21 @@ export const getSuggestedOrgs = query({
         .filter((q) => q.eq(q.field('isGlobal'), true))
         .collect()
 
-      return globalOrgs
+      const filtered = globalOrgs
         .filter((org) => !joinedOrgIds.has(org._id.toString()))
         .slice(0, 5)
+
+      // Resolve fresh logo URLs from storage (stored URLs expire)
+      return Promise.all(
+        filtered.map(async (org) => {
+          let logoUrl = org.logoUrl
+          if (org.logoStorageId) {
+            const url = await ctx.storage.getUrl(org.logoStorageId)
+            if (url) logoUrl = url
+          }
+          return { ...org, logoUrl }
+        }),
+      )
     }
 
     // Parse user city
@@ -85,7 +97,19 @@ export const getSuggestedOrgs = query({
       (org) => !joinedOrgIds.has(org._id.toString()),
     )
 
-    return filtered.slice(0, 5)
+    // Resolve fresh logo URLs from storage (stored URLs expire)
+    const results = await Promise.all(
+      filtered.slice(0, 5).map(async (org) => {
+        let logoUrl = org.logoUrl
+        if (org.logoStorageId) {
+          const url = await ctx.storage.getUrl(org.logoStorageId)
+          if (url) logoUrl = url
+        }
+        return { ...org, logoUrl }
+      }),
+    )
+
+    return results
   },
 })
 
@@ -120,7 +144,7 @@ export const getAllOrgs = query({
       orgs = await ctx.db.query('organizations').collect()
     }
 
-    // For each org, get member count
+    // For each org, get member count and resolve logo URL
     const orgsWithCounts = await Promise.all(
       orgs.map(async (org) => {
         const memberCount = await ctx.db
@@ -129,8 +153,16 @@ export const getAllOrgs = query({
           .collect()
           .then((m) => m.length)
 
+        // Resolve fresh logo URL from storage (stored URLs expire)
+        let logoUrl = org.logoUrl
+        if (org.logoStorageId) {
+          const url = await ctx.storage.getUrl(org.logoStorageId)
+          if (url) logoUrl = url
+        }
+
         return {
           ...org,
+          logoUrl,
           memberCount,
         }
       }),
