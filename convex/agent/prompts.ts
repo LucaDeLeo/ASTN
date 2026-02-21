@@ -144,6 +144,50 @@ The user is currently: ${description}
 }
 
 /**
+ * Map BAISH CRM disponibilidad/etapaProfesional to set_match_preferences instruction.
+ */
+function buildBaishMatchPrefsInstruction(
+  disponibilidad?: string,
+  etapaProfesional?: string,
+): string {
+  const prefParts: Array<string> = []
+
+  if (disponibilidad) {
+    const availMap: Record<string, string> = {
+      inmediata: 'immediately',
+      'en 1 mes': 'within_1_month',
+      'en 3 meses': 'within_3_months',
+      'en 6 meses': 'within_6_months',
+      'no disponible': 'not_available',
+    }
+    const mapped = availMap[disponibilidad.toLowerCase()]
+    if (mapped) {
+      prefParts.push(`availability: "${mapped}"`)
+    }
+  }
+
+  if (etapaProfesional) {
+    const levelMap: Record<string, string> = {
+      estudiante: 'entry',
+      junior: 'entry',
+      'recién graduado': 'entry',
+      mid: 'mid',
+      'mid-level': 'mid',
+      senior: 'senior',
+      líder: 'senior',
+      directivo: 'senior',
+    }
+    const mapped = levelMap[etapaProfesional.toLowerCase()]
+    if (mapped) {
+      prefParts.push(`experienceLevels: ["${mapped}"]`)
+    }
+  }
+
+  if (prefParts.length === 0) return ''
+  return `\n  - Call set_match_preferences with ${prefParts.join(' and ')}`
+}
+
+/**
  * Format a BAISH CRM record into an XML context block for the agent system prompt.
  * Used when a new user matches an existing BAISH member by email.
  */
@@ -204,10 +248,10 @@ ${lines.join('\n')}
 IMPORTANT — Returning BAISH member handling:
 - Greet them warmly as a returning BAISH community member. Use their name if available.
 - IMMEDIATELY call your profile tools to populate their profile from the CRM data above:
-  - Call update_basic_info with their name${record.linkedin ? ' (and note their LinkedIn is available)' : ''}
+  - Call update_basic_info with their name and location "Buenos Aires, Argentina"${record.linkedin ? ` and linkedinUrl "${record.linkedin}"` : ''}
+  - If they have a role, use it to set a headline via update_basic_info (can combine with the call above)
   - If they have interest areas, call set_ai_safety_interests
-  - If they have career goals from survey responses, call set_career_goals
-  - If they have a role, use it to set a headline via update_basic_info
+  - If they have career goals from survey responses, call set_career_goals${buildBaishMatchPrefsInstruction(record.disponibilidad, record.etapaProfesional)}
 - After populating from CRM data, acknowledge what you've filled in and ask about gaps:
   - Education background
   - Detailed work history

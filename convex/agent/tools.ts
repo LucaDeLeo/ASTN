@@ -18,6 +18,7 @@ async function getProfile(ctx: {
     pronouns?: string
     location?: string
     headline?: string
+    linkedinUrl?: string
     education?: Array<{
       institution: string
       degree?: string
@@ -53,7 +54,7 @@ async function getProfile(ctx: {
 
 export const updateBasicInfo = createTool({
   description:
-    "Update the user's basic profile info. Call with any subset of: name, pronouns, location, headline.",
+    "Update the user's basic profile info. Call with any subset of: name, pronouns, location, headline, linkedinUrl.",
   args: z.object({
     name: z.string().optional().describe("The user's full name"),
     pronouns: z
@@ -69,6 +70,12 @@ export const updateBasicInfo = createTool({
       .optional()
       .describe(
         'Short professional headline, e.g. "AI Safety Researcher at Anthropic"',
+      ),
+    linkedinUrl: z
+      .string()
+      .optional()
+      .describe(
+        'LinkedIn profile URL, e.g. "https://linkedin.com/in/username"',
       ),
   }),
   handler: async (ctx, args): Promise<string> => {
@@ -94,6 +101,10 @@ export const updateBasicInfo = createTool({
       previousValues.headline = profile.headline
       updates.headline = args.headline
     }
+    if (args.linkedinUrl !== undefined) {
+      previousValues.linkedinUrl = profile.linkedinUrl
+      updates.linkedinUrl = args.linkedinUrl
+    }
 
     if (Object.keys(updates).length === 0) return 'No updates provided'
 
@@ -102,6 +113,7 @@ export const updateBasicInfo = createTool({
     if (updates.pronouns) displayParts.push(`pronouns to ${updates.pronouns}`)
     if (updates.location) displayParts.push(`location to ${updates.location}`)
     if (updates.headline) displayParts.push(`headline to "${updates.headline}"`)
+    if (updates.linkedinUrl) displayParts.push(`LinkedIn URL`)
     const displayText = `Updated ${displayParts.join(', ')}`
 
     await ctx.runMutation(
