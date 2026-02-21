@@ -9,7 +9,7 @@ import type {
   ExtractionFields,
   ExtractionItem,
   ExtractionStatus,
-} from '../../profile/enrichment/hooks/useEnrichment'
+} from '../../profile/enrichment/types'
 
 interface UseCompletionEnrichmentArgs {
   profileId: Id<'profiles'> | null

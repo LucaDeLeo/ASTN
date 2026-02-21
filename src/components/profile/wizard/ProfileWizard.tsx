@@ -8,26 +8,16 @@ import { EducationStep } from './steps/EducationStep'
 import { WorkHistoryStep } from './steps/WorkHistoryStep'
 import { GoalsStep } from './steps/GoalsStep'
 import { SkillsStep } from './steps/SkillsStep'
-import { EnrichmentStep } from './steps/EnrichmentStep'
 import { PrivacyStep } from './steps/PrivacyStep'
 import { useAutoSave } from './hooks/useAutoSave'
 import { Spinner } from '~/components/ui/spinner'
 import { Button } from '~/components/ui/button'
 
-type StepId =
-  | 'basic'
-  | 'education'
-  | 'work'
-  | 'goals'
-  | 'skills'
-  | 'enrichment'
-  | 'privacy'
+type StepId = 'basic' | 'education' | 'work' | 'goals' | 'skills' | 'privacy'
 
 interface ProfileWizardProps {
   currentStep: StepId
   onStepChange: (step: StepId) => void
-  fromExtraction?: boolean
-  chatFirst?: boolean
 }
 
 const STEPS: Array<StepId> = [
@@ -37,14 +27,11 @@ const STEPS: Array<StepId> = [
   'goals',
   'skills',
   'privacy',
-  'enrichment',
 ]
 
 export function ProfileWizard({
   currentStep,
   onStepChange,
-  fromExtraction,
-  chatFirst,
 }: ProfileWizardProps) {
   const profile = useQuery(api.profiles.getOrCreateProfile)
   const createProfile = useMutation(api.profiles.create)
@@ -133,14 +120,6 @@ export function ProfileWizard({
             lastSaved={lastSaved}
           />
         )
-      case 'enrichment':
-        return (
-          <EnrichmentStep
-            profile={profile}
-            fromExtraction={fromExtraction}
-            chatFirst={chatFirst}
-          />
-        )
       case 'privacy':
         return (
           <PrivacyStep
@@ -165,36 +144,37 @@ export function ProfileWizard({
         <div className="bg-white dark:bg-card rounded-lg border p-4 sm:p-6">
           {renderCurrentStep()}
 
-          {/* Hide navigation on last step (enrichment) */}
-          {!isLastStep && (
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-8 pt-6 border-t">
-              <Button
-                variant="outline"
-                onClick={goToPreviousStep}
-                disabled={isFirstStep}
-                className="min-h-11 w-full sm:w-auto order-2 sm:order-1"
-              >
-                <ChevronLeft className="size-4 mr-1" />
-                Previous
-              </Button>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-8 pt-6 border-t">
+            <Button
+              variant="outline"
+              onClick={goToPreviousStep}
+              disabled={isFirstStep}
+              className="min-h-11 w-full sm:w-auto order-2 sm:order-1"
+            >
+              <ChevronLeft className="size-4 mr-1" />
+              Previous
+            </Button>
 
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 order-1 sm:order-2">
-                <Button
-                  variant="ghost"
-                  onClick={goToNextStep}
-                  className="min-h-11"
-                >
-                  <SkipForward className="size-4 mr-1" />
-                  Skip for now
-                </Button>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 order-1 sm:order-2">
+              {!isLastStep && (
+                <>
+                  <Button
+                    variant="ghost"
+                    onClick={goToNextStep}
+                    className="min-h-11"
+                  >
+                    <SkipForward className="size-4 mr-1" />
+                    Skip for now
+                  </Button>
 
-                <Button onClick={goToNextStep} className="min-h-11">
-                  Next
-                  <ChevronRight className="size-4 ml-1" />
-                </Button>
-              </div>
+                  <Button onClick={goToNextStep} className="min-h-11">
+                    Next
+                    <ChevronRight className="size-4 ml-1" />
+                  </Button>
+                </>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

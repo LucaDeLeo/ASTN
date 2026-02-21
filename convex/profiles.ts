@@ -35,12 +35,6 @@ const COMPLETENESS_SECTIONS = [
       Array.isArray(profile.skills) && profile.skills.length > 0,
   },
   {
-    id: 'enrichment',
-    label: 'Profile Enrichment',
-    check: (profile: Record<string, unknown>) =>
-      profile.hasEnrichmentConversation === true,
-  },
-  {
     id: 'privacy',
     label: 'Privacy Settings',
     check: (profile: Record<string, unknown>) =>

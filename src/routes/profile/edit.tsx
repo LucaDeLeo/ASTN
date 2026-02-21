@@ -16,7 +16,6 @@ const stepSchema = z.enum([
   'work',
   'goals',
   'skills',
-  'enrichment',
   'privacy',
 ])
 
@@ -53,14 +52,7 @@ function AuthenticatedContent() {
   const navigate = useNavigate()
   const { open } = useAgentSidebar()
 
-  type StepId =
-    | 'basic'
-    | 'education'
-    | 'work'
-    | 'goals'
-    | 'skills'
-    | 'enrichment'
-    | 'privacy'
+  type StepId = 'basic' | 'education' | 'work' | 'goals' | 'skills' | 'privacy'
 
   const handleStepChange = (newStep: StepId) => {
     navigate({ to: '/profile/edit', search: { step: newStep } })

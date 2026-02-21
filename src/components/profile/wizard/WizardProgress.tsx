@@ -3,14 +3,7 @@ import { Check, Circle, Lock } from 'lucide-react'
 import { api } from '../../../../convex/_generated/api'
 import { cn } from '~/lib/utils'
 
-type StepId =
-  | 'basic'
-  | 'education'
-  | 'work'
-  | 'goals'
-  | 'skills'
-  | 'enrichment'
-  | 'privacy'
+type StepId = 'basic' | 'education' | 'work' | 'goals' | 'skills' | 'privacy'
 
 interface WizardProgressProps {
   currentStep: StepId
@@ -23,7 +16,6 @@ const STEP_TO_SECTION: Record<StepId, string> = {
   work: 'workHistory',
   goals: 'careerGoals',
   skills: 'skills',
-  enrichment: 'enrichment',
   privacy: 'privacy',
 }
 
@@ -34,7 +26,6 @@ const STEPS: Array<{ id: StepId; label: string; shortLabel: string }> = [
   { id: 'goals', label: 'Career Goals', shortLabel: 'Goals' },
   { id: 'skills', label: 'Skills', shortLabel: 'Skills' },
   { id: 'privacy', label: 'Privacy Settings', shortLabel: 'Privacy' },
-  { id: 'enrichment', label: 'Profile Enrichment', shortLabel: 'Enrich' },
 ]
 
 const UNLOCK_THRESHOLD = 4
@@ -54,7 +45,7 @@ export function WizardProgress({
   }
 
   const completedCount = completeness?.completedCount ?? 0
-  const totalCount = completeness?.totalCount ?? 7
+  const totalCount = completeness?.totalCount ?? 6
   const canUnlock = completedCount >= UNLOCK_THRESHOLD
   const currentIndex = STEPS.findIndex((s) => s.id === currentStep)
 
