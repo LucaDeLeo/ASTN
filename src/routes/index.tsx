@@ -7,7 +7,7 @@ import {
   useQuery,
 } from 'convex/react'
 import { SignIn, SignUp } from '@clerk/clerk-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Bookmark,
   Building2,
@@ -116,21 +116,80 @@ const clerkAppearance = {
 
 function AuthPanel() {
   const [mode, setMode] = useState<'sign-in' | 'sign-up'>('sign-in')
+  const [fading, setFading] = useState(false)
+  const [animated, setAnimated] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  const switchMode = useCallback(
+    (newMode: 'sign-in' | 'sign-up') => {
+      if (newMode === mode) return
+      const container = containerRef.current
+      // Lock container to current height so transition has a start value
+      if (container) {
+        container.style.height = `${container.offsetHeight}px`
+      }
+      // Enable transitions from now on
+      setAnimated(true)
+      setFading(true)
+      setTimeout(() => {
+        setMode(newMode)
+        setFading(false)
+        // Double-rAF ensures the browser has painted the new content
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (container && contentRef.current) {
+              container.style.height = `${contentRef.current.scrollHeight}px`
+            }
+          })
+        })
+      }, 150)
+    },
+    [mode],
+  )
+
+  // Sync container height as Clerk renders asynchronously
+  useEffect(() => {
+    const el = contentRef.current
+    const container = containerRef.current
+    if (!el || !container) return
+
+    const observer = new ResizeObserver(() => {
+      // During initial load, just set height instantly (no transition)
+      // After a toggle, animated=true and CSS handles the transition
+      container.style.height = `${el.scrollHeight}px`
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [mode])
 
   return (
     <div className="w-full max-w-sm shrink-0">
-      {mode === 'sign-in' ? (
-        <SignIn routing="hash" appearance={clerkAppearance} />
-      ) : (
-        <SignUp routing="hash" appearance={clerkAppearance} />
-      )}
+      <div
+        ref={containerRef}
+        className={`overflow-hidden ${animated ? 'transition-[height] duration-300 ease-in-out' : ''}`}
+      >
+        <div
+          ref={contentRef}
+          className={
+            animated ? 'transition-opacity duration-150 ease-in-out' : ''
+          }
+          style={{ opacity: fading ? 0 : 1 }}
+        >
+          {mode === 'sign-in' ? (
+            <SignIn routing="hash" appearance={clerkAppearance} />
+          ) : (
+            <SignUp routing="hash" appearance={clerkAppearance} />
+          )}
+        </div>
+      </div>
       <p className="text-center text-sm text-muted-foreground mt-4">
         {mode === 'sign-in' ? (
           <>
             Don&apos;t have an account?{' '}
             <button
               type="button"
-              onClick={() => setMode('sign-up')}
+              onClick={() => switchMode('sign-up')}
               className="text-primary font-medium hover:underline"
             >
               Sign up
@@ -141,7 +200,7 @@ function AuthPanel() {
             Already have an account?{' '}
             <button
               type="button"
-              onClick={() => setMode('sign-in')}
+              onClick={() => switchMode('sign-in')}
               className="text-primary font-medium hover:underline"
             >
               Sign in
@@ -225,7 +284,7 @@ function LandingPage() {
     <main className="container mx-auto px-4 py-12 md:py-16">
       {/* Hero — side-by-side: text left, sign-in right */}
       <section className="max-w-5xl mx-auto mb-16 md:mb-20">
-        <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
           {/* Left: Hero text */}
           <div className="flex-1 text-center md:text-left">
             <Badge variant="secondary" className="mb-4">
