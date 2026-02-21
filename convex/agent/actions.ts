@@ -4,9 +4,14 @@ import { v } from 'convex/values'
 import { internal } from '../_generated/api'
 import { internalAction } from '../_generated/server'
 import { buildProfileContext } from '../enrichment/conversation'
-import { buildAgentSystemPrompt } from './prompts'
+import {
+  buildAgentSystemPrompt,
+  buildBaishContextBlock,
+  buildPageContextBlock,
+} from './prompts'
 import { profileAgent } from './index'
 import type { ProfileData } from '../enrichment/conversation'
+import type { Id } from '../_generated/dataModel'
 
 /**
  * Internal action that streams the agent response.
@@ -28,11 +33,20 @@ export const streamResponse = internalAction({
         v.literal('viewing_opportunity'),
       ),
     ),
+    pageContextEntityId: v.optional(v.string()),
+    userEmail: v.optional(v.string()),
   },
   returns: v.null(),
   handler: async (
     ctx,
-    { threadId, promptMessageId, profileId, pageContext },
+    {
+      threadId,
+      promptMessageId,
+      profileId,
+      pageContext,
+      pageContextEntityId,
+      userEmail,
+    },
   ) => {
     const profile = (await ctx.runQuery(internal.agent.queries.getProfileById, {
       profileId,
@@ -41,7 +55,57 @@ export const streamResponse = internalAction({
     const profileContext = profile
       ? buildProfileContext(profile)
       : 'New profile (no data yet)'
-    const system = buildAgentSystemPrompt(profileContext, pageContext)
+
+    // Fetch rich entity data based on page context type
+    let entityData: unknown = null
+    if (pageContext === 'viewing_match' && pageContextEntityId) {
+      entityData = await ctx.runQuery(
+        internal.agent.queries.getMatchWithOpportunity,
+        {
+          matchId: pageContextEntityId as Id<'matches'>,
+          profileId,
+        },
+      )
+    } else if (pageContext === 'viewing_opportunity' && pageContextEntityId) {
+      entityData = await ctx.runQuery(
+        internal.agent.queries.getOpportunityForContext,
+        {
+          opportunityId: pageContextEntityId as Id<'opportunities'>,
+          profileId,
+        },
+      )
+    } else if (pageContext === 'browsing_matches') {
+      entityData = await ctx.runQuery(
+        internal.agent.queries.getMatchesSummary,
+        { profileId },
+      )
+    }
+
+    const pageContextData = buildPageContextBlock(pageContext, entityData)
+
+    // Check for BAISH CRM data for new profiles
+    // Profile from DB has hasEnrichmentConversation but ProfileData type doesn't include it
+    const fullProfile = profile as
+      | (ProfileData & { hasEnrichmentConversation?: boolean })
+      | null
+    let baishContextBlock = ''
+    const isNewProfile =
+      fullProfile && !fullProfile.name && !fullProfile.hasEnrichmentConversation
+    if (isNewProfile && userEmail) {
+      const baishRecord = await ctx.runQuery(
+        internal.agent.queries.getBaishImport,
+        { email: userEmail },
+      )
+      if (baishRecord) {
+        baishContextBlock = buildBaishContextBlock(
+          baishRecord as Parameters<typeof buildBaishContextBlock>[0],
+        )
+      }
+    }
+
+    const system =
+      buildAgentSystemPrompt(profileContext, pageContext, pageContextData) +
+      baishContextBlock
 
     const { thread } = await profileAgent.continueThread(ctx, { threadId })
     // Type assertion needed: @convex-dev/agent generic resolution for

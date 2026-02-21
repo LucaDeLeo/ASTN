@@ -1,5 +1,10 @@
 import { v } from 'convex/values'
-import { createThread, saveMessage } from '@convex-dev/agent'
+import {
+  abortStream,
+  createThread,
+  listStreams,
+  saveMessage,
+} from '@convex-dev/agent'
 import { components, internal } from '../_generated/api'
 import { mutation } from '../_generated/server'
 import { getUserId } from '../lib/auth'
@@ -53,11 +58,19 @@ export const sendMessage = mutation({
         v.literal('viewing_opportunity'),
       ),
     ),
+    pageContextEntityId: v.optional(v.string()),
   },
   returns: v.string(),
-  handler: async (ctx, { threadId, prompt, profileId, pageContext }) => {
+  handler: async (
+    ctx,
+    { threadId, prompt, profileId, pageContext, pageContextEntityId },
+  ) => {
     const userId = await getUserId(ctx)
     if (!userId) throw new Error('Not authenticated')
+
+    // Extract user email for BAISH CRM lookup
+    const identity = await ctx.auth.getUserIdentity()
+    const userEmail = identity?.email ?? undefined
 
     const { messageId } = await saveMessage(ctx, components.agent, {
       threadId,
@@ -69,8 +82,87 @@ export const sendMessage = mutation({
       promptMessageId: messageId,
       profileId,
       pageContext,
+      pageContextEntityId,
+      userEmail,
     })
 
     return messageId
+  },
+})
+
+/**
+ * Delete messages from a given order onward (for edit-and-resend).
+ */
+export const deleteMessagesFrom = mutation({
+  args: {
+    threadId: v.string(),
+    startOrder: v.number(),
+  },
+  returns: v.null(),
+  handler: async (ctx, { threadId, startOrder }) => {
+    const userId = await getUserId(ctx)
+    if (!userId) throw new Error('Not authenticated')
+
+    // Abort any active streams first
+    const streams = await listStreams(ctx, components.agent, {
+      threadId,
+      includeStatuses: ['streaming'],
+    })
+    for (const stream of streams) {
+      await abortStream(ctx, components.agent, {
+        streamId: stream.streamId,
+        reason: 'Edit message',
+      })
+    }
+
+    // Delete messages from startOrder to a large upper bound
+    let isDone = false
+    let curOrder = startOrder
+    let curStepOrder = 0
+    while (!isDone) {
+      const result = await ctx.runMutation(
+        components.agent.messages.deleteByOrder,
+        {
+          threadId,
+          startOrder: curOrder,
+          startStepOrder: curStepOrder,
+          endOrder: 1_000_000,
+        },
+      )
+      isDone = result.isDone
+      curOrder = result.lastOrder ?? curOrder
+      curStepOrder = result.lastStepOrder ?? curStepOrder
+    }
+
+    return null
+  },
+})
+
+/**
+ * Abort all active streams on a thread.
+ */
+export const abortGeneration = mutation({
+  args: { threadId: v.string() },
+  returns: v.number(),
+  handler: async (ctx, { threadId }) => {
+    const userId = await getUserId(ctx)
+    if (!userId) throw new Error('Not authenticated')
+
+    const streams = await listStreams(ctx, components.agent, {
+      threadId,
+      includeStatuses: ['streaming'],
+    })
+    let count = 0
+    for (const stream of streams) {
+      if (
+        await abortStream(ctx, components.agent, {
+          streamId: stream.streamId,
+          reason: 'User cancelled',
+        })
+      ) {
+        count++
+      }
+    }
+    return count
   },
 })

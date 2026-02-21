@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery } from 'convex/react'
 import {
   optimisticallySendMessage,
@@ -8,20 +8,26 @@ import {
 import {
   AlertTriangle,
   Check,
+  ChevronsDown,
+  Copy,
+  Eye,
   FileText,
   Link2,
   Loader2,
   MessageSquare,
   Paperclip,
+  Pencil,
+  Plus,
   Send,
   Sparkles,
+  Square,
   Upload,
   X,
 } from 'lucide-react'
 import { api } from '../../../../convex/_generated/api'
 import type { UIMessage } from '@convex-dev/agent'
 import type { Doc, Id } from '../../../../convex/_generated/dataModel'
-import type { PageContext } from '~/hooks/use-agent-page-context'
+import type { AgentPageContext } from '~/hooks/use-agent-page-context'
 import { useSmartInput } from '~/components/agent-sidebar/useSmartInput'
 import { Button } from '~/components/ui/button'
 import { Textarea } from '~/components/ui/textarea'
@@ -31,7 +37,7 @@ import { cn } from '~/lib/utils'
 interface AgentChatProps {
   profileId: Id<'profiles'>
   threadId: string
-  pageContext?: PageContext
+  pageContext?: AgentPageContext
   isOpen?: boolean
 }
 
@@ -46,7 +52,10 @@ export function AgentChat({
     if (typeof window === 'undefined') return true
     return localStorage.getItem('agent-auto-approve') !== 'false'
   })
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false)
+  const userScrolledUpRef = useRef(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // Smart input: LinkedIn URLs, CV pastes, file uploads
@@ -72,6 +81,9 @@ export function AgentChat({
   )
   const resolveToolChange = useMutation(api.agent.mutations.resolveToolChange)
   const batchApprove = useMutation(api.agent.mutations.batchApprovePending)
+  const abortGeneration = useMutation(api.agent.threadOps.abortGeneration)
+  const createThread = useMutation(api.agent.threadOps.createAgentThread)
+  const deleteMessagesFrom = useMutation(api.agent.threadOps.deleteMessagesFrom)
 
   // Check if agent is currently responding
   const isStreaming = messages.some((m: UIMessage) => m.status === 'streaming')
@@ -94,10 +106,49 @@ export function AgentChat({
     }
   }, [autoApprove, toolCalls, resolveToolChange])
 
-  // Scroll to bottom on new messages
+  // Track user scroll to determine if they scrolled up
   useEffect(() => {
+    const container = messagesContainerRef.current
+    if (!container) return
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container
+      const atBottom = scrollHeight - scrollTop - clientHeight < 40
+      userScrolledUpRef.current = !atBottom
+      setShowScrollToBottom(!atBottom)
+    }
+
+    container.addEventListener('scroll', handleScroll, { passive: true })
+    return () => container.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Auto-scroll on new messages, unless user scrolled up
+  useEffect(() => {
+    if (!userScrolledUpRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [messages.length])
+
+  // Continuously pin to bottom while streaming
+  useEffect(() => {
+    if (!isStreaming || userScrolledUpRef.current) return
+    const container = messagesContainerRef.current
+    if (!container) return
+
+    let raf: number
+    const tick = () => {
+      container.scrollTop = container.scrollHeight
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [isStreaming])
+
+  const scrollToBottom = useCallback(() => {
+    userScrolledUpRef.current = false
+    setShowScrollToBottom(false)
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages.length, isStreaming])
+  }, [])
 
   // Focus input when sidebar opens (or on mount)
   useEffect(() => {
@@ -106,6 +157,14 @@ export function AgentChat({
       return () => clearTimeout(timer)
     }
   }, [isOpen])
+
+  // Find the last user message key for edit button
+  const lastUserMessageKey = (() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') return messages[i].key
+    }
+    return null
+  })()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -123,11 +182,19 @@ export function AgentChat({
     }
 
     setInput('')
+    userScrolledUpRef.current = false
+    setShowScrollToBottom(false)
 
     // Batch-approve pending tool calls on send
     batchApprove({ threadId })
 
-    await sendMessageMut({ threadId, prompt: text, profileId, pageContext })
+    await sendMessageMut({
+      threadId,
+      prompt: text,
+      profileId,
+      pageContext: pageContext?.type,
+      pageContextEntityId: pageContext?.entityId,
+    })
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -135,6 +202,20 @@ export function AgentChat({
       e.preventDefault()
       handleSubmit(e)
     }
+  }
+
+  const handleStop = () => {
+    abortGeneration({ threadId })
+  }
+
+  const handleNewConversation = () => {
+    createThread({ profileId })
+  }
+
+  const handleEditMessage = (text: string, order: number) => {
+    deleteMessagesFrom({ threadId, startOrder: order })
+    setInput(text)
+    textareaRef.current?.focus()
   }
 
   // Associate tool calls with assistant messages by creation time
@@ -152,22 +233,62 @@ export function AgentChat({
     })
   }
 
+  // Context label for pages where rich data is loaded into the agent
+  const contextLabel = (() => {
+    if (!pageContext) return null
+    switch (pageContext.type) {
+      case 'viewing_match':
+        return pageContext.entityId
+          ? 'Seeing match details & fit analysis'
+          : null
+      case 'viewing_opportunity':
+        return pageContext.entityId ? 'Seeing opportunity details' : null
+      case 'browsing_matches':
+        return 'Seeing your match overview'
+      default:
+        return null
+    }
+  })()
+
   return (
     <div className="flex flex-col h-full">
-      {/* Header with auto-approve toggle */}
+      {/* Header with auto-approve toggle and new conversation button */}
       <div className="flex items-center justify-between px-4 py-2 border-b bg-background/50">
         <div className="flex items-center gap-2">
           <Sparkles className="size-4 text-coral-400" />
-          <span className="text-sm font-medium">Profile Builder</span>
+          <span className="text-sm font-medium">Career Advisor</span>
         </div>
-        <label className="flex items-center gap-2 cursor-pointer">
-          <span className="text-xs text-muted-foreground">Auto-approve</span>
-          <Switch checked={autoApprove} onCheckedChange={setAutoApprove} />
-        </label>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7"
+            disabled={isLoading || messages.length === 0}
+            onClick={handleNewConversation}
+            title="New conversation"
+          >
+            <Plus className="size-4" />
+          </Button>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <span className="text-xs text-muted-foreground">Auto-approve</span>
+            <Switch checked={autoApprove} onCheckedChange={setAutoApprove} />
+          </label>
+        </div>
       </div>
 
+      {/* Page context indicator */}
+      {contextLabel && (
+        <div className="px-4 py-1.5 border-b bg-muted/30 flex items-center gap-2">
+          <Eye className="size-3 text-muted-foreground shrink-0" />
+          <span className="text-xs text-muted-foreground">{contextLabel}</span>
+        </div>
+      )}
+
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div
+        ref={messagesContainerRef}
+        className="relative flex-1 overflow-y-auto p-4 space-y-4"
+      >
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-6">
             <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
@@ -230,6 +351,8 @@ export function AgentChat({
                 onUndo={(id) =>
                   resolveToolChange({ toolCallId: id, action: 'undo' })
                 }
+                isLastUserMessage={message.key === lastUserMessageKey}
+                onEdit={handleEditMessage}
               />
             ))}
 
@@ -254,6 +377,20 @@ export function AgentChat({
           </>
         )}
         <div ref={messagesEndRef} />
+
+        {/* Scroll-to-bottom FAB */}
+        {showScrollToBottom && messages.length > 0 && (
+          <div className="sticky bottom-2 flex justify-center pointer-events-none">
+            <Button
+              variant="outline"
+              size="icon"
+              className="pointer-events-auto size-8 rounded-full shadow-md bg-background/90 backdrop-blur-sm"
+              onClick={scrollToBottom}
+            >
+              <ChevronsDown className="size-4" />
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Extraction progress / error / CV confirmation */}
@@ -354,14 +491,27 @@ export function AgentChat({
           className="flex-1 min-h-9 max-h-[120px] resize-none"
           rows={1}
         />
-        <Button
-          type="submit"
-          disabled={!input.trim() || isLoading || smartInput.isProcessing}
-          size="icon"
-          className="shrink-0"
-        >
-          <Send className="size-4" />
-        </Button>
+        {isLoading ? (
+          <Button
+            type="button"
+            variant="destructive"
+            size="icon"
+            className="shrink-0"
+            onClick={handleStop}
+            title="Stop generating"
+          >
+            <Square className="size-4" />
+          </Button>
+        ) : (
+          <Button
+            type="submit"
+            disabled={!input.trim() || smartInput.isProcessing}
+            size="icon"
+            className="shrink-0"
+          >
+            <Send className="size-4" />
+          </Button>
+        )}
       </form>
     </div>
   )
@@ -378,6 +528,45 @@ function getToolNameFromPart(part: {
   return null
 }
 
+// Inline copy button for text content
+function CopyableText({
+  text,
+  children,
+}: {
+  text: string
+  children: React.ReactNode
+}) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Clipboard API not available
+    }
+  }
+
+  return (
+    <div className="group/copy relative">
+      {children}
+      <button
+        type="button"
+        onClick={handleCopy}
+        className="absolute -top-2 -right-2 size-6 rounded-md bg-background border shadow-sm flex items-center justify-center opacity-0 group-hover/copy:opacity-100 transition-opacity"
+        title="Copy message"
+      >
+        {copied ? (
+          <Check className="size-3 text-green-600" />
+        ) : (
+          <Copy className="size-3 text-muted-foreground" />
+        )}
+      </button>
+    </div>
+  )
+}
+
 // Individual message bubble component
 function MessageBubble({
   message,
@@ -385,12 +574,16 @@ function MessageBubble({
   autoApprove,
   onApprove,
   onUndo,
+  isLastUserMessage,
+  onEdit,
 }: {
   message: UIMessage
   relatedToolCalls: Array<Doc<'agentToolCalls'>>
   autoApprove: boolean
   onApprove: (id: Id<'agentToolCalls'>) => void
   onUndo: (id: Id<'agentToolCalls'>) => void
+  isLastUserMessage?: boolean
+  onEdit?: (text: string, order: number) => void
 }) {
   const [smoothText] = useSmoothText(message.text || '', {
     startStreaming: message.status === 'streaming',
@@ -398,7 +591,17 @@ function MessageBubble({
 
   if (message.role === 'user') {
     return (
-      <div className="flex justify-end animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="group/edit flex justify-end animate-in fade-in slide-in-from-bottom-2 duration-300">
+        {isLastUserMessage && onEdit && message.text && (
+          <button
+            type="button"
+            onClick={() => onEdit(message.text, message.order)}
+            className="self-center mr-1 size-6 rounded-md flex items-center justify-center opacity-0 group-hover/edit:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
+            title="Edit message"
+          >
+            <Pencil className="size-3" />
+          </button>
+        )}
         <div className="max-w-[80%] rounded-2xl rounded-br-md px-4 py-2.5 bg-primary text-primary-foreground">
           <p className="text-sm whitespace-pre-wrap">{message.text}</p>
         </div>
@@ -406,21 +609,23 @@ function MessageBubble({
     )
   }
 
-  const isStreaming = message.status === 'streaming'
+  const isStreamingMsg = message.status === 'streaming'
 
   // When streaming, render as a single block (parts may not be finalized)
-  if (isStreaming) {
+  if (isStreamingMsg) {
     return (
       <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
         {smoothText && (
-          <div className="flex justify-start">
-            <div className="max-w-[80%] rounded-2xl rounded-bl-md px-4 py-2.5 bg-muted text-foreground">
-              <p className="text-sm whitespace-pre-wrap">
-                {renderMarkdown(smoothText)}
-                <span className="inline-block w-1.5 h-4 ml-0.5 bg-muted-foreground/70 animate-pulse align-text-bottom" />
-              </p>
+          <CopyableText text={smoothText}>
+            <div className="flex justify-start">
+              <div className="max-w-[80%] rounded-2xl rounded-bl-md px-4 py-2.5 bg-muted text-foreground">
+                <p className="text-sm whitespace-pre-wrap">
+                  {renderMarkdown(smoothText)}
+                  <span className="inline-block w-1.5 h-4 ml-0.5 bg-muted-foreground/70 animate-pulse align-text-bottom" />
+                </p>
+              </div>
             </div>
-          </div>
+          </CopyableText>
         )}
       </div>
     )
@@ -444,13 +649,15 @@ function MessageBubble({
     const part = parts[i]
     if (part.type === 'text' && part.text) {
       elements.push(
-        <div key={`text-${i}`} className="flex justify-start">
-          <div className="max-w-[80%] rounded-2xl rounded-bl-md px-4 py-2.5 bg-muted text-foreground">
-            <p className="text-sm whitespace-pre-wrap">
-              {renderMarkdown(part.text)}
-            </p>
+        <CopyableText key={`text-${i}`} text={part.text}>
+          <div className="flex justify-start">
+            <div className="max-w-[80%] rounded-2xl rounded-bl-md px-4 py-2.5 bg-muted text-foreground">
+              <p className="text-sm whitespace-pre-wrap">
+                {renderMarkdown(part.text)}
+              </p>
+            </div>
           </div>
-        </div>,
+        </CopyableText>,
       )
     } else if (part.type === 'step-start') {
       // Skip step boundaries

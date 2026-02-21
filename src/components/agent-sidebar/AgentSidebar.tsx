@@ -34,9 +34,9 @@ function AgentSidebarInner() {
       resizeRef.current = true
       setIsResizing(true)
 
-      const handleMouseMove = (e: MouseEvent) => {
+      const handleMouseMove = (ev: MouseEvent) => {
         if (!resizeRef.current) return
-        setSidebarWidth(e.clientX)
+        setSidebarWidth(ev.clientX)
       }
 
       const handleMouseUp = () => {
@@ -54,7 +54,7 @@ function AgentSidebarInner() {
 
   if (isMobile) {
     return (
-      <Sheet open={isOpen} onOpenChange={(open) => !open && close()}>
+      <Sheet open={isOpen} onOpenChange={(v) => !v && close()}>
         <SheetContent
           side="bottom"
           className="h-[85dvh] max-h-[85dvh] rounded-t-xl p-0"

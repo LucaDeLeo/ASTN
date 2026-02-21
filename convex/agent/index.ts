@@ -6,6 +6,11 @@ import { components } from '../_generated/api'
 import {
   addEducation,
   addWorkExperience,
+  getCareerActions,
+  getMatchDetail,
+  getMyMatchesSummary,
+  getOpportunityDetail,
+  searchOpportunities,
   setAiSafetyInterests,
   setCareerGoals,
   setMatchPreferences,
@@ -15,11 +20,12 @@ import {
 } from './tools'
 
 export const profileAgent = new Agent(components.agent, {
-  name: 'profile-builder',
+  name: 'career-advisor',
   languageModel: anthropic.chat('claude-sonnet-4-6'),
   // Instructions are set dynamically per-turn via streamText system prompt
   instructions: '',
   tools: {
+    // Profile building tools
     update_basic_info: updateBasicInfo,
     add_education: addEducation,
     add_work_experience: addWorkExperience,
@@ -28,6 +34,12 @@ export const profileAgent = new Agent(components.agent, {
     set_ai_safety_interests: setAiSafetyInterests,
     set_seeking: setSeeking,
     set_match_preferences: setMatchPreferences,
+    // Read-only exploration tools
+    get_my_matches_summary: getMyMatchesSummary,
+    get_match_detail: getMatchDetail,
+    search_opportunities: searchOpportunities,
+    get_opportunity_detail: getOpportunityDetail,
+    get_career_actions: getCareerActions,
   },
   stopWhen: stepCountIs(10),
 })

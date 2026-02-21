@@ -55,19 +55,182 @@ const PAGE_CONTEXT_DESCRIPTIONS: Record<string, string> = {
   viewing_opportunity: 'Viewing a specific opportunity',
 }
 
+/**
+ * Format fetched entity data into a <page_context_data> XML block for the system prompt.
+ */
+export function buildPageContextBlock(
+  pageContext: string | undefined,
+  entityData: unknown,
+): string {
+  if (!pageContext) return ''
+
+  const description = PAGE_CONTEXT_DESCRIPTIONS[pageContext] ?? pageContext
+
+  if (!entityData) {
+    return `\n\n<current_context>
+The user is currently: ${description}
+</current_context>`
+  }
+
+  const data = entityData as Record<string, unknown>
+  let dataBlock = ''
+
+  if (pageContext === 'viewing_match' && data.match && data.opportunity) {
+    const match = data.match as Record<string, unknown>
+    const opp = data.opportunity as Record<string, unknown>
+    const explanation = match.explanation as {
+      strengths: Array<string>
+      gap?: string
+    }
+    const recommendations = match.recommendations as Array<{
+      type: string
+      action: string
+      priority: string
+    }>
+    dataBlock = `
+Match tier: ${match.tier} (score: ${match.score}/100)
+
+Opportunity: ${opp.title}
+Organization: ${opp.organization}
+Location: ${opp.location}${opp.isRemote ? ' (remote)' : ''}
+Role type: ${opp.roleType}
+${opp.description ? `Description: ${(opp.description as string).slice(0, 500)}` : ''}
+${opp.requirements ? `Requirements: ${(opp.requirements as Array<string>).join('; ')}` : ''}
+${opp.deadline ? `Deadline: ${new Date(opp.deadline as number).toLocaleDateString()}` : ''}
+${opp.sourceUrl ? `Source: ${opp.sourceUrl}` : ''}
+
+Strengths: ${explanation.strengths.join(' | ')}
+${explanation.gap ? `Gap: ${explanation.gap}` : ''}
+${recommendations.length > 0 ? `Recommendations: ${recommendations.map((r: { priority: string; action: string }) => `[${r.priority}] ${r.action}`).join(' | ')}` : ''}`
+  } else if (pageContext === 'viewing_opportunity' && data.opportunity) {
+    const opp = data.opportunity as Record<string, unknown>
+    const existingMatch = data.existingMatch as Record<string, unknown> | null
+    dataBlock = `
+Opportunity: ${opp.title}
+Organization: ${opp.organization}
+Location: ${opp.location}${opp.isRemote ? ' (remote)' : ''}
+Role type: ${opp.roleType}
+${opp.description ? `Description: ${(opp.description as string).slice(0, 500)}` : ''}
+${opp.requirements ? `Requirements: ${(opp.requirements as Array<string>).join('; ')}` : ''}
+${opp.salaryRange ? `Salary: ${opp.salaryRange}` : ''}
+${opp.deadline ? `Deadline: ${new Date(opp.deadline as number).toLocaleDateString()}` : ''}
+${opp.sourceUrl ? `Source: ${opp.sourceUrl}` : ''}
+${existingMatch ? `\nUser already has a match for this opportunity (tier: ${existingMatch.tier})` : '\nNo existing match for this opportunity yet'}`
+  } else if (pageContext === 'browsing_matches' && data.counts) {
+    const counts = data.counts as Record<string, number>
+    const topByTier = data.topByTier as Record<
+      string,
+      Array<{ title: string; organization: string }>
+    >
+    const tierLines: Array<string> = []
+    for (const tier of ['great', 'good', 'exploring'] as const) {
+      const items = topByTier[tier] as
+        | Array<{ title: string; organization: string }>
+        | undefined
+      if (items && items.length > 0) {
+        tierLines.push(
+          `${tier} (${counts[tier]}): ${items.map((i) => `${i.title} @ ${i.organization}`).join(', ')}`,
+        )
+      } else {
+        tierLines.push(`${tier}: ${counts[tier]}`)
+      }
+    }
+    dataBlock = `\nMatch summary:\n${tierLines.join('\n')}`
+  }
+
+  return `\n\n<current_context>
+The user is currently: ${description}
+</current_context>${dataBlock ? `\n\n<page_context_data>${dataBlock}\n</page_context_data>` : ''}`
+}
+
+/**
+ * Format a BAISH CRM record into an XML context block for the agent system prompt.
+ * Used when a new user matches an existing BAISH member by email.
+ */
+export function buildBaishContextBlock(record: {
+  nombre?: string
+  rol?: string
+  etapaProfesional?: string
+  experienciaAiSafety?: string
+  intereses?: Array<string>
+  participoEn?: Array<string>
+  disponibilidad?: string
+  linkedin?: string
+  formResponses?: Array<{
+    formName?: string
+    submittedAt?: string
+    careerGoals?: string
+    whatLearned?: string
+    nextSteps?: string
+    feedback?: string
+    otherResponses?: string
+  }>
+}): string {
+  const lines: Array<string> = []
+
+  if (record.nombre) lines.push(`Name: ${record.nombre}`)
+  if (record.rol) lines.push(`Current role: ${record.rol}`)
+  if (record.etapaProfesional)
+    lines.push(`Professional stage: ${record.etapaProfesional}`)
+  if (record.experienciaAiSafety)
+    lines.push(`AI Safety experience: ${record.experienciaAiSafety}`)
+  if (record.intereses && record.intereses.length > 0)
+    lines.push(`Interest areas: ${record.intereses.join(', ')}`)
+  if (record.participoEn && record.participoEn.length > 0)
+    lines.push(`BAISH programs attended: ${record.participoEn.join(', ')}`)
+  if (record.disponibilidad)
+    lines.push(`Availability: ${record.disponibilidad}`)
+  if (record.linkedin) lines.push(`LinkedIn: ${record.linkedin}`)
+
+  // Include survey/form responses
+  if (record.formResponses && record.formResponses.length > 0) {
+    lines.push('\nSurvey responses:')
+    for (const form of record.formResponses) {
+      if (form.formName) lines.push(`  Form: ${form.formName}`)
+      if (form.careerGoals) lines.push(`  Career goals: ${form.careerGoals}`)
+      if (form.whatLearned)
+        lines.push(`  What they learned: ${form.whatLearned}`)
+      if (form.nextSteps) lines.push(`  Next steps: ${form.nextSteps}`)
+      if (form.feedback) lines.push(`  Feedback: ${form.feedback}`)
+    }
+  }
+
+  return `\n\n<baish_crm_data>
+This user is a returning BAISH (Buenos Aires AI Safety Hub) member. We have CRM data from their previous participation:
+
+${lines.join('\n')}
+</baish_crm_data>
+
+IMPORTANT — Returning BAISH member handling:
+- Greet them warmly as a returning BAISH community member. Use their name if available.
+- IMMEDIATELY call your profile tools to populate their profile from the CRM data above:
+  - Call update_basic_info with their name${record.linkedin ? ' (and note their LinkedIn is available)' : ''}
+  - If they have interest areas, call set_ai_safety_interests
+  - If they have career goals from survey responses, call set_career_goals
+  - If they have a role, use it to set a headline via update_basic_info
+- After populating from CRM data, acknowledge what you've filled in and ask about gaps:
+  - Education background
+  - Detailed work history
+  - Specific technical or non-technical skills
+  - What they're currently seeking (role type, commitment level)
+- Do NOT re-ask about information already in the CRM data
+- Reference their BAISH participation naturally: "Since you've been part of [program], ..."
+`
+}
+
 export function buildAgentSystemPrompt(
   profileContext: string,
   pageContext?: string,
+  pageContextData?: string,
 ): string {
-  const pageContextBlock = pageContext
-    ? `\n\n<current_context>
-The user is currently: ${PAGE_CONTEXT_DESCRIPTIONS[pageContext] ?? pageContext}
-Use this to make responses relevant. If they're on matches, help them understand fit.
-If on opportunities, help assess whether to apply. If on their profile, suggest improvements.
-</current_context>`
-    : ''
+  const pageContextBlock =
+    pageContextData ?? buildPageContextBlock(pageContext, null)
 
-  return `You are a knowledgeable colleague in the AI safety ecosystem helping someone build their professional profile through conversation.
+  return `You are a knowledgeable career advisor in the AI safety ecosystem. You help people with:
+1. **Profile building** — constructing their professional profile through conversation
+2. **Match analysis** — discussing how well they fit specific opportunities and why
+3. **Opportunity exploration** — searching and filtering opportunities based on their interests
+4. **Career strategy** — advising on next steps, skill gaps, and career direction in AI safety
 
 Your tone is:
 - Direct and respectful, like a peer who knows the field well
@@ -75,13 +238,14 @@ Your tone is:
 - Willing to push back or ask for specifics — avoid empty validation
 - Never sycophantic — don't say "That's amazing!" or "What a great background!" unless it's truly exceptional
 
-Your primary goal is to build their profile through natural conversation:
-1. Learn about their background, experience, and interests
-2. Use your tools IMMEDIATELY when you learn profile information — don't wait for permission
-3. Help them articulate what draws them to AI safety and which part specifically
-4. Guide them toward clarity on what they're seeking next
+IMPORTANT — Page context awareness:
+- When the user is viewing a specific match, discuss their fit for that role — reference the strengths, gaps, and recommendations shown in the page context data
+- When viewing a specific opportunity, assess alignment with their profile and advise on whether to apply
+- When browsing matches, help them navigate their options — summarize tiers, compare roles, suggest which to explore first
+- When on their profile, suggest improvements and missing sections
+- Do NOT parrot back data that's already visible on the page — add insight, analysis, or a perspective they wouldn't get just from reading it
 
-IMPORTANT — Tool usage:
+IMPORTANT — Profile building tools:
 - When someone tells you their name, location, or other basic info, call the appropriate tool right away
 - When they describe education or work experience, add it immediately
 - When they mention skills or interests, set them immediately
@@ -119,6 +283,14 @@ IMPORTANT — Match preferences:
 IMPORTANT — Skills taxonomy:
 When setting skills, use ONLY names from this list: ${SKILLS_LIST_STRING}
 Pick the closest matches. If a user mentions a skill not in the list, map it to the nearest equivalent.
+
+IMPORTANT — Exploration tools:
+- When asked about matches, opportunities, or career actions, use your read-only tools to look up data
+- If the answer is already in the <page_context_data> block, do NOT call tools — use what's there
+- Present results concisely: summarize key points, don't dump raw data
+- Use get_my_matches_summary for an overview, get_match_detail for specifics about a match
+- Use search_opportunities to find roles matching criteria, get_opportunity_detail for full info
+- Use get_career_actions to review the user's personalized career steps
 
 After filling most profile sections, naturally ask about any remaining gaps. When the profile feels complete, let them know they're in good shape and can always come back to update things.
 

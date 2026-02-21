@@ -1,6 +1,6 @@
 import { useRouterState } from '@tanstack/react-router'
 
-export type PageContext =
+export type PageContextType =
   | 'viewing_home'
   | 'editing_profile'
   | 'browsing_matches'
@@ -8,18 +8,32 @@ export type PageContext =
   | 'browsing_opportunities'
   | 'viewing_opportunity'
 
-export function useAgentPageContext(): PageContext | undefined {
+export interface AgentPageContext {
+  type: PageContextType
+  entityId?: string
+}
+
+/** Backward-compat alias */
+export type PageContext = AgentPageContext
+
+export function useAgentPageContext(): AgentPageContext | undefined {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
 
-  if (pathname === '/') return 'viewing_home'
+  if (pathname === '/') return { type: 'viewing_home' }
   if (pathname === '/profile' || pathname === '/profile/')
-    return 'editing_profile'
+    return { type: 'editing_profile' }
   if (pathname === '/matches' || pathname === '/matches/')
-    return 'browsing_matches'
-  if (pathname.startsWith('/matches/')) return 'viewing_match'
+    return { type: 'browsing_matches' }
+  if (pathname.startsWith('/matches/')) {
+    const entityId = pathname.split('/matches/')[1]?.replace(/\/$/, '')
+    return { type: 'viewing_match', entityId: entityId || undefined }
+  }
   if (pathname === '/opportunities' || pathname === '/opportunities/')
-    return 'browsing_opportunities'
-  if (pathname.startsWith('/opportunities/')) return 'viewing_opportunity'
+    return { type: 'browsing_opportunities' }
+  if (pathname.startsWith('/opportunities/')) {
+    const entityId = pathname.split('/opportunities/')[1]?.replace(/\/$/, '')
+    return { type: 'viewing_opportunity', entityId: entityId || undefined }
+  }
 
   return undefined
 }

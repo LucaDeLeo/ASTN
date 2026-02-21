@@ -478,3 +478,323 @@ function convertDateString(dateStr?: string): number | undefined {
   if (isNaN(year) || isNaN(month)) return undefined
   return Date.UTC(year, month - 1, 1)
 }
+
+// ── Read-only tools ──────────────────────────────────────────────────────────
+
+export const getMyMatchesSummary = createTool({
+  description:
+    "Get a summary of the user's opportunity matches — counts per tier and top 5 per tier.",
+  args: z.object({}),
+  handler: async (ctx): Promise<string> => {
+    const profile = await getProfile(ctx)
+    if (!profile) return 'Error: profile not found'
+
+    const results = (await ctx.runQuery(
+      internal.agent.queries.getMatchesWithOpportunities as never,
+      { profileId: profile._id } as never,
+    )) as Array<{
+      matchId: string
+      tier: string
+      score: number
+      status?: string
+      strengths: Array<string>
+      gap?: string
+      opportunityTitle: string
+      organization: string
+      roleType: string
+      location: string
+      isRemote: boolean
+    }>
+
+    if (results.length === 0) return 'No matches found yet.'
+
+    const tiers: Record<string, typeof results> = {
+      great: [],
+      good: [],
+      exploring: [],
+    }
+    for (const r of results) {
+      tiers[r.tier].push(r)
+    }
+
+    const parts: Array<string> = []
+    parts.push(
+      `Match summary: ${tiers.great.length} great, ${tiers.good.length} good, ${tiers.exploring.length} exploring`,
+    )
+
+    for (const tier of ['great', 'good', 'exploring']) {
+      const items = tiers[tier].slice(0, 5)
+      if (items.length > 0) {
+        parts.push(`\n${tier.toUpperCase()} matches:`)
+        for (const item of items) {
+          parts.push(
+            `- ${item.opportunityTitle} at ${item.organization} (${item.roleType}, ${item.isRemote ? 'remote' : item.location})`,
+          )
+        }
+      }
+    }
+
+    return parts.join('\n')
+  },
+})
+
+export const getMatchDetail = createTool({
+  description:
+    'Get full details about a specific match including explanation, strengths, gaps, and recommendations.',
+  args: z.object({
+    matchId: z.string().describe('The match ID to look up'),
+  }),
+  handler: async (ctx, args): Promise<string> => {
+    const profile = await getProfile(ctx)
+    if (!profile) return 'Error: profile not found'
+
+    const data = (await ctx.runQuery(
+      internal.agent.queries.getMatchWithOpportunity as never,
+      { matchId: args.matchId, profileId: profile._id } as never,
+    )) as {
+      match: {
+        tier: string
+        score: number
+        status?: string
+        explanation: { strengths: Array<string>; gap?: string }
+        recommendations: Array<{
+          type: string
+          action: string
+          priority: string
+        }>
+      }
+      opportunity: {
+        title: string
+        organization: string
+        location: string
+        isRemote: boolean
+        roleType: string
+        description: string
+        requirements?: Array<string>
+        deadline?: number
+        sourceUrl: string
+      }
+    } | null
+
+    if (!data) return 'Match not found or does not belong to you.'
+
+    const { match, opportunity } = data
+    const lines: Array<string> = []
+    lines.push(`Match: ${opportunity.title} at ${opportunity.organization}`)
+    lines.push(`Tier: ${match.tier} (score: ${match.score}/100)`)
+    lines.push(
+      `Location: ${opportunity.location}${opportunity.isRemote ? ' (remote)' : ''}`,
+    )
+    lines.push(`Role type: ${opportunity.roleType}`)
+    if (opportunity.deadline)
+      lines.push(
+        `Deadline: ${new Date(opportunity.deadline).toLocaleDateString()}`,
+      )
+    lines.push(
+      `\nStrengths:\n${match.explanation.strengths.map((s) => `- ${s}`).join('\n')}`,
+    )
+    if (match.explanation.gap) lines.push(`\nGap: ${match.explanation.gap}`)
+    if (match.recommendations.length > 0) {
+      lines.push(
+        `\nRecommendations:\n${match.recommendations.map((r) => `- [${r.priority}] ${r.action}`).join('\n')}`,
+      )
+    }
+    lines.push(`\nApply: ${opportunity.sourceUrl}`)
+
+    return lines.join('\n')
+  },
+})
+
+export const searchOpportunities = createTool({
+  description:
+    'Search for AI safety opportunities by keyword, role type, or remote preference.',
+  args: z.object({
+    query: z
+      .string()
+      .optional()
+      .describe('Search term to match against opportunity titles'),
+    roleType: z
+      .string()
+      .optional()
+      .describe(
+        'Filter by role type: "research", "engineering", "operations", "policy", "other"',
+      ),
+    isRemote: z
+      .boolean()
+      .optional()
+      .describe('Filter for remote-only opportunities'),
+    limit: z.number().optional().describe('Max results to return (default 10)'),
+  }),
+  handler: async (ctx, args): Promise<string> => {
+    let results: Array<{
+      _id: string
+      title: string
+      organization: string
+      location: string
+      isRemote: boolean
+      roleType: string
+      description: string
+      deadline?: number
+      sourceUrl: string
+    }>
+
+    if (args.query) {
+      results = (await ctx.runQuery(
+        internal.agent.queries.searchOpportunitiesInternal as never,
+        {
+          searchTerm: args.query,
+          roleType: args.roleType,
+          isRemote: args.isRemote,
+          limit: args.limit,
+        } as never,
+      )) as typeof results
+    } else {
+      results = (await ctx.runQuery(
+        internal.agent.queries.listOpportunitiesInternal as never,
+        {
+          roleType: args.roleType,
+          isRemote: args.isRemote,
+          limit: args.limit,
+        } as never,
+      )) as typeof results
+    }
+
+    if (results.length === 0)
+      return 'No opportunities found matching those criteria.'
+
+    const lines: Array<string> = [`Found ${results.length} opportunities:\n`]
+    for (const opp of results) {
+      lines.push(
+        `- ${opp.title} at ${opp.organization} (${opp.roleType}, ${opp.isRemote ? 'remote' : opp.location})${opp.deadline ? ` — deadline ${new Date(opp.deadline).toLocaleDateString()}` : ''}`,
+      )
+    }
+
+    return lines.join('\n')
+  },
+})
+
+export const getOpportunityDetail = createTool({
+  description:
+    "Get full details about a specific opportunity, including the user's existing match if any.",
+  args: z.object({
+    opportunityId: z.string().describe('The opportunity ID to look up'),
+  }),
+  handler: async (ctx, args): Promise<string> => {
+    const profile = await getProfile(ctx)
+    if (!profile) return 'Error: profile not found'
+
+    const data = (await ctx.runQuery(
+      internal.agent.queries.getOpportunityForContext as never,
+      { opportunityId: args.opportunityId, profileId: profile._id } as never,
+    )) as {
+      opportunity: {
+        title: string
+        organization: string
+        location: string
+        isRemote: boolean
+        roleType: string
+        description: string
+        requirements?: Array<string>
+        salaryRange?: string
+        deadline?: number
+        sourceUrl: string
+      }
+      existingMatch: {
+        tier: string
+        score: number
+        explanation: { strengths: Array<string>; gap?: string }
+      } | null
+    } | null
+
+    if (!data) return 'Opportunity not found.'
+
+    const { opportunity, existingMatch } = data
+    const lines: Array<string> = []
+    lines.push(`${opportunity.title} at ${opportunity.organization}`)
+    lines.push(
+      `Location: ${opportunity.location}${opportunity.isRemote ? ' (remote)' : ''}`,
+    )
+    lines.push(`Role type: ${opportunity.roleType}`)
+    if (opportunity.salaryRange)
+      lines.push(`Salary: ${opportunity.salaryRange}`)
+    if (opportunity.deadline)
+      lines.push(
+        `Deadline: ${new Date(opportunity.deadline).toLocaleDateString()}`,
+      )
+    lines.push(`\nDescription: ${opportunity.description.slice(0, 500)}`)
+    if (opportunity.requirements && opportunity.requirements.length > 0) {
+      lines.push(
+        `\nRequirements:\n${opportunity.requirements.map((r) => `- ${r}`).join('\n')}`,
+      )
+    }
+    lines.push(`\nApply: ${opportunity.sourceUrl}`)
+
+    if (existingMatch) {
+      lines.push(
+        `\nYour match: ${existingMatch.tier} tier (score: ${existingMatch.score}/100)`,
+      )
+      lines.push(
+        `Strengths: ${existingMatch.explanation.strengths.join(' | ')}`,
+      )
+      if (existingMatch.explanation.gap)
+        lines.push(`Gap: ${existingMatch.explanation.gap}`)
+    } else {
+      lines.push(`\nNo match computed yet for this opportunity.`)
+    }
+
+    return lines.join('\n')
+  },
+})
+
+export const getCareerActions = createTool({
+  description: "Get the user's personalized career actions grouped by status.",
+  args: z.object({}),
+  handler: async (ctx): Promise<string> => {
+    const profile = await getProfile(ctx)
+    if (!profile) return 'Error: profile not found'
+
+    const actions = (await ctx.runQuery(
+      internal.agent.queries.getCareerActionsForAgent as never,
+      { profileId: profile._id } as never,
+    )) as Array<{
+      type: string
+      title: string
+      description: string
+      rationale: string
+      status: string
+    }>
+
+    if (actions.length === 0) return 'No career actions generated yet.'
+
+    const grouped = new Map<string, typeof actions>()
+    for (const action of actions) {
+      const group = grouped.get(action.status)
+      if (group) {
+        group.push(action)
+      } else {
+        grouped.set(action.status, [action])
+      }
+    }
+
+    const lines: Array<string> = [`${actions.length} career actions:\n`]
+    for (const status of [
+      'in_progress',
+      'active',
+      'saved',
+      'done',
+      'dismissed',
+    ]) {
+      const items = grouped.get(status)
+      if (!items || items.length === 0) continue
+      lines.push(
+        `${status.replace(/_/g, ' ').toUpperCase()} (${items.length}):`,
+      )
+      for (const item of items) {
+        lines.push(`- ${item.title}: ${item.description.slice(0, 100)}`)
+      }
+      lines.push('')
+    }
+
+    return lines.join('\n')
+  },
+})
