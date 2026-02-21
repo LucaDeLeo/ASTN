@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { AttendancePrivacyForm } from '~/components/settings/AttendancePrivacyForm'
+import { DeleteAllDataSection } from '~/components/settings/DeleteAllDataSection'
 import { EventNotificationPrefsForm } from '~/components/settings/EventNotificationPrefsForm'
 import { LocationPrivacyToggle } from '~/components/settings/LocationPrivacyToggle'
 import { NotificationPrefsForm } from '~/components/settings/NotificationPrefsForm'
@@ -22,6 +23,7 @@ function SettingsPage() {
       <EventNotificationPrefsForm />
       <LocationPrivacyToggle />
       <AttendancePrivacyForm />
+      <DeleteAllDataSection />
     </main>
   )
 }
