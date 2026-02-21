@@ -1069,6 +1069,35 @@ export default defineSchema({
     .index('by_org', ['orgId'])
     .index('by_guest_email_and_opportunity', ['guestEmail', 'opportunityId']),
 
+  // BAISH CRM imports (from Airtable)
+  baishImports: defineTable({
+    email: v.string(), // Primary email (lowercased)
+    otherEmails: v.optional(v.array(v.string())), // Additional emails (lowercased)
+    nombre: v.optional(v.string()), // Full name
+    vinculo: v.optional(v.string()), // Relationship to BAISH
+    rol: v.optional(v.string()), // Current role/title
+    etapaProfesional: v.optional(v.string()), // Professional stage
+    experienciaAiSafety: v.optional(v.string()), // AI Safety experience level
+    intereses: v.optional(v.array(v.string())), // Interest areas
+    participoEn: v.optional(v.array(v.string())), // Programs participated in
+    disponibilidad: v.optional(v.string()), // Availability
+    linkedin: v.optional(v.string()), // LinkedIn URL
+    formResponses: v.optional(
+      v.array(
+        v.object({
+          formName: v.optional(v.string()),
+          submittedAt: v.optional(v.string()),
+          careerGoals: v.optional(v.string()),
+          whatLearned: v.optional(v.string()),
+          nextSteps: v.optional(v.string()),
+          feedback: v.optional(v.string()),
+          otherResponses: v.optional(v.string()), // JSON string of remaining fields
+        }),
+      ),
+    ),
+    importedAt: v.number(),
+  }).index('by_email', ['email']),
+
   // Anonymous feedback submissions
   feedback: defineTable({
     featureRequests: v.optional(v.string()),

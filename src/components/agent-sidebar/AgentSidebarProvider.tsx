@@ -58,7 +58,9 @@ export function AgentSidebarProvider({
 
   const profile = useQuery(api.profiles.getOrCreateProfile)
   const createThread = useMutation(api.agent.threadOps.createAgentThread)
+  const sendMessage = useMutation(api.agent.threadOps.sendMessage)
   const threadCreating = useRef(false)
+  const autoGreetSent = useRef(false)
   const autoOpenedRef = useRef(false)
   const previousFocusRef = useRef<HTMLElement | null>(null)
 
@@ -91,14 +93,29 @@ export function AgentSidebarProvider({
     const setup = async () => {
       threadCreating.current = true
       try {
-        await createThread({ profileId: profile._id })
+        const newThreadId = await createThread({ profileId: profile._id })
+
+        // Auto-send greeting for new profiles to trigger BAISH CRM lookup
+        // A profile is "new" if it has no name and no enrichment conversation yet
+        if (
+          !profile.name &&
+          !profile.hasEnrichmentConversation &&
+          !autoGreetSent.current
+        ) {
+          autoGreetSent.current = true
+          await sendMessage({
+            threadId: newThreadId,
+            prompt: 'Hi! I just signed up.',
+            profileId: profile._id,
+          })
+        }
       } finally {
         threadCreating.current = false
       }
     }
 
     setup()
-  }, [profile, isOpen, createThread])
+  }, [profile, isOpen, createThread, sendMessage])
 
   // Auto-open for new users: profile exists but no thread yet
   useEffect(() => {
