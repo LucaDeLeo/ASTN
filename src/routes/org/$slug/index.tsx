@@ -1,6 +1,15 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { AuthLoading, Authenticated, useQuery } from 'convex/react'
-import { Building2, Calendar, Settings, UserPlus, Users } from 'lucide-react'
+import {
+  Building2,
+  Calendar,
+  CheckCircle2,
+  ExternalLink,
+  GraduationCap,
+  Settings,
+  UserPlus,
+  Users,
+} from 'lucide-react'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { AuthHeader } from '~/components/layout/auth-header'
@@ -65,6 +74,9 @@ function OrgDirectoryPage() {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-5xl mx-auto">
           <OrgHeader org={org} />
+          <Authenticated>
+            <FeaturedOpportunity orgId={org._id} orgSlug={org.slug} />
+          </Authenticated>
           <MemberDirectory orgId={org._id} />
         </div>
       </main>
@@ -179,5 +191,81 @@ function MembershipStatus({ orgId, orgSlug }: MembershipStatusProps) {
         </Button>
       )}
     </div>
+  )
+}
+
+function FeaturedOpportunity({
+  orgId,
+  orgSlug,
+}: {
+  orgId: Id<'organizations'>
+  orgSlug?: string
+}) {
+  const membership = useQuery(api.orgs.membership.getMembership, { orgId })
+  const featured = useQuery(api.orgOpportunities.getFeatured, { orgId })
+  const myApplication = useQuery(
+    api.opportunityApplications.getMyApplication,
+    featured ? { opportunityId: featured._id } : 'skip',
+  )
+
+  // Only show to authenticated members
+  if (!membership || !featured) return null
+
+  // Only show active opportunities
+  if (featured.status !== 'active') return null
+
+  const hasApplied = !!myApplication
+
+  return (
+    <Card className="mb-6 overflow-hidden border-primary/20">
+      <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 sm:p-6">
+        <div className="flex items-start gap-3 sm:gap-4">
+          <div className="size-10 sm:size-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <GraduationCap className="size-5 sm:size-6 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-semibold text-foreground truncate">
+                {featured.title}
+              </h3>
+              <Badge variant="secondary" className="shrink-0 text-xs">
+                Featured
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+              {featured.description}
+            </p>
+            <div className="flex items-center gap-3 flex-wrap">
+              {hasApplied ? (
+                <Badge className="bg-green-50 text-green-700 border-green-200">
+                  <CheckCircle2 className="size-3 mr-1" />
+                  Application Submitted
+                </Badge>
+              ) : orgSlug ? (
+                <Button size="sm" asChild>
+                  <Link
+                    to="/org/$slug/apply/$opportunityId"
+                    params={{ slug: orgSlug, opportunityId: featured._id }}
+                  >
+                    Apply Now
+                  </Link>
+                </Button>
+              ) : null}
+              {featured.externalUrl && (
+                <a
+                  href={featured.externalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  Learn more
+                  <ExternalLink className="size-3" />
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </Card>
   )
 }

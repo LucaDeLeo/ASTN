@@ -5,6 +5,7 @@ import {
   Building2,
   Calendar,
   CalendarCheck,
+  FileText,
   FolderPlus,
   MapPin,
   Settings,
@@ -56,6 +57,10 @@ function OrgAdminDashboard() {
   )
   const space = useQuery(
     api.coworkingSpaces.getSpaceByOrg,
+    org && membership?.role === 'admin' ? { orgId: org._id } : 'skip',
+  )
+  const applicationCount = useQuery(
+    api.opportunityApplications.getOrgApplicationCount,
     org && membership?.role === 'admin' ? { orgId: org._id } : 'skip',
   )
 
@@ -162,7 +167,7 @@ function OrgAdminDashboard() {
           <OnboardingChecklist orgId={org._id} orgSlug={slug} />
 
           {/* Quick Stats Cards */}
-          <div className="grid gap-4 sm:grid-cols-4 mb-8">
+          <div className="grid gap-4 sm:grid-cols-5 mb-8">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-slate-500">
@@ -237,6 +242,20 @@ function OrgAdminDashboard() {
                 )}
               </CardContent>
             </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-slate-500">
+                  Applications
+                </CardTitle>
+                <FileText className="size-4 text-slate-400" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-foreground">
+                  {applicationCount ?? <Spinner className="size-6" />}
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Quick Actions */}
@@ -245,6 +264,13 @@ function OrgAdminDashboard() {
               <Link to="/org/$slug/admin/members" params={{ slug }}>
                 <Users className="size-5 mr-2" />
                 View Members
+              </Link>
+            </Button>
+
+            <Button variant="outline" className="h-auto py-4" asChild>
+              <Link to="/org/$slug/admin/applications" params={{ slug }}>
+                <FileText className="size-5 mr-2" />
+                Applications
               </Link>
             </Button>
 

@@ -955,6 +955,54 @@ export default defineSchema({
     createdAt: v.number(),
   }).index('by_booking', ['spaceBookingId']),
 
+  // Org-created opportunities (distinct from scraped opportunities)
+  orgOpportunities: defineTable({
+    orgId: v.id('organizations'),
+    title: v.string(),
+    description: v.string(),
+    type: v.union(
+      v.literal('course'),
+      v.literal('fellowship'),
+      v.literal('job'),
+      v.literal('other'),
+    ),
+    status: v.union(
+      v.literal('active'),
+      v.literal('closed'),
+      v.literal('draft'),
+    ),
+    deadline: v.optional(v.number()),
+    externalUrl: v.optional(v.string()),
+    featured: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_org_and_status', ['orgId', 'status'])
+    .index('by_org_and_featured', ['orgId', 'featured']),
+
+  // Opportunity applications (submitted by org members)
+  opportunityApplications: defineTable({
+    opportunityId: v.id('orgOpportunities'),
+    orgId: v.id('organizations'),
+    userId: v.string(),
+    profileId: v.optional(v.id('profiles')),
+    status: v.union(
+      v.literal('submitted'),
+      v.literal('under_review'),
+      v.literal('accepted'),
+      v.literal('rejected'),
+      v.literal('waitlisted'),
+    ),
+    responses: v.any(),
+    submittedAt: v.number(),
+    reviewedAt: v.optional(v.number()),
+    reviewedBy: v.optional(v.string()),
+    reviewNotes: v.optional(v.string()),
+  })
+    .index('by_opportunity_and_status', ['opportunityId', 'status'])
+    .index('by_user_and_opportunity', ['userId', 'opportunityId'])
+    .index('by_org', ['orgId']),
+
   // Anonymous feedback submissions
   feedback: defineTable({
     featureRequests: v.optional(v.string()),

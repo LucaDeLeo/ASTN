@@ -51,6 +51,7 @@
 - [ ] Make privacy and notification preferences an explicit part of onboarding; unify all settings and make them easily accessible
 - [ ] Revamp entire profile + settings flow — email templates link to `/settings` which doesn't exist yet; notification prefs, privacy, and profile editing need a unified UX pass
 - [ ] Add info to landing page explaining it's a prototype and what features are available
+- [ ] Add application form fields as standard profile fields — career stage, fields of study, location, profile URL / LinkedIn, other profile link, proudest achievement, AI safety engagement, relevant skills. Pre-fill applications from profile and keep profile as the canonical source.
 
 ---
 
