@@ -30,7 +30,15 @@ function validateLinkedInUrl(url: string): string {
     throw new Error('URL must be a LinkedIn profile URL (linkedin.com/in/...)')
   }
 
-  return normalized
+  // Extract just the username from /in/username/... stripping extra path
+  // segments (e.g. /details/experience/) and all query params (?locale=,
+  // ?trk=, UTM params) that can cause Exa to match the wrong person.
+  const username = parsed.pathname.split('/').filter(Boolean)[1]
+  if (!username) {
+    throw new Error('Could not extract LinkedIn username from URL')
+  }
+
+  return `https://www.linkedin.com/in/${username}`
 }
 
 // --- Exa entity types (from actual API response) ---

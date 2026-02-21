@@ -1,6 +1,22 @@
 import { v } from 'convex/values'
 import { internalMutation } from '../_generated/server'
 
+// Atomically claim a document for extraction (compare-and-swap).
+// Returns true if claimed, false if already being extracted.
+export const claimForExtraction = internalMutation({
+  args: { documentId: v.id('uploadedDocuments') },
+  returns: v.boolean(),
+  handler: async (ctx, { documentId }) => {
+    const doc = await ctx.db.get('uploadedDocuments', documentId)
+    if (!doc) return false
+    if (doc.status === 'extracting' || doc.status === 'extracted') return false
+    await ctx.db.patch('uploadedDocuments', documentId, {
+      status: 'extracting',
+    })
+    return true
+  },
+})
+
 // Update document status (used during extraction flow)
 export const updateDocumentStatus = internalMutation({
   args: {
@@ -13,6 +29,7 @@ export const updateDocumentStatus = internalMutation({
     ),
     errorMessage: v.optional(v.string()),
   },
+  returns: v.null(),
   handler: async (ctx, { documentId, status, errorMessage }) => {
     await ctx.db.patch('uploadedDocuments', documentId, {
       status,
@@ -57,6 +74,7 @@ export const saveExtractionResult = internalMutation({
       rawSkills: v.optional(v.array(v.string())),
     }),
   },
+  returns: v.null(),
   handler: async (ctx, { documentId, extractedData }) => {
     await ctx.db.patch('uploadedDocuments', documentId, {
       extractedData,

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAction, useQuery } from 'convex/react'
 import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
@@ -59,6 +59,7 @@ export interface UseExtractionReturn {
  */
 export function useExtraction(): UseExtractionReturn {
   const [state, setState] = useState<ExtractionState>({ status: 'idle' })
+  const extractingRef = useRef(false)
   const [lastDocumentId, setLastDocumentId] =
     useState<Id<'uploadedDocuments'> | null>(null)
   const [lastText, setLastText] = useState<string | null>(null)
@@ -98,6 +99,10 @@ export function useExtraction(): UseExtractionReturn {
 
   const extractFromDocument = useCallback(
     async (documentId: Id<'uploadedDocuments'>) => {
+      // Guard against double-calls while already extracting
+      if (extractingRef.current) return
+      extractingRef.current = true
+
       setLastDocumentId(documentId)
       setLastText(null)
 
@@ -130,6 +135,8 @@ export function useExtraction(): UseExtractionReturn {
           error: error instanceof Error ? error.message : 'Extraction failed',
           canRetry: true,
         })
+      } finally {
+        extractingRef.current = false
       }
     },
     [extractPdfAction],

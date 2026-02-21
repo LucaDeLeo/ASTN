@@ -16,11 +16,17 @@ const MAX_RETRIES = 3
 export const extractFromPdf = action({
   args: { documentId: v.id('uploadedDocuments') },
   handler: async (ctx, { documentId }) => {
-    // 1. Update status to "extracting"
-    await ctx.runMutation(internal.extraction.mutations.updateDocumentStatus, {
-      documentId,
-      status: 'extracting',
-    })
+    // 1. Atomically claim the document — bail out if already being extracted
+    const claimed: boolean = await ctx.runMutation(
+      internal.extraction.mutations.claimForExtraction,
+      { documentId },
+    )
+    if (!claimed) {
+      log('warn', 'Skipping duplicate extraction — document already claimed', {
+        documentId,
+      })
+      return { success: false, reason: 'already_extracting' }
+    }
 
     try {
       // 2. Get document record to find storageId

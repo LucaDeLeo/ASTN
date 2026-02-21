@@ -48,13 +48,15 @@ export function useSmartInput({
   }, [fileUpload.state.status, fileUpload])
 
   // Start extraction when upload completes
+  const extractFromDocumentRef = useRef(extraction.extractFromDocument)
+  extractFromDocumentRef.current = extraction.extractFromDocument
   useEffect(() => {
     if (fileUpload.state.status === 'success') {
       sourceRef.current = 'cv'
       hasApplied.current = false
-      extraction.extractFromDocument(fileUpload.state.documentId)
+      extractFromDocumentRef.current(fileUpload.state.documentId)
     }
-  }, [fileUpload.state.status, fileUpload.state, extraction])
+  }, [fileUpload.state.status])
 
   // Apply results and notify agent when extraction succeeds
   useEffect(() => {
