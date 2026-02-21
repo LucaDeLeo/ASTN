@@ -2,6 +2,7 @@ import { defineApp } from 'convex/server'
 import resend from '@convex-dev/resend/convex.config.js'
 import persistentTextStreaming from '@convex-dev/persistent-text-streaming/convex.config'
 import agent from '@convex-dev/agent/convex.config'
+import rateLimiter from '@convex-dev/rate-limiter/convex.config'
 
 const app = defineApp()
 
@@ -15,5 +16,8 @@ app.use(persistentTextStreaming)
 
 // Agent component for chat-driven profile builder
 app.use(agent)
+
+// Rate limiting for public endpoints
+app.use(rateLimiter)
 
 export default app

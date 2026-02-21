@@ -3,6 +3,7 @@ import { internal } from './_generated/api'
 import { mutation, query } from './_generated/server'
 import { isValidDateString, validateBookingTime } from './lib/bookingValidation'
 import { requireAuth, requireSpaceAdmin } from './lib/auth'
+import { rateLimiter } from './lib/rateLimiter'
 import type { Id } from './_generated/dataModel'
 
 // ---------- Mutations ----------
@@ -45,6 +46,11 @@ export const submitVisitApplication = mutation({
     },
   ) => {
     const userId = await requireAuth(ctx)
+
+    await rateLimiter.limit(ctx, 'guestVisitApplication', {
+      key: userId,
+      throws: true,
+    })
 
     // Get space and validate guest access
     const space = await ctx.db.get('coworkingSpaces', spaceId)

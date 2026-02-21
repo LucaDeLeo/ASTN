@@ -5,6 +5,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { action } from '../_generated/server'
 import { internal } from '../_generated/api'
 import { requireAuth } from '../lib/auth'
+import { rateLimiter } from '../lib/rateLimiter'
 import { log } from '../lib/logging'
 import { MODEL_QUALITY } from '../lib/models'
 import { extractionResultSchema } from './validation'
@@ -69,6 +70,12 @@ export const extractFromConversation = action({
   handler: async (ctx, { profileId, messages }): Promise<ExtractionResult> => {
     // Auth + ownership check
     const userId = await requireAuth(ctx)
+
+    await rateLimiter.limit(ctx, 'enrichmentExtraction', {
+      key: userId,
+      throws: true,
+    })
+
     const profile = await ctx.runQuery(
       internal.enrichment.queries.getProfileInternal,
       { profileId },

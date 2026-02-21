@@ -1,6 +1,7 @@
 import { ConvexError, v } from 'convex/values'
 import { action, internalQuery, mutation, query } from './_generated/server'
 import { getUserId } from './lib/auth'
+import { rateLimiter } from './lib/rateLimiter'
 import { internal } from './_generated/api'
 
 // Submit an application (idempotent — returns existing if already applied)
@@ -14,6 +15,11 @@ export const submit = mutation({
   handler: async (ctx, { opportunityId, responses }) => {
     const userId = await getUserId(ctx)
     if (!userId) throw new ConvexError('Not authenticated')
+
+    await rateLimiter.limit(ctx, 'opportunityApplication', {
+      key: userId,
+      throws: true,
+    })
 
     // Get the opportunity
     const opportunity = await ctx.db.get('orgOpportunities', opportunityId)
@@ -78,6 +84,11 @@ export const submitGuest = mutation({
   },
   returns: v.id('opportunityApplications'),
   handler: async (ctx, { opportunityId, guestEmail, responses }) => {
+    await rateLimiter.limit(ctx, 'guestApplication', {
+      key: guestEmail.trim().toLowerCase(),
+      throws: true,
+    })
+
     const email = guestEmail.trim().toLowerCase()
 
     // Get the opportunity

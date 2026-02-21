@@ -21,6 +21,7 @@
     "@clerk/clerk-react": "^5.60.0",
     "@convex-dev/agent": "0.6.0-alpha.1",
     "@convex-dev/persistent-text-streaming": "^0.3.0",
+    "@convex-dev/rate-limiter": "^0.3.2",
     "@convex-dev/react-query": "^0.0.0-alpha.11",
     "@convex-dev/resend": "^0.2.3",
     "@fontsource-variable/lora": "^5.2.8",

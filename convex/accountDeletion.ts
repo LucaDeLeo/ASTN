@@ -1,6 +1,7 @@
 import { v } from 'convex/values'
 import { mutation } from './_generated/server'
 import { requireAuth } from './lib/auth'
+import { rateLimiter } from './lib/rateLimiter'
 
 /**
  * Delete all data associated with the current user.
@@ -11,6 +12,11 @@ export const deleteAllMyData = mutation({
   returns: v.null(),
   handler: async (ctx) => {
     const userId = await requireAuth(ctx)
+
+    await rateLimiter.limit(ctx, 'accountDeletion', {
+      key: userId,
+      throws: true,
+    })
 
     // 1. Find profile (needed for profile-dependent tables)
     const profile = await ctx.db

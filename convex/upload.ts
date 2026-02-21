@@ -1,6 +1,7 @@
 import { v } from 'convex/values'
 import { mutation } from './_generated/server'
 import { getUserId } from './lib/auth'
+import { rateLimiter } from './lib/rateLimiter'
 
 /**
  * Generate a one-time upload URL for file uploads.
@@ -13,6 +14,11 @@ export const generateUploadUrl = mutation({
     if (!userId) {
       throw new Error('Not authenticated')
     }
+
+    await rateLimiter.limit(ctx, 'generateUploadUrl', {
+      key: userId,
+      throws: true,
+    })
 
     return await ctx.storage.generateUploadUrl()
   },

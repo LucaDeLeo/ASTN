@@ -2,6 +2,7 @@ import { ConvexError, v } from 'convex/values'
 import { internal } from './_generated/api'
 import { mutation, query } from './_generated/server'
 import { isPlatformAdmin, requireAuth, requirePlatformAdmin } from './lib/auth'
+import { rateLimiter } from './lib/rateLimiter'
 import { generateSlug } from './lib/slug'
 
 // ---------- Mutations ----------
@@ -22,6 +23,11 @@ export const submit = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireAuth(ctx)
+
+    await rateLimiter.limit(ctx, 'orgApplicationSubmit', {
+      key: userId,
+      throws: true,
+    })
 
     const normalizedName = args.orgName.toLowerCase().trim()
 

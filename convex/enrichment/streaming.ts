@@ -11,6 +11,7 @@ import {
   query,
 } from '../_generated/server'
 import { requireAuth } from '../lib/auth'
+import { rateLimiter } from '../lib/rateLimiter'
 import { FIELD_LIMITS } from '../lib/limits'
 import { MODEL_QUALITY } from '../lib/models'
 import {
@@ -33,6 +34,11 @@ export const startChat = mutation({
   returns: v.object({ streamId: StreamIdValidator }),
   handler: async (ctx, { profileId, message }) => {
     const userId = await requireAuth(ctx)
+
+    await rateLimiter.limit(ctx, 'enrichmentChat', {
+      key: userId,
+      throws: true,
+    })
 
     const profile = await ctx.db.get('profiles', profileId)
     if (!profile || profile.userId !== userId) {
@@ -65,6 +71,11 @@ export const startCompletionChat = mutation({
   returns: v.object({ streamId: StreamIdValidator }),
   handler: async (ctx, { profileId, actionId, message }) => {
     const userId = await requireAuth(ctx)
+
+    await rateLimiter.limit(ctx, 'enrichmentChat', {
+      key: userId,
+      throws: true,
+    })
 
     const profile = await ctx.db.get('profiles', profileId)
     if (!profile || profile.userId !== userId) {

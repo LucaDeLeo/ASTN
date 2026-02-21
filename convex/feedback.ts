@@ -1,5 +1,6 @@
 import { v } from 'convex/values'
 import { mutation } from './_generated/server'
+import { rateLimiter } from './lib/rateLimiter'
 
 export const submit = mutation({
   args: {
@@ -8,6 +9,8 @@ export const submit = mutation({
     page: v.string(),
   },
   handler: async (ctx, args) => {
+    await rateLimiter.limit(ctx, 'feedbackSubmit', { throws: true })
+
     if (!args.featureRequests?.trim() && !args.bugReports?.trim()) {
       throw new Error('Please fill in at least one field')
     }

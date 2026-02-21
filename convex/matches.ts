@@ -2,6 +2,7 @@ import { v } from 'convex/values'
 import { action, mutation, query } from './_generated/server'
 import { internal } from './_generated/api'
 import { getUserId } from './lib/auth'
+import { rateLimiter } from './lib/rateLimiter'
 import type { Id } from './_generated/dataModel'
 
 // Type for match computation result (chained scheduled action architecture)
@@ -228,6 +229,11 @@ export const triggerMatchComputation = action({
     if (!userId) {
       throw new Error('Not authenticated')
     }
+
+    await rateLimiter.limit(ctx, 'matchComputation', {
+      key: userId,
+      throws: true,
+    })
 
     // Get profile
     const profile: { _id: Id<'profiles'> } | null = await ctx.runQuery(
