@@ -23,6 +23,8 @@ export const getFullProfile = internalQuery({
       enrichmentSummary: profile.enrichmentSummary,
       hasEnrichmentConversation: profile.hasEnrichmentConversation,
       privacySettings: profile.privacySettings,
+      matchPreferences: profile.matchPreferences,
+      matchesStaleAt: profile.matchesStaleAt,
     }
   },
 })
@@ -31,9 +33,8 @@ export const getFullProfile = internalQuery({
 export const getCandidateOpportunities = internalQuery({
   args: {
     hiddenOrgs: v.array(v.string()),
-    limit: v.optional(v.number()),
   },
-  handler: async (ctx, { hiddenOrgs, limit }) => {
+  handler: async (ctx, { hiddenOrgs }) => {
     const now = Date.now()
 
     // Get active opportunities
@@ -54,11 +55,6 @@ export const getCandidateOpportunities = internalQuery({
 
       return true
     })
-
-    // Apply limit if specified
-    if (limit) {
-      opportunities = opportunities.slice(0, limit)
-    }
 
     return opportunities
   },

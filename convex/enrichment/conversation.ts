@@ -83,6 +83,16 @@ export interface ProfileData {
   education?: Array<{ degree?: string; field?: string; institution: string }>
   seeking?: string
   enrichmentSummary?: string
+  matchPreferences?: {
+    remotePreference?: string
+    roleTypes?: Array<string>
+    experienceLevels?: Array<string>
+    willingToRelocate?: boolean
+    workAuthorization?: string
+    minimumSalaryUSD?: number
+    availability?: string
+    commitmentTypes?: Array<string>
+  }
 }
 
 /**
@@ -125,6 +135,33 @@ export function buildProfileContext(profile: ProfileData): string {
     contextParts.push(`Education: ${eduSummary}`)
   }
   if (profile.seeking) contextParts.push(`Seeking: ${profile.seeking}`)
+  if (profile.matchPreferences) {
+    const prefs = profile.matchPreferences
+    const prefParts: Array<string> = []
+    if (prefs.remotePreference)
+      prefParts.push(`remote: ${prefs.remotePreference.replace(/_/g, ' ')}`)
+    if (prefs.roleTypes?.length)
+      prefParts.push(`roles: ${prefs.roleTypes.join(', ')}`)
+    if (prefs.experienceLevels?.length)
+      prefParts.push(`levels: ${prefs.experienceLevels.join(', ')}`)
+    if (prefs.willingToRelocate !== undefined)
+      prefParts.push(
+        prefs.willingToRelocate ? 'willing to relocate' : 'not relocating',
+      )
+    if (prefs.workAuthorization)
+      prefParts.push(`authorization: ${prefs.workAuthorization}`)
+    if (prefs.minimumSalaryUSD)
+      prefParts.push(`min salary: $${prefs.minimumSalaryUSD.toLocaleString()}`)
+    if (prefs.availability)
+      prefParts.push(`available: ${prefs.availability.replace(/_/g, ' ')}`)
+    if (prefs.commitmentTypes?.length)
+      prefParts.push(
+        `commitment: ${prefs.commitmentTypes.map((t) => t.replace(/_/g, ' ')).join(', ')}`,
+      )
+    if (prefParts.length > 0) {
+      contextParts.push(`Match Preferences: ${prefParts.join('; ')}`)
+    }
+  }
   if (profile.enrichmentSummary)
     contextParts.push(
       `Previous enrichment summary: ${profile.enrichmentSummary}`,

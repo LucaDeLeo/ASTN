@@ -68,6 +68,8 @@ export const saveBatchResults = internalMutation({
     isLastBatch: v.boolean(),
     previousOppIds: v.array(v.string()),
     runTimestamp: v.number(),
+    validOpportunityIds: v.array(v.id('opportunities')),
+    isFullRecompute: v.boolean(),
   },
   handler: async (
     ctx,
@@ -80,6 +82,8 @@ export const saveBatchResults = internalMutation({
       isLastBatch,
       previousOppIds,
       runTimestamp,
+      validOpportunityIds,
+      isFullRecompute,
     },
   ) => {
     const existingMatches = await ctx.db
@@ -149,16 +153,27 @@ export const saveBatchResults = internalMutation({
       })
     }
 
-    // Last-batch cleanup: remove stale matches for opportunities no longer matched
+    // Last-batch cleanup: remove stale matches
     if (isLastBatch) {
       const remainingOld = await ctx.db
         .query('matches')
         .withIndex('by_profile', (q) => q.eq('profileId', profileId))
         .collect()
 
+      const validOppSet = new Set(validOpportunityIds.map(String))
+
       for (const match of remainingOld) {
-        if (match.computedAt !== runTimestamp) {
-          await ctx.db.delete('matches', match._id)
+        if (isFullRecompute) {
+          // Full recompute: delete anything not from this run
+          if (match.computedAt !== runTimestamp) {
+            await ctx.db.delete('matches', match._id)
+          }
+        } else {
+          // Incremental: delete matches for opps no longer in valid set
+          // (archived/expired/filtered-out opportunities)
+          if (!validOppSet.has(String(match.opportunityId))) {
+            await ctx.db.delete('matches', match._id)
+          }
         }
       }
 
@@ -174,6 +189,37 @@ export const saveBatchResults = internalMutation({
     })
 
     return { savedCount: matches.length }
+  },
+})
+
+// Cleanup-only mutation for incremental runs with no new evaluations
+export const cleanupOnlyMatches = internalMutation({
+  args: {
+    profileId: v.id('profiles'),
+    validOpportunityIds: v.array(v.id('opportunities')),
+  },
+  returns: v.null(),
+  handler: async (ctx, { profileId, validOpportunityIds }) => {
+    const existingMatches = await ctx.db
+      .query('matches')
+      .withIndex('by_profile', (q) => q.eq('profileId', profileId))
+      .collect()
+
+    const validOppSet = new Set(validOpportunityIds.map(String))
+    let deletedCount = 0
+
+    for (const match of existingMatches) {
+      if (!validOppSet.has(String(match.opportunityId))) {
+        await ctx.db.delete('matches', match._id)
+        deletedCount++
+      }
+    }
+
+    // Clear staleness flag
+    await ctx.db.patch('profiles', profileId, { matchesStaleAt: undefined })
+
+    log('info', 'cleanupOnlyMatches', { profileId, deletedCount })
+    return null
   },
 })
 

@@ -143,6 +143,48 @@ export default defineSchema({
     // Match staleness tracking (set when match-affecting fields change)
     matchesStaleAt: v.optional(v.number()),
 
+    // Match preferences (hard filters + LLM-enforced constraints)
+    matchPreferences: v.optional(
+      v.object({
+        // Programmatic hard filters (applied before LLM)
+        remotePreference: v.optional(
+          v.union(
+            v.literal('remote_only'),
+            v.literal('on_site_ok'),
+            v.literal('no_preference'),
+          ),
+        ),
+        roleTypes: v.optional(v.array(v.string())),
+        experienceLevels: v.optional(v.array(v.string())),
+
+        // LLM-enforced constraints (opportunity data is free-text, can't filter programmatically)
+        willingToRelocate: v.optional(v.boolean()),
+        workAuthorization: v.optional(v.string()),
+        minimumSalaryUSD: v.optional(v.number()),
+        availability: v.optional(
+          v.union(
+            v.literal('immediately'),
+            v.literal('within_1_month'),
+            v.literal('within_3_months'),
+            v.literal('within_6_months'),
+            v.literal('not_available'),
+          ),
+        ),
+        commitmentTypes: v.optional(
+          v.array(
+            v.union(
+              v.literal('full_time'),
+              v.literal('part_time'),
+              v.literal('contract'),
+              v.literal('fellowship'),
+              v.literal('internship'),
+              v.literal('volunteer'),
+            ),
+          ),
+        ),
+      }),
+    ),
+
     // Match computation progress (set during batch processing, cleared on completion)
     matchProgress: v.optional(
       v.object({

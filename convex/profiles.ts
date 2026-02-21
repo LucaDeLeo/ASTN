@@ -35,6 +35,26 @@ const COMPLETENESS_SECTIONS = [
       Array.isArray(profile.skills) && profile.skills.length > 0,
   },
   {
+    id: 'matchPreferences',
+    label: 'Match Preferences',
+    check: (profile: Record<string, unknown>) => {
+      const prefs = profile.matchPreferences as
+        | { remotePreference?: string }
+        | undefined
+      return prefs !== undefined && prefs.remotePreference !== undefined
+    },
+  },
+  {
+    id: 'matchPreferences',
+    label: 'Match Preferences',
+    check: (profile: Record<string, unknown>) => {
+      const prefs = profile.matchPreferences as
+        | { remotePreference?: string }
+        | undefined
+      return prefs !== undefined && prefs.remotePreference !== undefined
+    },
+  },
+  {
     id: 'privacy',
     label: 'Privacy Settings',
     check: (profile: Record<string, unknown>) =>
@@ -163,6 +183,43 @@ export const updateField = mutation({
           hiddenFromOrgs: v.optional(v.array(v.string())),
         }),
       ),
+      matchPreferences: v.optional(
+        v.object({
+          remotePreference: v.optional(
+            v.union(
+              v.literal('remote_only'),
+              v.literal('on_site_ok'),
+              v.literal('no_preference'),
+            ),
+          ),
+          roleTypes: v.optional(v.array(v.string())),
+          experienceLevels: v.optional(v.array(v.string())),
+          willingToRelocate: v.optional(v.boolean()),
+          workAuthorization: v.optional(v.string()),
+          minimumSalaryUSD: v.optional(v.number()),
+          availability: v.optional(
+            v.union(
+              v.literal('immediately'),
+              v.literal('within_1_month'),
+              v.literal('within_3_months'),
+              v.literal('within_6_months'),
+              v.literal('not_available'),
+            ),
+          ),
+          commitmentTypes: v.optional(
+            v.array(
+              v.union(
+                v.literal('full_time'),
+                v.literal('part_time'),
+                v.literal('contract'),
+                v.literal('fellowship'),
+                v.literal('internship'),
+                v.literal('volunteer'),
+              ),
+            ),
+          ),
+        }),
+      ),
     }),
   },
   handler: async (ctx, { profileId, updates }) => {
@@ -187,6 +244,7 @@ export const updateField = mutation({
       'seeking',
       'enrichmentSummary',
       'privacySettings',
+      'matchPreferences',
     ])
 
     const affectsMatches = Object.keys(updates).some((f) =>

@@ -28,6 +28,13 @@ interface ProfileData {
   aiSafetyInterests: Array<string>
   seeking?: string
   enrichmentSummary?: string
+  matchPreferences?: {
+    willingToRelocate?: boolean
+    workAuthorization?: string
+    minimumSalaryUSD?: number
+    availability?: string
+    commitmentTypes?: Array<string>
+  }
 }
 
 interface OpportunityData {
@@ -60,6 +67,11 @@ Analyze the candidate's profile against each opportunity and provide:
 - **exploring**: Worth considering but significant gaps exist. Stretch opportunity.
 
 Do NOT include opportunities where there's no reasonable fit at all.
+
+## Hard Constraints
+The candidate may specify hard constraints in their profile. These are non-negotiable:
+- If an opportunity clearly violates a hard constraint, do NOT include it in results.
+- If the conflict is ambiguous (e.g., salary not disclosed), include the match but note the potential conflict in the "gap" field and lower the tier/score.
 
 ## Tone
 - Be encouraging and constructive ("This could be a strong fit because...")
@@ -165,6 +177,39 @@ export function buildProfileContext(profile: ProfileData): string {
   if (profile.enrichmentSummary) {
     sections.push('\n### Additional Context (from career conversation)')
     sections.push(profile.enrichmentSummary)
+  }
+
+  // Hard constraints (LLM-enforced — programmatic filters already applied)
+  if (profile.matchPreferences) {
+    const prefs = profile.matchPreferences
+    const constraintLines: Array<string> = []
+    if (prefs.willingToRelocate === false) {
+      constraintLines.push('- NOT willing to relocate')
+    } else if (prefs.willingToRelocate === true) {
+      constraintLines.push('- Willing to relocate')
+    }
+    if (prefs.workAuthorization) {
+      constraintLines.push(`- Work authorization: ${prefs.workAuthorization}`)
+    }
+    if (prefs.minimumSalaryUSD) {
+      constraintLines.push(
+        `- Minimum salary: $${prefs.minimumSalaryUSD.toLocaleString()} USD`,
+      )
+    }
+    if (prefs.availability) {
+      constraintLines.push(
+        `- Available: ${prefs.availability.replace(/_/g, ' ')}`,
+      )
+    }
+    if (prefs.commitmentTypes && prefs.commitmentTypes.length > 0) {
+      constraintLines.push(
+        `- Commitment types: ${prefs.commitmentTypes.map((t) => t.replace(/_/g, ' ')).join(', ')}`,
+      )
+    }
+    if (constraintLines.length > 0) {
+      sections.push('\n### Hard Constraints (MUST be respected)')
+      sections.push(...constraintLines)
+    }
   }
 
   sections.push('</candidate_profile>')

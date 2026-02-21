@@ -34,6 +34,7 @@ const MATCH_AFFECTING_FIELDS = new Set([
   'aiSafetyInterests',
   'seeking',
   'enrichmentSummary',
+  'matchPreferences',
 ])
 
 /**

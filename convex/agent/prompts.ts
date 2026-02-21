@@ -108,6 +108,14 @@ IMPORTANT — Using profile context:
 - Focus on GAPS — things not yet in their profile
 - Only reference information the user has explicitly stated or that appears in their profile data
 
+IMPORTANT — Match preferences:
+- When users mention constraints like "I only want remote", "I need visa sponsorship",
+  "I'm looking for full-time", "minimum 80k salary", or "I can start immediately",
+  call set_match_preferences right away
+- These are hard constraints that filter which opportunities they see
+- Merge with existing preferences — don't clear fields the user hasn't mentioned
+- After setting, briefly confirm: "I've set your match filter to remote-only" etc.
+
 IMPORTANT — Skills taxonomy:
 When setting skills, use ONLY names from this list: ${SKILLS_LIST_STRING}
 Pick the closest matches. If a user mentions a skill not in the list, map it to the nearest equivalent.

@@ -36,6 +36,38 @@ function isRateLimitError(error: unknown): boolean {
   return false
 }
 
+// Programmatic hard filters — applied before LLM sees any opportunity
+function applyHardFilters<
+  T extends {
+    _id: Id<'opportunities'>
+    isRemote: boolean
+    roleType: string
+    experienceLevel?: string
+  },
+>(
+  opportunities: Array<T>,
+  prefs?: {
+    remotePreference?: string
+    roleTypes?: Array<string>
+    experienceLevels?: Array<string>
+  },
+): Array<T> {
+  if (!prefs) return opportunities
+  return opportunities.filter((opp) => {
+    if (prefs.remotePreference === 'remote_only' && !opp.isRemote) return false
+    if (prefs.roleTypes?.length && !prefs.roleTypes.includes(opp.roleType))
+      return false
+    // If opportunity has no experienceLevel, don't filter it out — let LLM decide
+    if (
+      prefs.experienceLevels?.length &&
+      opp.experienceLevel &&
+      !prefs.experienceLevels.includes(opp.experienceLevel)
+    )
+      return false
+    return true
+  })
+}
+
 // Entry point: starts the chained matching process for a profile
 export const computeMatchesForProfile = internalAction({
   args: { profileId: v.id('profiles') },
@@ -49,12 +81,62 @@ export const computeMatchesForProfile = internalAction({
     }
 
     const hiddenOrgs = profile.privacySettings?.hiddenFromOrgs || []
-    const opportunities = await ctx.runQuery(
+    const allOpportunities = await ctx.runQuery(
       internal.matching.queries.getCandidateOpportunities,
-      { hiddenOrgs, limit: 50 },
+      { hiddenOrgs },
     )
 
-    if (opportunities.length === 0) {
+    // Apply programmatic hard filters
+    const filteredOpportunities = applyHardFilters(
+      allOpportunities,
+      profile.matchPreferences,
+    )
+
+    // Get existing matches for incremental logic
+    const existingMatches = await ctx.runQuery(
+      internal.matching.queries.getExistingMatches,
+      { profileId },
+    )
+
+    const existingByOppId = new Map(
+      existingMatches.map(
+        (m: { opportunityId: string; computedAt: number }) => [
+          m.opportunityId,
+          m,
+        ],
+      ),
+    )
+
+    // Determine mode: full recompute if profile fields changed (matchesStaleAt set)
+    const isFullRecompute = Boolean(profile.matchesStaleAt)
+
+    // Build evaluation set
+    let evaluationSet: typeof filteredOpportunities
+    if (isFullRecompute) {
+      evaluationSet = filteredOpportunities
+    } else {
+      // Incremental: only new or updated opportunities
+      evaluationSet = filteredOpportunities.filter((opp) => {
+        const existing = existingByOppId.get(opp._id)
+        if (!existing) return true // New opportunity, no match exists
+        return opp.updatedAt > (existing as { computedAt: number }).computedAt
+      })
+    }
+
+    // Valid opportunity IDs = all filtered opportunities (for cleanup)
+    const validOpportunityIds = filteredOpportunities.map((o) => o._id)
+
+    if (evaluationSet.length === 0 && !isFullRecompute) {
+      // Nothing to evaluate — just clean up stale matches
+      await ctx.runMutation(internal.matching.mutations.cleanupOnlyMatches, {
+        profileId,
+        validOpportunityIds,
+      })
+      return { matchCount: 0, message: 'No new opportunities to evaluate' }
+    }
+
+    if (evaluationSet.length === 0 && isFullRecompute) {
+      // Full recompute but no opportunities after filtering
       await ctx.runMutation(
         internal.matching.mutations.clearMatchesForProfile,
         { profileId },
@@ -62,25 +144,24 @@ export const computeMatchesForProfile = internalAction({
       return { matchCount: 0, message: 'No active opportunities to match' }
     }
 
-    const existingMatches = await ctx.runQuery(
-      internal.matching.queries.getExistingMatches,
-      { profileId },
-    )
     const previousOppIds = existingMatches.map(
       (m: { opportunityId: string }) => m.opportunityId,
     )
 
     // Snapshot opportunity IDs so batches work against a consistent set
-    const snapshotOpportunityIds = opportunities.map(
+    const snapshotOpportunityIds = evaluationSet.map(
       (o: { _id: Id<'opportunities'> }) => o._id,
     )
 
-    const totalBatches = Math.ceil(opportunities.length / BATCH_SIZE)
+    const totalBatches = Math.ceil(evaluationSet.length / BATCH_SIZE)
     const runTimestamp = Date.now()
 
     log('info', 'computeMatchesForProfile: starting chained matching', {
       profileId,
-      opportunityCount: opportunities.length,
+      totalOpportunities: allOpportunities.length,
+      filteredCount: filteredOpportunities.length,
+      evaluationCount: evaluationSet.length,
+      isFullRecompute,
       totalBatches,
       runTimestamp,
     })
@@ -89,7 +170,7 @@ export const computeMatchesForProfile = internalAction({
     await ctx.runMutation(internal.matching.mutations.setMatchProgress, {
       profileId,
       totalBatches,
-      totalOpportunities: opportunities.length,
+      totalOpportunities: evaluationSet.length,
     })
 
     await ctx.scheduler.runAfter(
@@ -103,6 +184,8 @@ export const computeMatchesForProfile = internalAction({
         previousOppIds,
         snapshotOpportunityIds,
         runTimestamp,
+        validOpportunityIds,
+        isFullRecompute,
       },
     )
 
@@ -120,6 +203,8 @@ export const processMatchBatch = internalAction({
     previousOppIds: v.array(v.string()),
     snapshotOpportunityIds: v.array(v.id('opportunities')),
     runTimestamp: v.number(),
+    validOpportunityIds: v.array(v.id('opportunities')),
+    isFullRecompute: v.boolean(),
   },
   handler: async (
     ctx,
@@ -131,6 +216,8 @@ export const processMatchBatch = internalAction({
       previousOppIds,
       snapshotOpportunityIds,
       runTimestamp,
+      validOpportunityIds,
+      isFullRecompute,
     },
   ) => {
     const startTime = Date.now()
@@ -184,6 +271,8 @@ export const processMatchBatch = internalAction({
           isLastBatch: true,
           previousOppIds,
           runTimestamp,
+          validOpportunityIds,
+          isFullRecompute,
         })
       } else {
         await ctx.scheduler.runAfter(
@@ -197,6 +286,8 @@ export const processMatchBatch = internalAction({
             previousOppIds,
             snapshotOpportunityIds,
             runTimestamp,
+            validOpportunityIds,
+            isFullRecompute,
           },
         )
       }
@@ -292,6 +383,8 @@ export const processMatchBatch = internalAction({
             previousOppIds,
             snapshotOpportunityIds,
             runTimestamp,
+            validOpportunityIds,
+            isFullRecompute,
           },
         )
         return
@@ -313,6 +406,8 @@ export const processMatchBatch = internalAction({
             previousOppIds,
             snapshotOpportunityIds,
             runTimestamp,
+            validOpportunityIds,
+            isFullRecompute,
           },
         )
         return
@@ -342,6 +437,8 @@ export const processMatchBatch = internalAction({
         isLastBatch,
         previousOppIds,
         runTimestamp,
+        validOpportunityIds,
+        isFullRecompute,
       })
     }
 
@@ -367,6 +464,8 @@ export const processMatchBatch = internalAction({
           previousOppIds,
           snapshotOpportunityIds,
           runTimestamp,
+          validOpportunityIds,
+          isFullRecompute,
         },
       )
     }

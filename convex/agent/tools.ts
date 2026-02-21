@@ -38,6 +38,16 @@ async function getProfile(ctx: {
     careerGoals?: string
     aiSafetyInterests?: Array<string>
     seeking?: string
+    matchPreferences?: {
+      remotePreference?: string
+      roleTypes?: Array<string>
+      experienceLevels?: Array<string>
+      willingToRelocate?: boolean
+      workAuthorization?: string
+      minimumSalaryUSD?: number
+      availability?: string
+      commitmentTypes?: Array<string>
+    }
   } | null
 }
 
@@ -325,6 +335,132 @@ export const setSeeking = createTool({
         displayText,
         updates: JSON.stringify({ seeking: args.seeking }),
         previousValues: JSON.stringify({ seeking: existing }),
+      } as never,
+    )
+
+    return displayText
+  },
+})
+
+export const setMatchPreferences = createTool({
+  description:
+    "Set the user's match preferences for opportunity filtering. Call when they mention constraints like remote-only, role types, relocation, visa, salary, availability, or commitment type. Merges with existing preferences — only sets fields you provide.",
+  args: z.object({
+    remotePreference: z
+      .enum(['remote_only', 'on_site_ok', 'no_preference'])
+      .optional()
+      .describe('Remote work preference'),
+    roleTypes: z
+      .array(z.string())
+      .optional()
+      .describe(
+        'Preferred role types, e.g. ["research", "engineering", "policy"]',
+      ),
+    experienceLevels: z
+      .array(z.string())
+      .optional()
+      .describe('Preferred experience levels, e.g. ["entry", "mid", "senior"]'),
+    willingToRelocate: z
+      .boolean()
+      .optional()
+      .describe('Whether the user is willing to relocate'),
+    workAuthorization: z
+      .string()
+      .optional()
+      .describe(
+        'Work authorization status, e.g. "US citizen", "Need visa sponsorship"',
+      ),
+    minimumSalaryUSD: z
+      .number()
+      .optional()
+      .describe('Minimum acceptable salary in USD per year'),
+    availability: z
+      .enum([
+        'immediately',
+        'within_1_month',
+        'within_3_months',
+        'within_6_months',
+        'not_available',
+      ])
+      .optional()
+      .describe('When the user can start'),
+    commitmentTypes: z
+      .array(
+        z.enum([
+          'full_time',
+          'part_time',
+          'contract',
+          'fellowship',
+          'internship',
+          'volunteer',
+        ]),
+      )
+      .optional()
+      .describe('Acceptable commitment types'),
+  }),
+  handler: async (ctx, args): Promise<string> => {
+    const profile = await getProfile(ctx)
+    if (!profile) return 'Error: profile not found'
+
+    // Merge with existing preferences
+    const existing = profile.matchPreferences ?? {}
+    const merged = { ...existing }
+
+    if (args.remotePreference !== undefined)
+      merged.remotePreference = args.remotePreference
+    if (args.roleTypes !== undefined) merged.roleTypes = args.roleTypes
+    if (args.experienceLevels !== undefined)
+      merged.experienceLevels = args.experienceLevels
+    if (args.willingToRelocate !== undefined)
+      merged.willingToRelocate = args.willingToRelocate
+    if (args.workAuthorization !== undefined)
+      merged.workAuthorization = args.workAuthorization
+    if (args.minimumSalaryUSD !== undefined)
+      merged.minimumSalaryUSD = args.minimumSalaryUSD
+    if (args.availability !== undefined) merged.availability = args.availability
+    if (args.commitmentTypes !== undefined)
+      merged.commitmentTypes = args.commitmentTypes
+
+    const displayParts: Array<string> = []
+    if (args.remotePreference)
+      displayParts.push(`remote: ${args.remotePreference.replace(/_/g, ' ')}`)
+    if (args.roleTypes?.length)
+      displayParts.push(`roles: ${args.roleTypes.join(', ')}`)
+    if (args.experienceLevels?.length)
+      displayParts.push(`levels: ${args.experienceLevels.join(', ')}`)
+    if (args.willingToRelocate !== undefined)
+      displayParts.push(
+        args.willingToRelocate ? 'willing to relocate' : 'not relocating',
+      )
+    if (args.workAuthorization)
+      displayParts.push(`authorization: ${args.workAuthorization}`)
+    if (args.minimumSalaryUSD)
+      displayParts.push(
+        `min salary: $${args.minimumSalaryUSD.toLocaleString()}`,
+      )
+    if (args.availability)
+      displayParts.push(`available: ${args.availability.replace(/_/g, ' ')}`)
+    if (args.commitmentTypes?.length)
+      displayParts.push(
+        `commitment: ${args.commitmentTypes.map((t) => t.replace(/_/g, ' ')).join(', ')}`,
+      )
+
+    const displayText =
+      displayParts.length > 0
+        ? `Updated match preferences: ${displayParts.join(', ')}`
+        : 'Updated match preferences'
+
+    await ctx.runMutation(
+      internal.agent.mutations.applyToolChange as never,
+      {
+        profileId: profile._id,
+        threadId: ctx.threadId,
+        toolName: 'set_match_preferences',
+        displayText,
+        updates: JSON.stringify({ matchPreferences: merged }),
+        previousValues: JSON.stringify({
+          matchPreferences: profile.matchPreferences,
+        }),
       } as never,
     )
 
