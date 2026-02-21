@@ -171,7 +171,7 @@ export function useSmartInput({
   const progressText = isApplying
     ? 'Applying to profile...'
     : fileUpload.state.status === 'uploading'
-      ? `Uploading... ${Math.round(fileUpload.state.progress * 100)}%`
+      ? `Uploading... ${Math.round(fileUpload.state.progress)}%`
       : extraction.state.status === 'extracting'
         ? extraction.state.stage === 'reading'
           ? 'Reading document...'

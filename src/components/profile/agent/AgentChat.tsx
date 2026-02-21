@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Component, useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery } from 'convex/react'
 import {
   optimisticallySendMessage,
@@ -25,6 +25,7 @@ import {
   X,
 } from 'lucide-react'
 import { api } from '../../../../convex/_generated/api'
+import type { ErrorInfo, ReactNode } from 'react'
 import type { UIMessage } from '@convex-dev/agent'
 import type { Doc, Id } from '../../../../convex/_generated/dataModel'
 import type { AgentPageContext } from '~/hooks/use-agent-page-context'
@@ -33,6 +34,36 @@ import { Button } from '~/components/ui/button'
 import { Textarea } from '~/components/ui/textarea'
 import { Switch } from '~/components/ui/switch'
 import { cn } from '~/lib/utils'
+
+// ErrorBoundary to prevent one bad message from crashing the entire chat
+class MessageErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.warn('MessageErrorBoundary caught render error:', error, info)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="text-xs text-muted-foreground italic px-4 py-1">
+          (message could not be displayed)
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 interface AgentChatProps {
   profileId: Id<'profiles'>
@@ -337,23 +368,24 @@ export function AgentChat({
         ) : (
           <>
             {messages.map((message: UIMessage, idx: number) => (
-              <MessageBubble
-                key={message.key}
-                message={message}
-                relatedToolCalls={getToolCallsForMessage(
-                  message,
-                  messages[idx + 1],
-                )}
-                autoApprove={autoApprove}
-                onApprove={(id) =>
-                  resolveToolChange({ toolCallId: id, action: 'approve' })
-                }
-                onUndo={(id) =>
-                  resolveToolChange({ toolCallId: id, action: 'undo' })
-                }
-                isLastUserMessage={message.key === lastUserMessageKey}
-                onEdit={handleEditMessage}
-              />
+              <MessageErrorBoundary key={message.key}>
+                <MessageBubble
+                  message={message}
+                  relatedToolCalls={getToolCallsForMessage(
+                    message,
+                    messages[idx + 1],
+                  )}
+                  autoApprove={autoApprove}
+                  onApprove={(id) =>
+                    resolveToolChange({ toolCallId: id, action: 'approve' })
+                  }
+                  onUndo={(id) =>
+                    resolveToolChange({ toolCallId: id, action: 'undo' })
+                  }
+                  isLastUserMessage={message.key === lastUserMessageKey}
+                  onEdit={handleEditMessage}
+                />
+              </MessageErrorBoundary>
             ))}
 
             {/* Loading dots when waiting for first token */}
@@ -407,7 +439,11 @@ export function AgentChat({
         <div className="px-4 py-2 border-t bg-red-50 flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs text-red-700">
             <AlertTriangle className="size-3 shrink-0" />
-            <span>{smartInput.error}</span>
+            <span>
+              {typeof smartInput.error === 'string'
+                ? smartInput.error
+                : String(smartInput.error)}
+            </span>
           </div>
           <button
             onClick={smartInput.dismissError}
@@ -671,8 +707,14 @@ function MessageBubble({
           </div>
         </CopyableText>,
       )
-    } else if (part.type === 'step-start') {
-      // Skip step boundaries
+    } else if (
+      part.type === 'step-start' ||
+      part.type === 'reasoning' ||
+      part.type === 'file' ||
+      part.type.startsWith('source-') ||
+      part.type.startsWith('data-')
+    ) {
+      // Known non-renderable part types — skip silently
     } else {
       // Tool part — match to agentToolCalls
       const toolName = getToolNameFromPart(
@@ -696,6 +738,9 @@ function MessageBubble({
             />,
           )
         }
+      } else {
+        // Unknown part type — skip but log for debugging
+        console.warn('AgentChat: unhandled message part type:', part.type)
       }
     }
   }
@@ -739,6 +784,13 @@ function ToolCallInline({
   onApprove?: () => void
   onUndo?: () => void
 }) {
+  // Runtime guard: displayText may be non-string from stale agent data
+  const rawDisplayText = displayText as unknown
+  const safeDisplayText =
+    typeof rawDisplayText === 'string'
+      ? rawDisplayText
+      : String(rawDisplayText ?? '')
+
   return (
     <div
       className={cn(
@@ -759,7 +811,7 @@ function ToolCallInline({
       <span
         className={cn('flex-1 truncate', status === 'undone' && 'line-through')}
       >
-        {displayText}
+        {safeDisplayText}
       </span>
 
       {status === 'pending' && !autoApprove && (
