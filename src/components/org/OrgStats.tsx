@@ -20,7 +20,7 @@ interface OrgStatsProps {
       inactive: number
       pending: number
     }
-    careerDistribution?: Record<string, number>
+    careerDistribution?: Array<{ name: string; count: number }>
     eventMetrics?: {
       totalResponses: number
       attendedCount: number
@@ -54,13 +54,7 @@ export function OrgStats({ stats }: OrgStatsProps) {
       engagementDistribution.pending
     : 0
 
-  // Get top career stages sorted by count
-  const topCareerStages = careerDistribution
-    ? Object.entries(careerDistribution)
-        .map(([name, count]) => ({ name, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 6)
-    : []
+  const topCareerStages = careerDistribution?.slice(0, 6) ?? []
 
   return (
     <div className="grid gap-6 md:grid-cols-2">

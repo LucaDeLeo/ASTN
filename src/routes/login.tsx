@@ -1,20 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import {
-  AuthLoading,
-  Authenticated,
-  Unauthenticated,
-  useMutation,
-  useQuery,
-} from 'convex/react'
-import { SignIn } from '@clerk/clerk-react'
+import { Authenticated, Unauthenticated } from 'convex/react'
 import { useEffect } from 'react'
-import { api } from '../../convex/_generated/api'
-import { GradientBg } from '~/components/layout/GradientBg'
-import { clearPendingInvite, getPendingInvite } from '~/lib/pendingInvite'
-import {
-  clearPendingGuestApplication,
-  getPendingGuestApplication,
-} from '~/lib/pendingGuestApplication'
 
 export const Route = createFileRoute('/login')({
   component: LoginPage,
@@ -22,64 +8,23 @@ export const Route = createFileRoute('/login')({
 
 function LoginPage() {
   return (
-    <GradientBg className="flex items-center justify-center p-4">
-      <AuthLoading>
-        <div className="flex items-center justify-center">
-          <div className="size-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-        </div>
-      </AuthLoading>
+    <>
       <Unauthenticated>
-        <SignIn routing="hash" />
+        <RedirectToHome />
       </Unauthenticated>
       <Authenticated>
-        <AuthenticatedRedirect />
+        <RedirectToHome />
       </Authenticated>
-    </GradientBg>
+    </>
   )
 }
 
-function AuthenticatedRedirect() {
+function RedirectToHome() {
   const navigate = useNavigate()
-  const profile = useQuery(api.profiles.getOrCreateProfile)
-  const claimGuestApplications = useMutation(
-    api.opportunityApplications.claimGuestApplications,
-  )
 
   useEffect(() => {
-    if (profile === undefined) return // still loading
+    navigate({ to: '/' })
+  }, [navigate])
 
-    // Claim any guest applications (fire-and-forget, idempotent)
-    claimGuestApplications().catch(() => {})
-
-    // Check for pending guest application (redirect to org page)
-    const pendingGuest = getPendingGuestApplication()
-    if (pendingGuest) {
-      clearPendingGuestApplication()
-      // Guest application claimed above — just continue with normal redirect
-    }
-
-    // Check for pending org invite saved before auth redirect
-    const pendingInvite = getPendingInvite()
-    if (pendingInvite) {
-      clearPendingInvite()
-      navigate({
-        to: '/org/$slug/join',
-        params: { slug: pendingInvite.slug },
-        search: { token: pendingInvite.token || '' },
-      })
-      return
-    }
-
-    if (profile === null || profile.hasEnrichmentConversation !== true) {
-      navigate({ to: '/profile/edit' })
-    } else {
-      navigate({ to: '/' })
-    }
-  }, [profile, navigate, claimGuestApplications])
-
-  return (
-    <div className="flex items-center justify-center">
-      <div className="size-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-    </div>
-  )
+  return null
 }

@@ -207,8 +207,8 @@ export const getEnhancedOrgStats = query({
     }
 
     // Build career stage distribution and skills distribution from profiles
-    const careerDistribution: Record<string, number> = {}
-    const skillCounts: Record<string, number> = {}
+    const careerCounts = new Map<string, number>()
+    const skillCounts = new Map<string, number>()
     const profilesWithCompleteness: Array<{
       profile: Doc<'profiles'> | null
       completeness: number
@@ -223,12 +223,12 @@ export const getEnhancedOrgStats = query({
       if (profile) {
         // Career distribution
         const stage = profile.seeking ?? 'Unknown'
-        careerDistribution[stage] = (careerDistribution[stage] ?? 0) + 1
+        careerCounts.set(stage, (careerCounts.get(stage) ?? 0) + 1)
 
         // Skills distribution
         if (profile.skills) {
           for (const skill of profile.skills) {
-            skillCounts[skill] = (skillCounts[skill] || 0) + 1
+            skillCounts.set(skill, (skillCounts.get(skill) ?? 0) + 1)
           }
         }
 
@@ -236,16 +236,20 @@ export const getEnhancedOrgStats = query({
         const completeness = calculateCompleteness(profile)
         profilesWithCompleteness.push({ profile, completeness })
       } else {
-        careerDistribution['Unknown'] = (careerDistribution['Unknown'] ?? 0) + 1
+        careerCounts.set('Unknown', (careerCounts.get('Unknown') ?? 0) + 1)
         profilesWithCompleteness.push({ profile: null, completeness: 0 })
       }
     }
 
-    // Get top 10 skills sorted by count
-    const skillsDistribution = Object.entries(skillCounts)
+    // Return as arrays of { name, count } — avoids using user text as Convex field names
+    const skillsDistribution = [...skillCounts.entries()]
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10)
+
+    const careerDistribution = [...careerCounts.entries()]
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
 
     // Completeness distribution
     const completenessDistribution = {

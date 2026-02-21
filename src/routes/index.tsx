@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
   AuthLoading,
   Authenticated,
@@ -6,8 +6,9 @@ import {
   useMutation,
   useQuery,
 } from 'convex/react'
+import { SignIn, SignUp } from '@clerk/clerk-react'
+import { useEffect, useState } from 'react'
 import {
-  ArrowRight,
   Bookmark,
   Building2,
   Calendar,
@@ -34,6 +35,11 @@ import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Card } from '~/components/ui/card'
 import { Spinner } from '~/components/ui/spinner'
+import { clearPendingInvite, getPendingInvite } from '~/lib/pendingInvite'
+import {
+  clearPendingGuestApplication,
+  getPendingGuestApplication,
+} from '~/lib/pendingGuestApplication'
 
 export const Route = createFileRoute('/')({
   component: Home,
@@ -59,6 +65,7 @@ function Home() {
         <LandingPage />
       </Unauthenticated>
       <Authenticated>
+        <PostAuthSetup />
         <OnboardingGuard>
           <Dashboard />
         </OnboardingGuard>
@@ -80,6 +87,101 @@ function Home() {
       {pageContent}
     </GradientBg>
   )
+}
+
+const clerkAppearance = {
+  variables: {
+    colorPrimary: 'oklch(0.7 0.16 30)',
+    borderRadius: '0.75rem',
+    fontFamily: "'Plus Jakarta Sans Variable', system-ui, sans-serif",
+  },
+  layout: {
+    socialButtonsVariant: 'blockButton' as const,
+    socialButtonsPlacement: 'top' as const,
+    logoPlacement: 'none' as const,
+  },
+  elements: {
+    rootBox: { width: '100%' },
+    cardBox: { boxShadow: 'none' },
+    card: {
+      boxShadow: 'none',
+      backgroundColor: 'transparent',
+      border: 'none',
+    },
+    headerTitle: { display: 'none' },
+    headerSubtitle: { display: 'none' },
+    footer: { display: 'none' },
+  },
+}
+
+function AuthPanel() {
+  const [mode, setMode] = useState<'sign-in' | 'sign-up'>('sign-in')
+
+  return (
+    <div className="w-full max-w-sm shrink-0">
+      {mode === 'sign-in' ? (
+        <SignIn routing="hash" appearance={clerkAppearance} />
+      ) : (
+        <SignUp routing="hash" appearance={clerkAppearance} />
+      )}
+      <p className="text-center text-sm text-muted-foreground mt-4">
+        {mode === 'sign-in' ? (
+          <>
+            Don&apos;t have an account?{' '}
+            <button
+              type="button"
+              onClick={() => setMode('sign-up')}
+              className="text-primary font-medium hover:underline"
+            >
+              Sign up
+            </button>
+          </>
+        ) : (
+          <>
+            Already have an account?{' '}
+            <button
+              type="button"
+              onClick={() => setMode('sign-in')}
+              className="text-primary font-medium hover:underline"
+            >
+              Sign in
+            </button>
+          </>
+        )}
+      </p>
+    </div>
+  )
+}
+
+function PostAuthSetup() {
+  const navigate = useNavigate()
+  const profile = useQuery(api.profiles.getOrCreateProfile)
+  const claimGuestApplications = useMutation(
+    api.opportunityApplications.claimGuestApplications,
+  )
+
+  useEffect(() => {
+    if (profile === undefined) return
+
+    claimGuestApplications().catch(() => {})
+
+    const pendingGuest = getPendingGuestApplication()
+    if (pendingGuest) {
+      clearPendingGuestApplication()
+    }
+
+    const pendingInvite = getPendingInvite()
+    if (pendingInvite) {
+      clearPendingInvite()
+      navigate({
+        to: '/org/$slug/join',
+        params: { slug: pendingInvite.slug },
+        search: { token: pendingInvite.token || '' },
+      })
+    }
+  }, [profile, navigate, claimGuestApplications])
+
+  return null
 }
 
 function LandingPage() {
@@ -121,29 +223,25 @@ function LandingPage() {
 
   return (
     <main className="container mx-auto px-4 py-12 md:py-16">
-      {/* Hero */}
-      <section className="max-w-3xl mx-auto text-center mb-16 md:mb-20">
-        <Badge variant="secondary" className="mb-4">
-          Prototype
-        </Badge>
-        <h1 className="text-4xl md:text-5xl font-display font-semibold text-foreground mb-4 tracking-tight">
-          AI Safety Talent Network
-        </h1>
-        <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Your career command center for AI safety. Get matched to opportunities
-          and receive AI-powered career guidance — all in one place.
-        </p>
-        <div className="flex items-center justify-center gap-3">
-          <Button
-            asChild
-            size="lg"
-            className="transition-transform hover:scale-[1.02] active:scale-[0.98]"
-          >
-            <Link to="/login">
-              Get Started
-              <ArrowRight className="ml-2 size-4" />
-            </Link>
-          </Button>
+      {/* Hero — side-by-side: text left, sign-in right */}
+      <section className="max-w-5xl mx-auto mb-16 md:mb-20">
+        <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+          {/* Left: Hero text */}
+          <div className="flex-1 text-center md:text-left">
+            <Badge variant="secondary" className="mb-4">
+              Prototype
+            </Badge>
+            <h1 className="text-4xl md:text-5xl font-display font-semibold text-foreground mb-4 tracking-tight">
+              AI Safety Talent Network
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-lg">
+              Your career command center for AI safety. Get matched to
+              opportunities and receive AI-powered career guidance — all in one
+              place.
+            </p>
+          </div>
+          {/* Right: Auth */}
+          <AuthPanel />
         </div>
       </section>
 
