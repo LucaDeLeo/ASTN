@@ -67,6 +67,7 @@ export default defineSchema({
     pronouns: v.optional(v.string()),
     location: v.optional(v.string()),
     headline: v.optional(v.string()),
+    linkedinUrl: v.optional(v.string()),
 
     // Education (array of entries)
     education: v.optional(
@@ -107,6 +108,9 @@ export default defineSchema({
     // LLM-generated content
     enrichmentSummary: v.optional(v.string()),
     hasEnrichmentConversation: v.optional(v.boolean()),
+
+    // Profile agent thread
+    agentThreadId: v.optional(v.string()),
 
     // Privacy settings (section-level)
     privacySettings: v.optional(
@@ -205,6 +209,24 @@ export default defineSchema({
     editedValue: v.optional(v.string()),
     createdAt: v.number(),
   }).index('by_profile', ['profileId']),
+
+  // Agent tool call tracking (for approve/undo UI)
+  agentToolCalls: defineTable({
+    profileId: v.id('profiles'),
+    threadId: v.string(),
+    toolName: v.string(),
+    displayText: v.string(),
+    updates: v.string(), // JSON of what was written
+    previousValues: v.string(), // JSON snapshot for undo
+    status: v.union(
+      v.literal('pending'),
+      v.literal('approved'),
+      v.literal('undone'),
+    ),
+    createdAt: v.number(),
+  })
+    .index('by_thread_and_createdAt', ['threadId', 'createdAt'])
+    .index('by_profile', ['profileId']),
 
   // Uploaded documents (resumes, CVs) for data extraction
   uploadedDocuments: defineTable({

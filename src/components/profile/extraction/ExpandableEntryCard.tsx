@@ -79,7 +79,7 @@ export function ExpandableEntryCard({
   onReject,
   onEdit,
 }: ExpandableEntryCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(true)
   const [localEntry, setLocalEntry] = useState<
     EducationEntry | WorkHistoryEntry
   >(editedEntry ?? entry)

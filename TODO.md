@@ -34,11 +34,22 @@
 
 ---
 
+## Profile Agent UX
+
+- [x] Tool call cards too wide and visually heavy — compact with max-width, truncation, color-coded icons
+- [x] Tool calls grouped above message text — now render inline via `message.parts` ordering
+- [x] Tool call labels don't match profile section labels — updated to "Updated skills", "Updated looking for", etc.
+- [x] No visual feedback when profile sections change — highlight ring animation + auto-scroll to changed section
+- [x] Page-level scroll bar on agent page — fixed with `h-screen overflow-hidden` on GradientBg
+
+---
+
 ## Onboarding / Profile Flow
 
 - [ ] Should prompt profile creation immediately upon landing (when not signed up)
 - [ ] Fix the flow for editing your profile (heading says "Create" even when editing) — _see UX review_
 - [ ] Make privacy and notification preferences an explicit part of onboarding; unify all settings and make them easily accessible
+- [ ] Revamp entire profile + settings flow — email templates link to `/settings` which doesn't exist yet; notification prefs, privacy, and profile editing need a unified UX pass
 - [ ] Add info to landing page explaining it's a prototype and what features are available
 
 ---
@@ -50,6 +61,15 @@
 - [ ] Add visa/residency/citizenship eligibility filters — some positions require NDAs or citizenship _(Augusto: RAND example)_
 - [ ] Replace "Not Found" salary displays — hide or say "Salary not listed" — _see UX review_
 - [ ] Make match cards fully clickable (currently only title text is clickable) — _see UX review_
+
+---
+
+## Email / Deliverability
+
+- [x] Add List-Unsubscribe headers (RFC 8058) to all emails — HMAC-signed one-click unsubscribe
+- [ ] Set `UNSUBSCRIBE_SECRET` on prod — _done_
+- [ ] Verify Gmail shows native "Unsubscribe" button next to sender name
+- [ ] Add unsubscribe link to email footer templates (currently just "Manage notification preferences")
 
 ---
 

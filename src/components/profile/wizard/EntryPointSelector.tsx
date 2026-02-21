@@ -1,8 +1,6 @@
-import { useState } from 'react'
 import {
-  ChevronDown,
-  ChevronUp,
   ClipboardPaste,
+  Linkedin,
   MessageSquare,
   PenLine,
   Upload,
@@ -10,7 +8,7 @@ import {
 import { cn } from '~/lib/utils'
 import { Card } from '~/components/ui/card'
 
-type EntryPoint = 'upload' | 'paste' | 'manual' | 'chat'
+type EntryPoint = 'linkedin' | 'upload' | 'paste' | 'manual' | 'chat'
 
 interface EntryPointSelectorProps {
   onSelect: (entryPoint: EntryPoint) => void
@@ -29,23 +27,30 @@ interface EntryOption {
 
 const ENTRY_OPTIONS: Array<EntryOption> = [
   {
+    id: 'linkedin',
+    icon: Linkedin,
+    label: 'Import from LinkedIn',
+    description: 'Paste your LinkedIn URL to import your profile',
+    isPrimary: true,
+  },
+  {
     id: 'upload',
     icon: Upload,
     label: 'Upload your resume',
     description: "We'll extract your info automatically",
-    isPrimary: true,
   },
   {
     id: 'chat',
     icon: MessageSquare,
     label: 'Chat with AI',
-    description: "Answer questions and we'll build your profile for you",
+    description:
+      'Have a conversation and watch your profile build in real-time',
   },
   {
     id: 'paste',
     icon: ClipboardPaste,
     label: 'Paste text',
-    description: 'Copy from LinkedIn or your resume',
+    description: 'Paste your resume or CV text',
   },
   {
     id: 'manual',
@@ -55,45 +60,14 @@ const ENTRY_OPTIONS: Array<EntryOption> = [
   },
 ]
 
-function LinkedInPdfTip() {
-  const [isExpanded, setIsExpanded] = useState(false)
-
-  return (
-    <div className="ml-12 mt-2">
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation()
-          setIsExpanded(!isExpanded)
-        }}
-        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-      >
-        {isExpanded ? (
-          <ChevronUp className="size-3" />
-        ) : (
-          <ChevronDown className="size-3" />
-        )}
-        How to get your LinkedIn PDF
-      </button>
-      {isExpanded && (
-        <div className="mt-2 text-xs text-muted-foreground space-y-1 pl-4 border-l-2 border-slate-200">
-          <p>1. Go to your LinkedIn profile</p>
-          <p>2. Click the "Resources" button under your name</p>
-          <p>3. Select "Save to PDF"</p>
-        </div>
-      )}
-    </div>
-  )
-}
-
 export function EntryPointSelector({
   onSelect,
   disabled = false,
   uploadSlot,
 }: EntryPointSelectorProps) {
-  // Split options: upload first, then others
-  const uploadOption = ENTRY_OPTIONS.find((o) => o.id === 'upload')!
-  const otherOptions = ENTRY_OPTIONS.filter((o) => o.id !== 'upload')
+  // Split options: primary (linkedin) first, then others
+  const primaryOption = ENTRY_OPTIONS.find((o) => o.isPrimary)!
+  const otherOptions = ENTRY_OPTIONS.filter((o) => !o.isPrimary)
 
   const renderOptionCard = (option: EntryOption) => {
     const Icon = option.icon
@@ -146,19 +120,25 @@ export function EntryPointSelector({
 
   return (
     <div className="space-y-3">
-      {/* Upload option first */}
-      <div>
-        {renderOptionCard(uploadOption)}
-        <LinkedInPdfTip />
-      </div>
+      {/* Primary option (LinkedIn) */}
+      <div>{renderOptionCard(primaryOption)}</div>
 
-      {/* Upload slot (drop zone) directly below upload option */}
-      {uploadSlot && <div className="mt-4 mb-4">{uploadSlot}</div>}
+      {/* Upload option with slot (drop zone) */}
+      {otherOptions
+        .filter((o) => o.id === 'upload')
+        .map((option) => (
+          <div key={option.id}>
+            {renderOptionCard(option)}
+            {uploadSlot && <div className="mt-3 mb-1">{uploadSlot}</div>}
+          </div>
+        ))}
 
       {/* Other options */}
-      {otherOptions.map((option) => (
-        <div key={option.id}>{renderOptionCard(option)}</div>
-      ))}
+      {otherOptions
+        .filter((o) => o.id !== 'upload')
+        .map((option) => (
+          <div key={option.id}>{renderOptionCard(option)}</div>
+        ))}
     </div>
   )
 }

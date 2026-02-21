@@ -43,6 +43,7 @@ export interface UseExtractionReturn {
   state: ExtractionState
   extractFromDocument: (documentId: Id<'uploadedDocuments'>) => Promise<void>
   extractFromText: (text: string) => Promise<void>
+  extractFromLinkedIn: (url: string) => Promise<void>
   retry: () => void
   reset: () => void
 }
@@ -61,9 +62,13 @@ export function useExtraction(): UseExtractionReturn {
   const [lastDocumentId, setLastDocumentId] =
     useState<Id<'uploadedDocuments'> | null>(null)
   const [lastText, setLastText] = useState<string | null>(null)
+  const [lastLinkedInUrl, setLastLinkedInUrl] = useState<string | null>(null)
 
   const extractPdfAction = useAction(api.extraction.pdf.extractFromPdf)
   const extractTextAction = useAction(api.extraction.text.extractFromText)
+  const extractLinkedInAction = useAction(
+    api.extraction.linkedin.extractFromLinkedIn,
+  )
 
   // Poll for status updates when extracting
   const documentStatus = useQuery(
@@ -134,6 +139,7 @@ export function useExtraction(): UseExtractionReturn {
     async (text: string) => {
       setLastText(text)
       setLastDocumentId(null)
+      setLastLinkedInUrl(null)
 
       // Text extraction doesn't have a documentId to poll
       // Use a placeholder - the action returns result directly
@@ -161,24 +167,65 @@ export function useExtraction(): UseExtractionReturn {
     [extractTextAction],
   )
 
+  const extractFromLinkedIn = useCallback(
+    async (url: string) => {
+      setLastLinkedInUrl(url)
+      setLastDocumentId(null)
+      setLastText(null)
+
+      setState({
+        status: 'extracting',
+        stage: 'extracting',
+        documentId: '' as Id<'uploadedDocuments'>,
+      })
+
+      try {
+        const result = await extractLinkedInAction({ linkedinUrl: url })
+        setState({
+          status: 'success',
+          extractedData: result.extractedData as ExtractedData,
+        })
+      } catch (error) {
+        setState({
+          status: 'error',
+          error:
+            error instanceof Error ? error.message : 'LinkedIn import failed',
+          canRetry: true,
+        })
+      }
+    },
+    [extractLinkedInAction],
+  )
+
   const retry = useCallback(() => {
     if (lastDocumentId) {
       void extractFromDocument(lastDocumentId)
+    } else if (lastLinkedInUrl !== null) {
+      void extractFromLinkedIn(lastLinkedInUrl)
     } else if (lastText !== null) {
       void extractFromText(lastText)
     }
-  }, [lastDocumentId, lastText, extractFromDocument, extractFromText])
+  }, [
+    lastDocumentId,
+    lastLinkedInUrl,
+    lastText,
+    extractFromDocument,
+    extractFromLinkedIn,
+    extractFromText,
+  ])
 
   const reset = useCallback(() => {
     setState({ status: 'idle' })
     setLastDocumentId(null)
     setLastText(null)
+    setLastLinkedInUrl(null)
   }, [])
 
   return {
     state,
     extractFromDocument,
     extractFromText,
+    extractFromLinkedIn,
     retry,
     reset,
   }

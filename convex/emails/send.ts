@@ -10,11 +10,11 @@ import type { Id } from '../_generated/dataModel'
 // For production: set RESEND_API_KEY in Convex dashboard
 // For local development: testMode prevents actual email sending
 export const resend = new Resend(components.resend, {
-  // testMode: process.env.NODE_ENV !== "production",
+  testMode: false,
 })
 
 // From address for all ASTN emails
-const FROM_ADDRESS = 'ASTN <notifications@astn.ai>'
+const FROM_ADDRESS = 'ASTN <notifications@safetytalent.org>'
 
 /**
  * Send a match alert email
@@ -25,13 +25,23 @@ export const sendMatchAlert = internalMutation({
     to: v.string(),
     subject: v.string(),
     html: v.string(),
+    unsubscribeUrl: v.optional(v.string()),
   },
-  handler: async (ctx, { to, subject, html }) => {
+  handler: async (ctx, { to, subject, html, unsubscribeUrl }) => {
     await resend.sendEmail(ctx, {
       from: FROM_ADDRESS,
       to,
       subject,
       html,
+      ...(unsubscribeUrl && {
+        headers: [
+          { name: 'List-Unsubscribe', value: `<${unsubscribeUrl}>` },
+          {
+            name: 'List-Unsubscribe-Post',
+            value: 'List-Unsubscribe=One-Click',
+          },
+        ],
+      }),
     })
   },
 })
@@ -45,13 +55,23 @@ export const sendWeeklyDigest = internalMutation({
     to: v.string(),
     subject: v.string(),
     html: v.string(),
+    unsubscribeUrl: v.optional(v.string()),
   },
-  handler: async (ctx, { to, subject, html }) => {
+  handler: async (ctx, { to, subject, html, unsubscribeUrl }) => {
     await resend.sendEmail(ctx, {
       from: FROM_ADDRESS,
       to,
       subject,
       html,
+      ...(unsubscribeUrl && {
+        headers: [
+          { name: 'List-Unsubscribe', value: `<${unsubscribeUrl}>` },
+          {
+            name: 'List-Unsubscribe-Post',
+            value: 'List-Unsubscribe=One-Click',
+          },
+        ],
+      }),
     })
   },
 })
@@ -249,13 +269,23 @@ export const sendEventDigest = internalMutation({
     to: v.string(),
     subject: v.string(),
     html: v.string(),
+    unsubscribeUrl: v.optional(v.string()),
   },
-  handler: async (ctx, { to, subject, html }) => {
+  handler: async (ctx, { to, subject, html, unsubscribeUrl }) => {
     await resend.sendEmail(ctx, {
       from: FROM_ADDRESS,
       to,
       subject,
       html,
+      ...(unsubscribeUrl && {
+        headers: [
+          { name: 'List-Unsubscribe', value: `<${unsubscribeUrl}>` },
+          {
+            name: 'List-Unsubscribe-Post',
+            value: 'List-Unsubscribe=One-Click',
+          },
+        ],
+      }),
     })
   },
 })

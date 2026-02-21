@@ -14,6 +14,7 @@ import {
   ExtractionError,
   ExtractionProgress,
   FilePreview,
+  LinkedInImport,
   TextPasteZone,
   UploadProgress,
   useExtraction,
@@ -21,7 +22,7 @@ import {
 } from '~/components/profile/upload'
 import { Button } from '~/components/ui/button'
 
-type EntryPoint = 'upload' | 'paste' | 'manual' | 'chat'
+type EntryPoint = 'linkedin' | 'upload' | 'paste' | 'manual' | 'chat'
 
 /**
  * Discriminated union type for wizard state machine.
@@ -30,10 +31,10 @@ type EntryPoint = 'upload' | 'paste' | 'manual' | 'chat'
 type WizardState =
   | { step: 'input'; entryPoint?: undefined }
   | { step: 'uploading'; entryPoint: 'upload'; file: File }
-  | { step: 'extracting'; entryPoint: 'upload' | 'paste' }
+  | { step: 'extracting'; entryPoint: 'upload' | 'paste' | 'linkedin' }
   | {
       step: 'review'
-      entryPoint: 'upload' | 'paste'
+      entryPoint: 'upload' | 'paste' | 'linkedin'
       extractedData: ExtractedData
     }
   | { step: 'summary' }
@@ -44,6 +45,7 @@ interface ProfileCreationWizardProps {
   onComplete: () => void
   onManualEntry?: () => void
   onEnrich?: (fromExtraction: boolean) => void
+  onChatAgent?: () => void
   initialStep?: 'input' | 'manual' | 'chat'
 }
 
@@ -51,15 +53,17 @@ interface ProfileCreationWizardProps {
  * Main wizard container that orchestrates the full profile creation flow.
  *
  * Flow options:
- * 1. Upload PDF -> Extract -> Review -> Apply -> Summary -> Enrich
- * 2. Paste text -> Extract -> Review -> Apply -> Summary -> Enrich
- * 3. Manual entry (signals parent to show ProfileWizard)
- * 4. Chat-first (goes directly to enrichment)
+ * 1. LinkedIn URL -> Extract (Exa) -> Review -> Apply -> Summary -> Enrich
+ * 2. Upload PDF -> Extract -> Review -> Apply -> Summary -> Enrich
+ * 3. Paste text -> Extract -> Review -> Apply -> Summary -> Enrich
+ * 4. Manual entry (signals parent to show ProfileWizard)
+ * 5. Chat-first (goes directly to enrichment)
  */
 export function ProfileCreationWizard({
   onComplete,
   onManualEntry,
   onEnrich,
+  onChatAgent,
   initialStep = 'input',
 }: ProfileCreationWizardProps) {
   // Initialize state based on initial step
@@ -85,6 +89,7 @@ export function ProfileCreationWizard({
     state: extractionState,
     extractFromDocument,
     extractFromText,
+    extractFromLinkedIn,
     retry: retryExtraction,
     reset: resetExtraction,
   } = useExtraction()
@@ -96,8 +101,10 @@ export function ProfileCreationWizard({
   const applyExtractedProfile = useMutation(api.profiles.applyExtractedProfile)
   const [isApplying, setIsApplying] = useState(false)
 
-  // Text paste visibility state
+  // Text paste and LinkedIn input visibility state
   const [showTextPaste, setShowTextPaste] = useState(false)
+  const [showLinkedInInput, setShowLinkedInInput] = useState(false)
+  const [linkedInError, setLinkedInError] = useState<string | undefined>()
 
   // Auto-trigger extraction when upload succeeds
   useEffect(() => {
@@ -135,21 +142,41 @@ export function ProfileCreationWizard({
 
   // Handle entry point selection
   const handleEntrySelect = (entryPoint: EntryPoint) => {
-    if (entryPoint === 'upload') {
+    if (entryPoint === 'linkedin') {
+      resetExtraction()
+      clearFile()
+      setShowTextPaste(false)
+      setShowLinkedInInput(true)
+      setLinkedInError(undefined)
+    } else if (entryPoint === 'upload') {
       // Just prepare for file selection, actual flow starts on file select
       resetExtraction()
       clearFile()
       setShowTextPaste(false)
+      setShowLinkedInInput(false)
     } else if (entryPoint === 'paste') {
       resetExtraction()
       clearFile()
       setShowTextPaste(true)
+      setShowLinkedInInput(false)
     } else if (entryPoint === 'manual') {
       setWizardState({ step: 'manual' })
     } else {
       // entryPoint === "chat"
+      if (onChatAgent) {
+        onChatAgent()
+        return
+      }
       setWizardState({ step: 'enrich', fromExtraction: false })
     }
+  }
+
+  // Handle LinkedIn URL submit
+  const handleLinkedInSubmit = async (url: string) => {
+    setShowLinkedInInput(false)
+    setLinkedInError(undefined)
+    setWizardState({ step: 'extracting', entryPoint: 'linkedin' })
+    await extractFromLinkedIn(url)
   }
 
   // Handle file selection
@@ -180,6 +207,7 @@ export function ProfileCreationWizard({
     resetExtraction()
     clearFile()
     setShowTextPaste(false)
+    setShowLinkedInInput(false)
     setWizardState({ step: 'input' })
   }
 
@@ -207,6 +235,7 @@ export function ProfileCreationWizard({
     resetExtraction()
     clearFile()
     setShowTextPaste(true)
+    setShowLinkedInInput(false)
     setWizardState({ step: 'input' })
   }
 
@@ -220,8 +249,16 @@ export function ProfileCreationWizard({
     clearFile()
     resetExtraction()
     setShowTextPaste(false)
+    setShowLinkedInInput(false)
+    setLinkedInError(undefined)
     setPreservedExtractedData(null)
     setWizardState({ step: 'input' })
+  }
+
+  // Handle cancel from LinkedIn input
+  const handleLinkedInCancel = () => {
+    setShowLinkedInInput(false)
+    setLinkedInError(undefined)
   }
 
   // Summary actions
@@ -353,7 +390,8 @@ export function ProfileCreationWizard({
             wizardState.step === 'input' &&
             uploadState.status === 'idle' &&
             extractionState.status === 'idle' &&
-            !showTextPaste
+            !showTextPaste &&
+            !showLinkedInInput
               ? 'opacity-100 scale-100'
               : 'opacity-0 scale-95 pointer-events-none'
           }`}
@@ -361,6 +399,22 @@ export function ProfileCreationWizard({
           <EntryPointSelector
             onSelect={handleEntrySelect}
             uploadSlot={<DocumentUpload onFileSelect={handleFileSelect} />}
+          />
+        </div>
+
+        {/* LinkedIn URL input */}
+        <div
+          className={`transition-all duration-500 ease-out ${
+            showLinkedInInput && extractionState.status === 'idle'
+              ? 'opacity-100 scale-100'
+              : 'opacity-0 scale-95 pointer-events-none'
+          }`}
+        >
+          <LinkedInImport
+            onSubmit={handleLinkedInSubmit}
+            isLoading={false}
+            error={linkedInError}
+            onCancel={handleLinkedInCancel}
           />
         </div>
 

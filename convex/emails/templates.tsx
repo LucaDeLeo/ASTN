@@ -48,7 +48,7 @@ export function MatchAlertEmail({ userName, matches }: MatchAlertProps) {
             {/* Header with Logo */}
             <Section>
               <Img
-                src="https://astn.ai/logo.png"
+                src="https://safetytalent.org/logo.png"
                 width="120"
                 height="40"
                 alt="ASTN"
@@ -109,7 +109,7 @@ export function MatchAlertEmail({ userName, matches }: MatchAlertProps) {
             {/* CTA Button */}
             <Section className="text-center">
               <Button
-                href="https://astn.ai/matches"
+                href="https://safetytalent.org/matches"
                 className="px-6 py-3 text-white font-semibold rounded-lg"
                 style={{ backgroundColor: CORAL }}
               >
@@ -125,7 +125,10 @@ export function MatchAlertEmail({ userName, matches }: MatchAlertProps) {
               opportunities
             </Text>
             <Text className="text-xs text-gray-400 text-center">
-              <a href="https://astn.ai/settings" className="text-gray-400">
+              <a
+                href="https://safetytalent.org/settings"
+                className="text-gray-400"
+              >
                 Manage notification preferences
               </a>
             </Text>
@@ -165,7 +168,7 @@ export function WeeklyDigestEmail({
             {/* Header with Logo */}
             <Section>
               <Img
-                src="https://astn.ai/logo.png"
+                src="https://safetytalent.org/logo.png"
                 width="120"
                 height="40"
                 alt="ASTN"
@@ -247,14 +250,14 @@ export function WeeklyDigestEmail({
             {/* CTA Buttons */}
             <Section className="text-center">
               <Button
-                href="https://astn.ai/matches"
+                href="https://safetytalent.org/matches"
                 className="px-6 py-3 text-white font-semibold rounded-lg mr-2"
                 style={{ backgroundColor: CORAL }}
               >
                 View Matches
               </Button>
               <Button
-                href="https://astn.ai/profile/edit"
+                href="https://safetytalent.org/profile/edit"
                 className="px-6 py-3 text-gray-700 font-semibold rounded-lg border border-gray-300 bg-white ml-2"
               >
                 Update Profile
@@ -269,7 +272,10 @@ export function WeeklyDigestEmail({
               opportunities
             </Text>
             <Text className="text-xs text-gray-400 text-center">
-              <a href="https://astn.ai/settings" className="text-gray-400">
+              <a
+                href="https://safetytalent.org/settings"
+                className="text-gray-400"
+              >
                 Manage notification preferences
               </a>
             </Text>
@@ -346,7 +352,7 @@ export function EventDigestEmail({
             {/* Header with Logo */}
             <Section>
               <Img
-                src="https://astn.ai/logo.png"
+                src="https://safetytalent.org/logo.png"
                 width="120"
                 height="40"
                 alt="ASTN"
@@ -423,7 +429,10 @@ export function EventDigestEmail({
               opportunities
             </Text>
             <Text className="text-xs text-gray-400 text-center">
-              <a href="https://astn.ai/settings" className="text-gray-400">
+              <a
+                href="https://safetytalent.org/settings"
+                className="text-gray-400"
+              >
                 Manage notification preferences
               </a>
             </Text>

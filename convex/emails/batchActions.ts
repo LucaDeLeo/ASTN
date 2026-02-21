@@ -9,6 +9,7 @@ import {
   renderMatchAlert,
   renderWeeklyDigest,
 } from './templates'
+import { generateUnsubscribeUrl } from './unsubscribeVerify'
 import type { Doc, Id } from '../_generated/dataModel'
 
 // Target hour for match alert emails (8 AM user local time)
@@ -47,6 +48,14 @@ interface DigestUser {
   userName: string
   completedSections: Array<string>
   hasEnrichmentConversation: boolean
+}
+
+// Build unsubscribe URL for a profile (requires UNSUBSCRIBE_SECRET + CONVEX_SITE_URL)
+function getUnsubscribeUrl(profileId: string): string | undefined {
+  const secret = process.env.UNSUBSCRIBE_SECRET
+  const siteUrl = process.env.CONVEX_SITE_URL
+  if (!secret || !siteUrl) return undefined
+  return generateUnsubscribeUrl(profileId, siteUrl, secret)
 }
 
 /**
@@ -136,6 +145,7 @@ export const processMatchAlertBatch = internalAction({
           to: user.email,
           subject: `${validMatches.length} new great-fit ${validMatches.length === 1 ? 'opportunity' : 'opportunities'} on ASTN`,
           html: emailContent,
+          unsubscribeUrl: getUnsubscribeUrl(user.profileId),
         })
 
         // Mark matches as no longer new
@@ -256,6 +266,7 @@ export const processWeeklyDigestBatch = internalAction({
           to: user.email,
           subject: 'Your Weekly AI Safety Opportunities Digest',
           html: emailContent,
+          unsubscribeUrl: getUnsubscribeUrl(user.profileId),
         })
 
         emailsSent++
@@ -333,6 +344,7 @@ export const processDailyEventDigestBatch = internalAction({
           to: user.email,
           subject: 'Your daily event digest from ASTN',
           html: emailContent,
+          unsubscribeUrl: getUnsubscribeUrl(user.profileId),
         })
 
         emailsSent++
@@ -395,6 +407,7 @@ export const processWeeklyEventDigestBatch = internalAction({
           to: user.email,
           subject: 'Your weekly event digest from ASTN',
           html: emailContent,
+          unsubscribeUrl: getUnsubscribeUrl(user.profileId),
         })
 
         emailsSent++

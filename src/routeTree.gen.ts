@@ -23,6 +23,7 @@ import { Route as ApplyIndexRouteImport } from './routes/apply/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ProfileEditRouteImport } from './routes/profile/edit'
 import { Route as ProfileAttendanceRouteImport } from './routes/profile/attendance'
+import { Route as ProfileAgentRouteImport } from './routes/profile/agent'
 import { Route as OpportunitiesIdRouteImport } from './routes/opportunities/$id'
 import { Route as MatchesIdRouteImport } from './routes/matches/$id'
 import { Route as ApplyStatusRouteImport } from './routes/apply/status'
@@ -116,6 +117,11 @@ const ProfileEditRoute = ProfileEditRouteImport.update({
 const ProfileAttendanceRoute = ProfileAttendanceRouteImport.update({
   id: '/profile/attendance',
   path: '/profile/attendance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileAgentRoute = ProfileAgentRouteImport.update({
+  id: '/profile/agent',
+  path: '/profile/agent',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OpportunitiesIdRoute = OpportunitiesIdRouteImport.update({
@@ -254,6 +260,7 @@ export interface FileRoutesByFullPath {
   '/apply/status': typeof ApplyStatusRoute
   '/matches/$id': typeof MatchesIdRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
+  '/profile/agent': typeof ProfileAgentRoute
   '/profile/attendance': typeof ProfileAttendanceRoute
   '/profile/edit': typeof ProfileEditRoute
   '/admin/': typeof AdminIndexRoute
@@ -290,6 +297,7 @@ export interface FileRoutesByTo {
   '/apply/status': typeof ApplyStatusRoute
   '/matches/$id': typeof MatchesIdRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
+  '/profile/agent': typeof ProfileAgentRoute
   '/profile/attendance': typeof ProfileAttendanceRoute
   '/profile/edit': typeof ProfileEditRoute
   '/admin': typeof AdminIndexRoute
@@ -331,6 +339,7 @@ export interface FileRoutesById {
   '/apply/status': typeof ApplyStatusRoute
   '/matches/$id': typeof MatchesIdRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
+  '/profile/agent': typeof ProfileAgentRoute
   '/profile/attendance': typeof ProfileAttendanceRoute
   '/profile/edit': typeof ProfileEditRoute
   '/admin/': typeof AdminIndexRoute
@@ -373,6 +382,7 @@ export interface FileRouteTypes {
     | '/apply/status'
     | '/matches/$id'
     | '/opportunities/$id'
+    | '/profile/agent'
     | '/profile/attendance'
     | '/profile/edit'
     | '/admin/'
@@ -409,6 +419,7 @@ export interface FileRouteTypes {
     | '/apply/status'
     | '/matches/$id'
     | '/opportunities/$id'
+    | '/profile/agent'
     | '/profile/attendance'
     | '/profile/edit'
     | '/admin'
@@ -449,6 +460,7 @@ export interface FileRouteTypes {
     | '/apply/status'
     | '/matches/$id'
     | '/opportunities/$id'
+    | '/profile/agent'
     | '/profile/attendance'
     | '/profile/edit'
     | '/admin/'
@@ -488,6 +500,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MatchesIdRoute: typeof MatchesIdRoute
   OpportunitiesIdRoute: typeof OpportunitiesIdRoute
+  ProfileAgentRoute: typeof ProfileAgentRoute
   ProfileAttendanceRoute: typeof ProfileAttendanceRoute
   ProfileEditRoute: typeof ProfileEditRoute
   MatchesIndexRoute: typeof MatchesIndexRoute
@@ -610,6 +623,13 @@ declare module '@tanstack/react-router' {
       path: '/profile/attendance'
       fullPath: '/profile/attendance'
       preLoaderRoute: typeof ProfileAttendanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile/agent': {
+      id: '/profile/agent'
+      path: '/profile/agent'
+      fullPath: '/profile/agent'
+      preLoaderRoute: typeof ProfileAgentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/opportunities/$id': {
@@ -851,6 +871,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MatchesIdRoute: MatchesIdRoute,
   OpportunitiesIdRoute: OpportunitiesIdRoute,
+  ProfileAgentRoute: ProfileAgentRoute,
   ProfileAttendanceRoute: ProfileAttendanceRoute,
   ProfileEditRoute: ProfileEditRoute,
   MatchesIndexRoute: MatchesIndexRoute,

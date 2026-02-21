@@ -127,27 +127,6 @@ export function ResumeExtractionReview({
         </section>
       )}
 
-      {/* Education Section */}
-      {educationItems.length > 0 && (
-        <section className="space-y-3">
-          <h4 className="font-medium text-slate-700">Education</h4>
-          <div className="space-y-3">
-            {educationItems.map((item) => (
-              <ExpandableEntryCard
-                key={item.id}
-                type="education"
-                entry={item.value as EducationEntry}
-                editedEntry={item.editedValue as EducationEntry | undefined}
-                status={item.status}
-                onAccept={() => updateStatus(item.id, 'accepted')}
-                onReject={() => updateStatus(item.id, 'rejected')}
-                onEdit={(entry) => updateValue(item.id, entry)}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
       {/* Work History Section */}
       {workHistoryItems.length > 0 && (
         <section className="space-y-3">
@@ -159,6 +138,27 @@ export function ResumeExtractionReview({
                 type="workHistory"
                 entry={item.value as WorkHistoryEntry}
                 editedEntry={item.editedValue as WorkHistoryEntry | undefined}
+                status={item.status}
+                onAccept={() => updateStatus(item.id, 'accepted')}
+                onReject={() => updateStatus(item.id, 'rejected')}
+                onEdit={(entry) => updateValue(item.id, entry)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Education Section */}
+      {educationItems.length > 0 && (
+        <section className="space-y-3">
+          <h4 className="font-medium text-slate-700">Education</h4>
+          <div className="space-y-3">
+            {educationItems.map((item) => (
+              <ExpandableEntryCard
+                key={item.id}
+                type="education"
+                entry={item.value as EducationEntry}
+                editedEntry={item.editedValue as EducationEntry | undefined}
                 status={item.status}
                 onAccept={() => updateStatus(item.id, 'accepted')}
                 onReject={() => updateStatus(item.id, 'rejected')}

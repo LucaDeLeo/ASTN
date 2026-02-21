@@ -167,6 +167,7 @@ function AuthenticatedContent() {
           onComplete={handleWizardComplete}
           onManualEntry={handleManualEntry}
           onEnrich={handleEnrichFromWizard}
+          onChatAgent={() => navigate({ to: '/profile/agent' })}
         />
       </main>
     )

@@ -3,6 +3,7 @@ export { DocumentUpload } from './DocumentUpload'
 export { ExtractionError } from './ExtractionError'
 export { ExtractionProgress } from './ExtractionProgress'
 export { FilePreview } from './FilePreview'
+export { LinkedInImport } from './LinkedInImport'
 export { TextPasteZone } from './TextPasteZone'
 export { UploadProgress } from './UploadProgress'
 
