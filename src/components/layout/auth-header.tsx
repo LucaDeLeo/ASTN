@@ -1,15 +1,47 @@
 import { Link } from '@tanstack/react-router'
-import { UserButton } from '@clerk/clerk-react'
+import { UserButton, useUser } from '@clerk/clerk-react'
 import { AuthLoading, Authenticated, Unauthenticated } from 'convex/react'
 import { Settings, User } from 'lucide-react'
 
+import { HamburgerMenu } from '~/components/layout/hamburger-menu'
 import { NotificationBell } from '~/components/notifications'
 import { Button } from '~/components/ui/button'
 
 export function AuthHeader() {
+  const { user } = useUser()
+  const hamburgerUser = user
+    ? {
+        name: user.fullName ?? user.firstName ?? 'User',
+        avatarUrl: user.imageUrl,
+      }
+    : null
+
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      {/* Mobile layout */}
+      <div
+        className="flex md:hidden h-14 items-center justify-between px-4"
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+      >
+        <Link to="/" className="flex items-center gap-2">
+          <img src="/logo.png" alt="" className="h-6" />
+          <span className="font-semibold font-mono text-foreground">ASTN</span>
+        </Link>
+        <Authenticated>
+          <div className="flex items-center gap-1">
+            <NotificationBell />
+            <HamburgerMenu user={hamburgerUser} />
+          </div>
+        </Authenticated>
+        <Unauthenticated>
+          <Button size="sm" asChild>
+            <Link to="/login">Sign In</Link>
+          </Button>
+        </Unauthenticated>
+      </div>
+
+      {/* Desktop layout */}
+      <div className="hidden md:flex container mx-auto px-4 py-4 items-center justify-between">
         <Link to="/" className="flex items-center gap-2.5">
           <img src="/logo.png" alt="" className="h-7" />
           <span className="font-semibold text-foreground font-mono">
