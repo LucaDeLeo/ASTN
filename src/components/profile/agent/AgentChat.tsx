@@ -9,11 +9,13 @@ import {
   AlertTriangle,
   Check,
   FileText,
+  Link2,
   Loader2,
   MessageSquare,
   Paperclip,
   Send,
   Sparkles,
+  Upload,
   X,
 } from 'lucide-react'
 import { api } from '../../../../convex/_generated/api'
@@ -30,12 +32,14 @@ interface AgentChatProps {
   profileId: Id<'profiles'>
   threadId: string
   pageContext?: PageContext
+  isOpen?: boolean
 }
 
 export function AgentChat({
   profileId,
   threadId,
   pageContext,
+  isOpen,
 }: AgentChatProps) {
   const [input, setInput] = useState('')
   const [autoApprove, setAutoApprove] = useState(() => {
@@ -95,10 +99,13 @@ export function AgentChat({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages.length, isStreaming])
 
-  // Focus input on mount
+  // Focus input when sidebar opens (or on mount)
   useEffect(() => {
-    textareaRef.current?.focus()
-  }, [])
+    if (isOpen === undefined || isOpen) {
+      const timer = setTimeout(() => textareaRef.current?.focus(), 150)
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -162,17 +169,49 @@ export function AgentChat({
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="size-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
-              <MessageSquare className="size-6 text-blue-600" />
+          <div className="flex flex-col items-center justify-center h-full text-center px-6">
+            <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+              <Sparkles className="size-6 text-primary" />
             </div>
-            <h3 className="text-lg font-medium text-foreground mb-2">
-              Let's build your profile
+            <h3 className="text-lg font-medium text-foreground mb-1">
+              Hey! Let's build your profile
             </h3>
-            <p className="text-muted-foreground text-sm max-w-sm">
-              Tell me about yourself — your background, interests, and goals in
-              AI safety. I'll build your profile as we talk.
+            <p className="text-muted-foreground text-sm max-w-xs mb-6">
+              I'll help you create your AI safety profile. Pick a starting
+              point:
             </p>
+            <div className="flex flex-col gap-2 w-full max-w-xs">
+              <button
+                type="button"
+                onClick={() => {
+                  setInput("Here's my LinkedIn: ")
+                  textareaRef.current?.focus()
+                }}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl border bg-card hover:bg-accent text-left text-sm transition-colors"
+              >
+                <Link2 className="size-4 text-muted-foreground shrink-0" />
+                <span>Paste a LinkedIn URL</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => smartInput.fileInputRef.current?.click()}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl border bg-card hover:bg-accent text-left text-sm transition-colors"
+              >
+                <Upload className="size-4 text-muted-foreground shrink-0" />
+                <span>Upload your CV or resume</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setInput("I'm interested in AI safety because ")
+                  textareaRef.current?.focus()
+                }}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl border bg-card hover:bg-accent text-left text-sm transition-colors"
+              >
+                <MessageSquare className="size-4 text-muted-foreground shrink-0" />
+                <span>Just start chatting</span>
+              </button>
+            </div>
           </div>
         ) : (
           <>

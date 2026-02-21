@@ -43,16 +43,6 @@ export function BasicInfoStep({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold text-foreground">
-          Basic Information
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Tell us a bit about yourself. This helps others find and connect with
-          you.
-        </p>
-      </div>
-
       <div className="grid gap-6">
         <div className="grid gap-2">
           <Label htmlFor="name">

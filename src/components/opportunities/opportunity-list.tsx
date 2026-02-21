@@ -10,13 +10,12 @@ type Opportunity = {
   _id: Id<'opportunities'>
   title: string
   organization: string
-  organizationLogoUrl?: string
   location: string
   isRemote: boolean
   roleType: string
+  experienceLevel?: string
   salaryRange?: string
   deadline?: number
-  lastVerified: number
 }
 
 type PaginationStatus =
@@ -29,30 +28,24 @@ function OpportunityCardSkeleton() {
   return (
     <Card className="border-slate-200 dark:border-border rounded-none sm:rounded-sm">
       <CardContent className="p-5">
-        <div className="flex gap-4">
-          {/* Logo skeleton */}
-          <Skeleton className="size-12 rounded-sm shrink-0" />
-
-          <div className="flex-1 min-w-0 space-y-3">
-            {/* Title and org */}
-            <div className="space-y-1.5">
-              <Skeleton className="h-5 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-            </div>
-
-            {/* Meta info */}
-            <div className="flex flex-wrap gap-3">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-4 w-28" />
-            </div>
-
-            {/* Timestamp */}
-            <Skeleton className="h-3 w-32" />
+        <div className="space-y-3">
+          {/* Badges */}
+          <div className="flex gap-2">
+            <Skeleton className="h-5 w-16 rounded-sm" />
+            <Skeleton className="h-5 w-14 rounded-sm" />
           </div>
 
-          {/* Badge skeleton */}
-          <Skeleton className="h-5 w-16 rounded-sm shrink-0" />
+          {/* Title + org */}
+          <div className="space-y-1.5">
+            <Skeleton className="h-5 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+
+          {/* Salary + deadline */}
+          <div className="flex gap-3">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-4 w-24" />
+          </div>
         </div>
       </CardContent>
     </Card>

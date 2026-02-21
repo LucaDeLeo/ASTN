@@ -359,7 +359,7 @@ function ProfileSection({
           </h3>
         </div>
         <Button variant="ghost" size="sm" className="h-7 text-xs" asChild>
-          <Link to="/profile/edit" search={{ step: editStep as 'basic' }}>
+          <Link to="/profile" search={{ section: editStep as 'basic' }}>
             <Edit className="size-3 mr-1" />
             Edit
           </Link>

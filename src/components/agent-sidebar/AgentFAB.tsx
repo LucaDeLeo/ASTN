@@ -22,7 +22,7 @@ function AgentFABInner() {
     <Button
       onClick={open}
       size="icon"
-      className="fixed bottom-20 right-4 z-30 size-12 rounded-full shadow-lg bg-primary hover:bg-primary/90"
+      className="fixed bottom-20 left-4 z-30 size-12 rounded-full shadow-lg bg-primary hover:bg-primary/90"
     >
       <Sparkles className="size-5" />
     </Button>

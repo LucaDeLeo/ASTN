@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Check, Plus, Trash2 } from 'lucide-react'
 import type { Doc } from '../../../../../convex/_generated/dataModel'
 import { Input } from '~/components/ui/input'
@@ -53,9 +53,6 @@ export function WorkHistoryStep({
   isSaving,
   lastSaved,
 }: WorkHistoryStepProps) {
-  const id = useId()
-  const sectionHelpId = `${id}-section-help`
-
   const [entries, setEntries] = useState<Array<WorkEntry>>(
     profile?.workHistory ?? [],
   )
@@ -103,15 +100,7 @@ export function WorkHistoryStep({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold text-foreground">Work History</h2>
-        <p id={sectionHelpId} className="text-sm text-slate-500 mt-1">
-          Add your professional experience. Include relevant positions in AI
-          safety, research, tech, or related fields.
-        </p>
-      </div>
-
-      <div className="space-y-4" aria-describedby={sectionHelpId}>
+      <div className="space-y-4">
         {entries.length === 0 ? (
           <Card className="p-6 text-center">
             <p className="text-slate-500 mb-4">No work history entries yet</p>

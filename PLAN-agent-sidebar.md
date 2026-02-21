@@ -331,16 +331,18 @@ args: {
 
 ---
 
-## Phase 5: Polish
+## Phase 5: Polish ✅ DONE
 
 **Goal**: Finishing touches for production readiness.
 
-1. **Keyboard shortcut**: `Cmd+.` to toggle sidebar (register in `AgentSidebarProvider`)
-2. **Focus management**: Focus input when sidebar opens, return focus when it closes
-3. **Transition animations**: `transition-transform duration-300` on the sidebar panel
-4. **Mobile sheet**: Ensure proper keyboard handling (virtual keyboard pushes sheet up)
-5. **Responsive edge cases**: Test sidebar with narrow desktop windows (<900px) — consider auto-collapsing
-6. **Empty state polish**: Agent welcome message should feel warm and specific, not generic
+**Status**: Implemented and compiling cleanly. All changes verified with tsc and eslint.
+
+1. **Keyboard shortcut** ✅: `Cmd+.` / `Ctrl+.` to toggle sidebar — global `keydown` handler in `AgentSidebarProvider`
+2. **Focus management** ✅: Textarea auto-focuses when sidebar opens (150ms delay for animation). Previous focus saved on `open()` and restored via `requestAnimationFrame` on `close()`
+3. **Transition animations** ✅: Already had `transition-transform duration-300` — no changes needed
+4. **Mobile sheet** ✅: Changed `85vh` → `85dvh` for proper virtual keyboard handling on mobile browsers
+5. **Responsive edge cases** ✅: Narrow desktop (768-899px) uses overlay mode — sidebar floats over content with click-away backdrop instead of pushing layout. `SidebarAwareWrapper` only pushes content when `min-width: 900px`
+6. **Empty state polish** ✅: Replaced generic welcome with warm message + three actionable suggestion buttons (Paste LinkedIn URL, Upload CV, Just start chatting) that directly set input or trigger file picker
 
 ---
 

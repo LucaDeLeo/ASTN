@@ -126,6 +126,50 @@ function UnauthenticatedRedirect() {
   return <LoadingState />
 }
 
+function ComputingState() {
+  const progress = useQuery(api.matches.getMatchProgress)
+
+  return (
+    <main className="container mx-auto px-4 py-8">
+      <Card className="max-w-lg mx-auto p-8 text-center">
+        <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+          <Sparkles className="size-8 text-primary animate-pulse" />
+        </div>
+        <h1 className="text-2xl font-display font-semibold text-foreground mb-2">
+          Finding Your Matches
+        </h1>
+        {progress ? (
+          <>
+            <p className="text-muted-foreground mb-4">
+              Analyzing opportunities against your profile...
+            </p>
+            {/* Progress bar */}
+            <div className="w-full bg-muted rounded-full h-2.5 mb-3">
+              <div
+                className="bg-primary h-2.5 rounded-full transition-all duration-500 ease-out"
+                style={{
+                  width: `${Math.max(5, (progress.completedBatches / progress.totalBatches) * 100)}%`,
+                }}
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {progress.completedBatches} of {progress.totalBatches} batches
+              complete
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-muted-foreground mb-4">
+              Our AI is analyzing opportunities against your profile...
+            </p>
+            <Spinner />
+          </>
+        )}
+      </Card>
+    </main>
+  )
+}
+
 function MatchesContent() {
   // Data is synchronously available - preloaded by route loader
   const { data: matchesData } = useSuspenseQuery(
@@ -237,7 +281,7 @@ function MatchesContent() {
             tailored to your background and goals.
           </p>
           <Button asChild>
-            <Link to="/profile/edit">Create Profile</Link>
+            <Link to="/profile">Create Profile</Link>
           </Button>
         </Card>
       </main>
@@ -246,22 +290,7 @@ function MatchesContent() {
 
   // Computing matches
   if (isComputing) {
-    return (
-      <main className="container mx-auto px-4 py-8">
-        <Card className="max-w-lg mx-auto p-8 text-center">
-          <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-            <Sparkles className="size-8 text-primary animate-pulse" />
-          </div>
-          <h1 className="text-2xl font-display font-semibold text-foreground mb-2">
-            Finding Your Matches
-          </h1>
-          <p className="text-muted-foreground mb-4">
-            Our AI is analyzing opportunities against your profile...
-          </p>
-          <Spinner />
-        </Card>
-      </main>
-    )
+    return <ComputingState />
   }
 
   // Compute error
@@ -347,7 +376,7 @@ function MatchesContent() {
                 action={
                   <div className="flex gap-3 justify-center">
                     <Button asChild variant="outline">
-                      <Link to="/profile/edit">Improve Profile</Link>
+                      <Link to="/profile">Improve Profile</Link>
                     </Button>
                     <Button asChild>
                       <Link to="/opportunities">Browse All Opportunities</Link>

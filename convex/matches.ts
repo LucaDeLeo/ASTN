@@ -68,6 +68,7 @@ export const getMyMatches = query({
                 isRemote: opportunity.isRemote,
                 roleType: opportunity.roleType,
                 experienceLevel: opportunity.experienceLevel,
+                salaryRange: opportunity.salaryRange,
                 sourceUrl: opportunity.sourceUrl,
                 deadline: opportunity.deadline,
               }
@@ -128,6 +129,32 @@ export const getMyMatches = query({
       needsComputation: false,
       profileId: profile._id,
     }
+  },
+})
+
+// Lightweight progress query — separate from getMyMatches so progress
+// updates don't cause re-renders of the full match list
+export const getMatchProgress = query({
+  args: {},
+  returns: v.union(
+    v.null(),
+    v.object({
+      totalBatches: v.number(),
+      completedBatches: v.number(),
+      totalOpportunities: v.number(),
+      startedAt: v.number(),
+    }),
+  ),
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx)
+    if (!userId) return null
+
+    const profile = await ctx.db
+      .query('profiles')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .first()
+
+    return profile?.matchProgress ?? null
   },
 })
 

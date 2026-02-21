@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Check, Plus, Trash2 } from 'lucide-react'
 import type { Doc } from '../../../../../convex/_generated/dataModel'
 import { Input } from '~/components/ui/input'
@@ -38,9 +38,6 @@ export function EducationStep({
   isSaving,
   lastSaved,
 }: EducationStepProps) {
-  const id = useId()
-  const sectionHelpId = `${id}-section-help`
-
   const [entries, setEntries] = useState<Array<EducationEntry>>(
     profile?.education ?? [],
   )
@@ -84,15 +81,7 @@ export function EducationStep({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold text-foreground">Education</h2>
-        <p id={sectionHelpId} className="text-sm text-slate-500 mt-1">
-          Add your educational background. This helps match you with
-          opportunities that fit your qualifications.
-        </p>
-      </div>
-
-      <div className="space-y-4" aria-describedby={sectionHelpId}>
+      <div className="space-y-4">
         {entries.length === 0 ? (
           <Card className="p-6 text-center">
             <p className="text-slate-500 mb-4">No education entries yet</p>

@@ -161,6 +161,27 @@ function MatchDetailContent() {
                     </Badge>
                   )}
                 </div>
+                {match.opportunity.salaryRange &&
+                  match.opportunity.salaryRange !== 'Not Found' && (
+                    <div className="flex items-center gap-1">
+                      <span>{match.opportunity.salaryRange}</span>
+                    </div>
+                  )}
+                {match.opportunity.experienceLevel && (
+                  <div className="flex items-center gap-1">
+                    <Badge variant="outline" className="shrink-0">
+                      {match.opportunity.experienceLevel === 'entry'
+                        ? 'Entry Level'
+                        : match.opportunity.experienceLevel === 'mid'
+                          ? 'Mid Level'
+                          : match.opportunity.experienceLevel === 'senior'
+                            ? 'Senior'
+                            : match.opportunity.experienceLevel === 'lead'
+                              ? 'Lead'
+                              : match.opportunity.experienceLevel}
+                    </Badge>
+                  </div>
+                )}
                 {match.opportunity.deadline && (
                   <div className="flex items-center gap-1">
                     <Calendar className="size-4 shrink-0" />

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { useAction, useQuery } from 'convex/react'
+import { useState } from 'react'
+import { useQuery } from 'convex/react'
 import { Building2, ChevronDown, ChevronUp, Search, X } from 'lucide-react'
 import { api } from '../../../../convex/_generated/api'
 import { Input } from '~/components/ui/input'
@@ -15,23 +15,12 @@ interface OrgSelectorProps {
 export function OrgSelector({ selectedOrgs, onOrgsChange }: OrgSelectorProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [showBrowse, setShowBrowse] = useState(false)
-  const [isSeeding, setIsSeeding] = useState(false)
 
-  // Fetch all organizations and ensure they're seeded
   const allOrgs = useQuery(api.organizations.listOrganizations)
   const searchResults = useQuery(
     api.organizations.searchOrganizations,
     searchQuery.trim() ? { query: searchQuery } : 'skip',
   )
-  const ensureSeeded = useAction(api.organizations.ensureOrganizationsSeeded)
-
-  // Seed organizations on first load if needed
-  useEffect(() => {
-    if (allOrgs && allOrgs.length === 0 && !isSeeding) {
-      setIsSeeding(true)
-      ensureSeeded().finally(() => setIsSeeding(false))
-    }
-  }, [allOrgs, ensureSeeded, isSeeding])
 
   // Get selected organization details
   const selectedOrgDetails =
@@ -142,9 +131,7 @@ export function OrgSelector({ selectedOrgs, onOrgsChange }: OrgSelectorProps) {
             <div className="mt-2 border rounded-md max-h-64 overflow-y-auto">
               {allOrgs.length === 0 ? (
                 <p className="p-3 text-sm text-slate-500 text-center">
-                  {isSeeding
-                    ? 'Loading organizations...'
-                    : 'No organizations available'}
+                  No organizations available
                 </p>
               ) : (
                 <div className="divide-y">

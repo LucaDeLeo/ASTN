@@ -1,5 +1,5 @@
 import { useAgentSidebar } from './AgentSidebarProvider'
-import { useIsDesktop } from '~/hooks/use-media-query'
+import { useMediaQuery } from '~/hooks/use-media-query'
 import { cn } from '~/lib/utils'
 
 export function SidebarAwareWrapper({
@@ -7,15 +7,18 @@ export function SidebarAwareWrapper({
 }: {
   children: React.ReactNode
 }) {
-  const { isOpen } = useAgentSidebar()
-  const isDesktop = useIsDesktop()
+  const { isOpen, sidebarWidth, isResizing } = useAgentSidebar()
+  // Only push content when there's enough room
+  // Below 900px, the sidebar overlays content instead
+  const hasRoomForSidebar = useMediaQuery('(min-width: 900px)')
+  const shouldPush = isOpen && hasRoomForSidebar
 
   return (
     <div
       className={cn(
-        'transition-[margin-right] duration-300 ease-in-out',
-        isOpen && isDesktop && 'mr-[400px]',
+        !isResizing && 'transition-[margin-left] duration-300 ease-in-out',
       )}
+      style={{ marginLeft: shouldPush ? sidebarWidth : 0 }}
     >
       {children}
     </div>

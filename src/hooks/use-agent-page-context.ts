@@ -2,7 +2,6 @@ import { useRouterState } from '@tanstack/react-router'
 
 export type PageContext =
   | 'viewing_home'
-  | 'viewing_profile'
   | 'editing_profile'
   | 'browsing_matches'
   | 'viewing_match'
@@ -14,8 +13,7 @@ export function useAgentPageContext(): PageContext | undefined {
 
   if (pathname === '/') return 'viewing_home'
   if (pathname === '/profile' || pathname === '/profile/')
-    return 'viewing_profile'
-  if (pathname === '/profile/edit') return 'editing_profile'
+    return 'editing_profile'
   if (pathname === '/matches' || pathname === '/matches/')
     return 'browsing_matches'
   if (pathname.startsWith('/matches/')) return 'viewing_match'

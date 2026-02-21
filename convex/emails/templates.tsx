@@ -257,7 +257,7 @@ export function WeeklyDigestEmail({
                 View Matches
               </Button>
               <Button
-                href="https://safetytalent.org/profile/edit"
+                href="https://safetytalent.org/profile"
                 className="px-6 py-3 text-gray-700 font-semibold rounded-lg border border-gray-300 bg-white ml-2"
               >
                 Update Profile

@@ -1,16 +1,10 @@
 import { Link } from '@tanstack/react-router'
-import {
-  Bookmark,
-  BookmarkX,
-  Calendar,
-  Compass,
-  Sparkles,
-  ThumbsUp,
-  X,
-} from 'lucide-react'
+import { Bookmark, BookmarkX, X } from 'lucide-react'
 import { Card } from '~/components/ui/card'
 import { Badge } from '~/components/ui/badge'
 import { formatLocation } from '~/lib/formatLocation'
+import { formatDeadline, getDeadlineUrgency } from '~/lib/formatDeadline'
+import { ROLE_TYPE_COLORS } from '~/lib/roleTypes'
 
 const ACTIVE_MATCH_KEY = 'view-transition-match-id'
 
@@ -29,6 +23,8 @@ interface MatchCardProps {
       location: string
       isRemote: boolean
       roleType: string
+      experienceLevel?: string
+      salaryRange?: string
       deadline?: number
     }
   }
@@ -42,46 +38,11 @@ interface MatchCardProps {
   onDismiss?: () => void
 }
 
-const tierConfig = {
-  great: {
-    label: 'Great match',
-    color: 'bg-emerald-100 text-emerald-800',
-    icon: Sparkles,
-  },
-  good: {
-    label: 'Good match',
-    color: 'bg-blue-100 text-blue-800',
-    icon: ThumbsUp,
-  },
-  exploring: {
-    label: 'Worth exploring',
-    color: 'bg-amber-100 text-amber-800',
-    icon: Compass,
-  },
-}
-
-/** Format deadline date for display */
-function formatDeadline(timestamp: number): string {
-  const date = new Date(timestamp)
-  const now = new Date()
-  const daysUntil = Math.ceil(
-    (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-  )
-
-  if (daysUntil < 0) {
-    return 'Closed'
-  }
-  if (daysUntil === 0) {
-    return 'Today'
-  }
-  if (daysUntil === 1) {
-    return 'Tomorrow'
-  }
-  if (daysUntil <= 7) {
-    return `${daysUntil} days`
-  }
-  // Format as "Feb 15" for dates further out
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+const EXPERIENCE_LEVEL_LABELS: Record<string, string> = {
+  entry: 'Entry Level',
+  mid: 'Mid Level',
+  senior: 'Senior',
+  lead: 'Lead',
 }
 
 export function MatchCard({
@@ -91,8 +52,8 @@ export function MatchCard({
   onSave,
   onDismiss,
 }: MatchCardProps) {
-  const tier = tierConfig[match.tier]
-  const TierIcon = tier.icon
+  const roleColorClass =
+    ROLE_TYPE_COLORS[match.opportunity.roleType] || ROLE_TYPE_COLORS.other
 
   // Check if this card should have view-transition-name (for back navigation)
   // Must be synchronous so the name is set during first render for view transition capture
@@ -159,10 +120,11 @@ export function MatchCard({
         )}
 
         {/* Row 1: Badges */}
-        <div className="flex flex-wrap items-center gap-2 mb-3">
-          <Badge className={tier.color}>
-            <TierIcon className="mr-1 size-3" />
-            {tier.label}
+        <div className="flex flex-wrap items-center gap-2 mb-2">
+          <Badge
+            className={`${roleColorClass} capitalize flex-shrink-0 rounded-sm border`}
+          >
+            {match.opportunity.roleType}
           </Badge>
           {match.opportunity.isRemote && (
             <Badge variant="outline" className="text-xs">
@@ -203,7 +165,7 @@ export function MatchCard({
           )}
         </div>
 
-        {/* Row 2: Title + Org */}
+        {/* Row 2: Title */}
         <div className="group">
           <h3
             suppressHydrationWarning
@@ -216,13 +178,47 @@ export function MatchCard({
           >
             {match.opportunity.title}
           </h3>
+
+          {/* Row 3: Org + Location */}
           <p className="text-sm text-muted-foreground">
             {match.opportunity.organization} ·{' '}
             {formatLocation(match.opportunity.location)}
           </p>
         </div>
 
-        {/* Row 3: One key strength (full, not truncated) */}
+        {/* Row 4: Salary + Experience + Deadline */}
+        {(match.opportunity.salaryRange ||
+          match.opportunity.experienceLevel ||
+          match.opportunity.deadline) && (
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-2 text-sm text-muted-foreground">
+            {match.opportunity.salaryRange &&
+              match.opportunity.salaryRange !== 'Not Found' && (
+                <span>{match.opportunity.salaryRange}</span>
+              )}
+            {match.opportunity.salaryRange &&
+              match.opportunity.salaryRange !== 'Not Found' &&
+              match.opportunity.experienceLevel &&
+              EXPERIENCE_LEVEL_LABELS[match.opportunity.experienceLevel] && (
+                <span>·</span>
+              )}
+            {match.opportunity.experienceLevel &&
+              EXPERIENCE_LEVEL_LABELS[match.opportunity.experienceLevel] && (
+                <span>
+                  {EXPERIENCE_LEVEL_LABELS[match.opportunity.experienceLevel]}
+                </span>
+              )}
+            {(match.opportunity.salaryRange ||
+              match.opportunity.experienceLevel) &&
+              match.opportunity.deadline && <span>·</span>}
+            {match.opportunity.deadline && (
+              <span className={getDeadlineUrgency(match.opportunity.deadline)}>
+                {formatDeadline(match.opportunity.deadline)}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Row 5: One key strength (truncated to 1 line) */}
         {match.explanation.strengths[0] && (
           <p
             suppressHydrationWarning
@@ -232,19 +228,11 @@ export function MatchCard({
                 ? { viewTransitionName: 'match-strength' }
                 : undefined
             }
-            className="mt-3 text-sm text-muted-foreground"
+            className="mt-2 text-sm text-muted-foreground line-clamp-1"
           >
             <span className="text-emerald-500">+</span>{' '}
             {match.explanation.strengths[0]}
           </p>
-        )}
-
-        {/* Row 4: Deadline */}
-        {match.opportunity.deadline && (
-          <div className="mt-3 flex items-center gap-1 text-xs text-muted-foreground">
-            <Calendar className="size-3" />
-            {formatDeadline(match.opportunity.deadline)}
-          </div>
         )}
       </Card>
     </Link>

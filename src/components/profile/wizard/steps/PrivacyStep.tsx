@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
-import { Check, Globe, Lock, PartyPopper, Shield, Users } from 'lucide-react'
+import { Check, Globe, Lock, Shield, Users } from 'lucide-react'
 import { SectionVisibility } from '../../privacy/SectionVisibility'
 import { OrgSelector } from '../../privacy/OrgSelector'
 import type { Doc } from '../../../../../convex/_generated/dataModel'
 import { Card } from '~/components/ui/card'
-import { Button } from '~/components/ui/button'
 import { Label } from '~/components/ui/label'
 
 interface PrivacyStepProps {
@@ -71,9 +69,6 @@ export function PrivacyStep({
   isSaving,
   lastSaved,
 }: PrivacyStepProps) {
-  const navigate = useNavigate()
-  const [showSuccess, setShowSuccess] = useState(false)
-
   // Initialize from profile or defaults
   const [privacySettings, setPrivacySettings] = useState<PrivacySettings>({
     defaultVisibility:
@@ -128,46 +123,8 @@ export function PrivacyStep({
     updateSettings({ hiddenFromOrgs: orgs })
   }
 
-  // Handle complete profile
-  const handleComplete = async () => {
-    // Ensure settings are saved
-    await saveFieldImmediate('privacySettings', privacySettings)
-
-    // Show success state briefly
-    setShowSuccess(true)
-
-    // Navigate to profile view after delay
-    setTimeout(() => {
-      navigate({ to: '/profile' })
-    }, 1500)
-  }
-
-  if (showSuccess) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 space-y-4">
-        <div className="size-16 rounded-full bg-green-100 flex items-center justify-center animate-bounce">
-          <PartyPopper className="size-8 text-green-600" />
-        </div>
-        <h2 className="text-xl font-semibold text-foreground">
-          Profile Complete!
-        </h2>
-        <p className="text-slate-500">Redirecting to your profile...</p>
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h2 className="text-xl font-semibold text-foreground">
-          Privacy Settings
-        </h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Control who can see your profile and its sections.
-        </p>
-      </div>
-
       {/* Default Visibility Section */}
       <Card className="p-6">
         <div className="flex items-center gap-2 mb-4">
@@ -274,22 +231,6 @@ export function PrivacyStep({
             Saved
           </span>
         ) : null}
-      </div>
-
-      {/* Complete Profile Button */}
-      <div className="pt-4 border-t">
-        <Button
-          onClick={handleComplete}
-          className="w-full"
-          size="lg"
-          disabled={isSaving}
-        >
-          <PartyPopper className="size-4 mr-2" />
-          Complete Profile
-        </Button>
-        <p className="text-xs text-slate-500 text-center mt-2">
-          You can always come back to edit your profile later.
-        </p>
       </div>
     </div>
   )

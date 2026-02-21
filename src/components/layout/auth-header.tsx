@@ -1,9 +1,8 @@
 import { Link } from '@tanstack/react-router'
 import { UserButton } from '@clerk/clerk-react'
 import { AuthLoading, Authenticated, Unauthenticated } from 'convex/react'
-import { Sparkles, User } from 'lucide-react'
+import { User } from 'lucide-react'
 
-import { useAgentSidebar } from '~/components/agent-sidebar/AgentSidebarProvider'
 import { NotificationBell } from '~/components/notifications'
 import { Button } from '~/components/ui/button'
 
@@ -65,7 +64,6 @@ export function AuthHeader() {
           </Unauthenticated>
 
           <Authenticated>
-            <AgentToggleButton />
             <NotificationBell />
             <UserButton>
               <UserButton.MenuItems>
@@ -80,20 +78,5 @@ export function AuthHeader() {
         </nav>
       </div>
     </header>
-  )
-}
-
-function AgentToggleButton() {
-  const { toggle, isOpen } = useAgentSidebar()
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={toggle}
-      className="size-8"
-      aria-label={isOpen ? 'Close AI assistant' : 'Open AI assistant'}
-    >
-      <Sparkles className="size-4" />
-    </Button>
   )
 }

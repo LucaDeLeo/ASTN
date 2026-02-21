@@ -23,6 +23,8 @@ interface SavedMatchesSectionProps {
       location: string
       isRemote: boolean
       roleType: string
+      experienceLevel?: string
+      salaryRange?: string
       deadline?: number
     }
   }>
