@@ -42,7 +42,14 @@ export const runFullSync = internalAction({
       currentSourceIds: allJobs.map((j) => j.sourceId),
     })
 
-    log('info', 'Sync complete')
+    // Schedule LLM enrichment for any new/unenriched opportunities
+    await ctx.scheduler.runAfter(
+      0,
+      internal.aggregation.enrichment.runEnrichment,
+      {},
+    )
+
+    log('info', 'Sync complete, enrichment scheduled')
   },
 })
 

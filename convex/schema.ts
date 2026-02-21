@@ -632,6 +632,10 @@ export default defineSchema({
     lastVerified: v.number(), // For freshness indicator (OPPS-06)
     createdAt: v.number(),
     updatedAt: v.number(),
+
+    // LLM enrichment metadata
+    enrichedAt: v.optional(v.number()),
+    enrichedFields: v.optional(v.array(v.string())),
   })
     .index('by_source_id', ['sourceId'])
     .index('by_organization', ['organization'])

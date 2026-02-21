@@ -46,14 +46,12 @@ export const upsertOpportunities = internalMutation({
         .unique()
 
       if (existing) {
-        // Update existing opportunity
-        await ctx.db.patch('opportunities', existing._id, {
+        // Update existing opportunity, protecting LLM-enriched fields from
+        // being overwritten by lower-quality source data (placeholders)
+        const enrichedFields = existing.enrichedFields || []
+        const patch: Record<string, unknown> = {
           title: opp.title,
           organization: opp.organization,
-          location: opp.location,
-          isRemote: opp.isRemote,
-          roleType: opp.roleType,
-          experienceLevel: opp.experienceLevel,
           description: opp.description,
           requirements: opp.requirements,
           salaryRange: opp.salaryRange,
@@ -65,7 +63,62 @@ export const upsertOpportunities = internalMutation({
           endDate: opp.endDate,
           lastVerified: Date.now(),
           updatedAt: Date.now(),
-        })
+        }
+
+        const updatedEnrichedFields = [...enrichedFields]
+
+        // location: protect if enriched and source is placeholder
+        if (enrichedFields.includes('location')) {
+          const isPlaceholder =
+            !opp.location ||
+            opp.location.toLowerCase().includes('not specified')
+          if (isPlaceholder) {
+            // Keep enriched value
+          } else {
+            // Source has real data — use it, remove from enrichedFields
+            patch.location = opp.location
+            const idx = updatedEnrichedFields.indexOf('location')
+            if (idx !== -1) updatedEnrichedFields.splice(idx, 1)
+          }
+        } else {
+          patch.location = opp.location
+        }
+
+        // experienceLevel: protect if enriched and source is missing
+        if (enrichedFields.includes('experienceLevel')) {
+          if (opp.experienceLevel) {
+            patch.experienceLevel = opp.experienceLevel
+            const idx = updatedEnrichedFields.indexOf('experienceLevel')
+            if (idx !== -1) updatedEnrichedFields.splice(idx, 1)
+          }
+        } else {
+          patch.experienceLevel = opp.experienceLevel
+        }
+
+        // roleType: protect if enriched and source is "other"
+        if (enrichedFields.includes('roleType')) {
+          if (opp.roleType && opp.roleType !== 'other') {
+            patch.roleType = opp.roleType
+            const idx = updatedEnrichedFields.indexOf('roleType')
+            if (idx !== -1) updatedEnrichedFields.splice(idx, 1)
+          }
+        } else {
+          patch.roleType = opp.roleType
+        }
+
+        // isRemote: protect if enriched and source has no signal
+        if (enrichedFields.includes('isRemote')) {
+          // Always let source override — isRemote is a boolean with no placeholder
+          patch.isRemote = opp.isRemote
+          const idx = updatedEnrichedFields.indexOf('isRemote')
+          if (idx !== -1) updatedEnrichedFields.splice(idx, 1)
+        } else {
+          patch.isRemote = opp.isRemote
+        }
+
+        patch.enrichedFields = updatedEnrichedFields
+
+        await ctx.db.patch('opportunities', existing._id, patch)
         updated++
       } else {
         // Check for fuzzy duplicate from different source
