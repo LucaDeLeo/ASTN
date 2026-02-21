@@ -8,6 +8,7 @@ const opportunityValidator = v.object({
   source: v.union(
     v.literal('80k_hours'),
     v.literal('aisafety_com'),
+    v.literal('aisafety_events'),
     v.literal('manual'),
   ),
   title: v.string(),
@@ -22,6 +23,10 @@ const opportunityValidator = v.object({
   deadline: v.optional(v.number()),
   sourceUrl: v.string(),
   postedAt: v.optional(v.number()),
+  opportunityType: v.optional(v.union(v.literal('job'), v.literal('event'))),
+  eventType: v.optional(v.string()),
+  startDate: v.optional(v.number()),
+  endDate: v.optional(v.number()),
 })
 
 export const upsertOpportunities = internalMutation({
@@ -54,6 +59,10 @@ export const upsertOpportunities = internalMutation({
           salaryRange: opp.salaryRange,
           deadline: opp.deadline,
           sourceUrl: opp.sourceUrl,
+          opportunityType: opp.opportunityType,
+          eventType: opp.eventType,
+          startDate: opp.startDate,
+          endDate: opp.endDate,
           lastVerified: Date.now(),
           updatedAt: Date.now(),
         })
@@ -115,6 +124,10 @@ export const upsertOpportunities = internalMutation({
             salaryRange: opp.salaryRange,
             deadline: opp.deadline,
             sourceUrl: opp.sourceUrl,
+            opportunityType: opp.opportunityType,
+            eventType: opp.eventType,
+            startDate: opp.startDate,
+            endDate: opp.endDate,
             status: 'active',
             lastVerified: Date.now(),
             createdAt: Date.now(),

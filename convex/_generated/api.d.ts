@@ -17,6 +17,7 @@ import type * as agent_queries from "../agent/queries.js";
 import type * as agent_threadOps from "../agent/threadOps.js";
 import type * as agent_tools from "../agent/tools.js";
 import type * as aggregation_aisafety from "../aggregation/aisafety.js";
+import type * as aggregation_aisafetyEvents from "../aggregation/aisafetyEvents.js";
 import type * as aggregation_dedup from "../aggregation/dedup.js";
 import type * as aggregation_eightyK from "../aggregation/eightyK.js";
 import type * as aggregation_sync from "../aggregation/sync.js";
@@ -117,6 +118,7 @@ declare const fullApi: ApiFromModules<{
   "agent/threadOps": typeof agent_threadOps;
   "agent/tools": typeof agent_tools;
   "aggregation/aisafety": typeof aggregation_aisafety;
+  "aggregation/aisafetyEvents": typeof aggregation_aisafetyEvents;
   "aggregation/dedup": typeof aggregation_dedup;
   "aggregation/eightyK": typeof aggregation_eightyK;
   "aggregation/sync": typeof aggregation_sync;

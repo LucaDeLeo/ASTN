@@ -8,31 +8,64 @@ export const list = query({
   args: {
     roleType: v.optional(v.string()),
     isRemote: v.optional(v.boolean()),
+    opportunityType: v.optional(v.string()), // 'job' | 'event'
+    eventType: v.optional(v.string()),
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const limit = args.limit || 1000
+    const needsJsFilter =
+      args.opportunityType !== undefined || args.eventType !== undefined
+
+    // If we only need simple index-based filtering, use the optimized path
+    if (!needsJsFilter) {
+      if (args.roleType) {
+        return await ctx.db
+          .query('opportunities')
+          .withIndex('by_role_type', (q) =>
+            q.eq('roleType', args.roleType!).eq('status', 'active'),
+          )
+          .take(limit)
+      } else if (args.isRemote !== undefined) {
+        return await ctx.db
+          .query('opportunities')
+          .withIndex('by_location', (q) =>
+            q.eq('isRemote', args.isRemote!).eq('status', 'active'),
+          )
+          .take(limit)
+      } else {
+        return await ctx.db
+          .query('opportunities')
+          .withIndex('by_status', (q) => q.eq('status', 'active'))
+          .take(limit)
+      }
+    }
+
+    // For type/eventType filters, collect all active and filter in JS
+    let results = await ctx.db
+      .query('opportunities')
+      .withIndex('by_status', (q) => q.eq('status', 'active'))
+      .collect()
+
+    if (args.opportunityType === 'job') {
+      results = results.filter((o) => o.opportunityType !== 'event')
+    } else if (args.opportunityType === 'event') {
+      results = results.filter((o) => o.opportunityType === 'event')
+    }
+
+    if (args.eventType) {
+      results = results.filter((o) => o.eventType === args.eventType)
+    }
 
     if (args.roleType) {
-      return await ctx.db
-        .query('opportunities')
-        .withIndex('by_role_type', (q) =>
-          q.eq('roleType', args.roleType!).eq('status', 'active'),
-        )
-        .take(limit)
-    } else if (args.isRemote !== undefined) {
-      return await ctx.db
-        .query('opportunities')
-        .withIndex('by_location', (q) =>
-          q.eq('isRemote', args.isRemote!).eq('status', 'active'),
-        )
-        .take(limit)
-    } else {
-      return await ctx.db
-        .query('opportunities')
-        .withIndex('by_status', (q) => q.eq('status', 'active'))
-        .take(limit)
+      results = results.filter((o) => o.roleType === args.roleType)
     }
+
+    if (args.isRemote !== undefined) {
+      results = results.filter((o) => o.isRemote === args.isRemote)
+    }
+
+    return results.slice(0, limit)
   },
 })
 
@@ -108,6 +141,7 @@ export const searchPaginated = query({
     searchTerm: v.string(),
     roleType: v.optional(v.string()),
     isRemote: v.optional(v.boolean()),
+    opportunityType: v.optional(v.union(v.literal('job'), v.literal('event'))),
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
@@ -118,6 +152,8 @@ export const searchPaginated = query({
         sq = sq.eq('status', 'active')
         if (args.roleType) sq = sq.eq('roleType', args.roleType)
         if (args.isRemote !== undefined) sq = sq.eq('isRemote', args.isRemote)
+        if (args.opportunityType)
+          sq = sq.eq('opportunityType', args.opportunityType)
         return sq
       })
       .paginate(args.paginationOpts)

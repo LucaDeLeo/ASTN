@@ -12,12 +12,33 @@ import {
   SelectValue,
 } from '~/components/ui/select'
 
-const ROLE_TYPES = [
-  { value: 'all', label: 'All Roles' },
+const TYPE_OPTIONS = [
+  { value: 'all', label: 'All Types' },
+  { value: 'job', label: 'Jobs' },
+  { value: 'event', label: 'Events & Training' },
+]
+
+const JOB_CATEGORIES = [
+  { value: 'all', label: 'All Categories' },
   { value: 'research', label: 'Research' },
   { value: 'engineering', label: 'Engineering' },
   { value: 'operations', label: 'Operations' },
   { value: 'policy', label: 'Policy' },
+  { value: 'training', label: 'Training' },
+  { value: 'other', label: 'Other' },
+]
+
+const EVENT_CATEGORIES = [
+  { value: 'all', label: 'All Categories' },
+  { value: 'conference', label: 'Conference' },
+  { value: 'course', label: 'Course' },
+  { value: 'fellowship', label: 'Fellowship' },
+  { value: 'workshop', label: 'Workshop' },
+  { value: 'bootcamp', label: 'Bootcamp' },
+  { value: 'meetup', label: 'Meetup' },
+  { value: 'talk', label: 'Talk' },
+  { value: 'hackathon', label: 'Hackathon' },
+  { value: 'competition', label: 'Competition' },
   { value: 'other', label: 'Other' },
 ]
 
@@ -27,8 +48,15 @@ const LOCATION_OPTIONS = [
   { value: 'onsite', label: 'On-site Only' },
 ]
 
+export function getCategoryOptions(type?: string) {
+  if (type === 'event') return EVENT_CATEGORIES
+  if (type === 'job') return JOB_CATEGORIES
+  return JOB_CATEGORIES // default to job categories when showing all
+}
+
 // Search params type for the opportunities route
 type OpportunitySearchParams = {
+  type?: string
   role?: string
   location?: string
   q?: string
@@ -38,9 +66,14 @@ export function OpportunityFilters() {
   const navigate = useNavigate()
   const search = useSearch({ from: '/opportunities/' })
 
+  const typeFilter = search.type || 'all'
   const roleType = search.role || 'all'
   const locationFilter = search.location || 'all'
   const searchTerm = search.q || ''
+
+  const categoryOptions = getCategoryOptions(
+    typeFilter !== 'all' ? typeFilter : undefined,
+  )
 
   const updateFilter = useCallback(
     (key: keyof OpportunitySearchParams, value: string) => {
@@ -52,6 +85,10 @@ export function OpportunityFilters() {
             delete newSearch[key]
           } else {
             newSearch[key] = value
+          }
+          // Reset category when type changes (different value spaces)
+          if (key === 'type') {
+            delete newSearch.role
           }
           return newSearch
         },
@@ -68,7 +105,10 @@ export function OpportunityFilters() {
   }
 
   const hasActiveFilters =
-    roleType !== 'all' || locationFilter !== 'all' || searchTerm !== ''
+    typeFilter !== 'all' ||
+    roleType !== 'all' ||
+    locationFilter !== 'all' ||
+    searchTerm !== ''
 
   return (
     <div className="bg-white dark:bg-card border-b border-slate-200 dark:border-border sticky top-0 z-10">
@@ -76,9 +116,11 @@ export function OpportunityFilters() {
         {/* Mobile filters */}
         <div className="md:hidden">
           <MobileFilters
+            typeFilter={typeFilter}
             roleType={roleType}
             locationFilter={locationFilter}
             searchTerm={searchTerm}
+            onTypeChange={(v) => updateFilter('type', v)}
             onRoleChange={(v) => updateFilter('role', v)}
             onLocationChange={(v) => updateFilter('location', v)}
             onSearchChange={(v) => updateFilter('q', v)}
@@ -86,9 +128,9 @@ export function OpportunityFilters() {
           />
         </div>
 
-        {/* Desktop filters - existing layout */}
+        {/* Desktop filters */}
         <div className="hidden md:flex flex-wrap items-center gap-3">
-          {/* Search - Secondary per CONTEXT.md */}
+          {/* Search */}
           <div className="relative w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-muted-foreground" />
             <Input
@@ -100,16 +142,33 @@ export function OpportunityFilters() {
             />
           </div>
 
-          {/* Role Type Filter */}
+          {/* Type Filter */}
+          <Select
+            value={typeFilter}
+            onValueChange={(v) => updateFilter('type', v)}
+          >
+            <SelectTrigger className="w-44">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              {TYPE_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Category Filter (contextual: role types for jobs, event types for events) */}
           <Select
             value={roleType}
             onValueChange={(v) => updateFilter('role', v)}
           >
             <SelectTrigger className="w-40">
-              <SelectValue placeholder="Role Type" />
+              <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
-              {ROLE_TYPES.map((type) => (
+              {categoryOptions.map((type) => (
                 <SelectItem key={type.value} value={type.value}>
                   {type.label}
                 </SelectItem>

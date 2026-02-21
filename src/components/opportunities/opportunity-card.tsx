@@ -1,10 +1,11 @@
 import { Link } from '@tanstack/react-router'
-import { Banknote, Building2, Clock, MapPin } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
+import { Banknote, CalendarDays } from 'lucide-react'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { Badge } from '~/components/ui/badge'
 import { Card, CardContent } from '~/components/ui/card'
 import { formatLocation } from '~/lib/formatLocation'
+import { formatDeadline, getDeadlineUrgency } from '~/lib/formatDeadline'
+import { EVENT_TYPE_COLORS, ROLE_TYPE_COLORS } from '~/lib/roleTypes'
 
 const ACTIVE_OPPORTUNITY_KEY = 'view-transition-opportunity-id'
 
@@ -12,26 +13,22 @@ type Opportunity = {
   _id: Id<'opportunities'>
   title: string
   organization: string
-  organizationLogoUrl?: string
   location: string
   isRemote: boolean
   roleType: string
+  experienceLevel?: string
   salaryRange?: string
   deadline?: number
-  lastVerified: number
+  opportunityType?: string
+  eventType?: string
+  startDate?: number
 }
 
-const ROLE_TYPE_COLORS: Record<string, string> = {
-  research:
-    'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700/50',
-  engineering:
-    'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700/50',
-  operations:
-    'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700/50',
-  policy:
-    'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700/50',
-  other:
-    'bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-600/50',
+const EXPERIENCE_LEVEL_LABELS: Record<string, string> = {
+  entry: 'Entry Level',
+  mid: 'Mid Level',
+  senior: 'Senior',
+  lead: 'Lead',
 }
 
 export function OpportunityCard({
@@ -41,8 +38,12 @@ export function OpportunityCard({
   opportunity: Opportunity
   index?: number
 }) {
+  const isEvent = opportunity.opportunityType === 'event'
   const roleColorClass =
     ROLE_TYPE_COLORS[opportunity.roleType] || ROLE_TYPE_COLORS.other
+  const eventColorClass = opportunity.eventType
+    ? EVENT_TYPE_COLORS[opportunity.eventType] || EVENT_TYPE_COLORS.conference
+    : undefined
 
   // Check if this card should have view-transition-name (for back navigation)
   const isActiveTransition =
@@ -80,90 +81,91 @@ export function OpportunityCard({
         }}
       >
         <CardContent className="p-5">
-          <div className="flex gap-4">
-            {/* Organization Logo - sharp corners for Lyra */}
-            <div className="flex-shrink-0">
-              {opportunity.organizationLogoUrl ? (
-                <img
-                  src={opportunity.organizationLogoUrl}
-                  alt={`${opportunity.organization} logo`}
-                  className="w-12 h-12 rounded-sm object-contain bg-slate-50 dark:bg-muted border border-slate-100 dark:border-border"
-                />
-              ) : (
-                <div className="w-12 h-12 rounded-sm bg-muted flex items-center justify-center border border-border">
-                  <Building2 className="w-6 h-6 text-muted-foreground" />
-                </div>
-              )}
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h3
-                    suppressHydrationWarning
-                    style={
-                      isActiveTransition
-                        ? { viewTransitionName: 'opportunity-title' }
-                        : undefined
-                    }
-                    className="font-semibold text-foreground leading-tight font-mono tracking-tight"
-                  >
-                    {opportunity.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    {opportunity.organization}
-                  </p>
-                </div>
-                <Badge
-                  className={`${roleColorClass} capitalize flex-shrink-0 rounded-sm border`}
-                >
-                  {opportunity.roleType}
+          {/* Row 1: Badges */}
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            {isEvent && eventColorClass ? (
+              <Badge
+                className={`${eventColorClass} capitalize flex-shrink-0 rounded-sm border`}
+              >
+                {opportunity.eventType}
+              </Badge>
+            ) : (
+              <Badge
+                className={`${roleColorClass} capitalize flex-shrink-0 rounded-sm border`}
+              >
+                {opportunity.roleType}
+              </Badge>
+            )}
+            {isEvent && (
+              <Badge
+                variant="outline"
+                className="text-xs rounded-sm border-teal-300 text-teal-700 dark:border-teal-700 dark:text-teal-400"
+              >
+                Event
+              </Badge>
+            )}
+            {opportunity.isRemote && (
+              <Badge variant="outline" className="text-xs rounded-sm">
+                Remote
+              </Badge>
+            )}
+            {opportunity.experienceLevel &&
+              EXPERIENCE_LEVEL_LABELS[opportunity.experienceLevel] && (
+                <Badge variant="outline" className="text-xs rounded-sm">
+                  {EXPERIENCE_LEVEL_LABELS[opportunity.experienceLevel]}
                 </Badge>
-              </div>
+              )}
+          </div>
 
-              <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5" />
-                  {formatLocation(opportunity.location)}
-                  {opportunity.isRemote && (
-                    <Badge
-                      variant="outline"
-                      className="ml-1 text-xs py-0 rounded-sm"
-                    >
-                      Remote
-                    </Badge>
-                  )}
+          {/* Row 2: Title */}
+          <h3
+            suppressHydrationWarning
+            style={
+              isActiveTransition
+                ? { viewTransitionName: 'opportunity-title' }
+                : undefined
+            }
+            className="font-semibold text-foreground leading-tight"
+          >
+            {opportunity.title}
+          </h3>
+
+          {/* Row 3: Org + Location */}
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {opportunity.organization} · {formatLocation(opportunity.location)}
+          </p>
+
+          {/* Row 4: Dates / Salary + Deadline */}
+          {(opportunity.salaryRange ||
+            opportunity.deadline ||
+            (isEvent && opportunity.startDate)) && (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2.5 text-sm">
+              {isEvent && opportunity.startDate && (
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <CalendarDays className="w-3.5 h-3.5" />
+                  {new Date(opportunity.startDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
                 </span>
+              )}
 
-                {opportunity.salaryRange &&
-                  opportunity.salaryRange !== 'Not Found' && (
-                    <span className="flex items-center gap-1">
-                      <Banknote className="w-3.5 h-3.5" />
-                      {opportunity.salaryRange}
-                    </span>
-                  )}
-
-                {opportunity.deadline && (
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5" />
-                    Closes{' '}
-                    {formatDistanceToNow(opportunity.deadline, {
-                      addSuffix: true,
-                    })}
+              {opportunity.salaryRange &&
+                opportunity.salaryRange !== 'Not Found' && (
+                  <span className="flex items-center gap-1 text-muted-foreground">
+                    <Banknote className="w-3.5 h-3.5" />
+                    {opportunity.salaryRange}
                   </span>
                 )}
-              </div>
 
-              {/* Freshness indicator (OPPS-06) */}
-              <p className="text-xs text-muted-foreground mt-2 font-mono">
-                Last verified:{' '}
-                {formatDistanceToNow(opportunity.lastVerified, {
-                  addSuffix: true,
-                })}
-              </p>
+              {opportunity.deadline && (
+                <span className={getDeadlineUrgency(opportunity.deadline)}>
+                  {formatDeadline(opportunity.deadline)}
+                </span>
+              )}
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </Link>

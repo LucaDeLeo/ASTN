@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Filter, X } from 'lucide-react'
+import { getCategoryOptions } from './opportunity-filters'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
@@ -18,13 +19,10 @@ import {
   ResponsiveSheetTrigger,
 } from '~/components/ui/responsive-sheet'
 
-const ROLE_TYPES = [
-  { value: 'all', label: 'All Roles' },
-  { value: 'research', label: 'Research' },
-  { value: 'engineering', label: 'Engineering' },
-  { value: 'operations', label: 'Operations' },
-  { value: 'policy', label: 'Policy' },
-  { value: 'other', label: 'Other' },
+const TYPE_OPTIONS = [
+  { value: 'all', label: 'All Types' },
+  { value: 'job', label: 'Jobs' },
+  { value: 'event', label: 'Events & Training' },
 ]
 
 const LOCATION_OPTIONS = [
@@ -34,9 +32,11 @@ const LOCATION_OPTIONS = [
 ]
 
 interface MobileFiltersProps {
+  typeFilter: string
   roleType: string
   locationFilter: string
   searchTerm: string
+  onTypeChange: (value: string) => void
   onRoleChange: (value: string) => void
   onLocationChange: (value: string) => void
   onSearchChange: (value: string) => void
@@ -44,15 +44,21 @@ interface MobileFiltersProps {
 }
 
 export function MobileFilters({
+  typeFilter,
   roleType,
   locationFilter,
   searchTerm,
+  onTypeChange,
   onRoleChange,
   onLocationChange,
   onSearchChange,
   onClearFilters,
 }: MobileFiltersProps) {
   const [sheetOpen, setSheetOpen] = useState(false)
+
+  const categoryOptions = getCategoryOptions(
+    typeFilter !== 'all' ? typeFilter : undefined,
+  )
 
   // Build active filter chips
   const activeFilters: Array<{
@@ -61,9 +67,19 @@ export function MobileFilters({
     onRemove: () => void
   }> = []
 
+  if (typeFilter && typeFilter !== 'all') {
+    const typeLabel =
+      TYPE_OPTIONS.find((t) => t.value === typeFilter)?.label || typeFilter
+    activeFilters.push({
+      key: 'type',
+      label: typeLabel,
+      onRemove: () => onTypeChange('all'),
+    })
+  }
+
   if (roleType && roleType !== 'all') {
     const roleLabel =
-      ROLE_TYPES.find((r) => r.value === roleType)?.label || roleType
+      categoryOptions.find((r) => r.value === roleType)?.label || roleType
     activeFilters.push({
       key: 'role',
       label: roleLabel,
@@ -147,15 +163,32 @@ export function MobileFilters({
               />
             </div>
 
-            {/* Role Type */}
+            {/* Type */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Role Type</label>
-              <Select value={roleType || 'all'} onValueChange={onRoleChange}>
+              <label className="text-sm font-medium">Type</label>
+              <Select value={typeFilter || 'all'} onValueChange={onTypeChange}>
                 <SelectTrigger className="min-h-11">
-                  <SelectValue placeholder="All Roles" />
+                  <SelectValue placeholder="All Types" />
                 </SelectTrigger>
                 <SelectContent>
-                  {ROLE_TYPES.map((type) => (
+                  {TYPE_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Category */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Category</label>
+              <Select value={roleType || 'all'} onValueChange={onRoleChange}>
+                <SelectTrigger className="min-h-11">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categoryOptions.map((type) => (
                     <SelectItem key={type.value} value={type.value}>
                       {type.label}
                     </SelectItem>

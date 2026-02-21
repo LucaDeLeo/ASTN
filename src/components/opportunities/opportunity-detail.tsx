@@ -29,7 +29,7 @@ type Opportunity = {
   salaryRange?: string
   deadline?: number
   sourceUrl: string
-  source: '80k_hours' | 'aisafety_com' | 'manual'
+  source: '80k_hours' | 'aisafety_com' | 'aisafety_events' | 'manual'
   alternateSources?: Array<{
     sourceId: string
     source: string
@@ -42,6 +42,7 @@ type Opportunity = {
 const SOURCE_NAMES: Record<string, string> = {
   '80k_hours': '80,000 Hours',
   aisafety_com: 'aisafety.com',
+  aisafety_events: 'aisafety.com (Events)',
   manual: 'Direct submission',
 }
 

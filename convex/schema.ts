@@ -594,6 +594,7 @@ export default defineSchema({
     source: v.union(
       v.literal('80k_hours'),
       v.literal('aisafety_com'),
+      v.literal('aisafety_events'),
       v.literal('manual'),
     ),
 
@@ -609,6 +610,10 @@ export default defineSchema({
     requirements: v.optional(v.array(v.string())),
     salaryRange: v.optional(v.string()),
     deadline: v.optional(v.number()), // Unix timestamp
+    opportunityType: v.optional(v.union(v.literal('job'), v.literal('event'))),
+    eventType: v.optional(v.string()), // "course", "fellowship", "conference", "talk", "meetup"
+    startDate: v.optional(v.number()), // Unix timestamp
+    endDate: v.optional(v.number()), // Unix timestamp
 
     // Source tracking
     sourceUrl: v.string(),
@@ -635,7 +640,7 @@ export default defineSchema({
     .index('by_location', ['isRemote', 'status'])
     .searchIndex('search_title', {
       searchField: 'title',
-      filterFields: ['status', 'roleType', 'isRemote'],
+      filterFields: ['status', 'roleType', 'isRemote', 'opportunityType'],
     }),
 
   // Events (synced from lu.ma)

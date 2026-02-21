@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import {
   Bookmark,
   CheckCircle2,
+  ChevronDown,
   FlaskConical,
   GraduationCap,
   HandHeart,
@@ -58,15 +60,17 @@ export function ActionCard({
   onUnsave,
   onCancel,
 }: ActionCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
   const config = typeConfig[action.type]
   const TypeIcon = config.icon
 
   return (
     <Card
       className={cn(
-        'group/card relative p-4 border-violet-200 transition-shadow hover:shadow-md',
+        'group/card relative p-4 border-violet-200 transition-shadow hover:shadow-md cursor-pointer',
         action.status === 'done' && 'opacity-75',
       )}
+      onClick={() => setIsExpanded((prev) => !prev)}
     >
       {/* Desktop hover actions */}
       <HoverActions
@@ -75,36 +79,58 @@ export function ActionCard({
         onDismiss={onDismiss}
       />
 
-      {/* Type badge */}
-      <div className="mb-3">
+      {/* Badge + chevron */}
+      <div className="flex items-center justify-between mb-1">
         <Badge className="bg-violet-100 text-violet-800 border-violet-200">
           <TypeIcon className="size-3" />
           {config.label}
         </Badge>
+        <ChevronDown
+          className={cn(
+            'size-4 text-muted-foreground transition-transform duration-200',
+            isExpanded && 'rotate-180',
+          )}
+        />
       </div>
 
-      {/* Title + Description */}
-      <h3 className="font-medium text-foreground mb-1">{action.title}</h3>
-      <p className="text-sm text-muted-foreground line-clamp-3 mb-2">
+      {/* Title + clamped description */}
+      <h3 className="font-medium text-foreground">{action.title}</h3>
+      <p
+        className={cn(
+          'text-sm text-muted-foreground mt-1',
+          !isExpanded && 'line-clamp-2',
+        )}
+      >
         {action.description}
       </p>
 
-      {/* Rationale */}
-      <div className="mb-3">
-        <span className="text-xs text-muted-foreground">Based on: </span>
-        <span className="text-xs text-violet-700">{action.rationale}</span>
+      {/* Expandable rationale */}
+      <div
+        className={cn(
+          'grid transition-[grid-template-rows] duration-200 ease-in-out',
+          isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+        )}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <p className="text-xs text-muted-foreground mt-2">
+            <span>Based on: </span>
+            <span className="text-violet-700">{action.rationale}</span>
+          </p>
+        </div>
       </div>
 
-      {/* Status-dependent buttons */}
-      <StatusButtons
-        status={action.status}
-        completedAt={action.completedAt}
-        completionConversationStarted={action.completionConversationStarted}
-        onStart={onStart}
-        onComplete={onComplete}
-        onUnsave={onUnsave}
-        onCancel={onCancel}
-      />
+      {/* Action buttons */}
+      <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+        <StatusButtons
+          status={action.status}
+          completedAt={action.completedAt}
+          completionConversationStarted={action.completionConversationStarted}
+          onStart={onStart}
+          onComplete={onComplete}
+          onUnsave={onUnsave}
+          onCancel={onCancel}
+        />
+      </div>
     </Card>
   )
 }

@@ -14,6 +14,7 @@ import { OpportunityList } from '~/components/opportunities/opportunity-list'
 
 // Define search params schema for this route
 type OpportunitySearchParams = {
+  type?: string
   role?: string
   location?: string
   q?: string
@@ -26,8 +27,25 @@ const SEARCH_PAGE_SIZE = 20
 
 // Helper to derive filter params consistently between loader and component
 function getFilterParams(search: OpportunitySearchParams) {
+  const opportunityType: 'job' | 'event' | undefined =
+    search.type === 'job' || search.type === 'event' ? search.type : undefined
+
+  // When filtering events, the role param maps to eventType
+  // When filtering jobs (or all), it maps to roleType
+  const isEventCategory = search.type === 'event'
+  const roleType =
+    search.role && search.role !== 'all' && !isEventCategory
+      ? search.role
+      : undefined
+  const eventType =
+    search.role && search.role !== 'all' && isEventCategory
+      ? search.role
+      : undefined
+
   return {
-    roleType: search.role && search.role !== 'all' ? search.role : undefined,
+    opportunityType,
+    roleType,
+    eventType,
     isRemote:
       search.location === 'remote'
         ? true
@@ -42,6 +60,7 @@ export const Route = createFileRoute('/opportunities/')({
     search: Record<string, unknown>,
   ): OpportunitySearchParams => {
     return {
+      type: search.type as string | undefined,
       role: search.role as string | undefined,
       location: search.location as string | undefined,
       q: search.q as string | undefined,
@@ -77,7 +96,12 @@ function OpportunitiesPage() {
   const params = getFilterParams(search)
 
   // Check if any filters are active (for empty state context)
-  const hasFilters = !!(searchTerm || search.role || search.location)
+  const hasFilters = !!(
+    searchTerm ||
+    search.type ||
+    search.role ||
+    search.location
+  )
 
   // Clear all filters and navigate to base route
   const handleClearFilters = useCallback(() => {
@@ -101,6 +125,7 @@ function OpportunitiesPage() {
           searchTerm,
           roleType: params.roleType,
           isRemote: params.isRemote,
+          opportunityType: params.opportunityType,
         }
       : 'skip',
     { initialNumItems: SEARCH_PAGE_SIZE },

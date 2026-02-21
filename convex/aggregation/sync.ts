@@ -8,19 +8,21 @@ export const runFullSync = internalAction({
   handler: async (ctx) => {
     log('info', 'Starting full opportunity sync')
 
-    // Fetch from both sources in parallel
-    const [eightyKJobs, aisafetyJobs] = await Promise.all([
+    // Fetch from all sources in parallel
+    const [eightyKJobs, aisafetyJobs, aisafetyEvents] = await Promise.all([
       ctx.runAction(internal.aggregation.eightyK.fetchOpportunities, {}),
       ctx.runAction(internal.aggregation.aisafety.fetchOpportunities, {}),
+      ctx.runAction(internal.aggregation.aisafetyEvents.fetchOpportunities, {}),
     ])
 
     log('info', 'Fetched opportunities from sources', {
       eightyKCount: eightyKJobs.length,
       aisafetyCount: aisafetyJobs.length,
+      aisafetyEventsCount: aisafetyEvents.length,
     })
 
     // Combine all jobs
-    const allJobs = [...eightyKJobs, ...aisafetyJobs]
+    const allJobs = [...eightyKJobs, ...aisafetyJobs, ...aisafetyEvents]
 
     if (allJobs.length === 0) {
       log('warn', 'No opportunities fetched from any source')

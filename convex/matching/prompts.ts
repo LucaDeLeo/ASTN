@@ -48,6 +48,10 @@ interface OpportunityData {
   description: string
   requirements?: Array<string>
   deadline?: number
+  opportunityType?: 'job' | 'event'
+  eventType?: string
+  startDate?: number
+  endDate?: number
 }
 
 // System prompt for matching (per CONTEXT.md: encouraging tone)
@@ -67,6 +71,12 @@ Analyze the candidate's profile against each opportunity and provide:
 - **exploring**: Worth considering but significant gaps exist. Stretch opportunity.
 
 Do NOT include opportunities where there's no reasonable fit at all.
+
+## Opportunity Types
+Opportunities include both job positions and events (courses, fellowships, conferences, talks, meetups).
+- For jobs: evaluate based on skills fit, experience alignment, and career trajectory
+- For events: evaluate based on learning value, relevance to career goals, and growth potential
+- Fellowships are particularly valuable for career transitions
 
 ## Hard Constraints
 The candidate may specify hard constraints in their profile. These are non-negotiable:
@@ -231,6 +241,19 @@ export function buildOpportunitiesContext(
       `Location: ${opp.location}${opp.isRemote ? ' (Remote available)' : ''}`,
     )
     sections.push(`Role Type: ${opp.roleType}`)
+    if (opp.opportunityType === 'event' && opp.eventType) {
+      sections.push(`Event Type: ${opp.eventType}`)
+    }
+    if (opp.startDate) {
+      sections.push(
+        `Event Start: ${new Date(opp.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`,
+      )
+    }
+    if (opp.endDate) {
+      sections.push(
+        `Event End: ${new Date(opp.endDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`,
+      )
+    }
     if (opp.experienceLevel) {
       sections.push(`Experience Level: ${opp.experienceLevel}`)
     }
