@@ -30,9 +30,14 @@ interface MatchAlertProps {
     explanation: string
     recommendations: Array<string>
   }>
+  unsubscribeUrl?: string
 }
 
-export function MatchAlertEmail({ userName, matches }: MatchAlertProps) {
+export function MatchAlertEmail({
+  userName,
+  matches,
+  unsubscribeUrl,
+}: MatchAlertProps) {
   const displayMatches = matches.slice(0, 5)
   const hasMore = matches.length > 5
 
@@ -131,6 +136,14 @@ export function MatchAlertEmail({ userName, matches }: MatchAlertProps) {
               >
                 Manage notification preferences
               </a>
+              {unsubscribeUrl && (
+                <>
+                  {' | '}
+                  <a href={unsubscribeUrl} className="text-gray-400">
+                    Unsubscribe
+                  </a>
+                </>
+              )}
             </Text>
           </Container>
         </Body>
@@ -150,6 +163,7 @@ interface WeeklyDigestProps {
     tier: string
   }>
   profileNudges: Array<string>
+  unsubscribeUrl?: string
 }
 
 export function WeeklyDigestEmail({
@@ -157,6 +171,7 @@ export function WeeklyDigestEmail({
   newMatchesCount,
   topOpportunities,
   profileNudges,
+  unsubscribeUrl,
 }: WeeklyDigestProps) {
   return (
     <Html>
@@ -278,6 +293,14 @@ export function WeeklyDigestEmail({
               >
                 Manage notification preferences
               </a>
+              {unsubscribeUrl && (
+                <>
+                  {' | '}
+                  <a href={unsubscribeUrl} className="text-gray-400">
+                    Unsubscribe
+                  </a>
+                </>
+              )}
             </Text>
           </Container>
         </Body>
@@ -314,12 +337,14 @@ interface EventDigestProps {
     url: string
     description?: string
   }>
+  unsubscribeUrl?: string
 }
 
 export function EventDigestEmail({
   userName,
   frequency,
   events,
+  unsubscribeUrl,
 }: EventDigestProps) {
   // Group events by org using Map to avoid lint issues with Record indexing
   const eventsByOrgMap = new Map<string, typeof events>()
@@ -435,6 +460,14 @@ export function EventDigestEmail({
               >
                 Manage notification preferences
               </a>
+              {unsubscribeUrl && (
+                <>
+                  {' | '}
+                  <a href={unsubscribeUrl} className="text-gray-400">
+                    Unsubscribe
+                  </a>
+                </>
+              )}
             </Text>
           </Container>
         </Body>

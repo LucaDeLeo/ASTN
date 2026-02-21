@@ -121,6 +121,7 @@ export const processMatchAlertBatch = internalAction({
         }
 
         // Render email
+        const unsubscribeUrl = getUnsubscribeUrl(user.profileId)
         const emailContent = await renderMatchAlert({
           userName: user.userName,
           matches: validMatches.map(({ match, opportunity }) => ({
@@ -138,6 +139,7 @@ export const processMatchAlertBatch = internalAction({
                   r.action,
               ),
           })),
+          unsubscribeUrl,
         })
 
         // Send email
@@ -145,7 +147,7 @@ export const processMatchAlertBatch = internalAction({
           to: user.email,
           subject: `${validMatches.length} new great-fit ${validMatches.length === 1 ? 'opportunity' : 'opportunities'} on ASTN`,
           html: emailContent,
-          unsubscribeUrl: getUnsubscribeUrl(user.profileId),
+          unsubscribeUrl,
         })
 
         // Mark matches as no longer new
@@ -254,11 +256,13 @@ export const processWeeklyDigestBatch = internalAction({
         }
 
         // Render email
+        const unsubscribeUrl = getUnsubscribeUrl(user.profileId)
         const emailContent = await renderWeeklyDigest({
           userName: user.userName,
           newMatchesCount: recentMatches.length,
           topOpportunities,
           profileNudges,
+          unsubscribeUrl,
         })
 
         // Send email
@@ -266,7 +270,7 @@ export const processWeeklyDigestBatch = internalAction({
           to: user.email,
           subject: 'Your Weekly AI Safety Opportunities Digest',
           html: emailContent,
-          unsubscribeUrl: getUnsubscribeUrl(user.profileId),
+          unsubscribeUrl,
         })
 
         emailsSent++
@@ -334,17 +338,19 @@ export const processDailyEventDigestBatch = internalAction({
 
         if (events.length === 0) continue
 
+        const unsubscribeUrl = getUnsubscribeUrl(user.profileId)
         const emailContent = await renderEventDigest({
           userName: user.userName,
           frequency: 'daily',
           events,
+          unsubscribeUrl,
         })
 
         await ctx.runMutation(internal.emails.send.sendEventDigest, {
           to: user.email,
           subject: 'Your daily event digest from ASTN',
           html: emailContent,
-          unsubscribeUrl: getUnsubscribeUrl(user.profileId),
+          unsubscribeUrl,
         })
 
         emailsSent++
@@ -397,17 +403,19 @@ export const processWeeklyEventDigestBatch = internalAction({
 
         if (events.length === 0) continue
 
+        const unsubscribeUrl = getUnsubscribeUrl(user.profileId)
         const emailContent = await renderEventDigest({
           userName: user.userName,
           frequency: 'weekly',
           events,
+          unsubscribeUrl,
         })
 
         await ctx.runMutation(internal.emails.send.sendEventDigest, {
           to: user.email,
           subject: 'Your weekly event digest from ASTN',
           html: emailContent,
-          unsubscribeUrl: getUnsubscribeUrl(user.profileId),
+          unsubscribeUrl,
         })
 
         emailsSent++
