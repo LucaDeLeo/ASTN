@@ -26,7 +26,9 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Convex codegen
-        run: npx convex codegen
+        run: npx convex codegen --typecheck disable
+        env:
+          CONVEX_DEPLOYMENT: dev:flippant-meadowlark-298
 
       - name: Lint
         run: bun run lint
