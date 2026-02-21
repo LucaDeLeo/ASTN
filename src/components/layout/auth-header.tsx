@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { UserButton } from '@clerk/clerk-react'
 import { AuthLoading, Authenticated, Unauthenticated } from 'convex/react'
-import { User } from 'lucide-react'
+import { Settings, User } from 'lucide-react'
 
 import { NotificationBell } from '~/components/notifications'
 import { Button } from '~/components/ui/button'
@@ -71,6 +71,11 @@ export function AuthHeader() {
                   label="ASTN Profile"
                   labelIcon={<User className="size-4" />}
                   href="/profile"
+                />
+                <UserButton.Link
+                  label="Settings"
+                  labelIcon={<Settings className="size-4" />}
+                  href="/settings"
                 />
               </UserButton.MenuItems>
             </UserButton>

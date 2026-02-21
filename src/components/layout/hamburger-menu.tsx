@@ -8,6 +8,7 @@ import {
   LogOut,
   Menu,
   MessageCircleHeart,
+  Settings,
   Shield,
   User,
 } from 'lucide-react'
@@ -163,6 +164,17 @@ export function HamburgerMenu({ user }: HamburgerMenuProps) {
               >
                 <Shield className="size-5" />
                 <span>Admin</span>
+              </Link>
+            </SheetClose>
+
+            <SheetClose asChild>
+              <Link
+                to="/settings"
+                onClick={handleNavigation}
+                className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-accent"
+              >
+                <Settings className="size-5" />
+                <span>Settings</span>
               </Link>
             </SheetClose>
 
