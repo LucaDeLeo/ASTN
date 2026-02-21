@@ -585,17 +585,21 @@ function MessageBubble({
   isLastUserMessage?: boolean
   onEdit?: (text: string, order: number) => void
 }) {
-  const [smoothText] = useSmoothText(message.text || '', {
+  // Guard: ensure text is always a string (ai@5/6 compat — runtime type may differ)
+  const rawText = message.text as unknown
+  const messageText =
+    typeof rawText === 'string' ? rawText : String(rawText ?? '')
+  const [smoothText] = useSmoothText(messageText, {
     startStreaming: message.status === 'streaming',
   })
 
   if (message.role === 'user') {
     return (
       <div className="group/edit flex justify-end animate-in fade-in slide-in-from-bottom-2 duration-300">
-        {isLastUserMessage && onEdit && message.text && (
+        {isLastUserMessage && onEdit && messageText && (
           <button
             type="button"
-            onClick={() => onEdit(message.text, message.order)}
+            onClick={() => onEdit(messageText, message.order)}
             className="self-center mr-1 size-6 rounded-md flex items-center justify-center opacity-0 group-hover/edit:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
             title="Edit message"
           >
@@ -603,7 +607,7 @@ function MessageBubble({
           </button>
         )}
         <div className="max-w-[80%] rounded-2xl rounded-br-md px-4 py-2.5 bg-primary text-primary-foreground">
-          <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+          <p className="text-sm whitespace-pre-wrap">{messageText}</p>
         </div>
       </div>
     )
@@ -647,13 +651,21 @@ function MessageBubble({
 
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i]
-    if (part.type === 'text' && part.text) {
+    // Guard: ensure part.text is a string (ai@5/6 compat — runtime type may differ)
+    const rawPartText = part.type === 'text' ? (part.text as unknown) : null
+    const partText =
+      rawPartText != null
+        ? typeof rawPartText === 'string'
+          ? rawPartText
+          : String(rawPartText)
+        : null
+    if (partText) {
       elements.push(
-        <CopyableText key={`text-${i}`} text={part.text}>
+        <CopyableText key={`text-${i}`} text={partText}>
           <div className="flex justify-start">
             <div className="max-w-[80%] rounded-2xl rounded-bl-md px-4 py-2.5 bg-muted text-foreground">
               <p className="text-sm whitespace-pre-wrap">
-                {renderMarkdown(part.text)}
+                {renderMarkdown(partText)}
               </p>
             </div>
           </div>
@@ -776,6 +788,8 @@ function ToolCallInline({
 
 // Simple markdown renderer (bold and italic)
 function renderMarkdown(text: string): React.ReactNode {
+  // Runtime guard: ai@5/6 compat — text may not be a string at runtime
+  if (typeof text !== 'string') return String((text as unknown) ?? '')
   const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g)
   return parts.map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**')) {
