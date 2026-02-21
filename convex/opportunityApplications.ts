@@ -4,6 +4,7 @@ import { getUserId } from './lib/auth'
 import { internal } from './_generated/api'
 
 // Submit an application (idempotent — returns existing if already applied)
+// Auto-joins the org if the user is not already a member.
 export const submit = mutation({
   args: {
     opportunityId: v.id('orgOpportunities'),
@@ -23,7 +24,7 @@ export const submit = mutation({
       )
     }
 
-    // Verify org membership
+    // Auto-join org if not already a member
     const membership = await ctx.db
       .query('orgMemberships')
       .withIndex('by_user', (q) => q.eq('userId', userId))
@@ -31,9 +32,13 @@ export const submit = mutation({
       .first()
 
     if (!membership) {
-      throw new ConvexError(
-        'You must be a member of this organization to apply',
-      )
+      await ctx.db.insert('orgMemberships', {
+        userId,
+        orgId: opportunity.orgId,
+        role: 'member',
+        directoryVisibility: 'visible',
+        joinedAt: Date.now(),
+      })
     }
 
     // Idempotent: check if already applied
@@ -64,6 +69,111 @@ export const submit = mutation({
   },
 })
 
+// Submit an application as a guest (no auth required, idempotent by email+opportunity)
+export const submitGuest = mutation({
+  args: {
+    opportunityId: v.id('orgOpportunities'),
+    guestEmail: v.string(),
+    responses: v.any(),
+  },
+  returns: v.id('opportunityApplications'),
+  handler: async (ctx, { opportunityId, guestEmail, responses }) => {
+    const email = guestEmail.trim().toLowerCase()
+
+    // Get the opportunity
+    const opportunity = await ctx.db.get('orgOpportunities', opportunityId)
+    if (!opportunity) throw new ConvexError('Opportunity not found')
+    if (opportunity.status !== 'active') {
+      throw new ConvexError(
+        'This opportunity is no longer accepting applications',
+      )
+    }
+
+    // Idempotent: check if guest already applied with this email
+    const existing = await ctx.db
+      .query('opportunityApplications')
+      .withIndex('by_guest_email_and_opportunity', (q) =>
+        q.eq('guestEmail', email).eq('opportunityId', opportunityId),
+      )
+      .first()
+
+    if (existing) return existing._id
+
+    return await ctx.db.insert('opportunityApplications', {
+      opportunityId,
+      orgId: opportunity.orgId,
+      guestEmail: email,
+      status: 'submitted',
+      responses,
+      submittedAt: Date.now(),
+    })
+  },
+})
+
+// Claim guest applications on login/signup (idempotent)
+// Finds guest apps matching the user's email, patches them with userId,
+// and auto-joins the user to each org.
+export const claimGuestApplications = mutation({
+  args: {},
+  returns: v.number(),
+  handler: async (ctx): Promise<number> => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) return 0
+
+    const userId = identity.subject
+    const email = identity.email?.trim().toLowerCase()
+    if (!email) return 0
+
+    // Find all guest applications matching this email
+    const guestApps = await ctx.db
+      .query('opportunityApplications')
+      .withIndex('by_guest_email_and_opportunity', (q) =>
+        q.eq('guestEmail', email),
+      )
+      .collect()
+
+    // Filter to unclaimed apps only (no userId yet)
+    const unclaimed = guestApps.filter((app) => !app.userId)
+    if (unclaimed.length === 0) return 0
+
+    // Get profile if exists
+    const profile = await ctx.db
+      .query('profiles')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .first()
+
+    let claimed = 0
+    for (const app of unclaimed) {
+      // Patch the application with userId and profile
+      await ctx.db.patch('opportunityApplications', app._id, {
+        userId,
+        profileId: profile?._id,
+      })
+
+      // Auto-join the org if not already a member
+      const membership = await ctx.db
+        .query('orgMemberships')
+        .withIndex('by_user', (q) => q.eq('userId', userId))
+        .filter((q) => q.eq(q.field('orgId'), app.orgId))
+        .first()
+
+      if (!membership) {
+        await ctx.db.insert('orgMemberships', {
+          userId,
+          orgId: app.orgId,
+          role: 'member',
+          directoryVisibility: 'visible',
+          joinedAt: Date.now(),
+        })
+      }
+
+      claimed++
+    }
+
+    return claimed
+  },
+})
+
 // Check if current user already applied
 export const getMyApplication = query({
   args: { opportunityId: v.id('orgOpportunities') },
@@ -73,7 +183,8 @@ export const getMyApplication = query({
       _creationTime: v.number(),
       opportunityId: v.id('orgOpportunities'),
       orgId: v.id('organizations'),
-      userId: v.string(),
+      userId: v.optional(v.string()),
+      guestEmail: v.optional(v.string()),
       profileId: v.optional(v.id('profiles')),
       status: v.union(
         v.literal('submitted'),
@@ -123,7 +234,8 @@ export const listByOpportunity = query({
       _creationTime: v.number(),
       opportunityId: v.id('orgOpportunities'),
       orgId: v.id('organizations'),
-      userId: v.string(),
+      userId: v.optional(v.string()),
+      guestEmail: v.optional(v.string()),
       profileId: v.optional(v.id('profiles')),
       status: v.union(
         v.literal('submitted'),
@@ -294,7 +406,8 @@ export const listForExport = internalQuery({
       _creationTime: v.number(),
       opportunityId: v.id('orgOpportunities'),
       orgId: v.id('organizations'),
-      userId: v.string(),
+      userId: v.optional(v.string()),
+      guestEmail: v.optional(v.string()),
       profileId: v.optional(v.id('profiles')),
       status: v.union(
         v.literal('submitted'),

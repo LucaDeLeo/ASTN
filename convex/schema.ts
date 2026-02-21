@@ -980,11 +980,12 @@ export default defineSchema({
     .index('by_org_and_status', ['orgId', 'status'])
     .index('by_org_and_featured', ['orgId', 'featured']),
 
-  // Opportunity applications (submitted by org members)
+  // Opportunity applications (submitted by org members or guests)
   opportunityApplications: defineTable({
     opportunityId: v.id('orgOpportunities'),
     orgId: v.id('organizations'),
-    userId: v.string(),
+    userId: v.optional(v.string()),
+    guestEmail: v.optional(v.string()),
     profileId: v.optional(v.id('profiles')),
     status: v.union(
       v.literal('submitted'),
@@ -1001,7 +1002,8 @@ export default defineSchema({
   })
     .index('by_opportunity_and_status', ['opportunityId', 'status'])
     .index('by_user_and_opportunity', ['userId', 'opportunityId'])
-    .index('by_org', ['orgId']),
+    .index('by_org', ['orgId'])
+    .index('by_guest_email_and_opportunity', ['guestEmail', 'opportunityId']),
 
   // Anonymous feedback submissions
   feedback: defineTable({

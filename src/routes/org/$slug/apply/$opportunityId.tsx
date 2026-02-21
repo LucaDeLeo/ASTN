@@ -1,5 +1,5 @@
-import { Link, createFileRoute } from '@tanstack/react-router'
-import { useMutation, useQuery } from 'convex/react'
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useConvexAuth, useMutation, useQuery } from 'convex/react'
 import { useUser } from '@clerk/clerk-react'
 import { useState } from 'react'
 import {
@@ -8,6 +8,7 @@ import {
   ExternalLink,
   Info,
   Loader2,
+  UserPlus,
 } from 'lucide-react'
 import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
@@ -26,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select'
+import { saveGuestApplicationEmail } from '~/lib/pendingGuestApplication'
 
 export const Route = createFileRoute('/org/$slug/apply/$opportunityId')({
   component: ApplyPage,
@@ -86,25 +88,32 @@ type FormData = {
 
 function ApplyPage() {
   const { slug, opportunityId } = Route.useParams()
+  const navigate = useNavigate()
+  const { isAuthenticated } = useConvexAuth()
   const { user } = useUser()
 
   const org = useQuery(api.orgs.directory.getOrgBySlug, { slug })
   const opportunity = useQuery(api.orgOpportunities.get, {
     id: opportunityId as Id<'orgOpportunities'>,
   })
-  const membership = useQuery(
-    api.orgs.membership.getMembership,
-    org ? { orgId: org._id } : 'skip',
-  )
   const existingApplication = useQuery(
     api.opportunityApplications.getMyApplication,
-    opportunity ? { opportunityId: opportunity._id } : 'skip',
+    isAuthenticated && opportunity
+      ? { opportunityId: opportunity._id }
+      : 'skip',
   )
-  const profile = useQuery(api.profiles.getOrCreateProfile)
+  const profile = useQuery(
+    api.profiles.getOrCreateProfile,
+    isAuthenticated ? {} : 'skip',
+  )
   const submitApplication = useMutation(api.opportunityApplications.submit)
+  const submitGuestApplication = useMutation(
+    api.opportunityApplications.submitGuest,
+  )
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [submittedAsGuest, setSubmittedAsGuest] = useState(false)
   const [preFilled, setPreFilled] = useState(false)
 
   const [form, setForm] = useState<FormData>({
@@ -131,8 +140,8 @@ function ApplyPage() {
     diversityDataConsent: false,
   })
 
-  // Pre-fill from profile + Clerk user
-  if (profile && user && !preFilled) {
+  // Pre-fill from profile + Clerk user (only when authenticated)
+  if (isAuthenticated && profile && user && !preFilled) {
     const nameParts = (profile.name || user.fullName || '').split(' ')
     const firstName = nameParts[0] || ''
     const lastName = nameParts.slice(1).join(' ') || ''
@@ -159,11 +168,7 @@ function ApplyPage() {
   }
 
   // Loading states
-  if (
-    org === undefined ||
-    opportunity === undefined ||
-    membership === undefined
-  ) {
+  if (org === undefined || opportunity === undefined) {
     return (
       <GradientBg>
         <AuthHeader />
@@ -202,33 +207,8 @@ function ApplyPage() {
     )
   }
 
-  // Must be a member to apply
-  if (!membership) {
-    return (
-      <GradientBg>
-        <AuthHeader />
-        <main className="container mx-auto px-4 py-8">
-          <div className="max-w-lg mx-auto text-center py-12">
-            <h1 className="text-2xl font-display text-foreground mb-4">
-              Membership Required
-            </h1>
-            <p className="text-slate-600 mb-6">
-              You need to be a member of {org.name} to apply for this
-              opportunity.
-            </p>
-            <Button asChild>
-              <Link to="/org/$slug" params={{ slug }}>
-                Join {org.name}
-              </Link>
-            </Button>
-          </div>
-        </main>
-      </GradientBg>
-    )
-  }
-
-  // Already applied or just submitted
-  if (existingApplication || submitted) {
+  // Already applied (authenticated user) or just submitted
+  if (existingApplication || (submitted && !submittedAsGuest)) {
     return (
       <GradientBg>
         <AuthHeader />
@@ -249,6 +229,54 @@ function ApplyPage() {
                 Back to {org.name}
               </Link>
             </Button>
+          </div>
+        </main>
+      </GradientBg>
+    )
+  }
+
+  // Guest success page: submitted as guest, prompt to create account
+  if (submittedAsGuest) {
+    return (
+      <GradientBg>
+        <AuthHeader />
+        <main className="container mx-auto px-4 py-8">
+          <div className="max-w-lg mx-auto text-center py-12">
+            <div className="size-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="size-8 text-green-600" />
+            </div>
+            <h1 className="text-2xl font-display text-foreground mb-4">
+              Application Submitted
+            </h1>
+            <p className="text-slate-600 mb-6">
+              Your application for <strong>{opportunity.title}</strong> has been
+              submitted. You&apos;ll hear back from the organizers soon.
+            </p>
+            <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 mb-6 text-sm text-blue-800">
+              <p className="font-medium mb-1">
+                Create an account to track your application
+              </p>
+              <p>
+                Sign up with the same email ({form.email}) to view your
+                application status and join {org.name}.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3">
+              <Button
+                onClick={() => {
+                  saveGuestApplicationEmail(form.email)
+                  navigate({ to: '/login' })
+                }}
+              >
+                <UserPlus className="size-4 mr-2" />
+                Create Account
+              </Button>
+              <Button variant="ghost" asChild>
+                <Link to="/org/$slug" params={{ slug }}>
+                  Back to {org.name}
+                </Link>
+              </Button>
+            </div>
           </div>
         </main>
       </GradientBg>
@@ -293,11 +321,21 @@ function ApplyPage() {
     if (!isValid || isSubmitting) return
     setIsSubmitting(true)
     try {
-      await submitApplication({
-        opportunityId: opportunity._id,
-        responses: form,
-      })
-      setSubmitted(true)
+      if (isAuthenticated) {
+        await submitApplication({
+          opportunityId: opportunity._id,
+          responses: form,
+        })
+        setSubmitted(true)
+      } else {
+        await submitGuestApplication({
+          opportunityId: opportunity._id,
+          guestEmail: form.email,
+          responses: form,
+        })
+        setSubmitted(true)
+        setSubmittedAsGuest(true)
+      }
     } catch (err) {
       console.error('Failed to submit application:', err)
     } finally {
@@ -306,6 +344,7 @@ function ApplyPage() {
   }
 
   const hasPreFilledData =
+    isAuthenticated &&
     preFilled &&
     (form.firstName || form.lastName || form.email || form.location)
 

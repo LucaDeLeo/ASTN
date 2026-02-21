@@ -1,5 +1,10 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { AuthLoading, Authenticated, useQuery } from 'convex/react'
+import {
+  AuthLoading,
+  Authenticated,
+  useConvexAuth,
+  useQuery,
+} from 'convex/react'
 import {
   Building2,
   Calendar,
@@ -74,9 +79,7 @@ function OrgDirectoryPage() {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-5xl mx-auto">
           <OrgHeader org={org} />
-          <Authenticated>
-            <FeaturedOpportunity orgId={org._id} orgSlug={org.slug} />
-          </Authenticated>
+          <FeaturedOpportunity orgId={org._id} orgSlug={org.slug} />
           <MemberDirectory orgId={org._id} />
         </div>
       </main>
@@ -201,20 +204,19 @@ function FeaturedOpportunity({
   orgId: Id<'organizations'>
   orgSlug?: string
 }) {
-  const membership = useQuery(api.orgs.membership.getMembership, { orgId })
+  const { isAuthenticated } = useConvexAuth()
   const featured = useQuery(api.orgOpportunities.getFeatured, { orgId })
   const myApplication = useQuery(
     api.opportunityApplications.getMyApplication,
-    featured ? { opportunityId: featured._id } : 'skip',
+    isAuthenticated && featured ? { opportunityId: featured._id } : 'skip',
   )
 
-  // Only show to authenticated members
-  if (!membership || !featured) return null
+  if (!featured) return null
 
   // Only show active opportunities
   if (featured.status !== 'active') return null
 
-  const hasApplied = !!myApplication
+  const hasApplied = isAuthenticated && !!myApplication
 
   return (
     <Card className="mb-6 overflow-hidden border-primary/20">
