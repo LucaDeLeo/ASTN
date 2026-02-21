@@ -1,6 +1,10 @@
 import { v } from 'convex/values'
 import { internalMutation, mutation } from '../_generated/server'
 import { getUserId } from '../lib/auth'
+import { SKILLS_LIST } from './prompts'
+import type { Id } from '../_generated/dataModel'
+
+const SKILLS_SET = new Set(SKILLS_LIST)
 
 /**
  * Mark enrichment conversation as done on the profile.
@@ -155,5 +159,211 @@ export const batchApprovePending = mutation({
     }
 
     return count
+  },
+})
+
+// Convert YYYY-MM date string to Unix timestamp (first of month)
+function convertDateString(dateStr?: string): number | undefined {
+  if (!dateStr || dateStr.toLowerCase() === 'present') return undefined
+  const parts = dateStr.split('-')
+  if (parts.length < 2) return undefined
+  const year = parseInt(parts[0], 10)
+  const month = parseInt(parts[1], 10)
+  if (isNaN(year) || isNaN(month)) return undefined
+  return Date.UTC(year, month - 1, 1)
+}
+
+/**
+ * Apply extracted data from sidebar smart input (LinkedIn, CV, text paste).
+ * Creates tool call records for each category so user can undo individually.
+ * Only fills gaps — does not overwrite existing basic info fields.
+ */
+export const applyExtractionResults = mutation({
+  args: {
+    profileId: v.id('profiles'),
+    threadId: v.string(),
+    extractedData: v.object({
+      name: v.optional(v.string()),
+      location: v.optional(v.string()),
+      education: v.optional(
+        v.array(
+          v.object({
+            institution: v.string(),
+            degree: v.optional(v.string()),
+            field: v.optional(v.string()),
+            startYear: v.optional(v.number()),
+            endYear: v.optional(v.number()),
+          }),
+        ),
+      ),
+      workHistory: v.optional(
+        v.array(
+          v.object({
+            organization: v.string(),
+            title: v.string(),
+            startDate: v.optional(v.string()),
+            endDate: v.optional(v.string()),
+            description: v.optional(v.string()),
+          }),
+        ),
+      ),
+      skills: v.optional(v.array(v.string())),
+    }),
+    source: v.union(v.literal('linkedin'), v.literal('cv'), v.literal('text')),
+  },
+  returns: v.object({
+    toolCallIds: v.array(v.id('agentToolCalls')),
+    summary: v.string(),
+  }),
+  handler: async (ctx, { profileId, threadId, extractedData, source }) => {
+    const userId = await getUserId(ctx)
+    if (!userId) throw new Error('Not authenticated')
+
+    const profile = await ctx.db.get('profiles', profileId)
+    if (!profile || profile.userId !== userId) throw new Error('Not authorized')
+
+    const toolCallIds: Array<Id<'agentToolCalls'>> = []
+    const summaryParts: Array<string> = []
+    let affectsMatches = false
+    const allUpdates: Record<string, unknown> = {}
+
+    // Basic info (only fill gaps — don't overwrite existing data)
+    const basicUpdates: Record<string, string> = {}
+    const basicPrevious: Record<string, string | undefined> = {}
+
+    if (extractedData.name && !profile.name) {
+      basicUpdates.name = extractedData.name
+      basicPrevious.name = profile.name
+      summaryParts.push('name')
+    }
+    if (extractedData.location && !profile.location) {
+      basicUpdates.location = extractedData.location
+      basicPrevious.location = profile.location
+      summaryParts.push('location')
+    }
+
+    if (Object.keys(basicUpdates).length > 0) {
+      Object.assign(allUpdates, basicUpdates)
+      const id = await ctx.db.insert('agentToolCalls', {
+        profileId,
+        threadId,
+        toolName: 'import_basic_info',
+        displayText: `Imported ${Object.keys(basicUpdates).join(', ')}`,
+        updates: JSON.stringify(basicUpdates),
+        previousValues: JSON.stringify(basicPrevious),
+        status: 'pending',
+        createdAt: Date.now(),
+      })
+      toolCallIds.push(id)
+    }
+
+    // Education (append to existing)
+    if (extractedData.education && extractedData.education.length > 0) {
+      const existing = profile.education ?? []
+      const newEntries = extractedData.education.map((e) => ({
+        institution: e.institution,
+        degree: e.degree,
+        field: e.field,
+        startYear: e.startYear,
+        endYear: e.endYear,
+      }))
+      const updated = [...existing, ...newEntries]
+      allUpdates.education = updated
+      affectsMatches = true
+      const count = newEntries.length
+      summaryParts.push(
+        `${count} education ${count === 1 ? 'entry' : 'entries'}`,
+      )
+      const id = await ctx.db.insert('agentToolCalls', {
+        profileId,
+        threadId,
+        toolName: 'import_education',
+        displayText: `Imported ${count} education ${count === 1 ? 'entry' : 'entries'}`,
+        updates: JSON.stringify({ education: updated }),
+        previousValues: JSON.stringify({ education: existing }),
+        status: 'pending',
+        createdAt: Date.now(),
+      })
+      toolCallIds.push(id)
+    }
+
+    // Work history (append, convert YYYY-MM strings to timestamps)
+    if (extractedData.workHistory && extractedData.workHistory.length > 0) {
+      const existing = profile.workHistory ?? []
+      const newEntries = extractedData.workHistory.map((w) => ({
+        organization: w.organization,
+        title: w.title,
+        startDate: convertDateString(w.startDate),
+        endDate: convertDateString(w.endDate),
+        current:
+          !w.endDate || w.endDate.toLowerCase() === 'present'
+            ? true
+            : undefined,
+        description: w.description,
+      }))
+      const updated = [...existing, ...newEntries]
+      allUpdates.workHistory = updated
+      affectsMatches = true
+      const count = newEntries.length
+      summaryParts.push(
+        `${count} work ${count === 1 ? 'experience' : 'experiences'}`,
+      )
+      const id = await ctx.db.insert('agentToolCalls', {
+        profileId,
+        threadId,
+        toolName: 'import_work_history',
+        displayText: `Imported ${count} work ${count === 1 ? 'experience' : 'experiences'}`,
+        updates: JSON.stringify({ workHistory: updated }),
+        previousValues: JSON.stringify({ workHistory: existing }),
+        status: 'pending',
+        createdAt: Date.now(),
+      })
+      toolCallIds.push(id)
+    }
+
+    // Skills (merge with existing, validate against taxonomy)
+    if (extractedData.skills && extractedData.skills.length > 0) {
+      const validSkills = extractedData.skills.filter((s) => SKILLS_SET.has(s))
+      if (validSkills.length > 0) {
+        const existing = profile.skills ?? []
+        const merged = [...new Set([...existing, ...validSkills])]
+        allUpdates.skills = merged
+        affectsMatches = true
+        summaryParts.push(`${validSkills.length} skills`)
+        const id = await ctx.db.insert('agentToolCalls', {
+          profileId,
+          threadId,
+          toolName: 'import_skills',
+          displayText: `Imported ${validSkills.length} skills`,
+          updates: JSON.stringify({ skills: merged }),
+          previousValues: JSON.stringify({ skills: existing }),
+          status: 'pending',
+          createdAt: Date.now(),
+        })
+        toolCallIds.push(id)
+      }
+    }
+
+    // Apply all updates in one patch
+    if (Object.keys(allUpdates).length > 0) {
+      await ctx.db.patch('profiles', profileId, {
+        ...allUpdates,
+        updatedAt: Date.now(),
+        ...(affectsMatches ? { matchesStaleAt: Date.now() } : {}),
+      })
+    }
+
+    const sourceLabel =
+      source === 'linkedin'
+        ? 'LinkedIn'
+        : source === 'cv'
+          ? 'CV/resume'
+          : 'pasted text'
+    const summary =
+      summaryParts.length > 0
+        ? `Imported from ${sourceLabel}: ${summaryParts.join(', ')}`
+        : `No new data found in ${sourceLabel}`
+
+    return { toolCallIds, summary }
   },
 })

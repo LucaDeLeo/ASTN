@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import { useMutation } from 'convex/react'
 import { Loader2 } from 'lucide-react'
+import { useNavigate } from '@tanstack/react-router'
 import { api } from '../../../convex/_generated/api'
-import { FormFieldsEditor } from './FormFieldsEditor'
 import type { Id } from '../../../convex/_generated/dataModel'
-import type { FormField } from '../../../convex/lib/formFields'
 import {
   Dialog,
   DialogContent,
@@ -29,53 +28,29 @@ import {
 type OpportunityType = 'course' | 'fellowship' | 'job' | 'other'
 type OpportunityStatus = 'active' | 'closed' | 'draft'
 
-interface OpportunityData {
-  _id?: Id<'orgOpportunities'>
-  title: string
-  description: string
-  type: OpportunityType
-  status: OpportunityStatus
-  deadline?: number
-  externalUrl?: string
-  featured: boolean
-  formFields?: Array<FormField>
-}
-
 interface OpportunityFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   orgId: Id<'organizations'>
-  opportunity?: OpportunityData | null
+  slug: string
 }
 
 export function OpportunityFormDialog({
   open,
   onOpenChange,
   orgId,
-  opportunity,
+  slug,
 }: OpportunityFormDialogProps) {
-  const isEditing = !!opportunity?._id
+  const navigate = useNavigate()
   const createOpp = useMutation(api.orgOpportunities.create)
-  const updateOpp = useMutation(api.orgOpportunities.update)
 
-  const [title, setTitle] = useState(opportunity?.title ?? '')
-  const [description, setDescription] = useState(opportunity?.description ?? '')
-  const [type, setType] = useState<OpportunityType>(
-    opportunity?.type ?? 'course',
-  )
-  const [status, setStatus] = useState<OpportunityStatus>(
-    opportunity?.status ?? 'draft',
-  )
-  const [deadlineStr, setDeadlineStr] = useState(
-    opportunity?.deadline
-      ? new Date(opportunity.deadline).toISOString().split('T')[0]
-      : '',
-  )
-  const [externalUrl, setExternalUrl] = useState(opportunity?.externalUrl ?? '')
-  const [featured, setFeatured] = useState(opportunity?.featured ?? false)
-  const [formFields, setFormFields] = useState<Array<FormField>>(
-    opportunity?.formFields ?? [],
-  )
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [type, setType] = useState<OpportunityType>('course')
+  const [status, setStatus] = useState<OpportunityStatus>('draft')
+  const [deadlineStr, setDeadlineStr] = useState('')
+  const [externalUrl, setExternalUrl] = useState('')
+  const [featured, setFeatured] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
   const canSave = title.trim() && description.trim()
@@ -85,35 +60,23 @@ export function OpportunityFormDialog({
     setIsSaving(true)
     try {
       const deadline = deadlineStr ? new Date(deadlineStr).getTime() : undefined
-
-      if (isEditing && opportunity._id) {
-        await updateOpp({
-          id: opportunity._id,
-          title: title.trim(),
-          description: description.trim(),
-          type,
-          status,
-          deadline,
-          externalUrl: externalUrl.trim() || undefined,
-          featured,
-          formFields: formFields.length > 0 ? formFields : undefined,
-        })
-      } else {
-        await createOpp({
-          orgId,
-          title: title.trim(),
-          description: description.trim(),
-          type,
-          status,
-          deadline,
-          externalUrl: externalUrl.trim() || undefined,
-          featured,
-          formFields: formFields.length > 0 ? formFields : undefined,
-        })
-      }
+      const newId = await createOpp({
+        orgId,
+        title: title.trim(),
+        description: description.trim(),
+        type,
+        status,
+        deadline,
+        externalUrl: externalUrl.trim() || undefined,
+        featured,
+      })
       onOpenChange(false)
+      navigate({
+        to: '/org/$slug/admin/opportunities/$oppId',
+        params: { slug, oppId: newId },
+      })
     } catch (err) {
-      console.error('Failed to save opportunity:', err)
+      console.error('Failed to create opportunity:', err)
     } finally {
       setIsSaving(false)
     }
@@ -121,20 +84,16 @@ export function OpportunityFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>
-            {isEditing ? 'Edit Opportunity' : 'New Opportunity'}
-          </DialogTitle>
+          <DialogTitle>New Opportunity</DialogTitle>
           <DialogDescription>
-            {isEditing
-              ? 'Update the opportunity details and application form.'
-              : 'Create a new opportunity with a custom application form.'}
+            Create a new opportunity. You can add application form fields after
+            creation.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          {/* Title */}
           <div className="space-y-1">
             <Label htmlFor="opp-title">
               Title <span className="text-red-500">*</span>
@@ -147,7 +106,6 @@ export function OpportunityFormDialog({
             />
           </div>
 
-          {/* Description */}
           <div className="space-y-1">
             <Label htmlFor="opp-desc">
               Description <span className="text-red-500">*</span>
@@ -161,7 +119,6 @@ export function OpportunityFormDialog({
             />
           </div>
 
-          {/* Type + Status row */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1">
               <Label>Type</Label>
@@ -199,7 +156,6 @@ export function OpportunityFormDialog({
             </div>
           </div>
 
-          {/* Deadline + External URL */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1">
               <Label htmlFor="opp-deadline">Deadline (optional)</Label>
@@ -221,7 +177,6 @@ export function OpportunityFormDialog({
             </div>
           </div>
 
-          {/* Featured */}
           <label className="flex items-center gap-2 cursor-pointer">
             <Checkbox
               checked={featured}
@@ -231,20 +186,6 @@ export function OpportunityFormDialog({
               Featured opportunity (shown on org landing page)
             </span>
           </label>
-
-          {/* Form Fields */}
-          <div className="space-y-2 pt-2 border-t">
-            <div>
-              <Label className="text-base font-semibold">
-                Application Form Fields
-              </Label>
-              <p className="text-xs text-muted-foreground mt-1">
-                Define the fields applicants will fill out. Leave empty for no
-                in-app form.
-              </p>
-            </div>
-            <FormFieldsEditor fields={formFields} onChange={setFormFields} />
-          </div>
         </div>
 
         <DialogFooter>
@@ -259,10 +200,8 @@ export function OpportunityFormDialog({
             {isSaving ? (
               <>
                 <Loader2 className="size-4 mr-2 animate-spin" />
-                Saving...
+                Creating...
               </>
-            ) : isEditing ? (
-              'Save Changes'
             ) : (
               'Create Opportunity'
             )}

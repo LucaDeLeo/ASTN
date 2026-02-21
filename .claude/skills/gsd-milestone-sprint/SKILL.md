@@ -1,7 +1,7 @@
 ---
 name: gsd:milestone-sprint
 description: Run entire milestone autonomously with Codex validation. Auto-detects current milestone, executes all phases, and runs audit.
-argument-hint: "[milestone] [--yolo] [--skip-codex] [--resume] [--complete]"
+argument-hint: '[milestone] [--yolo] [--skip-codex] [--resume] [--complete]'
 ---
 
 # Milestone Sprint
@@ -10,13 +10,13 @@ Run an entire milestone autonomously, from current position to milestone complet
 
 ## How It Differs from `/gsd:sprint`
 
-| Aspect | `/gsd:sprint` | `/gsd:milestone-sprint` |
-|--------|---------------|------------------------|
-| Input | Manual phase range (`3 6`) | Auto-detect from ROADMAP.md |
-| Scope | Arbitrary phases | One complete milestone |
-| Discussion | Skips (assumes done) | Auto-discuss via Claude ↔ Codex |
-| Completion | Just finishes phases | Optionally runs `/gsd:complete-milestone` |
-| State file | `SPRINT.md` | `MILESTONE-SPRINT.md` |
+| Aspect     | `/gsd:sprint`              | `/gsd:milestone-sprint`                   |
+| ---------- | -------------------------- | ----------------------------------------- |
+| Input      | Manual phase range (`3 6`) | Auto-detect from ROADMAP.md               |
+| Scope      | Arbitrary phases           | One complete milestone                    |
+| Discussion | Skips (assumes done)       | Auto-discuss via Claude ↔ Codex           |
+| Completion | Just finishes phases       | Optionally runs `/gsd:complete-milestone` |
+| State file | `SPRINT.md`                | `MILESTONE-SPRINT.md`                     |
 
 ## Usage
 
@@ -64,16 +64,17 @@ Instead of human Q&A, phases are discussed via AI dialogue:
 Max 5 rounds. Early exit if Codex returns `[READY]` with no questions.
 
 **Uncertainties:**
+
 - In **yolo mode**: Uses reasonable defaults, logs what was skipped
 - In **interactive mode**: Prompts user for flagged items only
 
 ## Modes
 
-| Mode | Behavior |
-|------|----------|
-| **Interactive** (default) | Pause between phases, prompt on warnings, ask about uncertainties |
-| **YOLO** (`--yolo`) | Auto-continue, use defaults for uncertainties, only halt on critical issues |
-| **No Codex** (`--skip-codex`) | Skip Codex validation steps (audit still runs at end) |
+| Mode                          | Behavior                                                                    |
+| ----------------------------- | --------------------------------------------------------------------------- |
+| **Interactive** (default)     | Pause between phases, prompt on warnings, ask about uncertainties           |
+| **YOLO** (`--yolo`)           | Auto-continue, use defaults for uncertainties, only halt on critical issues |
+| **No Codex** (`--skip-codex`) | Skip Codex validation steps (audit still runs at end)                       |
 
 ## State File
 
@@ -81,11 +82,11 @@ Creates `.planning/MILESTONE-SPRINT.md` with progress tracking:
 
 ```yaml
 ---
-started: "2024-01-25T..."
+started: '2024-01-25T...'
 milestone: v1.2
-milestone_name: "Org CRM"
+milestone_name: 'Org CRM'
 mode: yolo
-phase_range: "11-16"
+phase_range: '11-16'
 current_phase: 13
 phases_remaining: [14, 15, 16]
 status: running

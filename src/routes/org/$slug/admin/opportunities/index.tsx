@@ -3,8 +3,6 @@ import { useQuery } from 'convex/react'
 import { useState } from 'react'
 import { Building2, FileText, Pencil, Plus, Shield, Star } from 'lucide-react'
 import { api } from '../../../../../../convex/_generated/api'
-import type { Id } from '../../../../../../convex/_generated/dataModel'
-import type { FormField } from '../../../../../../convex/lib/formFields'
 import { OpportunityFormDialog } from '~/components/opportunities/OpportunityFormDialog'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { Card } from '~/components/ui/card'
@@ -45,17 +43,6 @@ function AdminOpportunitiesPage() {
   )
 
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [editingOpp, setEditingOpp] = useState<{
-    _id: Id<'orgOpportunities'>
-    title: string
-    description: string
-    type: 'course' | 'fellowship' | 'job' | 'other'
-    status: 'active' | 'closed' | 'draft'
-    deadline?: number
-    externalUrl?: string
-    featured: boolean
-    formFields?: Array<FormField>
-  } | null>(null)
 
   // Loading
   if (org === undefined || membership === undefined) {
@@ -108,16 +95,6 @@ function AdminOpportunitiesPage() {
     )
   }
 
-  const handleEdit = (opp: NonNullable<typeof editingOpp>) => {
-    setEditingOpp(opp)
-    setDialogOpen(true)
-  }
-
-  const handleCreate = () => {
-    setEditingOpp(null)
-    setDialogOpen(true)
-  }
-
   return (
     <div className="min-h-screen" style={dotGridStyle}>
       <AuthHeader />
@@ -146,7 +123,7 @@ function AdminOpportunitiesPage() {
                 forms
               </p>
             </div>
-            <Button onClick={handleCreate}>
+            <Button onClick={() => setDialogOpen(true)}>
               <Plus className="size-4 mr-2" />
               New Opportunity
             </Button>
@@ -164,7 +141,7 @@ function AdminOpportunitiesPage() {
                 No opportunities yet. Create one to start receiving
                 applications.
               </p>
-              <Button onClick={handleCreate}>
+              <Button onClick={() => setDialogOpen(true)}>
                 <Plus className="size-4 mr-2" />
                 Create First Opportunity
               </Button>
@@ -191,7 +168,8 @@ function AdminOpportunitiesPage() {
                           <span>{TYPE_LABELS[opp.type] ?? opp.type}</span>
                           <span className="text-slate-300">|</span>
                           <span>
-                            {fieldCount} form field{fieldCount !== 1 ? 's' : ''}
+                            {fieldCount} form field
+                            {fieldCount !== 1 ? 's' : ''}
                           </span>
                           {opp.deadline && (
                             <>
@@ -212,26 +190,13 @@ function AdminOpportunitiesPage() {
                         {opp.status}
                       </Badge>
 
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          handleEdit({
-                            _id: opp._id,
-                            title: opp.title,
-                            description: opp.description,
-                            type: opp.type,
-                            status: opp.status,
-                            deadline: opp.deadline,
-                            externalUrl: opp.externalUrl,
-                            featured: opp.featured,
-                            formFields: opp.formFields as
-                              | Array<FormField>
-                              | undefined,
-                          })
-                        }
-                      >
-                        <Pencil className="size-4" />
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link
+                          to="/org/$slug/admin/opportunities/$oppId"
+                          params={{ slug, oppId: opp._id }}
+                        >
+                          <Pencil className="size-4" />
+                        </Link>
                       </Button>
                     </div>
                   </Card>
@@ -240,16 +205,12 @@ function AdminOpportunitiesPage() {
             </div>
           )}
 
-          {/* Dialog */}
+          {/* Create dialog */}
           <OpportunityFormDialog
-            key={editingOpp?._id ?? 'new'}
             open={dialogOpen}
-            onOpenChange={(open) => {
-              setDialogOpen(open)
-              if (!open) setEditingOpp(null)
-            }}
+            onOpenChange={setDialogOpen}
             orgId={org._id}
-            opportunity={editingOpp}
+            slug={slug}
           />
         </div>
       </main>

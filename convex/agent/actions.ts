@@ -17,9 +17,23 @@ export const streamResponse = internalAction({
     threadId: v.string(),
     promptMessageId: v.string(),
     profileId: v.id('profiles'),
+    pageContext: v.optional(
+      v.union(
+        v.literal('viewing_home'),
+        v.literal('viewing_profile'),
+        v.literal('editing_profile'),
+        v.literal('browsing_matches'),
+        v.literal('viewing_match'),
+        v.literal('browsing_opportunities'),
+        v.literal('viewing_opportunity'),
+      ),
+    ),
   },
   returns: v.null(),
-  handler: async (ctx, { threadId, promptMessageId, profileId }) => {
+  handler: async (
+    ctx,
+    { threadId, promptMessageId, profileId, pageContext },
+  ) => {
     const profile = (await ctx.runQuery(internal.agent.queries.getProfileById, {
       profileId,
     })) as ProfileData | null
@@ -27,7 +41,7 @@ export const streamResponse = internalAction({
     const profileContext = profile
       ? buildProfileContext(profile)
       : 'New profile (no data yet)'
-    const system = buildAgentSystemPrompt(profileContext)
+    const system = buildAgentSystemPrompt(profileContext, pageContext)
 
     const { thread } = await profileAgent.continueThread(ctx, { threadId })
     // Type assertion needed: @convex-dev/agent generic resolution for

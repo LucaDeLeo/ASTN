@@ -1,7 +1,7 @@
 ---
 name: gsd:second-opinion
 description: Get a second opinion from OpenAI Codex (GPT-5.2-codex) on code, architecture, or implementation decisions. Use when you want independent verification or an alternative perspective.
-argument-hint: "[question or topic]"
+argument-hint: '[question or topic]'
 ---
 
 # GSD Second Opinion
@@ -63,6 +63,7 @@ echo "$RESULT"
 ## Integration with GSD
 
 This skill is also called automatically by GSD workflows:
+
 - `verify-phase.md` - Parallel verification + final check
 - `diagnose-issues.md` - Alternative hypotheses
 - `execute-plan.md` - Post-completion code review

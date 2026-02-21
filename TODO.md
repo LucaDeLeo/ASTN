@@ -92,3 +92,7 @@
 - Auto-fill from conversation worked well, only minor tweaks needed
 
 **Issues:** captured in sections above, marked with _(Augusto)_
+
+## far out ideas
+
+I'm thinking we could expose an API or like a way to have curl commands or like ways to like sync data down such that people can have like mostly the same flow of like look through applications, see if like profile fits, like have the agent like find jobs or opportunities for you, but have it so they do it through their OpenCloud or like similar kind of assistant. Like local assistants are the way of the future? We don't want to force people to use our bot with our API key and our system to get the value from what we want to provide. They should be able to use their own assistance if they want.

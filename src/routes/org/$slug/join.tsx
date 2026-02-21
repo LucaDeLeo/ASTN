@@ -205,7 +205,6 @@ interface JoinFormProps {
 function JoinForm({ token, orgId, orgName, orgSlug }: JoinFormProps) {
   const navigate = useNavigate()
   const joinOrg = useMutation(api.orgs.membership.joinOrg)
-  const profile = useQuery(api.profiles.getOrCreateProfile)
   const existingMembership = useQuery(api.orgs.membership.getMembership, {
     orgId,
   })
@@ -254,15 +253,10 @@ function JoinForm({ token, orgId, orgName, orgSlug }: JoinFormProps) {
       })
       toast.success(`Welcome to ${orgName}!`)
 
-      // Redirect based on profile status
-      if (!profile || profile.hasEnrichmentConversation !== true) {
-        navigate({ to: '/profile/edit' })
-      } else {
-        navigate({
-          to: '/org/$slug',
-          params: { slug: orgSlug || 'unknown' },
-        })
-      }
+      navigate({
+        to: '/org/$slug',
+        params: { slug: orgSlug || 'unknown' },
+      })
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : 'Failed to join organization',

@@ -1,7 +1,7 @@
 ---
 name: gsd:sprint
 description: Autonomous phase execution with Codex validation. Runs plan/execute/verify cycles in a bash loop until done or halted.
-argument-hint: "<start> <end> [--yolo] [--skip-codex] [--resume]"
+argument-hint: '<start> <end> [--yolo] [--skip-codex] [--resume]'
 ---
 
 # GSD Sprint
@@ -37,18 +37,21 @@ For each phase in range:
 ## Halt Conditions
 
 **Always halts (even in yolo):**
+
 - Codex `[HALT] critical` - security/major bugs
 - Auth gates - require credentials
 - Verification failures - gaps found
 - Git errors, build failures
 
 **Mode-dependent:**
+
 - Codex warnings - interactive: ask, yolo: log and continue
 - Human-verify checkpoints - interactive: wait, yolo: continue
 
 ## State Tracking
 
 Sprint progress is tracked in `.planning/SPRINT.md`:
+
 - Current phase position
 - Completion status per phase
 - Codex validation results
@@ -56,12 +59,12 @@ Sprint progress is tracked in `.planning/SPRINT.md`:
 
 ## Modes
 
-| Mode | Behavior |
-|------|----------|
-| Interactive (default) | Pause between phases, present checkpoints |
-| AFK (`--yolo`) | Auto-continue, use defaults, still halt on critical |
-| No Codex (`--skip-codex`) | Skip validation (faster but risky) |
-| Resume (`--resume`) | Continue from SPRINT.md checkpoint |
+| Mode                      | Behavior                                            |
+| ------------------------- | --------------------------------------------------- |
+| Interactive (default)     | Pause between phases, present checkpoints           |
+| AFK (`--yolo`)            | Auto-continue, use defaults, still halt on critical |
+| No Codex (`--skip-codex`) | Skip validation (faster but risky)                  |
+| Resume (`--resume`)       | Continue from SPRINT.md checkpoint                  |
 
 ## Examples
 

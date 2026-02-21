@@ -1,7 +1,7 @@
 ---
 name: gsd:health-check
 description: Verify GSD setup - checks Claude, Codex, skills, and MCP servers are working correctly.
-argument-hint: "[--verbose]"
+argument-hint: '[--verbose]'
 ---
 
 # GSD Health Check

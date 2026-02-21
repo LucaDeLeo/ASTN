@@ -22,9 +22,9 @@ affects:
 tech-stack:
   added: []
   patterns:
-    - "Platform admin role: separate platformAdmins table with requirePlatformAdmin/isPlatformAdmin helpers"
-    - "Application status machine: pending -> approved | rejected | withdrawn"
-    - "Approval side-effects: atomic org + membership + notification creation in single mutation"
+    - 'Platform admin role: separate platformAdmins table with requirePlatformAdmin/isPlatformAdmin helpers'
+    - 'Application status machine: pending -> approved | rejected | withdrawn'
+    - 'Approval side-effects: atomic org + membership + notification creation in single mutation'
 
 key-files:
   created:
@@ -38,13 +38,13 @@ key-files:
     - src/components/notifications/NotificationList.tsx
 
 key-decisions:
-  - "Platform admin is a separate table, not overloading orgMemberships admin role"
-  - "Slug helper uses db uniqueness check with -2, -3 suffix collision resolution"
-  - "Duplicate application check uses case-insensitive normalized org name against both organizations and orgApplications tables"
+  - 'Platform admin is a separate table, not overloading orgMemberships admin role'
+  - 'Slug helper uses db uniqueness check with -2, -3 suffix collision resolution'
+  - 'Duplicate application check uses case-insensitive normalized org name against both organizations and orgApplications tables'
 
 patterns-established:
-  - "requirePlatformAdmin pattern: query platformAdmins table by userId index"
-  - "generateSlug pattern: normalize name + db uniqueness loop in convex/lib/slug.ts"
+  - 'requirePlatformAdmin pattern: query platformAdmins table by userId index'
+  - 'generateSlug pattern: normalize name + db uniqueness loop in convex/lib/slug.ts'
 
 # Metrics
 duration: 4min
@@ -64,6 +64,7 @@ completed: 2026-02-03
 - **Files modified:** 7
 
 ## Accomplishments
+
 - Platform admin identity model: `platformAdmins` table + `requirePlatformAdmin`/`isPlatformAdmin` helpers
 - Complete org application lifecycle: submit with duplicate detection, approve (atomically creates org + membership + notification), reject with reason, withdraw
 - Slug generation utility with db-level uniqueness checking
@@ -82,6 +83,7 @@ Each task was committed atomically:
 7. **Bug fix: NotificationList rendering** - `ab77bef` (fix)
 
 ## Files Created/Modified
+
 - `convex/schema.ts` - Added platformAdmins and orgApplications tables, extended notifications union
 - `convex/lib/auth.ts` - Added requirePlatformAdmin and isPlatformAdmin helpers
 - `convex/orgApplications.ts` - Full CRUD module: submit, approve, reject, withdraw, listAll, getMyApplications, getApplication, checkPlatformAdmin
@@ -91,6 +93,7 @@ Each task was committed atomically:
 - `src/components/notifications/NotificationList.tsx` - Added new notification type icons and type definitions
 
 ## Decisions Made
+
 - Platform admin uses a dedicated `platformAdmins` table (not org membership overload) for clean separation of platform-level vs org-level admin privileges
 - Slug generation lives in `convex/lib/slug.ts` as a reusable utility with db-level uniqueness checking (appends -2, -3, etc.)
 - Duplicate application detection uses case-insensitive normalized org name matching against both `organizations` and `orgApplications` tables (pending/approved only)
@@ -101,6 +104,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Created slug helper early (Task 6 content in Task 3)**
+
 - **Found during:** Task 3 (org applications module)
 - **Issue:** The `approve` mutation requires `generateSlug` from `convex/lib/slug.ts`, which was planned as Task 6
 - **Fix:** Created the slug helper file during Task 3 and committed together
@@ -109,6 +113,7 @@ Each task was committed atomically:
 - **Committed in:** 1df6b3c (Task 3 commit)
 
 **2. [Rule 1 - Bug] Fixed NotificationList crash on new notification types**
+
 - **Found during:** Post-Task 5 verification
 - **Issue:** `NotificationList.tsx` had hardcoded type union and typeIcons map that didn't include `org_application_approved`/`org_application_rejected`, which would cause undefined Icon crash at runtime
 - **Fix:** Added new types to interface, imported Building2 and XCircle icons, typed typeIcons as Record for compile-time safety
@@ -122,21 +127,27 @@ Each task was committed atomically:
 **Impact on plan:** Both fixes necessary for correctness. No scope creep.
 
 ## Issues Encountered
+
 None
 
 ## User Setup Required
+
 **Platform admin seeding required.** After deploying, run from the Convex dashboard:
+
 ```
 lib/seedPlatformAdmin:seedPlatformAdmin({ email: "your-admin@example.com" })
 ```
+
 This bootstraps the first platform admin who can then review org applications.
 
 ## Next Phase Readiness
+
 - All backend infrastructure ready for 30-02 (frontend routes)
 - Schema, mutations, queries, and auth helpers are complete
 - Frontend will need: application form page, application status page, admin review queue
 - No blockers
 
 ---
-*Phase: 30-phase-30*
-*Completed: 2026-02-03*
+
+_Phase: 30-phase-30_
+_Completed: 2026-02-03_

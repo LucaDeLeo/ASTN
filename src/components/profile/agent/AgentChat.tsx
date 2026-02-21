@@ -5,10 +5,22 @@ import {
   useSmoothText,
   useUIMessages,
 } from '@convex-dev/agent/react'
-import { Check, MessageSquare, Send, Sparkles } from 'lucide-react'
+import {
+  AlertTriangle,
+  Check,
+  FileText,
+  Loader2,
+  MessageSquare,
+  Paperclip,
+  Send,
+  Sparkles,
+  X,
+} from 'lucide-react'
 import { api } from '../../../../convex/_generated/api'
 import type { UIMessage } from '@convex-dev/agent'
 import type { Doc, Id } from '../../../../convex/_generated/dataModel'
+import type { PageContext } from '~/hooks/use-agent-page-context'
+import { useSmartInput } from '~/components/agent-sidebar/useSmartInput'
 import { Button } from '~/components/ui/button'
 import { Textarea } from '~/components/ui/textarea'
 import { Switch } from '~/components/ui/switch'
@@ -17,9 +29,14 @@ import { cn } from '~/lib/utils'
 interface AgentChatProps {
   profileId: Id<'profiles'>
   threadId: string
+  pageContext?: PageContext
 }
 
-export function AgentChat({ profileId, threadId }: AgentChatProps) {
+export function AgentChat({
+  profileId,
+  threadId,
+  pageContext,
+}: AgentChatProps) {
   const [input, setInput] = useState('')
   const [autoApprove, setAutoApprove] = useState(() => {
     if (typeof window === 'undefined') return true
@@ -27,6 +44,9 @@ export function AgentChat({ profileId, threadId }: AgentChatProps) {
   })
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Smart input: LinkedIn URLs, CV pastes, file uploads
+  const smartInput = useSmartInput({ profileId, threadId })
 
   // Messages with streaming
   const { results: messages } = useUIMessages(
@@ -83,14 +103,24 @@ export function AgentChat({ profileId, threadId }: AgentChatProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const text = input.trim()
-    if (!text || isLoading) return
+    if (!text || isLoading || smartInput.isProcessing) return
+
+    // Check for LinkedIn URLs or CV-like text pastes
+    if (smartInput.detectAndHandle(text)) {
+      // LinkedIn: clear input, extraction started
+      // CV confirm: keep input, banner shows for user to decide
+      if (!smartInput.showCVConfirm) {
+        setInput('')
+      }
+      return
+    }
 
     setInput('')
 
     // Batch-approve pending tool calls on send
     batchApprove({ threadId })
 
-    await sendMessageMut({ threadId, prompt: text, profileId })
+    await sendMessageMut({ threadId, prompt: text, profileId, pageContext })
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -187,11 +217,90 @@ export function AgentChat({ profileId, threadId }: AgentChatProps) {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Extraction progress / error / CV confirmation */}
+      {smartInput.isProcessing && smartInput.progressText && (
+        <div className="px-4 py-2 border-t bg-muted/30">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Loader2 className="size-3 animate-spin shrink-0" />
+            <span>{smartInput.progressText}</span>
+          </div>
+        </div>
+      )}
+
+      {smartInput.error && (
+        <div className="px-4 py-2 border-t bg-red-50 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs text-red-700">
+            <AlertTriangle className="size-3 shrink-0" />
+            <span>{smartInput.error}</span>
+          </div>
+          <button
+            onClick={smartInput.dismissError}
+            className="text-red-400 hover:text-red-600"
+          >
+            <X className="size-3" />
+          </button>
+        </div>
+      )}
+
+      {smartInput.showCVConfirm && (
+        <div className="px-4 py-2 border-t bg-amber-50 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-xs text-amber-800">
+            <FileText className="size-3 shrink-0" />
+            <span>Looks like a CV/resume. Import profile data?</span>
+          </div>
+          <div className="flex gap-1 shrink-0">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 px-2 text-xs"
+              onClick={() => {
+                smartInput.cancelCVPaste()
+              }}
+            >
+              Skip
+            </Button>
+            <Button
+              size="sm"
+              className="h-6 px-2 text-xs"
+              onClick={() => {
+                smartInput.confirmCVPaste()
+                setInput('')
+              }}
+            >
+              Import
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Input area */}
       <form
         onSubmit={handleSubmit}
         className="border-t p-4 flex gap-2 items-end bg-muted/50"
       >
+        {/* File upload button */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          disabled={isLoading || smartInput.isProcessing}
+          onClick={() => smartInput.fileInputRef.current?.click()}
+          className="shrink-0 size-9"
+          title="Upload CV/resume"
+        >
+          <Paperclip className="size-4" />
+        </Button>
+        <input
+          ref={smartInput.fileInputRef}
+          type="file"
+          className="hidden"
+          accept=".pdf,.doc,.docx"
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file) smartInput.handleFileSelect(file)
+            e.target.value = ''
+          }}
+        />
         <Textarea
           ref={textareaRef}
           value={input}
@@ -199,16 +308,16 @@ export function AgentChat({ profileId, threadId }: AgentChatProps) {
           onKeyDown={handleKeyDown}
           placeholder={
             messages.length === 0
-              ? 'Tell me about your background...'
+              ? 'Paste LinkedIn URL, drop a CV, or just type...'
               : 'Continue the conversation...'
           }
-          disabled={isLoading}
+          disabled={isLoading || smartInput.isProcessing}
           className="flex-1 min-h-9 max-h-[120px] resize-none"
           rows={1}
         />
         <Button
           type="submit"
-          disabled={!input.trim() || isLoading}
+          disabled={!input.trim() || isLoading || smartInput.isProcessing}
           size="icon"
           className="shrink-0"
         >

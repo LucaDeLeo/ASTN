@@ -14,24 +14,24 @@ Before designing new tables, here is what already exists and can be reused.
 
 ### Tables That Will Be Leveraged (Not Modified Schema)
 
-| Table | How It's Used in v1.5 |
-|-------|----------------------|
-| `organizations` | Orgs that apply get created here after approval |
-| `orgMemberships` | Members who book co-working get verified through this |
-| `profiles` | Consent model: booking exposes profile to co-attendees |
-| `notifications` | Booking confirmations, approval notifications |
-| `attendance` | Conceptual analog for the booking pattern |
+| Table            | How It's Used in v1.5                                  |
+| ---------------- | ------------------------------------------------------ |
+| `organizations`  | Orgs that apply get created here after approval        |
+| `orgMemberships` | Members who book co-working get verified through this  |
+| `profiles`       | Consent model: booking exposes profile to co-attendees |
+| `notifications`  | Booking confirmations, approval notifications          |
+| `attendance`     | Conceptual analog for the booking pattern              |
 
 ### Patterns Already Established
 
-| Pattern | Where It Exists | Reuse in v1.5 |
-|---------|----------------|---------------|
-| `requireOrgAdmin()` helper | `convex/orgs/admin.ts`, `convex/programs.ts` | Org admin approving bookings, configuring spaces |
-| Status-based workflows | `programParticipation.status` (pending/enrolled/completed/withdrawn/removed) | Org applications, visit applications |
-| Invite token validation | `orgInviteLinks` + `validateInviteToken` | Similar pattern for guest visit links |
-| Time-range stats queries | `orgs/stats.ts` getEnhancedOrgStats | Utilization stats for co-working |
-| Notification creation | `notifications/mutations.ts` createNotification | Booking/approval notifications |
-| Auth with `@convex-dev/auth` | GitHub, Google, Password providers | Guests create real accounts (same providers) |
+| Pattern                      | Where It Exists                                                              | Reuse in v1.5                                    |
+| ---------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------ |
+| `requireOrgAdmin()` helper   | `convex/orgs/admin.ts`, `convex/programs.ts`                                 | Org admin approving bookings, configuring spaces |
+| Status-based workflows       | `programParticipation.status` (pending/enrolled/completed/withdrawn/removed) | Org applications, visit applications             |
+| Invite token validation      | `orgInviteLinks` + `validateInviteToken`                                     | Similar pattern for guest visit links            |
+| Time-range stats queries     | `orgs/stats.ts` getEnhancedOrgStats                                          | Utilization stats for co-working                 |
+| Notification creation        | `notifications/mutations.ts` createNotification                              | Booking/approval notifications                   |
+| Auth with `@convex-dev/auth` | GitHub, Google, Password providers                                           | Guests create real accounts (same providers)     |
 
 ## New Convex Tables
 
@@ -85,6 +85,7 @@ orgApplications: defineTable({
 ```
 
 **Key design decisions:**
+
 - Application stores all org info (not a reference to organizations table) because the org does not exist yet.
 - On approval, a mutation creates the org in `organizations`, creates an `orgMembership` with role `admin` for the applicant, and stores `createdOrgId` back on the application.
 - "ASTN admin" is any user who is admin of any org (reuses `requireAnyOrgAdmin` from `convex/lib/auth.ts`) OR a new `platformAdmin` flag. Recommend: add a simple `isPlatformAdmin` boolean to the users table or a separate `platformAdmins` table, since ASTN-level approval is different from org-level admin.
@@ -121,8 +122,8 @@ coworkingSpaces: defineTable({
   visitApplicationFields: v.optional(
     v.array(
       v.object({
-        id: v.string(),        // Unique field identifier
-        label: v.string(),     // Display label
+        id: v.string(), // Unique field identifier
+        label: v.string(), // Display label
         type: v.union(
           v.literal('text'),
           v.literal('textarea'),
@@ -154,6 +155,7 @@ coworkingSpaces: defineTable({
 ```
 
 **Key design decisions:**
+
 - Operating hours per day-of-week allows different hours on different days (common for co-working).
 - Minutes from midnight (0-1440) avoids timezone ambiguity in storage. Display layer converts using the space's timezone.
 - `visitApplicationFields` is a flexible schema for org-configurable forms. This mirrors the pattern used in programs (`enrollmentMethod`) but is more flexible because orgs may want different questions (e.g., "What project will you work on?", "Do you need a monitor?").
@@ -181,10 +183,10 @@ spaceBookings: defineTable({
   // Status workflow
   status: v.union(
     v.literal('pending_approval'), // Guests (and members if org requires it)
-    v.literal('confirmed'),        // Approved or auto-confirmed
-    v.literal('cancelled'),        // User or admin cancelled
-    v.literal('rejected'),         // Admin rejected
-    v.literal('checked_in'),       // Physically arrived (future enhancement)
+    v.literal('confirmed'), // Approved or auto-confirmed
+    v.literal('cancelled'), // User or admin cancelled
+    v.literal('rejected'), // Admin rejected
+    v.literal('checked_in'), // Physically arrived (future enhancement)
   ),
 
   // Visit application responses (for guest bookings, or if org requires for members)
@@ -217,6 +219,7 @@ spaceBookings: defineTable({
 ```
 
 **Key design decisions:**
+
 - `date` as ISO string rather than timestamp simplifies day-level queries. "Who's booked for 2026-02-15?" is `by_space_date` index with date equality.
 - `startTime`/`endTime` as minutes from midnight allows "10am-3pm" flexible booking without timezone math in queries. The space's timezone from `coworkingSpaces` interprets these.
 - `applicationResponses` stores dynamic form answers as key-value pairs matching `visitApplicationFields` from the space config.
@@ -252,6 +255,7 @@ guestProfiles: defineTable({
 ```
 
 **Key design decisions:**
+
 - Separate from `profiles` table because guests have minimal info (no skills, education, work history, enrichment, etc.).
 - `hasFullProfile` flag tracks conversion. When a guest creates a full ASTN profile, the conversion mutation copies `name`, `email`, `organization`, and `role` into the profile fields and sets `hasFullProfile = true`.
 - `by_email` index enables finding existing guest profiles when someone signs up with the same email.
@@ -265,8 +269,7 @@ platformAdmins: defineTable({
   userId: v.string(),
   grantedBy: v.optional(v.string()), // Who made them a platform admin
   grantedAt: v.number(),
-})
-  .index('by_user', ['userId'])
+}).index('by_user', ['userId'])
 ```
 
 **Why a separate table:** The existing `requireAnyOrgAdmin` checks if a user is admin of ANY org. But org application approval should be limited to ASTN platform administrators, not any org admin. A BAISH admin should not automatically be able to approve new orgs joining the network. This table is intentionally small and simple.
@@ -330,35 +333,35 @@ applicationId: v.optional(v.id('orgApplications')),
 
 ### Public / Auth Routes
 
-| Route | Purpose | Auth Required |
-|-------|---------|---------------|
-| `/apply` | Org application form | Yes (any authenticated user) |
-| `/apply/status` | View your application status | Yes |
+| Route           | Purpose                      | Auth Required                |
+| --------------- | ---------------------------- | ---------------------------- |
+| `/apply`        | Org application form         | Yes (any authenticated user) |
+| `/apply/status` | View your application status | Yes                          |
 
 ### Org-Scoped Routes
 
-| Route | Purpose | Auth Required |
-|-------|---------|---------------|
-| `/org/$slug/space` | View co-working space info and book | Yes (member) |
-| `/org/$slug/space/book` | Booking form for a specific date | Yes (member) |
-| `/org/$slug/space/my-bookings` | View your upcoming/past bookings | Yes (member) |
-| `/org/$slug/visit` | Guest visit landing page | No (public) |
-| `/org/$slug/visit/apply` | Guest visit application form | Yes (guest account) |
+| Route                          | Purpose                             | Auth Required       |
+| ------------------------------ | ----------------------------------- | ------------------- |
+| `/org/$slug/space`             | View co-working space info and book | Yes (member)        |
+| `/org/$slug/space/book`        | Booking form for a specific date    | Yes (member)        |
+| `/org/$slug/space/my-bookings` | View your upcoming/past bookings    | Yes (member)        |
+| `/org/$slug/visit`             | Guest visit landing page            | No (public)         |
+| `/org/$slug/visit/apply`       | Guest visit application form        | Yes (guest account) |
 
 ### Org Admin Routes
 
-| Route | Purpose | Auth Required |
-|-------|---------|---------------|
-| `/org/$slug/admin/space` | Manage co-working space config | Org admin |
-| `/org/$slug/admin/space/bookings` | View/manage all bookings | Org admin |
-| `/org/$slug/admin/space/bookings/$date` | Daily bookings calendar view | Org admin |
-| `/org/$slug/admin/space/stats` | Utilization stats | Org admin |
+| Route                                   | Purpose                        | Auth Required |
+| --------------------------------------- | ------------------------------ | ------------- |
+| `/org/$slug/admin/space`                | Manage co-working space config | Org admin     |
+| `/org/$slug/admin/space/bookings`       | View/manage all bookings       | Org admin     |
+| `/org/$slug/admin/space/bookings/$date` | Daily bookings calendar view   | Org admin     |
+| `/org/$slug/admin/space/stats`          | Utilization stats              | Org admin     |
 
 ### Platform Admin Routes
 
-| Route | Purpose | Auth Required |
-|-------|---------|---------------|
-| `/admin/applications` | Review org applications | Platform admin |
+| Route                     | Purpose                       | Auth Required  |
+| ------------------------- | ----------------------------- | -------------- |
+| `/admin/applications`     | Review org applications       | Platform admin |
 | `/admin/applications/$id` | Individual application review | Platform admin |
 
 **Total: 11 new routes** (5 org-scoped member, 4 org admin, 2 platform admin)
@@ -470,6 +473,7 @@ Booking appears in /org/$slug/space/my-bookings
 ```
 
 **Soft capacity logic:** The system never blocks a booking based on capacity. It shows warnings at threshold:
+
 - Below `softCapacityWarning`: No warning, book freely
 - At/above `softCapacityWarning` but below `capacity`: Yellow warning "Getting busy"
 - At/above `capacity`: Orange warning "At capacity -- space may be tight"
@@ -525,6 +529,7 @@ convex mutation: spaces.rejectBooking
 **Guest account strategy -- use real accounts, NOT Anonymous auth:**
 
 Do NOT use the `@convex-dev/auth` Anonymous provider for guest users. Instead, require guests to create a real account (email + password, or OAuth). Rationale:
+
 1. The Anonymous provider creates sessions that are hard to reconnect if the user returns or closes the browser.
 2. We need the guest's email for notifications (booking confirmation, approval status).
 3. A real account allows the guest to check their booking status, see approval, etc.
@@ -763,13 +768,13 @@ Build in this order to maximize working-software-at-each-step and minimize block
 
 ## Scalability Considerations
 
-| Concern | At 5 orgs (pilot) | At 50 orgs | At 500 orgs |
-|---------|-------------------|------------|-------------|
-| Bookings per day | ~10-50 total | ~100-500 total | Thousands; need pagination |
-| Space queries | Direct index lookup | Direct index lookup | Same; indexes scale linearly |
-| Capacity checks | Count query per booking | Same | Consider denormalized counter |
-| Platform admin queue | 0-1 apps/week | 1-5 apps/week | May need batch operations |
-| Guest profiles | Handful | Hundreds | Thousands; conversion tracking becomes valuable |
+| Concern              | At 5 orgs (pilot)       | At 50 orgs          | At 500 orgs                                     |
+| -------------------- | ----------------------- | ------------------- | ----------------------------------------------- |
+| Bookings per day     | ~10-50 total            | ~100-500 total      | Thousands; need pagination                      |
+| Space queries        | Direct index lookup     | Direct index lookup | Same; indexes scale linearly                    |
+| Capacity checks      | Count query per booking | Same                | Consider denormalized counter                   |
+| Platform admin queue | 0-1 apps/week           | 1-5 apps/week       | May need batch operations                       |
+| Guest profiles       | Handful                 | Hundreds            | Thousands; conversion tracking becomes valuable |
 
 At pilot scale (5 orgs, 50-100 users each), all queries are well within Convex's performance characteristics. The `by_space_date` index on `spaceBookings` is the key query pattern and will remain fast at any reasonable scale.
 

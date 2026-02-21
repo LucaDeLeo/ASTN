@@ -24,6 +24,7 @@ Mistakes that will derail the milestone or cause rewrites.
 **What goes wrong:** The current system assumes every user has a full auth session via `@convex-dev/auth` (GitHub, Google, or Password), a `profiles` record with `userId` linking to the auth `users` table, and `orgMemberships` gating all org-scoped access. Guest users -- who need quick lightweight accounts for visit applications -- do not fit this model. If guests are shoehorned into the existing `users` table, they inherit full profile expectations, notification preferences, engagement scoring, and match computation. If they are stored separately, every query that touches users needs to branch on "is this a guest or a real user?"
 
 **Warning signs:**
+
 - Finding yourself adding `isGuest` boolean checks throughout existing queries
 - Guest accounts triggering engagement score computation or match alerts
 - Existing `requireAuth` helper treating guest tokens as fully authenticated
@@ -31,6 +32,7 @@ Mistakes that will derail the milestone or cause rewrites.
 - Profile completeness prompts showing for guests who never intended to create a profile
 
 **Prevention:**
+
 1. **Decide the identity architecture first, before any feature code.** Two viable approaches:
    - **Approach A (recommended for this scale): Guest as a separate table.** Create a `guestUsers` table with minimal fields (name, email, phone). Visit applications reference `guestUserId` instead of `userId`. When a guest later creates a full account, a one-time migration copies data from `guestUsers` to `profiles` and re-links their visit history.
    - **Approach B: Guest as a user with a role flag.** Add `accountType: "full" | "guest"` to the auth `users` table. Every existing query that assumes a full user must be audited and guarded. This is more work than it sounds because the existing codebase has ~15+ files that call `auth.getUserId()` and assume the result maps to a full profile.
@@ -46,6 +48,7 @@ Mistakes that will derail the milestone or cause rewrites.
 **What goes wrong:** The spec says members book with flexible hours ("10am-3pm") and spaces have operating hours and capacity limits. Without a proper temporal model, capacity checks become nightmarishly complex. "Is there room at 2pm?" requires checking every booking whose time range overlaps 2pm. With 30 desks and a mix of "9am-5pm", "10am-3pm", "1pm-6pm" bookings, naive capacity checking is O(n) per query and prone to race conditions.
 
 **Warning signs:**
+
 - Capacity check queries scanning all bookings for a day and filtering in JavaScript
 - Two users booking simultaneously and both getting the last desk
 - Off-by-one errors at operating hours boundaries (is 6pm operating hours "until 6pm" or "through 6pm"?)
@@ -53,6 +56,7 @@ Mistakes that will derail the milestone or cause rewrites.
 - Soft capacity warnings that are inconsistent (shows warning at one time, not at another for the same actual occupancy)
 
 **Prevention:**
+
 1. **Store bookings as time ranges with explicit start/end, always in the space's local timezone.** Do NOT store UTC timestamps for booking times -- this is a community space, not a flight booking system. Store the date (YYYY-MM-DD), startHour (number 0-23), endHour (number 0-23), and the space's timezone. This avoids DST confusion entirely for daily bookings.
 2. **For capacity checks, use hourly slots as the unit of measure.** A booking from 10am-3pm occupies slots [10, 11, 12, 13, 14]. Capacity at any given hour = total desks minus count of bookings whose slot range includes that hour. This is simple, fast, and correct.
 3. **For soft capacity warnings, compute peak occupancy across the requested time range.** If any hour in "10am-3pm" is at or over capacity, show the warning. Do not just check start time.
@@ -68,12 +72,14 @@ Mistakes that will derail the milestone or cause rewrites.
 **What goes wrong:** The v1.5 spec requires two new admin concepts: (1) ASTN platform admins who approve org applications and manage platform-wide settings, and (2) org admins who configure their space's booking forms, approve guest visits, and manage their space. The existing codebase has only org-level admin (`requireOrgAdmin` and `requireAnyOrgAdmin`). If the platform admin role is implemented as "admin of a special org" or conflated with the existing `requireAnyOrgAdmin`, authorization logic becomes a tangled mess.
 
 **Warning signs:**
+
 - Using `requireAnyOrgAdmin` for platform-level actions (it checks if user is admin of ANY org, not that they are a platform admin)
 - Platform admin endpoints accessible to any org admin
 - Org admins unable to perform their space management duties because the system expects platform admin permissions
 - Two separate "admin" UIs with overlapping and confusing permissions
 
 **Prevention:**
+
 1. **Create an explicit platform admin concept, separate from org admin.** Options:
    - **Add a `platformRole` field to the `users` table** (e.g., `"platform_admin" | "user"`). This is clean and separate from org roles.
    - **Create a `platformAdmins` table** that lists user IDs with platform-level permissions. Simplest and most auditable.
@@ -94,6 +100,7 @@ Mistakes that will derail the milestone or cause rewrites.
 **What goes wrong:** The org onboarding flow (apply -> ASTN reviews -> approved/rejected -> org self-configures) has multiple states and transitions. Without explicit state machine discipline, edge cases multiply: What if an org applies twice? What if a rejected org re-applies? What if a platform admin starts reviewing an application that another admin already approved? What if the org admin who applied loses access before configuration is complete?
 
 **Warning signs:**
+
 - Application status stored as a string with ad-hoc transition logic scattered across mutations
 - No validation that state transitions are legal (e.g., jumping from "pending" to "configured" without passing through "approved")
 - Race conditions where two platform admins approve/reject the same application simultaneously
@@ -101,6 +108,7 @@ Mistakes that will derail the milestone or cause rewrites.
 - No audit trail of who approved/rejected and when
 
 **Prevention:**
+
 1. **Define the state machine explicitly:**
    ```
    DRAFT -> SUBMITTED -> UNDER_REVIEW -> APPROVED -> CONFIGURING -> ACTIVE
@@ -126,12 +134,14 @@ Mistakes that will cause rework, technical debt, or degraded user experience.
 **What goes wrong:** The spec says orgs can configure custom visit application forms. If this is built as a hardcoded set of optional fields with toggles, it will be inflexible and require code changes for each new field type. If it is built as a fully dynamic form builder, it is massively over-engineered for the use case (10-30 desk spaces, not enterprise SaaS).
 
 **Warning signs:**
+
 - Org admins asking for field types that do not exist in the system
 - Visit application data stored as untyped JSON blobs that are impossible to query or report on
 - Form configuration UI that is more complex than the booking flow itself
 - Different orgs needing different validation rules with no way to express them
 
 **Prevention:**
+
 1. **Use a "form template" approach: a predefined set of field types with org-configurable labels and required/optional flags.** Field types: text, textarea, select (with predefined options), date, email, phone, checkbox. This covers 95% of cases without building a form builder.
 2. **Store the form schema as a JSON structure on the organization record:**
    ```typescript
@@ -155,12 +165,14 @@ Mistakes that will cause rework, technical debt, or degraded user experience.
 **What goes wrong:** The spec says "booking means other attendees can see your profile." But the existing privacy system has granular section-level visibility (`defaultVisibility`, `sectionVisibility`, `hiddenFromOrgs`). If booking consent overrides these settings, users lose control of their privacy in a way they did not expect. If booking consent does NOT override these settings, other attendees see "private profile" placeholder cards, which defeats the purpose.
 
 **Warning signs:**
+
 - Users who set their profile to "private" are confused when attendees can see their info
 - Users who set their profile to "connections only" are confused about what "connections" means in a booking context
 - The privacy settings page has no mention of booking-related visibility
 - Other attendees see inconsistent levels of profile data depending on individual privacy settings
 
 **Prevention:**
+
 1. **Define a "booking visibility" scope that is separate from general profile visibility.** When a user books a space for a given day, they consent to show a booking-specific subset of their profile (name, headline, skills) to other people booked on the same day at the same space. This is NOT the same as their general profile visibility.
 2. **Make the consent explicit in the booking flow.** Show a clear notice: "By booking, you agree that your name and headline will be visible to others booked on the same day." Do not bury this in terms of service.
 3. **Store booking visibility consent per booking**, not globally. A user might be fine with visibility at one space but not another.
@@ -176,12 +188,14 @@ Mistakes that will cause rework, technical debt, or degraded user experience.
 **What goes wrong:** The spec says capacity limits are "soft" (warning, not hard block). In practice, soft limits are either ignored by users (everyone books regardless of the warning) or interpreted as hard limits (users are confused when they can still book). The space ends up either always over capacity or users complain about confusing UX.
 
 **Warning signs:**
+
 - Spaces consistently at 120-150% of stated capacity
 - Users booking and then not showing up because they assumed it would be too crowded
 - Org admins asking "can we make the limit hard?"
 - Users interpreting the soft warning differently ("should I not book?" vs "just letting me know")
 
 **Prevention:**
+
 1. **Make the warning copy crystal clear.** Not "This space is at capacity" but "This space expects to be full on this day. You can still book, but it may be crowded. [Book Anyway] [Choose Another Day]"
 2. **Show actual projected occupancy numbers**, not just a warning threshold. "15 of 12 desks booked" is more informative than a yellow warning icon.
 3. **Let orgs configure the threshold** for when warnings appear (e.g., at 80% capacity, at 100%, or never).
@@ -198,12 +212,14 @@ Mistakes that will cause rework, technical debt, or degraded user experience.
 **What goes wrong:** A guest submits a visit application, gets approved, visits the space, has a great experience, and then creates a full ASTN account. But their visit history, application data, and any relationships formed during the guest phase are lost or disconnected. The user has to re-enter information, and admins see them as a "new" member with no history.
 
 **Warning signs:**
+
 - Converted guests showing zero attendance history despite having visited
 - Duplicate records: one guest record and one member record for the same person
 - Admin confusion: "I approved this person last week, why do they show as new?"
 - Guest data (name, email, purpose) not pre-filling the profile creation form
 
 **Prevention:**
+
 1. **Design the data linking strategy before building guest features.** The guest record needs a stable identifier (email is the most practical) that can be matched when the same person creates a full account.
 2. **On account creation, check for existing guest records by email.** If found, prompt: "We found visit history from your previous visits. Would you like to link this to your new account?"
 3. **Store guest visit data in a format that references can be re-pointed.** If guest visits have `guestUserId: v.id("guestUsers")`, add an optional `convertedUserId: v.optional(v.string())` field. After conversion, queries can find visits by either guest ID or converted user ID.
@@ -219,12 +235,14 @@ Mistakes that will cause rework, technical debt, or degraded user experience.
 **What goes wrong:** A co-working space in Buenos Aires (UTC-3) has operating hours 9am-7pm. The system stores times in UTC. An admin configures "9am-7pm" but the system stores "12:00-22:00 UTC." When daylight saving changes (Argentina does not currently observe DST, but other future spaces might), stored times shift by an hour. Users in different timezones see wrong hours.
 
 **Warning signs:**
+
 - Operating hours displayed incorrectly after DST transitions
 - Users seeing "open until 10pm" when the space closes at 7pm local time
 - Booking validation rejecting valid times because UTC conversion is off
 - Admin configuring hours and seeing different hours displayed back
 
 **Prevention:**
+
 1. **Store operating hours as local times with a timezone identifier, not as UTC timestamps.** Schema: `operatingHours: { timezone: "America/Argentina/Buenos_Aires", open: 9, close: 19 }`. Convert to/from UTC only at display/validation time.
 2. **Store booking dates as local dates (YYYY-MM-DD), not timestamps.** A booking for "February 5th, 10am-3pm at BAISH" should be stored as `date: "2026-02-05", startHour: 10, endHour: 15, spaceTimezone: "America/Argentina/Buenos_Aires"`. No UTC conversion needed for daily bookings.
 3. **Display all times in the space's timezone**, not the user's timezone. Unlike events (which might be virtual and span timezones), a physical co-working space visit is inherently local.
@@ -246,6 +264,7 @@ Mistakes that cause friction but are fixable without major rework.
 **What goes wrong:** Users can book but cannot see who else is coming that day. The main value of a co-working space for a community like AI safety is serendipitous interaction. Without knowing who is coming, users cannot make informed booking decisions (e.g., "I want to go when Alice is there").
 
 **Prevention:**
+
 1. Show an attendee list (with booking-consented profile data) on the day view before booking.
 2. Let users opt into "notify me when [person] books" for closer collaborators.
 3. Consider showing a skills/interests tag cloud for each day to encourage diverse interaction.
@@ -260,6 +279,7 @@ Mistakes that cause friction but are fixable without major rework.
 **What goes wrong:** The existing org admin dashboard shows members, programs, events, engagement, and settings. Adding bookings (calendar, attendance, utilization, guest applications) to the same dashboard makes it overwhelming and slow (see v1.2 Pitfall 4 about CRM dashboard performance).
 
 **Prevention:**
+
 1. **Give space management its own tab/section** in the org admin dashboard, not mixed into the member list.
 2. **Use date-scoped queries for booking data.** Never load "all bookings ever" -- always filter by date range (default: this week).
 3. **Denormalize utilization stats** (daily counts) rather than computing from raw bookings on every dashboard load.
@@ -274,6 +294,7 @@ Mistakes that cause friction but are fixable without major rework.
 **What goes wrong:** A guest submits a visit application. The org admin does not check the dashboard for 3 days. The guest's requested visit date passes. Guest has a terrible experience. Org looks unresponsive.
 
 **Prevention:**
+
 1. **Notify org admins immediately** (in-app + email) when a new visit application is submitted.
 2. **Show pending application count** as a badge on the org admin dashboard.
 3. **Set a deadline for review.** If the visit is requested for tomorrow and the application was submitted today, flag it as urgent.
@@ -289,6 +310,7 @@ Mistakes that cause friction but are fixable without major rework.
 **What goes wrong:** User books for tomorrow, then cancels at 11pm. Another user saw the "full" warning and did not book. The spot goes unfilled. Or: user cancels after the day has started. Or: user no-shows and the booking remains active.
 
 **Prevention:**
+
 1. **Define cancellation policies per space:** how late can you cancel? Is there a no-show penalty?
 2. **When someone cancels, notify users who attempted to book when it was at capacity** (if a waitlist exists).
 3. **Auto-expire bookings** at end of day. Do not let stale bookings linger.
@@ -312,6 +334,7 @@ Pitfalls unique to adding these features to the existing ASTN system.
 **Current state in codebase:** `orgMemberships` has indexes `by_user`, `by_org`, `by_org_role`. It is queried extensively in `orgs/membership.ts`, `orgs/admin.ts`, `orgs/directory.ts`, `programs.ts`, `engagement/`, and `attendance/`.
 
 **Prevention:**
+
 - **Do NOT add booking-related fields to `orgMemberships`.** Create separate `spaceBookings`, `spaceAccess`, and `visitApplications` tables.
 - Keep `orgMemberships` focused on organizational membership. Space access is a separate concern (not all org members may have space access, and guests may have space access without org membership).
 - Create a `spaceAccess` table that links users (or guests) to specific spaces with their access level and any restrictions.
@@ -325,6 +348,7 @@ Pitfalls unique to adding these features to the existing ASTN system.
 **Current state in codebase:** The `requireOrgAdmin` helper is duplicated in `convex/programs.ts` and `convex/orgs/admin.ts` with slightly different implementations. There is no centralized permission system.
 
 **Prevention:**
+
 1. **Consolidate auth helpers into `convex/lib/auth.ts` before adding new ones.** Move the duplicated `requireOrgAdmin` to the shared module.
 2. **Add new helpers in a single commit** before building features that use them:
    - `requirePlatformAdmin(ctx)` - checks platform admin table/field
@@ -342,6 +366,7 @@ Pitfalls unique to adding these features to the existing ASTN system.
 **Current state in codebase:** Notification preferences are stored on the profile (`eventNotificationPreferences` with frequency, reminder timing, muted orgs). There is no general notification preference system -- it is event-specific.
 
 **Prevention:**
+
 1. **Extend the notification type union** in the schema to include booking/visit types.
 2. **Add booking notification preferences** to the profile, following the existing pattern but as a separate object (not mixed into event preferences).
 3. **Default booking notifications to ON for admins** (they need to know about visit applications) and ON for users (they need booking confirmations).
@@ -357,6 +382,7 @@ Pitfalls unique to adding these features to the existing ASTN system.
 **Current state in codebase:** The schema in `convex/schema.ts` is already large (657 lines, ~15 tables). Adding more tables is fine for Convex (no migration needed for new tables), but modifying existing tables (adding fields to `organizations`, `profiles`) requires careful staged deployment.
 
 **Prevention:**
+
 1. **Add new tables first** (pure additions, no risk): `spaces`, `spaceBookings`, `visitApplications`, `guestUsers`, `orgApplications`.
 2. **Add new optional fields to existing tables** in a separate deployment: `organizations` gets space configuration fields (optional, so backward compatible). `profiles` gets booking preferences (optional).
 3. **Never make a field required on an existing table** that has existing data. Always use `v.optional()` and handle the missing case in code.
@@ -371,6 +397,7 @@ Pitfalls unique to adding these features to the existing ASTN system.
 **Current state in codebase:** `programs.ts` enrollment checks `orgMemberships` to verify the user is an org member before enrollment. Guest visit applications cannot use this check because guests are not org members.
 
 **Prevention:**
+
 1. **Do not extend `programParticipation` for visit applications.** Create a dedicated `visitApplications` table with its own status machine.
 2. **The approval workflow pattern can be reused** (state machine, admin review, audit trail) but the access control layer must be different (guest auth, not org membership).
 3. **Similarly, org applications to ASTN are a third, separate approval flow** (org applies to platform, platform admin reviews). This is neither program enrollment nor visit application. Give it its own table and handlers.
@@ -379,26 +406,26 @@ Pitfalls unique to adding these features to the existing ASTN system.
 
 ## Phase-Specific Risk Summary
 
-| Phase Topic | Likely Pitfall | Risk Level | Mitigation Priority |
-|---|---|---|---|
-| Schema & Identity Design | Guest user identity model (#1) | CRITICAL | Resolve before any feature code |
-| Schema & Identity Design | Auth helper consolidation (#I-2) | HIGH | Do first to unblock all features |
-| Schema & Identity Design | Schema migration planning (#I-4) | MEDIUM | Plan deployment order |
-| ASTN Platform Admin | Role confusion with org admin (#3) | CRITICAL | Separate permission model |
-| Org Application Flow | State machine discipline (#4) | HIGH | Explicit states and transitions |
-| Space Configuration | Custom form schema model (#5) | MEDIUM | Template approach, not form builder |
-| Space Configuration | Operating hours timezone (#9) | HIGH | Local times, not UTC |
-| Booking System | Temporal model for capacity (#2) | CRITICAL | Hourly slots, transactional checks |
-| Booking System | Soft capacity UX (#7) | MEDIUM | Clear copy, show numbers |
-| Booking System | Cancellation edge cases (#13) | LOW | Simple policy for MVP |
-| Booking System | Consent model (#6) | HIGH | Separate booking visibility scope |
-| Guest Application | Visit approval notifications (#12) | MEDIUM | Notify admins immediately |
-| Guest Application | Guest-to-member conversion (#8) | HIGH | Design linking strategy up front |
-| Guest Application | Reusing programs pattern (#I-5) | MEDIUM | Separate table, separate flow |
-| Admin Dashboard | Dashboard overload (#11) | MEDIUM | Separate tabs, date-scoped queries |
-| Notifications | New types without preferences (#I-3) | MEDIUM | Extend preferences system |
-| Attendee List | Who is coming UX (#10) | LOW | After consent model |
-| All | orgMemberships overload (#I-1) | MEDIUM | Separate tables for new concerns |
+| Phase Topic              | Likely Pitfall                       | Risk Level | Mitigation Priority                 |
+| ------------------------ | ------------------------------------ | ---------- | ----------------------------------- |
+| Schema & Identity Design | Guest user identity model (#1)       | CRITICAL   | Resolve before any feature code     |
+| Schema & Identity Design | Auth helper consolidation (#I-2)     | HIGH       | Do first to unblock all features    |
+| Schema & Identity Design | Schema migration planning (#I-4)     | MEDIUM     | Plan deployment order               |
+| ASTN Platform Admin      | Role confusion with org admin (#3)   | CRITICAL   | Separate permission model           |
+| Org Application Flow     | State machine discipline (#4)        | HIGH       | Explicit states and transitions     |
+| Space Configuration      | Custom form schema model (#5)        | MEDIUM     | Template approach, not form builder |
+| Space Configuration      | Operating hours timezone (#9)        | HIGH       | Local times, not UTC                |
+| Booking System           | Temporal model for capacity (#2)     | CRITICAL   | Hourly slots, transactional checks  |
+| Booking System           | Soft capacity UX (#7)                | MEDIUM     | Clear copy, show numbers            |
+| Booking System           | Cancellation edge cases (#13)        | LOW        | Simple policy for MVP               |
+| Booking System           | Consent model (#6)                   | HIGH       | Separate booking visibility scope   |
+| Guest Application        | Visit approval notifications (#12)   | MEDIUM     | Notify admins immediately           |
+| Guest Application        | Guest-to-member conversion (#8)      | HIGH       | Design linking strategy up front    |
+| Guest Application        | Reusing programs pattern (#I-5)      | MEDIUM     | Separate table, separate flow       |
+| Admin Dashboard          | Dashboard overload (#11)             | MEDIUM     | Separate tabs, date-scoped queries  |
+| Notifications            | New types without preferences (#I-3) | MEDIUM     | Extend preferences system           |
+| Attendee List            | Who is coming UX (#10)               | LOW        | After consent model                 |
+| All                      | orgMemberships overload (#I-1)       | MEDIUM     | Separate tables for new concerns    |
 
 ---
 
@@ -445,32 +472,33 @@ spaceBookings: defineTable({ ... })
 
 ### Real-Time vs Polling for Booking Data
 
-| Feature | Real-Time? | Rationale |
-|---|---|---|
-| Available capacity for a specific day | Yes | Single query, low bandwidth, users need current info |
-| Attendee list for a booked day | Yes | Small list, users want to see who joins |
-| Admin booking calendar (week view) | No (poll/refresh) | Too many subscriptions for 7 days of data |
-| Admin utilization stats | No (batch compute) | Aggregate view, not real-time critical |
-| Guest application queue | Yes | Admins need to act quickly on applications |
-| Booking confirmation for user | Yes | Single document subscription |
+| Feature                               | Real-Time?         | Rationale                                            |
+| ------------------------------------- | ------------------ | ---------------------------------------------------- |
+| Available capacity for a specific day | Yes                | Single query, low bandwidth, users need current info |
+| Attendee list for a booked day        | Yes                | Small list, users want to see who joins              |
+| Admin booking calendar (week view)    | No (poll/refresh)  | Too many subscriptions for 7 days of data            |
+| Admin utilization stats               | No (batch compute) | Aggregate view, not real-time critical               |
+| Guest application queue               | Yes                | Admins need to act quickly on applications           |
+| Booking confirmation for user         | Yes                | Single document subscription                         |
 
 ---
 
 ## Relationship to Previous Pitfalls
 
-| Previous Pitfall | v1.5 Interaction |
-|---|---|
-| v1.2 #1: Notification fatigue | v1.5 adds MORE notification types (booking, visit applications). Must coordinate with existing notification budget. |
-| v1.2 #4: CRM dashboard performance | Booking dashboard adds more data to admin views. Must follow same denormalization patterns. |
-| v1.2 #5: Invite link security | Org onboarding flow is a new access vector. Application approval adds security that invite links lacked. |
-| v1.2 #6: Location privacy | Booking inherently reveals physical presence at a location. Consent model (Pitfall 6) must be clear. |
-| v1.0 #5: Privacy violations | Guest data collection creates new privacy surface. Consent for data retention and profile pre-fill is needed. |
+| Previous Pitfall                   | v1.5 Interaction                                                                                                    |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| v1.2 #1: Notification fatigue      | v1.5 adds MORE notification types (booking, visit applications). Must coordinate with existing notification budget. |
+| v1.2 #4: CRM dashboard performance | Booking dashboard adds more data to admin views. Must follow same denormalization patterns.                         |
+| v1.2 #5: Invite link security      | Org onboarding flow is a new access vector. Application approval adds security that invite links lacked.            |
+| v1.2 #6: Location privacy          | Booking inherently reveals physical presence at a location. Consent model (Pitfall 6) must be clear.                |
+| v1.0 #5: Privacy violations        | Guest data collection creates new privacy surface. Consent for data retention and profile pre-fill is needed.       |
 
 ---
 
 ## Confidence: HIGH
 
 This analysis is based on:
+
 - Deep reading of the existing codebase (schema, auth patterns, admin helpers, membership flow, programs, notifications)
 - Direct identification of integration points that will be affected
 - Domain knowledge of booking systems, approval workflows, and guest access patterns

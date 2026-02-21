@@ -50,9 +50,7 @@ export function RejectApplicationDialog({
       onOpenChange(false)
     } catch (error) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : 'Failed to reject application',
+        error instanceof Error ? error.message : 'Failed to reject application',
       )
     } finally {
       setIsSubmitting(false)
@@ -94,7 +92,11 @@ export function RejectApplicationDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" variant="destructive" disabled={!isValid || isSubmitting}>
+            <Button
+              type="submit"
+              variant="destructive"
+              disabled={!isValid || isSubmitting}
+            >
               {isSubmitting ? (
                 <>
                   <Loader2 className="size-4 mr-2 animate-spin" />

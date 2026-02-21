@@ -42,9 +42,20 @@ export const sendMessage = mutation({
     threadId: v.string(),
     prompt: v.string(),
     profileId: v.id('profiles'),
+    pageContext: v.optional(
+      v.union(
+        v.literal('viewing_home'),
+        v.literal('viewing_profile'),
+        v.literal('editing_profile'),
+        v.literal('browsing_matches'),
+        v.literal('viewing_match'),
+        v.literal('browsing_opportunities'),
+        v.literal('viewing_opportunity'),
+      ),
+    ),
   },
   returns: v.string(),
-  handler: async (ctx, { threadId, prompt, profileId }) => {
+  handler: async (ctx, { threadId, prompt, profileId, pageContext }) => {
     const userId = await getUserId(ctx)
     if (!userId) throw new Error('Not authenticated')
 
@@ -57,6 +68,7 @@ export const sendMessage = mutation({
       threadId,
       promptMessageId: messageId,
       profileId,
+      pageContext,
     })
 
     return messageId

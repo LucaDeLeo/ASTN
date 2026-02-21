@@ -24,15 +24,15 @@ The existing stack handles v1.5 with minimal additions. One new dependency is re
 
 Everything else maps to what is already installed and proven:
 
-| Capability | Existing Solution |
-|---|---|
-| Approval workflows | `programParticipation` status pattern |
-| Auth (including guests) | `@convex-dev/auth` Password + OAuth providers |
-| Custom form rendering | JSON schema + dynamic React (`useState` pattern) |
-| Email notifications | `@convex-dev/resend` + `@react-email/components` |
-| Timezone handling | `date-fns-tz` |
-| Real-time booking updates | Convex subscriptions (built-in) |
-| Admin stats | `orgs/stats.ts` aggregation pattern |
+| Capability                | Existing Solution                                |
+| ------------------------- | ------------------------------------------------ |
+| Approval workflows        | `programParticipation` status pattern            |
+| Auth (including guests)   | `@convex-dev/auth` Password + OAuth providers    |
+| Custom form rendering     | JSON schema + dynamic React (`useState` pattern) |
+| Email notifications       | `@convex-dev/resend` + `@react-email/components` |
+| Timezone handling         | `date-fns-tz`                                    |
+| Real-time booking updates | Convex subscriptions (built-in)                  |
+| Admin stats               | `orgs/stats.ts` aggregation pattern              |
 
 **Rejected libraries:** FullCalendar (150KB, overkill), react-big-calendar (overkill), react-hook-form (inconsistent with codebase), recharts (stat cards are sufficient at pilot scale), rrule (recurring bookings out of scope).
 
@@ -43,6 +43,7 @@ See: `STACK-v1.5-coworking-onboarding.md`
 ### Table Stakes vs Differentiators
 
 **Must have (table stakes):**
+
 - Org application form + ASTN admin review queue + approval/rejection with notifications
 - Space configuration: capacity, operating hours, timezone, name/description
 - Member daily booking with date picker, time range selection, and soft capacity warnings
@@ -52,6 +53,7 @@ See: `STACK-v1.5-coworking-onboarding.md`
 - Admin dashboard: today's bookings, upcoming calendar, guest application queue, booking history
 
 **Should have (differentiators):**
+
 - Profile preview for co-present members (leverages existing profile data -- unique to ASTN)
 - Guest-to-member conversion with data pre-fill (killer feature for the guest funnel)
 - Progressive onboarding checklist for newly approved orgs
@@ -59,6 +61,7 @@ See: `STACK-v1.5-coworking-onboarding.md`
 - CSV export for bookings (reuse existing CRM export pattern)
 
 **Defer to post-v1.5:**
+
 - Repeat/recurring booking (regulars can book daily for now)
 - Booking-from-event-context cross-linking
 - Real-time occupancy tracking (requires hardware)
@@ -73,6 +76,7 @@ See: `FEATURES-v1.5-coworking-onboarding.md`
 ### Architecture Highlights
 
 **Five new tables:**
+
 1. `orgApplications` -- org onboarding applications with status workflow (pending/approved/rejected/withdrawn)
 2. `coworkingSpaces` -- per-org space definitions with capacity, operating hours (minutes-from-midnight per day), timezone, custom visit application fields, guest access toggles
 3. `spaceBookings` -- daily bookings with ISO date strings, time ranges (minutes-from-midnight), booking type (member/guest), status workflow, consent flag, application responses
@@ -80,10 +84,12 @@ See: `FEATURES-v1.5-coworking-onboarding.md`
 5. `platformAdmins` -- small table of platform-level admin user IDs
 
 **Modified tables:**
+
 - `organizations` -- add optional `contactEmail`, `website`, `socialLinks`, `hasCoworkingSpace` fields
 - `notifications` -- extend type union with 7 new notification types; add optional `bookingId` and `applicationId` reference fields
 
 **New Convex file structure:**
+
 ```
 convex/
   applications/     # Org application submit, approve, reject, withdraw
@@ -93,6 +99,7 @@ convex/
 ```
 
 **Key patterns:**
+
 - Dates stored as ISO strings ("2026-02-15"), times as minutes-from-midnight -- avoids UTC/timezone conversion bugs for inherently local bookings
 - Capacity checks + booking inserts in single Convex mutation (transactional, no race conditions)
 - Soft capacity: mutations return warnings, never throw errors on full spaces
@@ -190,22 +197,24 @@ See: `PITFALLS-v1.5-coworking-onboarding.md`
 ### Research Flags
 
 **Phases likely needing deeper research during planning:**
+
 - **Phase 4 (Guest Access):** The guest identity architecture has the most open design questions. The conversion flow (guest -> member with data pre-fill) needs explicit field mapping. Auth flow for guest sign-up with return URL needs UX validation.
 - **Phase 3 (Member Booking):** The consent model for booking-based profile visibility needs precise specification. What fields are exposed? How does it interact with existing privacy settings? This should be nailed down in requirements.
 
 **Phases with standard patterns (skip research-phase):**
+
 - **Phase 1 (Platform Admin + Org Application):** Well-documented approval workflow pattern. Directly mirrors existing `programParticipation` status flow with a new auth helper.
 - **Phase 2 (Space Configuration):** Straightforward CRUD for space settings. The custom form field schema is a known pattern (JSON schema + dynamic rendering).
 - **Phase 5 (Admin Dashboard):** Follows established admin dashboard patterns from existing CRM. Calendar view with react-day-picker is standard.
 
 ## Confidence Assessment
 
-| Area | Confidence | Notes |
-|------|------------|-------|
-| Stack | HIGH | Single new dependency identified. All other capabilities verified against existing `package.json` and codebase patterns. |
-| Features | MEDIUM-HIGH | Table stakes validated against commercial platforms (Nexudus, Optix, Cobot). Community-space-specific adaptations are inference-based but well-reasoned. |
-| Architecture | HIGH | Based on 650+ lines of existing schema analysis, 2000+ lines of existing Convex functions, and proven patterns. |
-| Pitfalls | HIGH | Specific to this project's codebase. Integration pitfalls identified by cross-referencing existing code with new requirements. |
+| Area         | Confidence  | Notes                                                                                                                                                    |
+| ------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stack        | HIGH        | Single new dependency identified. All other capabilities verified against existing `package.json` and codebase patterns.                                 |
+| Features     | MEDIUM-HIGH | Table stakes validated against commercial platforms (Nexudus, Optix, Cobot). Community-space-specific adaptations are inference-based but well-reasoned. |
+| Architecture | HIGH        | Based on 650+ lines of existing schema analysis, 2000+ lines of existing Convex functions, and proven patterns.                                          |
+| Pitfalls     | HIGH        | Specific to this project's codebase. Integration pitfalls identified by cross-referencing existing code with new requirements.                           |
 
 **Overall confidence:** HIGH
 
@@ -220,6 +229,7 @@ See: `PITFALLS-v1.5-coworking-onboarding.md`
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - ASTN codebase: `convex/schema.ts` (657 lines), `convex/lib/auth.ts`, `convex/orgs/admin.ts`, `convex/orgs/membership.ts`, `convex/programs.ts`, `convex/attendance/`, `convex/notifications/`, `convex/orgs/stats.ts`, `package.json`
 - ASTN codebase: 27 existing routes in `src/routes/`
 - Project context: `.planning/PROJECT.md`, `.planning/MILESTONES.md`
@@ -228,14 +238,17 @@ See: `PITFALLS-v1.5-coworking-onboarding.md`
 - Convex auth patterns: `@convex-dev/auth` v0.0.90
 
 ### Secondary (MEDIUM confidence)
+
 - Nexudus features page: desk/room booking, visitor management, admin tools, analytics
 - Optix features page: desk booking automation, visitor management, CRM, check-ins
 - Cobot features page: self-service booking, external bookings, member portal, analytics
 - Prior research: `STACK-v1.2-crm-events.md` patterns and decisions
 
 ### Tertiary (LOW confidence)
+
 - Domain expertise on community co-working space patterns (based on training data, not verified against 2026 sources)
 
 ---
-*Research completed: 2026-02-03*
-*Ready for roadmap: yes*
+
+_Research completed: 2026-02-03_
+_Ready for roadmap: yes_

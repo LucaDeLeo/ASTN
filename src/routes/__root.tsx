@@ -15,6 +15,9 @@ import type { QueryClient } from '@tanstack/react-query'
 import appCss from '~/styles/app.css?url'
 import { ThemeProvider } from '~/components/theme/theme-provider'
 import { FeedbackDialog } from '~/components/feedback-dialog'
+import { AgentSidebarProvider } from '~/components/agent-sidebar/AgentSidebarProvider'
+import { AgentSidebar } from '~/components/agent-sidebar/AgentSidebar'
+import { SidebarAwareWrapper } from '~/components/agent-sidebar/SidebarAwareWrapper'
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
@@ -147,7 +150,12 @@ export const Route = createRootRouteWithContext<{
 function RootComponent() {
   return (
     <RootDocument>
-      <Outlet />
+      <AgentSidebarProvider>
+        <SidebarAwareWrapper>
+          <Outlet />
+        </SidebarAwareWrapper>
+        <AgentSidebar />
+      </AgentSidebarProvider>
     </RootDocument>
   )
 }

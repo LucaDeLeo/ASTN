@@ -12,17 +12,18 @@ v1.5 requires exactly **one new npm dependency**: `react-day-picker` (v9.13.0) f
 
 ### 1. react-day-picker (Calendar UI)
 
-| Field | Value |
-|-------|-------|
-| **Package** | `react-day-picker` |
-| **Version** | `^9.13.0` (latest stable, published 2025-12-18) |
-| **Purpose** | Date selection calendar for booking interface and admin bookings view |
-| **Integration point** | shadcn/ui Calendar + DatePicker components |
-| **Confidence** | HIGH -- verified via npm registry |
+| Field                 | Value                                                                 |
+| --------------------- | --------------------------------------------------------------------- |
+| **Package**           | `react-day-picker`                                                    |
+| **Version**           | `^9.13.0` (latest stable, published 2025-12-18)                       |
+| **Purpose**           | Date selection calendar for booking interface and admin bookings view |
+| **Integration point** | shadcn/ui Calendar + DatePicker components                            |
+| **Confidence**        | HIGH -- verified via npm registry                                     |
 
 **Why needed:** The booking system requires a calendar date picker for selecting visit dates. shadcn/ui's Calendar component is built on react-day-picker. No calendar component currently exists in the project's UI library.
 
 **Why this library:**
+
 - De facto standard for React calendar UI (shadcn/ui's official recommendation)
 - Dependencies are `date-fns ^4.1.0` and `@date-fns/tz ^1.4.1` -- both already satisfied by the project's existing `date-fns ^4.1.0` and `date-fns-tz ^3.2.0` installations
 - Compatible with React 19 (supports React 16.8+)
@@ -30,11 +31,13 @@ v1.5 requires exactly **one new npm dependency**: `react-day-picker` (v9.13.0) f
 - Highly customizable for styling with Tailwind
 
 **Installation:**
+
 ```bash
 bun add react-day-picker
 ```
 
 Then add shadcn/ui Calendar and DatePicker components:
+
 ```bash
 # These are shadcn/ui component files added to src/components/ui/
 # Calendar component wraps react-day-picker with shadcn styling
@@ -42,6 +45,7 @@ Then add shadcn/ui Calendar and DatePicker components:
 ```
 
 **What gets unlocked:**
+
 - `<Calendar />` component for inline date display (admin bookings view)
 - `<DatePicker />` for date selection in booking flow
 - Date range selection for admin utilization reports
@@ -51,21 +55,21 @@ Then add shadcn/ui Calendar and DatePicker components:
 
 Every other v1.5 capability maps to existing stack:
 
-| v1.5 Capability | Existing Solution | Already Proven In |
-|------------------|-------------------|-------------------|
-| Org application workflow | Convex mutations + status field | `programParticipation.status` (pending/enrolled/etc.) |
-| ASTN admin approval | Auth helper + role check | `requireAnyOrgAdmin()` in `convex/lib/auth.ts` |
-| Custom visit application forms | JSON schema in Convex + dynamic React rendering | Profile wizard steps (dynamic field rendering) |
-| Flexible hour booking ("10am-3pm") | `date-fns` format/parse + Convex number fields | Event time handling throughout `convex/events/` |
-| Soft capacity warnings | Convex query counting + frontend conditional | `maxParticipants` pattern in `programs` table |
-| Guest quick account | `@convex-dev/auth` Password provider | Existing auth flow in `convex/auth.ts` |
-| Guest visit application | Same approval pattern as programs | `programParticipation` pending/approved flow |
-| Profile pre-fill from visit data | Convex mutation reading guest data | Profile extraction review pattern |
-| Consent system | Boolean field on booking record | `attendance.showOnProfile` / `showToOtherOrgs` pattern |
-| Email notifications | `@convex-dev/resend` | Match alerts, event digests, reminders |
-| Admin bookings calendar view | react-day-picker (NEW) + Convex queries | -- |
-| Utilization stats | Convex aggregation queries + stat cards | `orgs/stats.ts` enhanced stats pattern |
-| Timezone handling | `date-fns-tz` | Event scheduling, notification batching |
+| v1.5 Capability                    | Existing Solution                               | Already Proven In                                      |
+| ---------------------------------- | ----------------------------------------------- | ------------------------------------------------------ |
+| Org application workflow           | Convex mutations + status field                 | `programParticipation.status` (pending/enrolled/etc.)  |
+| ASTN admin approval                | Auth helper + role check                        | `requireAnyOrgAdmin()` in `convex/lib/auth.ts`         |
+| Custom visit application forms     | JSON schema in Convex + dynamic React rendering | Profile wizard steps (dynamic field rendering)         |
+| Flexible hour booking ("10am-3pm") | `date-fns` format/parse + Convex number fields  | Event time handling throughout `convex/events/`        |
+| Soft capacity warnings             | Convex query counting + frontend conditional    | `maxParticipants` pattern in `programs` table          |
+| Guest quick account                | `@convex-dev/auth` Password provider            | Existing auth flow in `convex/auth.ts`                 |
+| Guest visit application            | Same approval pattern as programs               | `programParticipation` pending/approved flow           |
+| Profile pre-fill from visit data   | Convex mutation reading guest data              | Profile extraction review pattern                      |
+| Consent system                     | Boolean field on booking record                 | `attendance.showOnProfile` / `showToOtherOrgs` pattern |
+| Email notifications                | `@convex-dev/resend`                            | Match alerts, event digests, reminders                 |
+| Admin bookings calendar view       | react-day-picker (NEW) + Convex queries         | --                                                     |
+| Utilization stats                  | Convex aggregation queries + stat cards         | `orgs/stats.ts` enhanced stats pattern                 |
+| Timezone handling                  | `date-fns-tz`                                   | Event scheduling, notification batching                |
 
 ## Existing Stack Reuse
 
@@ -80,12 +84,14 @@ The existing auth infrastructure handles all v1.5 auth needs:
 ### Notification Infrastructure (Extend, Don't Replace)
 
 The notification system already supports:
+
 - In-app notifications via `notifications` table (extend type union)
 - Email via `@convex-dev/resend` (add booking confirmation templates)
 - Cron-based batching (add daily booking summary if needed)
 - User preferences (extend `notificationPreferences` schema)
 
 New notification types to add to the existing union:
+
 ```
 'booking_confirmed' | 'booking_cancelled' | 'visit_application_received' |
 'visit_application_approved' | 'visit_application_rejected' |
@@ -95,6 +101,7 @@ New notification types to add to the existing union:
 ### Form Patterns (Extend, Don't Abstract)
 
 The codebase uses direct React state management for forms (useState per field), not react-hook-form or formik. This pattern is consistent across:
+
 - `CreateProgramDialog` (7 form fields with useState)
 - `opportunity-form.tsx` (10+ fields with useState)
 - Profile wizard steps (multiple fields per step)
@@ -104,14 +111,21 @@ The codebase uses direct React state management for forms (useState per field), 
 
 ```typescript
 // Schema shape for custom form fields
-formFields: v.array(v.object({
-  id: v.string(),
-  label: v.string(),
-  type: v.union(v.literal('text'), v.literal('textarea'), v.literal('select'), v.literal('checkbox')),
-  required: v.boolean(),
-  options: v.optional(v.array(v.string())), // For select type
-  placeholder: v.optional(v.string()),
-}))
+formFields: v.array(
+  v.object({
+    id: v.string(),
+    label: v.string(),
+    type: v.union(
+      v.literal('text'),
+      v.literal('textarea'),
+      v.literal('select'),
+      v.literal('checkbox'),
+    ),
+    required: v.boolean(),
+    options: v.optional(v.array(v.string())), // For select type
+    placeholder: v.optional(v.string()),
+  }),
+)
 ```
 
 ### Real-Time & Scheduling (Core Convex)
@@ -131,28 +145,28 @@ formFields: v.array(v.object({
 
 ### Libraries Considered and Rejected
 
-| Library | Why Considered | Why Rejected | Use Instead |
-|---------|---------------|--------------|-------------|
-| **FullCalendar** | Rich calendar UI for admin bookings view | 150KB+ bundle, overkill for single-day booking list. Admin needs a date picker + booking list, not a full calendar app. | react-day-picker Calendar + Convex query for selected date's bookings |
-| **react-big-calendar** | Alternative calendar component | Same overkill problem. Heavy, complex API, moment.js dependency in older versions. | react-day-picker + custom booking list |
-| **react-hook-form** | Form management for multi-step booking flow | Entire codebase uses useState pattern. Introducing a new form paradigm creates inconsistency. Booking form is 3-5 fields, not complex enough to justify. | Continue useState pattern |
-| **@tanstack/react-form** | Modern form library, same ecosystem | Same inconsistency argument. Would need to migrate existing forms or maintain two patterns. | Continue useState pattern |
-| **zod (for form validation)** | Already in deps, could validate booking form | Zod is used server-side only (schema validation). Client-side form validation is done inline. Keep consistent. | Inline validation + server-side Convex arg validators |
-| **uuid** | Generate booking IDs | Convex generates `_id` automatically. `crypto.randomUUID()` used where manual IDs needed (already in codebase). | `crypto.randomUUID()` or Convex auto-ID |
-| **recharts / chart.js** | Utilization stats charts | No charting library currently installed. Stat cards (numbers + badges) are the established pattern in `OrgStats`. Charts are a nice-to-have, not table stakes for 50-100 user pilot. | Stat cards with numbers, percentages, and color-coded badges |
-| **rrule** | Recurring bookings | v1.5 explicitly scopes to "one-off daily bookings only (no recurring)". Can add later if needed. | N/A -- not in scope |
-| **@dnd-kit** | Drag-to-book time slots | Over-engineered for one-off daily bookings. Time range is selected via dropdowns or simple inputs, not dragging. | Two time-select dropdowns (start/end) |
-| **QR code library** | Guest check-in via QR | Not in v1.5 scope. Guest flow is application-based, not walk-in QR scan. | N/A |
+| Library                       | Why Considered                               | Why Rejected                                                                                                                                                                         | Use Instead                                                           |
+| ----------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| **FullCalendar**              | Rich calendar UI for admin bookings view     | 150KB+ bundle, overkill for single-day booking list. Admin needs a date picker + booking list, not a full calendar app.                                                              | react-day-picker Calendar + Convex query for selected date's bookings |
+| **react-big-calendar**        | Alternative calendar component               | Same overkill problem. Heavy, complex API, moment.js dependency in older versions.                                                                                                   | react-day-picker + custom booking list                                |
+| **react-hook-form**           | Form management for multi-step booking flow  | Entire codebase uses useState pattern. Introducing a new form paradigm creates inconsistency. Booking form is 3-5 fields, not complex enough to justify.                             | Continue useState pattern                                             |
+| **@tanstack/react-form**      | Modern form library, same ecosystem          | Same inconsistency argument. Would need to migrate existing forms or maintain two patterns.                                                                                          | Continue useState pattern                                             |
+| **zod (for form validation)** | Already in deps, could validate booking form | Zod is used server-side only (schema validation). Client-side form validation is done inline. Keep consistent.                                                                       | Inline validation + server-side Convex arg validators                 |
+| **uuid**                      | Generate booking IDs                         | Convex generates `_id` automatically. `crypto.randomUUID()` used where manual IDs needed (already in codebase).                                                                      | `crypto.randomUUID()` or Convex auto-ID                               |
+| **recharts / chart.js**       | Utilization stats charts                     | No charting library currently installed. Stat cards (numbers + badges) are the established pattern in `OrgStats`. Charts are a nice-to-have, not table stakes for 50-100 user pilot. | Stat cards with numbers, percentages, and color-coded badges          |
+| **rrule**                     | Recurring bookings                           | v1.5 explicitly scopes to "one-off daily bookings only (no recurring)". Can add later if needed.                                                                                     | N/A -- not in scope                                                   |
+| **@dnd-kit**                  | Drag-to-book time slots                      | Over-engineered for one-off daily bookings. Time range is selected via dropdowns or simple inputs, not dragging.                                                                     | Two time-select dropdowns (start/end)                                 |
+| **QR code library**           | Guest check-in via QR                        | Not in v1.5 scope. Guest flow is application-based, not walk-in QR scan.                                                                                                             | N/A                                                                   |
 
 ### Patterns to Avoid
 
-| Anti-Pattern | Why Tempting | Why Wrong | Do This Instead |
-|-------------|-------------|-----------|-----------------|
-| Separate auth for guests | "Guests are different from members" | Creates two auth systems, doubles complexity. Guests are just users without full profiles. | Same auth, differentiate by profile completeness / role |
-| Client-side booking conflict detection | "Check availability before submitting" | Race conditions. Two users see same availability, both click book. | Optimistic UI + server-side validation in Convex mutation (transactional) |
-| Polling for booking updates | "Check every 30s if new bookings appeared" | Defeats Convex's real-time subscriptions, wastes resources | Convex `useQuery` subscription auto-updates |
-| Complex state machine library | "Booking and application workflows have many states" | XState/similar adds learning curve. States are simple linear progressions. | Union type on status field + conditional logic |
-| Embedding a third-party booking widget | "Calendly/Cal.com embed" | Loses control over UX, can't integrate with profile/consent system, external dependency | Native booking built on Convex |
+| Anti-Pattern                           | Why Tempting                                         | Why Wrong                                                                                  | Do This Instead                                                           |
+| -------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| Separate auth for guests               | "Guests are different from members"                  | Creates two auth systems, doubles complexity. Guests are just users without full profiles. | Same auth, differentiate by profile completeness / role                   |
+| Client-side booking conflict detection | "Check availability before submitting"               | Race conditions. Two users see same availability, both click book.                         | Optimistic UI + server-side validation in Convex mutation (transactional) |
+| Polling for booking updates            | "Check every 30s if new bookings appeared"           | Defeats Convex's real-time subscriptions, wastes resources                                 | Convex `useQuery` subscription auto-updates                               |
+| Complex state machine library          | "Booking and application workflows have many states" | XState/similar adds learning curve. States are simple linear progressions.                 | Union type on status field + conditional logic                            |
+| Embedding a third-party booking widget | "Calendly/Cal.com embed"                             | Loses control over UX, can't integrate with profile/consent system, external dependency    | Native booking built on Convex                                            |
 
 ## Integration Points
 
@@ -234,7 +248,9 @@ src/routes/
 
 ```typescript
 // convex/lib/auth.ts -- add:
-export async function requirePlatformAdmin(ctx: QueryCtx | MutationCtx): Promise<string> {
+export async function requirePlatformAdmin(
+  ctx: QueryCtx | MutationCtx,
+): Promise<string> {
   const userId = await requireAuth(ctx)
   const admin = await ctx.db
     .query('platformAdmins')
@@ -258,6 +274,7 @@ Add booking confirmation, visit application status, and org application status e
 **No new environment variables required.**
 
 All v1.5 features use existing infrastructure:
+
 - `ANTHROPIC_API_KEY` -- not needed for v1.5 (no LLM features in booking/onboarding)
 - `RESEND_API_KEY` -- already set, reused for booking/application emails
 - `VITE_CONVEX_URL` -- already set
@@ -279,6 +296,7 @@ Total bundle size addition: ~45KB (react-day-picker, before tree-shaking). date-
 ### No Additional LLM Costs
 
 v1.5 features are CRUD + workflow, no LLM calls needed:
+
 - Booking is date/time selection, not AI-powered
 - Application approval is manual admin review
 - Custom forms are admin-configured, not AI-generated
@@ -287,6 +305,7 @@ v1.5 features are CRUD + workflow, no LLM calls needed:
 ### Minimal Additional Email Costs
 
 New email types: booking confirmations, application status updates.
+
 - Estimated: ~200 additional emails/month for pilot (50-100 users)
 - Well within Resend free tier (3,000/month)
 
@@ -296,34 +315,34 @@ All new data stored in existing Convex deployment. No additional services.
 
 ## Summary Table
 
-| Category | What | Status |
-|----------|------|--------|
-| New npm dependency | `react-day-picker ^9.13.0` | **REQUIRED** -- calendar UI |
-| New Convex tables | 5 tables (spaces, bookings, visit apps, org apps, platform admins) | Schema extension |
-| New auth helper | `requirePlatformAdmin()` | ~10 lines in existing auth.ts |
-| New notification types | 7 new type literals | Schema union extension |
-| New email templates | 4-5 templates | Follow existing @react-email pattern |
-| New routes | ~10 new route files | Follow existing TanStack file-based routing |
-| New shadcn/ui components | Calendar, DatePicker | Built from react-day-picker + existing Popover |
-| New env variables | None | -- |
-| New external services | None | -- |
-| LLM usage | None | -- |
+| Category                 | What                                                               | Status                                         |
+| ------------------------ | ------------------------------------------------------------------ | ---------------------------------------------- |
+| New npm dependency       | `react-day-picker ^9.13.0`                                         | **REQUIRED** -- calendar UI                    |
+| New Convex tables        | 5 tables (spaces, bookings, visit apps, org apps, platform admins) | Schema extension                               |
+| New auth helper          | `requirePlatformAdmin()`                                           | ~10 lines in existing auth.ts                  |
+| New notification types   | 7 new type literals                                                | Schema union extension                         |
+| New email templates      | 4-5 templates                                                      | Follow existing @react-email pattern           |
+| New routes               | ~10 new route files                                                | Follow existing TanStack file-based routing    |
+| New shadcn/ui components | Calendar, DatePicker                                               | Built from react-day-picker + existing Popover |
+| New env variables        | None                                                               | --                                             |
+| New external services    | None                                                               | --                                             |
+| LLM usage                | None                                                               | --                                             |
 
 **Key principle carried from v1.2:** The existing stack is production-proven for ASTN. v1.5 adds features by extending existing patterns, not introducing new tools. The single exception (react-day-picker) is the minimal addition needed for calendar UI that no amount of existing stack can replicate.
 
 ## Sources
 
-| Source | Confidence | Used For |
-|--------|------------|----------|
-| ASTN codebase `package.json` | HIGH | Existing dependency inventory |
-| ASTN codebase `convex/schema.ts` | HIGH | Schema patterns and conventions |
-| ASTN codebase `convex/lib/auth.ts` | HIGH | Auth helper patterns |
-| ASTN codebase `convex/orgs/admin.ts` | HIGH | Org admin permission pattern |
-| ASTN codebase `convex/notifications/mutations.ts` | HIGH | Notification patterns |
-| ASTN codebase `convex/programs.ts` | HIGH | Approval workflow pattern |
-| ASTN codebase form components | HIGH | Form implementation patterns |
-| shadcn/ui Calendar docs (ui.shadcn.com) | HIGH | Calendar component dependencies |
-| shadcn/ui DatePicker docs (ui.shadcn.com) | HIGH | DatePicker composition pattern |
-| react-day-picker npm registry | HIGH | Version 9.13.0, deps verification |
-| daypicker.dev | HIGH | React 19 compatibility, date-fns dep |
-| STACK-v1.2-crm-events.md | HIGH | Prior research patterns and decisions |
+| Source                                            | Confidence | Used For                              |
+| ------------------------------------------------- | ---------- | ------------------------------------- |
+| ASTN codebase `package.json`                      | HIGH       | Existing dependency inventory         |
+| ASTN codebase `convex/schema.ts`                  | HIGH       | Schema patterns and conventions       |
+| ASTN codebase `convex/lib/auth.ts`                | HIGH       | Auth helper patterns                  |
+| ASTN codebase `convex/orgs/admin.ts`              | HIGH       | Org admin permission pattern          |
+| ASTN codebase `convex/notifications/mutations.ts` | HIGH       | Notification patterns                 |
+| ASTN codebase `convex/programs.ts`                | HIGH       | Approval workflow pattern             |
+| ASTN codebase form components                     | HIGH       | Form implementation patterns          |
+| shadcn/ui Calendar docs (ui.shadcn.com)           | HIGH       | Calendar component dependencies       |
+| shadcn/ui DatePicker docs (ui.shadcn.com)         | HIGH       | DatePicker composition pattern        |
+| react-day-picker npm registry                     | HIGH       | Version 9.13.0, deps verification     |
+| daypicker.dev                                     | HIGH       | React 19 compatibility, date-fns dep  |
+| STACK-v1.2-crm-events.md                          | HIGH       | Prior research patterns and decisions |

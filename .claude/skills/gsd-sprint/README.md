@@ -87,6 +87,7 @@ Run an entire milestone from current position to completion. Auto-detects milest
 ```
 
 **Additional features:**
+
 - **Auto-discuss:** Claude ↔ Codex dialogue creates CONTEXT.md before planning
 - **Audit:** Always runs `/gsd:audit-milestone` at the end
 - **Complete:** Optional `--complete` flag archives the milestone
@@ -95,11 +96,11 @@ Run an entire milestone from current position to completion. Auto-detects milest
 
 When Codex validates plans or reviews code, it returns one of:
 
-| Response | Meaning | Action |
-|----------|---------|--------|
-| `[PROCEED]` | No issues | Continue to next step |
-| `[HALT] warning: {issue}` | Fixable issue | Claude fixes → Codex re-reviews |
-| `[HALT] critical: {issue}` | Unfixable | Halt immediately |
+| Response                   | Meaning       | Action                          |
+| -------------------------- | ------------- | ------------------------------- |
+| `[PROCEED]`                | No issues     | Continue to next step           |
+| `[HALT] warning: {issue}`  | Fixable issue | Claude fixes → Codex re-reviews |
+| `[HALT] critical: {issue}` | Unfixable     | Halt immediately                |
 
 **Fix loop behavior:**
 
@@ -160,31 +161,32 @@ Each phase goes through these steps:
 
 The sprint loop calls these GSD skills:
 
-| Skill | Purpose | When Called |
-|-------|---------|-------------|
-| `/gsd:plan-phase` | Create PLAN.md files | If no plans exist |
-| `/gsd:execute-phase` | Run tasks, create SUMMARY.md | Every phase |
-| `/gsd:audit-milestone` | Verify requirements met | End of milestone-sprint |
-| `/gsd:complete-milestone` | Archive milestone | If `--complete` flag |
+| Skill                     | Purpose                      | When Called             |
+| ------------------------- | ---------------------------- | ----------------------- |
+| `/gsd:plan-phase`         | Create PLAN.md files         | If no plans exist       |
+| `/gsd:execute-phase`      | Run tasks, create SUMMARY.md | Every phase             |
+| `/gsd:audit-milestone`    | Verify requirements met      | End of milestone-sprint |
+| `/gsd:complete-milestone` | Archive milestone            | If `--complete` flag    |
 
 ## Sprint Signals
 
 Claude emits signals that the bash loop interprets:
 
-| Signal | Meaning | Loop Action |
-|--------|---------|-------------|
-| `[SPRINT:PLANNING_COMPLETE]` | Plans created | Proceed to Codex validation |
-| `[SPRINT:PHASE_COMPLETE]` | Execution done | Proceed to next phase |
-| `[SPRINT:FIX_COMPLETE]` | Fix applied | Re-run Codex review |
-| `[SPRINT:VERIFICATION_FAILED]` | Gaps found | Halt sprint |
-| `[SPRINT:CHECKPOINT]` | Human action needed | Halt (auth gates) or prompt |
-| `[SPRINT:ERROR]` | Unrecoverable error | Halt sprint |
+| Signal                         | Meaning             | Loop Action                 |
+| ------------------------------ | ------------------- | --------------------------- |
+| `[SPRINT:PLANNING_COMPLETE]`   | Plans created       | Proceed to Codex validation |
+| `[SPRINT:PHASE_COMPLETE]`      | Execution done      | Proceed to next phase       |
+| `[SPRINT:FIX_COMPLETE]`        | Fix applied         | Re-run Codex review         |
+| `[SPRINT:VERIFICATION_FAILED]` | Gaps found          | Halt sprint                 |
+| `[SPRINT:CHECKPOINT]`          | Human action needed | Halt (auth gates) or prompt |
+| `[SPRINT:ERROR]`               | Unrecoverable error | Halt sprint                 |
 
 ## State Files
 
 Sprint progress is tracked in state files for resume capability:
 
 **`/gsd:sprint`** → `.planning/SPRINT.md`
+
 ```yaml
 ---
 started: "2024-01-25T10:30:00"
@@ -203,13 +205,14 @@ status: running
 ```
 
 **`/gsd:milestone-sprint`** → `.planning/MILESTONE-SPRINT.md`
+
 ```yaml
 ---
-started: "2024-01-25T10:30:00"
+started: '2024-01-25T10:30:00'
 milestone: v1.2
-milestone_name: "Org CRM"
+milestone_name: 'Org CRM'
 mode: yolo
-phase_range: "11-16"
+phase_range: '11-16'
 current_phase: 13
 status: running
 auto_complete: true
@@ -219,6 +222,7 @@ auto_complete: true
 ## Halt Conditions
 
 **Always halt (even in yolo mode):**
+
 - `[HALT] critical` — security issues, major bugs
 - Auth gates — credentials/API keys required
 - Verification failures — gaps found by verifier
@@ -226,18 +230,19 @@ auto_complete: true
 - Max fix attempts (3) exceeded
 
 **Mode-dependent:**
+
 - Codex warnings → Interactive: prompt, Yolo: fix loop
 - Checkpoints → Interactive: wait, Yolo: continue (except auth)
 
 ## Modes Comparison
 
-| Aspect | Interactive (default) | Yolo (`--yolo`) |
-|--------|----------------------|-----------------|
-| Between phases | Pause for confirmation | Auto-continue |
-| Codex warnings | Fix loop, then prompt if stuck | Fix loop, continue if fixed |
-| Uncertainties | Prompt user | Use reasonable defaults |
-| Auth gates | Halt | Halt (always) |
-| Critical issues | Halt | Halt (always) |
+| Aspect          | Interactive (default)          | Yolo (`--yolo`)             |
+| --------------- | ------------------------------ | --------------------------- |
+| Between phases  | Pause for confirmation         | Auto-continue               |
+| Codex warnings  | Fix loop, then prompt if stuck | Fix loop, continue if fixed |
+| Uncertainties   | Prompt user                    | Use reasonable defaults     |
+| Auth gates      | Halt                           | Halt (always)               |
+| Critical issues | Halt                           | Halt (always)               |
 
 ## Running in tmux
 
@@ -260,18 +265,21 @@ tmux attach -t gsd-milestone
 ## Examples
 
 ### Run a few phases interactively
+
 ```bash
 /gsd:sprint 3 6
 # Pause between each phase, review progress
 ```
 
 ### Run overnight
+
 ```bash
 /gsd:milestone-sprint --yolo --complete
 # Auto-continue, complete milestone, only halt on critical
 ```
 
 ### Resume after fixing an issue
+
 ```bash
 # Sprint halted due to auth gate
 # You add the API key
@@ -279,6 +287,7 @@ tmux attach -t gsd-milestone
 ```
 
 ### Quick phase without validation
+
 ```bash
 /gsd:sprint 5 5 --skip-codex
 # Fast, but less safe
@@ -364,6 +373,7 @@ tmux attach -t gsd-milestone
 ## Troubleshooting
 
 **Sprint stuck / not progressing:**
+
 ```bash
 # Check tmux session
 tmux attach -t gsd-sprint
@@ -371,6 +381,7 @@ tmux attach -t gsd-sprint
 ```
 
 **Codex keeps failing:**
+
 ```bash
 # Check if it's a critical issue
 cat .planning/SPRINT.md
@@ -379,12 +390,14 @@ cat .planning/SPRINT.md
 ```
 
 **Need to abort:**
+
 ```bash
 # Kill the tmux session
 tmux kill-session -t gsd-sprint
 ```
 
 **Resume from checkpoint:**
+
 ```bash
 # State is saved, just resume
 /gsd:sprint --resume

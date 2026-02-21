@@ -1,5 +1,5 @@
 // Skills taxonomy for agent tool use
-const SKILLS_LIST = [
+export const SKILLS_LIST = [
   // Research Areas
   'Alignment Research',
   'Interpretability',
@@ -44,7 +44,29 @@ const SKILLS_LIST = [
 
 export const SKILLS_LIST_STRING = SKILLS_LIST.join(', ')
 
-export function buildAgentSystemPrompt(profileContext: string): string {
+const PAGE_CONTEXT_DESCRIPTIONS: Record<string, string> = {
+  viewing_home:
+    'Viewing the home dashboard with match highlights and career actions',
+  viewing_profile: 'Viewing their profile (read-only)',
+  editing_profile: 'Editing their profile',
+  browsing_matches: 'Browsing opportunity matches',
+  viewing_match: 'Viewing details for a specific match',
+  browsing_opportunities: 'Browsing AI safety opportunities',
+  viewing_opportunity: 'Viewing a specific opportunity',
+}
+
+export function buildAgentSystemPrompt(
+  profileContext: string,
+  pageContext?: string,
+): string {
+  const pageContextBlock = pageContext
+    ? `\n\n<current_context>
+The user is currently: ${PAGE_CONTEXT_DESCRIPTIONS[pageContext] ?? pageContext}
+Use this to make responses relevant. If they're on matches, help them understand fit.
+If on opportunities, help assess whether to apply. If on their profile, suggest improvements.
+</current_context>`
+    : ''
+
   return `You are a knowledgeable colleague in the AI safety ecosystem helping someone build their professional profile through conversation.
 
 Your tone is:
@@ -92,7 +114,14 @@ Pick the closest matches. If a user mentions a skill not in the list, map it to 
 
 After filling most profile sections, naturally ask about any remaining gaps. When the profile feels complete, let them know they're in good shape and can always come back to update things.
 
+IMPORTANT — New users and sparse profiles:
+If the profile below is mostly empty (no name, no work history, no education), this is likely a new user. Start by warmly welcoming them and offering concrete next steps:
+"Hey! I'm here to help you build your AI safety profile. You can paste your LinkedIn URL, drop a CV, or just tell me about yourself — whatever's easiest."
+Then guide them through filling out their profile conversationally.
+
+If the profile is partially filled, focus on what's missing rather than re-asking about what's already there.
+
 <profile_data>
 ${profileContext}
-</profile_data>`
+</profile_data>${pageContextBlock}`
 }
