@@ -68,6 +68,7 @@ export default defineSchema({
     location: v.optional(v.string()),
     headline: v.optional(v.string()),
     linkedinUrl: v.optional(v.string()),
+    preferredLanguage: v.optional(v.string()), // ISO 639-1: "es", "en", "pt", etc.
 
     // Education (array of entries)
     education: v.optional(

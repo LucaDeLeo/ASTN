@@ -189,6 +189,7 @@ export const streamChat = httpAction(async (ctx, request) => {
 
   // Build system prompt
   const profileContext = buildProfileContext(profile)
+  const preferredLanguage = profile.preferredLanguage || 'en'
   let systemPrompt: string
 
   if (mode === 'completion') {
@@ -206,15 +207,17 @@ export const streamChat = httpAction(async (ctx, request) => {
     systemPrompt = COMPLETION_COACH_PROMPT.replace(
       '{actionContext}',
       actionCtxStr,
-    ).replace(
-      '{profileContext}',
-      `<profile_data>\n${profileContext}\n</profile_data>`,
     )
+      .replace(
+        '{profileContext}',
+        `<profile_data>\n${profileContext}\n</profile_data>`,
+      )
+      .replace('{preferredLanguage}', preferredLanguage)
   } else {
     systemPrompt = CAREER_COACH_PROMPT.replace(
       '{profileContext}',
       `<profile_data>\n${profileContext}\n</profile_data>`,
-    )
+    ).replace('{preferredLanguage}', preferredLanguage)
   }
 
   // Get API key from environment

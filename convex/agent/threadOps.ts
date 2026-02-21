@@ -59,11 +59,19 @@ export const sendMessage = mutation({
       ),
     ),
     pageContextEntityId: v.optional(v.string()),
+    browserLocale: v.optional(v.string()),
   },
   returns: v.string(),
   handler: async (
     ctx,
-    { threadId, prompt, profileId, pageContext, pageContextEntityId },
+    {
+      threadId,
+      prompt,
+      profileId,
+      pageContext,
+      pageContextEntityId,
+      browserLocale,
+    },
   ) => {
     const userId = await getUserId(ctx)
     if (!userId) throw new Error('Not authenticated')
@@ -71,6 +79,20 @@ export const sendMessage = mutation({
     // Extract user email for BAISH CRM lookup
     const identity = await ctx.auth.getUserIdentity()
     const userEmail = identity?.email ?? undefined
+
+    // Resolve preferred language from profile or browser locale
+    const profile = await ctx.db.get('profiles', profileId)
+    let preferredLanguage = profile?.preferredLanguage
+    if (!preferredLanguage && browserLocale) {
+      // Extract ISO 639-1 code from locale (e.g., "es-AR" -> "es")
+      preferredLanguage = browserLocale.split('-')[0]
+      if (profile) {
+        await ctx.db.patch('profiles', profileId, {
+          preferredLanguage,
+          updatedAt: Date.now(),
+        })
+      }
+    }
 
     const { messageId } = await saveMessage(ctx, components.agent, {
       threadId,
@@ -84,6 +106,7 @@ export const sendMessage = mutation({
       pageContext,
       pageContextEntityId,
       userEmail,
+      preferredLanguage,
     })
 
     return messageId

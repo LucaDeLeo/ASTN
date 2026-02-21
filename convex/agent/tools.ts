@@ -481,6 +481,39 @@ export const setMatchPreferences = createTool({
   },
 })
 
+export const setLanguagePreference = createTool({
+  description:
+    "Set the user's preferred conversation language. Use ISO 639-1 codes: 'en' for English, 'es' for Spanish, 'pt' for Portuguese, etc.",
+  inputSchema: z.object({
+    languageCode: z
+      .string()
+      .describe('ISO 639-1 language code, e.g. "es", "en", "pt"'),
+  }),
+  execute: async (ctx, input): Promise<string> => {
+    const profile = await getProfile(ctx)
+    if (!profile) return 'Error: profile not found'
+
+    const displayText = `Set language preference to ${input.languageCode}`
+
+    await ctx.runMutation(
+      internal.agent.mutations.applyToolChange as never,
+      {
+        profileId: profile._id,
+        threadId: ctx.threadId,
+        toolName: 'set_language_preference',
+        displayText,
+        updates: JSON.stringify({ preferredLanguage: input.languageCode }),
+        previousValues: JSON.stringify({
+          preferredLanguage: (profile as Record<string, unknown>)
+            .preferredLanguage,
+        }),
+      } as never,
+    )
+
+    return displayText
+  },
+})
+
 // Convert YYYY-MM date string to Unix timestamp (first of month)
 function convertDateString(dateStr?: string): number | undefined {
   if (!dateStr || dateStr.toLowerCase() === 'present') return undefined

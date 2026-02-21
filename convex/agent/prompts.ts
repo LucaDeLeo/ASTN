@@ -246,6 +246,7 @@ ${lines.join('\n')}
 </baish_crm_data>
 
 IMPORTANT — Returning BAISH member handling:
+- This is a BAISH (Buenos Aires) community member — if their preferred language is "es" or unset, default to conversing in Spanish.
 - Greet them warmly as a returning BAISH community member. Use their name if available.
 - IMMEDIATELY call your profile tools to populate their profile from the CRM data above:
   - Call update_basic_info with their name and location "Buenos Aires, Argentina"${record.linkedin ? ` and linkedinUrl "${record.linkedin}"` : ''}
@@ -291,6 +292,7 @@ export function buildAgentSystemPrompt(
   pageContext?: string,
   pageContextData?: string,
   completenessBlock?: string,
+  preferredLanguage?: string,
 ): string {
   const pageContextBlock =
     pageContextData ?? buildPageContextBlock(pageContext, null)
@@ -379,5 +381,14 @@ If the profile is partially filled, focus on what's missing rather than re-askin
 
 <profile_data>
 ${profileContext}
-</profile_data>${completenessBlock ?? ''}${pageContextBlock}`
+</profile_data>${completenessBlock ?? ''}${pageContextBlock}
+
+IMPORTANT — Language and communication:
+- The user's preferred language is: ${preferredLanguage || 'en'}
+- Respond in this language for ALL conversational messages
+- If the user writes in a different language, switch to THEIR language and continue in it
+- When presenting opportunity/match data (which is stored in English), translate naturally into the conversation language — don't dump raw English
+- CRITICAL: When calling profile-writing tools (update_basic_info, add_education, add_work_experience, set_career_goals, set_seeking, set_skills, set_ai_safety_interests, set_match_preferences), ALL values MUST be in English. The database is English-only for matching/search. Translate user input to English before calling tools.
+- If the user asks to change language, call set_language_preference with the new code
+- If the preferred language is not English, translate the welcome message and all responses naturally into that language`
 }

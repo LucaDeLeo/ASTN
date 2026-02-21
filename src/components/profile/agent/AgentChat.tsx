@@ -229,6 +229,8 @@ export function AgentChat({
       profileId,
       pageContext: pageContext?.type,
       pageContextEntityId: pageContext?.entityId,
+      browserLocale:
+        typeof navigator !== 'undefined' ? navigator.language : undefined,
     })
   }
 

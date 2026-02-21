@@ -37,6 +37,7 @@ export const streamResponse = internalAction({
     ),
     pageContextEntityId: v.optional(v.string()),
     userEmail: v.optional(v.string()),
+    preferredLanguage: v.optional(v.string()),
   },
   returns: v.null(),
   handler: async (
@@ -48,6 +49,7 @@ export const streamResponse = internalAction({
       pageContext,
       pageContextEntityId,
       userEmail,
+      preferredLanguage,
     },
   ) => {
     const profile = (await ctx.runQuery(internal.agent.queries.getProfileById, {
@@ -117,6 +119,7 @@ export const streamResponse = internalAction({
         pageContext,
         pageContextData,
         completenessBlock,
+        preferredLanguage,
       ) + baishContextBlock
 
     const { thread } = await profileAgent.continueThread(ctx, { threadId })

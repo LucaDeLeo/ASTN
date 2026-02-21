@@ -103,10 +103,16 @@ export function AgentSidebarProvider({
           !autoGreetSent.current
         ) {
           autoGreetSent.current = true
+          const browserLocale =
+            typeof navigator !== 'undefined' ? navigator.language : undefined
+          const isSpanish = browserLocale?.startsWith('es')
           await sendMessage({
             threadId: newThreadId,
-            prompt: 'Hi! I just signed up.',
+            prompt: isSpanish
+              ? 'Hola! Acabo de registrarme.'
+              : 'Hi! I just signed up.',
             profileId: profile._id,
+            browserLocale,
           })
         }
       } finally {
