@@ -114,10 +114,28 @@ export const createSpace = mutation({
     timezone: v.string(),
     operatingHours: operatingHoursValidator,
     guestAccessEnabled: v.optional(v.boolean()),
+    description: v.optional(v.string()),
+    address: v.optional(v.string()),
+    addressNote: v.optional(v.string()),
+    amenities: v.optional(v.array(v.string())),
+    houseRules: v.optional(v.string()),
   },
+  returns: v.object({ spaceId: v.id('coworkingSpaces') }),
   handler: async (
     ctx,
-    { orgId, name, capacity, timezone, operatingHours, guestAccessEnabled },
+    {
+      orgId,
+      name,
+      capacity,
+      timezone,
+      operatingHours,
+      guestAccessEnabled,
+      description,
+      address,
+      addressNote,
+      amenities,
+      houseRules,
+    },
   ) => {
     await requireOrgAdmin(ctx, orgId)
 
@@ -170,6 +188,11 @@ export const createSpace = mutation({
       timezone,
       operatingHours,
       guestAccessEnabled: guestAccessEnabled ?? false,
+      description: description || undefined,
+      address: address || undefined,
+      addressNote: addressNote || undefined,
+      amenities: amenities && amenities.length > 0 ? amenities : undefined,
+      houseRules: houseRules || undefined,
       createdAt: now,
       updatedAt: now,
     })
@@ -192,7 +215,13 @@ export const updateSpace = mutation({
     timezone: v.optional(v.string()),
     operatingHours: v.optional(operatingHoursValidator),
     guestAccessEnabled: v.optional(v.boolean()),
+    description: v.optional(v.string()),
+    address: v.optional(v.string()),
+    addressNote: v.optional(v.string()),
+    amenities: v.optional(v.array(v.string())),
+    houseRules: v.optional(v.string()),
   },
+  returns: v.object({ success: v.boolean() }),
   handler: async (ctx, { spaceId, ...updates }) => {
     const space = await ctx.db.get('coworkingSpaces', spaceId)
     if (!space) throw new Error('Space not found')
@@ -242,6 +271,13 @@ export const updateSpace = mutation({
       patch.operatingHours = updates.operatingHours
     if (updates.guestAccessEnabled !== undefined)
       patch.guestAccessEnabled = updates.guestAccessEnabled
+    if (updates.description !== undefined)
+      patch.description = updates.description
+    if (updates.address !== undefined) patch.address = updates.address
+    if (updates.addressNote !== undefined)
+      patch.addressNote = updates.addressNote
+    if (updates.amenities !== undefined) patch.amenities = updates.amenities
+    if (updates.houseRules !== undefined) patch.houseRules = updates.houseRules
 
     await ctx.db.patch('coworkingSpaces', spaceId, patch)
 
@@ -320,6 +356,148 @@ export const updateCustomVisitFields = mutation({
 
     await ctx.db.patch('coworkingSpaces', spaceId, {
       customVisitFields,
+      updatedAt: Date.now(),
+    })
+
+    return { success: true }
+  },
+})
+
+// Public landing page query — no auth required
+export const getSpaceLanding = query({
+  args: { slug: v.string() },
+  returns: v.union(
+    v.object({
+      spaceId: v.id('coworkingSpaces'),
+      spaceName: v.string(),
+      orgId: v.id('organizations'),
+      orgName: v.string(),
+      orgSlug: v.optional(v.string()),
+      orgLogoUrl: v.optional(v.string()),
+      capacity: v.number(),
+      timezone: v.string(),
+      operatingHours: v.array(
+        v.object({
+          dayOfWeek: v.number(),
+          openMinutes: v.number(),
+          closeMinutes: v.number(),
+          isClosed: v.boolean(),
+        }),
+      ),
+      guestAccessEnabled: v.boolean(),
+      description: v.optional(v.string()),
+      address: v.optional(v.string()),
+      addressNote: v.optional(v.string()),
+      coverImageUrl: v.optional(v.string()),
+      amenities: v.optional(v.array(v.string())),
+      houseRules: v.optional(v.string()),
+    }),
+    v.null(),
+  ),
+  handler: async (ctx, { slug }) => {
+    const org = await ctx.db
+      .query('organizations')
+      .withIndex('by_slug', (q) => q.eq('slug', slug))
+      .first()
+
+    if (!org) return null
+
+    const space = await ctx.db
+      .query('coworkingSpaces')
+      .withIndex('by_org', (q) => q.eq('orgId', org._id))
+      .first()
+
+    if (!space) return null
+
+    // Resolve cover image URL from storage
+    let coverImageUrl = space.coverImageUrl
+    if (space.coverImageStorageId) {
+      const url = await ctx.storage.getUrl(space.coverImageStorageId)
+      if (url) coverImageUrl = url
+    }
+
+    // Resolve org logo URL from storage
+    let orgLogoUrl = org.logoUrl
+    if (org.logoStorageId) {
+      const url = await ctx.storage.getUrl(org.logoStorageId)
+      if (url) orgLogoUrl = url
+    }
+
+    return {
+      spaceId: space._id,
+      spaceName: space.name,
+      orgId: org._id,
+      orgName: org.name,
+      orgSlug: org.slug,
+      orgLogoUrl: orgLogoUrl ?? undefined,
+      capacity: space.capacity,
+      timezone: space.timezone,
+      operatingHours: space.operatingHours,
+      guestAccessEnabled: space.guestAccessEnabled,
+      description: space.description,
+      address: space.address,
+      addressNote: space.addressNote,
+      coverImageUrl: coverImageUrl ?? undefined,
+      amenities: space.amenities,
+      houseRules: space.houseRules,
+    }
+  },
+})
+
+// Save uploaded cover image for a space (admin only)
+export const saveSpaceCoverImage = mutation({
+  args: {
+    spaceId: v.id('coworkingSpaces'),
+    storageId: v.id('_storage'),
+  },
+  returns: v.object({
+    success: v.boolean(),
+    coverImageUrl: v.optional(v.string()),
+  }),
+  handler: async (ctx, { spaceId, storageId }) => {
+    const space = await ctx.db.get('coworkingSpaces', spaceId)
+    if (!space) throw new Error('Space not found')
+
+    await requireOrgAdmin(ctx, space.orgId)
+
+    // Delete old cover image from storage if it exists
+    if (space.coverImageStorageId) {
+      await ctx.storage.delete(space.coverImageStorageId)
+    }
+
+    // Resolve the URL for the new image
+    const coverImageUrl = await ctx.storage.getUrl(storageId)
+
+    await ctx.db.patch('coworkingSpaces', spaceId, {
+      coverImageStorageId: storageId,
+      coverImageUrl: coverImageUrl ?? undefined,
+      updatedAt: Date.now(),
+    })
+
+    return { success: true, coverImageUrl: coverImageUrl ?? undefined }
+  },
+})
+
+// Remove cover image from a space (admin only)
+export const removeSpaceCoverImage = mutation({
+  args: {
+    spaceId: v.id('coworkingSpaces'),
+  },
+  returns: v.object({ success: v.boolean() }),
+  handler: async (ctx, { spaceId }) => {
+    const space = await ctx.db.get('coworkingSpaces', spaceId)
+    if (!space) throw new Error('Space not found')
+
+    await requireOrgAdmin(ctx, space.orgId)
+
+    // Delete from storage if it exists
+    if (space.coverImageStorageId) {
+      await ctx.storage.delete(space.coverImageStorageId)
+    }
+
+    await ctx.db.patch('coworkingSpaces', spaceId, {
+      coverImageStorageId: undefined,
+      coverImageUrl: undefined,
       updatedAt: Date.now(),
     })
 

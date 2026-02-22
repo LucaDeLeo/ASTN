@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   ExternalLink,
   GraduationCap,
+  MapPin,
   Settings,
   UserPlus,
   Users,
@@ -94,6 +95,7 @@ interface OrgHeaderProps {
     slug?: string
     logoUrl?: string
     lumaCalendarUrl?: string
+    hasCoworkingSpace?: boolean
   }
 }
 
@@ -133,6 +135,15 @@ function OrgHeader({ org }: OrgHeaderProps) {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          {org.hasCoworkingSpace && org.slug && (
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/org/$slug/space" params={{ slug: org.slug }}>
+                <MapPin className="size-4 mr-1" />
+                Space
+              </Link>
+            </Button>
+          )}
+
           {org.lumaCalendarUrl && org.slug && (
             <Button variant="outline" size="sm" asChild>
               <Link to="/org/$slug/events" params={{ slug: org.slug }}>

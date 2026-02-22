@@ -428,6 +428,15 @@ export default defineSchema({
       }),
     ),
 
+    // Landing page content
+    description: v.optional(v.string()), // About the space
+    address: v.optional(v.string()), // Street address
+    addressNote: v.optional(v.string()), // Directions/access notes
+    coverImageStorageId: v.optional(v.id('_storage')), // Cover image storage ref
+    coverImageUrl: v.optional(v.string()), // Resolved URL
+    amenities: v.optional(v.array(v.string())), // e.g. ["WiFi", "Coffee", "Standing Desks"]
+    houseRules: v.optional(v.string()), // Newline-separated rules
+
     // Guest access configuration
     guestAccessEnabled: v.boolean(), // Whether guests can apply to visit
 
