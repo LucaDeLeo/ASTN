@@ -338,7 +338,7 @@ export function AgentChat({
       {/* Messages area */}
       <div
         ref={messagesContainerRef}
-        className="relative flex-1 overflow-y-auto p-4 space-y-4"
+        className="relative flex-1 overflow-y-auto p-2 sm:p-3 md:p-4 space-y-4"
         onClick={handleMessagesClick}
       >
         {messages.length === 0 ? (
@@ -509,7 +509,7 @@ export function AgentChat({
       {/* Input area */}
       <form
         onSubmit={handleSubmit}
-        className="border-t p-4 flex gap-2 items-end bg-muted/50"
+        className="border-t p-2 sm:p-3 md:p-4 flex gap-2 items-end bg-muted/50"
       >
         {/* File upload button */}
         <Button
@@ -663,7 +663,7 @@ function MessageBubble({
             <Pencil className="size-3" />
           </button>
         )}
-        <div className="max-w-[80%] rounded-2xl rounded-br-md px-4 py-2.5 bg-primary text-primary-foreground">
+        <div className="max-w-[95%] md:max-w-[80%] rounded-2xl rounded-br-md px-4 py-2.5 bg-primary text-primary-foreground">
           <p className="text-sm whitespace-pre-wrap">{messageText}</p>
         </div>
       </div>
@@ -679,7 +679,7 @@ function MessageBubble({
         {smoothText && (
           <CopyableText text={smoothText}>
             <div className="flex justify-start">
-              <div className="max-w-[80%] rounded-2xl rounded-bl-md px-4 py-2.5 bg-muted text-foreground">
+              <div className="max-w-[95%] md:max-w-[80%] rounded-2xl rounded-bl-md px-4 py-2.5 bg-muted text-foreground">
                 <p className="text-sm whitespace-pre-wrap">
                   {renderMarkdown(smoothText)}
                   <span className="inline-block w-1.5 h-4 ml-0.5 bg-muted-foreground/70 animate-pulse align-text-bottom" />
@@ -720,7 +720,7 @@ function MessageBubble({
       elements.push(
         <CopyableText key={`text-${i}`} text={partText}>
           <div className="flex justify-start">
-            <div className="max-w-[80%] rounded-2xl rounded-bl-md px-4 py-2.5 bg-muted text-foreground">
+            <div className="max-w-[95%] md:max-w-[80%] rounded-2xl rounded-bl-md px-4 py-2.5 bg-muted text-foreground">
               <p className="text-sm whitespace-pre-wrap">
                 {renderMarkdown(partText)}
               </p>
@@ -815,7 +815,7 @@ function ToolCallInline({
   return (
     <div
       className={cn(
-        'max-w-[80%] flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs border',
+        'max-w-[95%] md:max-w-[80%] flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-lg text-xs border',
         status === 'pending' && 'border-amber-200 bg-amber-50 text-amber-800',
         status === 'approved' && 'border-green-200 bg-green-50 text-green-700',
         status === 'undone' && 'border-slate-200 bg-slate-50 text-slate-400',
@@ -839,13 +839,13 @@ function ToolCallInline({
         <div className="flex gap-1 shrink-0">
           <button
             onClick={onApprove}
-            className="px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 hover:bg-green-200 transition-colors"
+            className="touch-target px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 hover:bg-green-200 transition-colors"
           >
             Approve
           </button>
           <button
             onClick={onUndo}
-            className="px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+            className="touch-target px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
           >
             Undo
           </button>

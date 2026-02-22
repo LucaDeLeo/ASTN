@@ -57,7 +57,7 @@ function AgentSidebarInner() {
       <Sheet open={isOpen} onOpenChange={(v) => !v && close()}>
         <SheetContent
           side="bottom"
-          className="h-[85dvh] max-h-[85dvh] rounded-t-xl p-0"
+          className="h-[85dvh] max-h-[85dvh] rounded-t-xl p-0 pb-[env(safe-area-inset-bottom,0px)]"
           showCloseButton={false}
         >
           <SheetTitle className="sr-only">AI Assistant</SheetTitle>
