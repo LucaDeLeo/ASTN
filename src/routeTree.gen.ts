@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SettingsRouteRouteImport } from './routes/settings/route'
 import { Route as ApplyRouteRouteImport } from './routes/apply/route'
@@ -56,6 +58,16 @@ import { Route as OrgSlugAdminProgramsProgramIdRouteImport } from './routes/org/
 import { Route as OrgSlugAdminOpportunitiesOppIdRouteImport } from './routes/org/$slug/admin/opportunities/$oppId'
 import { Route as OrgSlugAdminMembersUserIdRouteImport } from './routes/org/$slug/admin/members/$userId'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -302,6 +314,8 @@ export interface FileRoutesByFullPath {
   '/apply': typeof ApplyRouteRouteWithChildren
   '/settings': typeof SettingsRouteRouteWithChildren
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/admin/applications': typeof AdminApplicationsRouteRouteWithChildren
   '/admin/users': typeof AdminUsersRouteRouteWithChildren
   '/apply/status': typeof ApplyStatusRoute
@@ -347,6 +361,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/apply/status': typeof ApplyStatusRoute
   '/matches/$id': typeof MatchesIdRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
@@ -394,6 +410,8 @@ export interface FileRoutesById {
   '/apply': typeof ApplyRouteRouteWithChildren
   '/settings': typeof SettingsRouteRouteWithChildren
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/admin/applications': typeof AdminApplicationsRouteRouteWithChildren
   '/admin/users': typeof AdminUsersRouteRouteWithChildren
   '/apply/status': typeof ApplyStatusRoute
@@ -444,6 +462,8 @@ export interface FileRouteTypes {
     | '/apply'
     | '/settings'
     | '/login'
+    | '/privacy'
+    | '/terms'
     | '/admin/applications'
     | '/admin/users'
     | '/apply/status'
@@ -489,6 +509,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/privacy'
+    | '/terms'
     | '/apply/status'
     | '/matches/$id'
     | '/opportunities/$id'
@@ -535,6 +557,8 @@ export interface FileRouteTypes {
     | '/apply'
     | '/settings'
     | '/login'
+    | '/privacy'
+    | '/terms'
     | '/admin/applications'
     | '/admin/users'
     | '/apply/status'
@@ -584,6 +608,8 @@ export interface RootRouteChildren {
   ApplyRouteRoute: typeof ApplyRouteRouteWithChildren
   SettingsRouteRoute: typeof SettingsRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
+  PrivacyRoute: typeof PrivacyRoute
+  TermsRoute: typeof TermsRoute
   MatchesIdRoute: typeof MatchesIdRoute
   OpportunitiesIdRoute: typeof OpportunitiesIdRoute
   ProfileAgentRoute: typeof ProfileAgentRoute
@@ -617,6 +643,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -1024,6 +1064,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApplyRouteRoute: ApplyRouteRouteWithChildren,
   SettingsRouteRoute: SettingsRouteRouteWithChildren,
   LoginRoute: LoginRoute,
+  PrivacyRoute: PrivacyRoute,
+  TermsRoute: TermsRoute,
   MatchesIdRoute: MatchesIdRoute,
   OpportunitiesIdRoute: OpportunitiesIdRoute,
   ProfileAgentRoute: ProfileAgentRoute,

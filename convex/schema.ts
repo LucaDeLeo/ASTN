@@ -234,6 +234,10 @@ export default defineSchema({
       }),
     ),
 
+    // Consent tracking (GDPR + AI processing consent)
+    consentedAt: v.optional(v.number()), // Unix timestamp when user consented
+    consentVersion: v.optional(v.string()), // e.g. "v1" — bump to re-consent on policy changes
+
     // Metadata
     createdAt: v.number(),
     updatedAt: v.number(),

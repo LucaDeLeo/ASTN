@@ -38,6 +38,7 @@ import type * as careerActions_mutations from "../careerActions/mutations.js";
 import type * as careerActions_prompts from "../careerActions/prompts.js";
 import type * as careerActions_queries from "../careerActions/queries.js";
 import type * as careerActions_validation from "../careerActions/validation.js";
+import type * as consent from "../consent.js";
 import type * as coworkingSpaces from "../coworkingSpaces.js";
 import type * as crons from "../crons.js";
 import type * as emails_batchActions from "../emails/batchActions.js";
@@ -154,6 +155,7 @@ declare const fullApi: ApiFromModules<{
   "careerActions/prompts": typeof careerActions_prompts;
   "careerActions/queries": typeof careerActions_queries;
   "careerActions/validation": typeof careerActions_validation;
+  consent: typeof consent;
   coworkingSpaces: typeof coworkingSpaces;
   crons: typeof crons;
   "emails/batchActions": typeof emails_batchActions;

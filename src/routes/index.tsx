@@ -296,64 +296,81 @@ function LandingPage() {
   ]
 
   return (
-    <main className="container mx-auto px-4 py-12 md:py-16">
-      {/* Hero — side-by-side: text left, sign-in right */}
-      <section className="max-w-5xl mx-auto mb-16 md:mb-20">
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
-          {/* Left: Hero text */}
-          <div className="flex-1 text-center md:text-left">
-            <Badge variant="secondary" className="mb-4">
-              Prototype
-            </Badge>
-            <h1 className="text-4xl md:text-5xl font-display font-semibold text-foreground mb-4 tracking-tight">
-              AI Safety Talent Network
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-lg">
-              Your career command center for AI safety. Get matched to
-              opportunities and receive AI-powered career guidance — all in one
-              place.
-            </p>
+    <>
+      <main className="container mx-auto px-4 py-12 md:py-16">
+        {/* Hero — side-by-side: text left, sign-in right */}
+        <section className="max-w-5xl mx-auto mb-16 md:mb-20">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
+            {/* Left: Hero text */}
+            <div className="flex-1 text-center md:text-left">
+              <Badge variant="secondary" className="mb-4">
+                Prototype
+              </Badge>
+              <h1 className="text-4xl md:text-5xl font-display font-semibold text-foreground mb-4 tracking-tight">
+                AI Safety Talent Network
+              </h1>
+              <p className="text-lg text-muted-foreground max-w-lg">
+                Your career command center for AI safety. Get matched to
+                opportunities and receive AI-powered career guidance — all in
+                one place.
+              </p>
+            </div>
+            {/* Right: Auth */}
+            <AuthPanel />
           </div>
-          {/* Right: Auth */}
-          <AuthPanel />
-        </div>
-      </section>
+        </section>
 
-      {/* What is ASTN */}
-      <section
-        id="about"
-        className="max-w-3xl mx-auto text-center mb-16 md:mb-20"
-      >
-        <h2 className="text-2xl font-display font-semibold text-foreground mb-4">
-          What is ASTN?
-        </h2>
-        <p className="text-muted-foreground leading-relaxed">
-          ASTN is a matching platform for AI safety talent. Build your profile
-          through AI-powered conversations, get matched to open roles, and
-          receive personalized career actions to close your skill gaps. Started
-          as a pilot for BAISH (Buenos Aires AI Safety Hub), ASTN is designed to
-          connect the right people with the right opportunities in AI safety.
-        </p>
-      </section>
+        {/* What is ASTN */}
+        <section
+          id="about"
+          className="max-w-3xl mx-auto text-center mb-16 md:mb-20"
+        >
+          <h2 className="text-2xl font-display font-semibold text-foreground mb-4">
+            What is ASTN?
+          </h2>
+          <p className="text-muted-foreground leading-relaxed">
+            ASTN is a matching platform for AI safety talent. Build your profile
+            through AI-powered conversations, get matched to open roles, and
+            receive personalized career actions to close your skill gaps.
+            Started as a pilot for BAISH (Buenos Aires AI Safety Hub), ASTN is
+            designed to connect the right people with the right opportunities in
+            AI safety.
+          </p>
+        </section>
 
-      {/* What's Built */}
-      <section className="max-w-4xl mx-auto mb-16 md:mb-20">
-        <h2 className="text-2xl font-display font-semibold text-foreground text-center mb-8">
-          What's Built
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {features.map((feature, index) => (
-            <AnimatedCard key={feature.title} index={index}>
-              <FeatureCard
-                icon={feature.icon}
-                title={feature.title}
-                description={feature.description}
-              />
-            </AnimatedCard>
-          ))}
+        {/* What's Built */}
+        <section className="max-w-4xl mx-auto mb-16 md:mb-20">
+          <h2 className="text-2xl font-display font-semibold text-foreground text-center mb-8">
+            What's Built
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {features.map((feature, index) => (
+              <AnimatedCard key={feature.title} index={index}>
+                <FeatureCard
+                  icon={feature.icon}
+                  title={feature.title}
+                  description={feature.description}
+                />
+              </AnimatedCard>
+            ))}
+          </div>
+        </section>
+      </main>
+      <footer className="border-t py-6">
+        <div className="container mx-auto px-4 flex items-center justify-center gap-4 text-sm text-muted-foreground">
+          <Link
+            to="/privacy"
+            className="hover:text-foreground transition-colors"
+          >
+            Privacy Policy
+          </Link>
+          <span aria-hidden="true">·</span>
+          <Link to="/terms" className="hover:text-foreground transition-colors">
+            Terms of Use
+          </Link>
         </div>
-      </section>
-    </main>
+      </footer>
+    </>
   )
 }
 

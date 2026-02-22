@@ -9,6 +9,7 @@ import {
 import { useMutation, useQuery } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
+import { ConsentDialog } from '~/components/consent/ConsentDialog'
 
 interface AgentSidebarContextValue {
   isOpen: boolean
@@ -63,6 +64,7 @@ export function AgentSidebarProvider({
   const autoGreetSent = useRef(false)
   const autoOpenedRef = useRef(false)
   const previousFocusRef = useRef<HTMLElement | null>(null)
+  const [showConsentDialog, setShowConsentDialog] = useState(false)
 
   // Persist open state
   useEffect(() => {
@@ -85,6 +87,7 @@ export function AgentSidebarProvider({
   // (profile being non-null means user is authenticated AND has a profile)
   useEffect(() => {
     if (!profile) return // Loading, unauthenticated, or no profile
+    if (!profile.consentedAt) return // Don't create thread without consent
     if (threadCreating.current) return
     if (profile.agentThreadId) return // Already has thread
 
@@ -124,20 +127,35 @@ export function AgentSidebarProvider({
   }, [profile, isOpen, createThread, sendMessage])
 
   // Auto-open for new users: profile exists but no thread yet
+  // If no consent, show consent dialog instead of opening sidebar
   useEffect(() => {
     if (!profile) return
     if (autoOpenedRef.current) return
     if (!profile.agentThreadId) {
       autoOpenedRef.current = true
-      setIsOpen(true)
+      if (profile.consentedAt) {
+        setIsOpen(true)
+      } else {
+        setShowConsentDialog(true)
+      }
     }
   }, [profile])
 
-  const toggle = useCallback(() => setIsOpen((v) => !v), [])
+  const toggle = useCallback(() => {
+    if (!isOpen && profile && !profile.consentedAt) {
+      setShowConsentDialog(true)
+      return
+    }
+    setIsOpen((v) => !v)
+  }, [isOpen, profile])
   const open = useCallback(() => {
+    if (profile && !profile.consentedAt) {
+      setShowConsentDialog(true)
+      return
+    }
     previousFocusRef.current = document.activeElement as HTMLElement | null
     setIsOpen(true)
-  }, [])
+  }, [profile])
   const close = useCallback(() => {
     setIsOpen(false)
     const el = previousFocusRef.current
@@ -150,6 +168,11 @@ export function AgentSidebarProvider({
   const profileId = profile?._id ?? null
   const threadId = profile?.agentThreadId ?? null
   const isReady = profileId !== null && threadId !== null
+
+  const handleConsented = useCallback(() => {
+    setShowConsentDialog(false)
+    setIsOpen(true)
+  }, [])
 
   return (
     <AgentSidebarContext.Provider
@@ -168,6 +191,7 @@ export function AgentSidebarProvider({
       }}
     >
       {children}
+      <ConsentDialog open={showConsentDialog} onConsented={handleConsented} />
     </AgentSidebarContext.Provider>
   )
 }

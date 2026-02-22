@@ -1,0 +1,133 @@
+import { useState } from 'react'
+import { useMutation } from 'convex/react'
+import { api } from '../../../convex/_generated/api'
+import { Button } from '~/components/ui/button'
+import { Checkbox } from '~/components/ui/checkbox'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '~/components/ui/dialog'
+
+export function ConsentDialog({
+  open,
+  onConsented,
+}: {
+  open: boolean
+  onConsented: () => void
+}) {
+  const [agreed, setAgreed] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const recordConsent = useMutation(api.consent.recordConsent)
+
+  const handleConsent = async () => {
+    setSubmitting(true)
+    try {
+      await recordConsent()
+      onConsented()
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <Dialog open={open}>
+      <DialogContent
+        showCloseButton={false}
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        className="max-h-[90vh] overflow-y-auto"
+      >
+        <DialogHeader>
+          <DialogTitle>Before we begin</DialogTitle>
+          <DialogDescription>
+            ASTN uses AI to help build your profile and match you with
+            opportunities. Please review how we handle your data.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3 text-sm text-muted-foreground">
+          <div>
+            <p className="font-medium text-foreground mb-1">
+              What data we collect
+            </p>
+            <p>
+              Profile information you provide (career history, skills, goals),
+              authentication data, and uploaded documents like resumes.
+            </p>
+          </div>
+
+          <div>
+            <p className="font-medium text-foreground mb-1">AI processing</p>
+            <p>
+              Your data is sent to Anthropic's Claude API to power profile
+              enrichment, career matching, and personalized recommendations.
+              Anthropic does not retain your data for training.
+            </p>
+          </div>
+
+          <div>
+            <p className="font-medium text-foreground mb-1">Third parties</p>
+            <p>
+              We use Convex (database), Clerk (authentication), and Anthropic
+              (AI). We do not sell your data.
+            </p>
+          </div>
+
+          <div>
+            <p className="font-medium text-foreground mb-1">Your rights</p>
+            <p>
+              You can access, export, or delete your data at any time via
+              Settings. You can withdraw consent by deleting your account.
+            </p>
+          </div>
+
+          <p className="text-xs">
+            Full details in our{' '}
+            <a
+              href="/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              Privacy Policy
+            </a>{' '}
+            and{' '}
+            <a
+              href="/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              Terms of Use
+            </a>
+            .
+          </p>
+        </div>
+
+        <DialogFooter className="flex-col gap-4 sm:flex-col">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <Checkbox
+              checked={agreed}
+              onCheckedChange={(checked) => setAgreed(checked === true)}
+              className="mt-0.5"
+            />
+            <span className="text-sm">
+              I have read and agree to the Privacy Policy and Terms of Use
+            </span>
+          </label>
+          <Button
+            onClick={handleConsent}
+            disabled={!agreed || submitting}
+            className="w-full"
+          >
+            {submitting ? 'Saving...' : 'I agree and continue'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
