@@ -113,7 +113,7 @@ export function BookingCalendar({
         DayButton: CustomDayButton,
       }}
       classNames={{
-        root: 'p-3',
+        root: 'relative p-3',
         months: 'flex flex-col sm:flex-row gap-4',
         month: 'space-y-4',
         month_caption: 'flex justify-center pt-1 relative items-center',
