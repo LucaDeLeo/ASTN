@@ -5,6 +5,7 @@ import { internalAction } from '../_generated/server'
 import { internal } from '../_generated/api'
 import { log } from '../lib/logging'
 import {
+  renderDeadlineReminder,
   renderEventDigest,
   renderMatchAlert,
   renderWeeklyDigest,
@@ -138,6 +139,7 @@ export const processMatchAlertBatch = internalAction({
                 (r: { type: string; action: string; priority: string }) =>
                   r.action,
               ),
+            deadline: opportunity.deadline,
           })),
           unsubscribeUrl,
         })
@@ -232,6 +234,12 @@ export const processWeeklyDigestBatch = internalAction({
           }),
         )
 
+        // Get matches closing soon for this user
+        const closingSoon = await ctx.runQuery(
+          internal.emails.send.getMatchesClosingSoon,
+          { profileId: user.profileId },
+        )
+
         // Generate profile nudges
         const profileNudges: Array<string> = []
 
@@ -261,6 +269,7 @@ export const processWeeklyDigestBatch = internalAction({
           userName: user.userName,
           newMatchesCount: recentMatches.length,
           topOpportunities,
+          closingSoon,
           profileNudges,
           unsubscribeUrl,
         })
@@ -278,6 +287,112 @@ export const processWeeklyDigestBatch = internalAction({
     }
 
     log('info', 'Weekly digest batch complete', {
+      emailsSent,
+      processed: users.length,
+    })
+    return { processed: users.length, emailsSent }
+  },
+})
+
+// ===== Deadline Reminder Batch Processing =====
+
+// Target hour for deadline reminder emails (8 AM user local time)
+const DEADLINE_REMINDER_TARGET_HOUR = 8
+
+interface DeadlineReminderUser {
+  userId: string
+  email: string
+  timezone: string
+  profileId: Id<'profiles'>
+  userName: string
+}
+
+/**
+ * Process deadline reminder emails for users in the current timezone bucket
+ * Runs hourly at :15 to catch users whose local time is 8 AM
+ */
+export const processDeadlineReminderBatch = internalAction({
+  args: {},
+  handler: async (ctx) => {
+    log('info', 'Starting deadline reminder batch processing')
+
+    const users: Array<DeadlineReminderUser> = await ctx.runQuery(
+      internal.emails.send.getUsersForDeadlineReminderBatch,
+      { targetLocalHour: DEADLINE_REMINDER_TARGET_HOUR },
+    )
+
+    if (users.length === 0) {
+      log('info', 'No users in the 8 AM timezone bucket for deadline reminders')
+      return { processed: 0, emailsSent: 0 }
+    }
+
+    log('info', 'Processing users for deadline reminders', {
+      userCount: users.length,
+    })
+
+    let emailsSent = 0
+
+    for (let i = 0; i < users.length; i += BATCH_SIZE) {
+      const batch = users.slice(i, i + BATCH_SIZE)
+
+      for (const user of batch) {
+        const { oneDay, sevenDay } = await ctx.runQuery(
+          internal.emails.send.getMatchesNeedingDeadlineReminder,
+          { profileId: user.profileId },
+        )
+
+        if (oneDay.length === 0 && sevenDay.length === 0) {
+          continue
+        }
+
+        const unsubscribeUrl = getUnsubscribeUrl(user.profileId)
+        const emailContent = await renderDeadlineReminder({
+          userName: user.userName,
+          oneDay,
+          sevenDay,
+          unsubscribeUrl,
+        })
+
+        // Build subject line
+        let subject: string
+        if (oneDay.length > 0) {
+          subject = `${oneDay.length} ${oneDay.length === 1 ? 'opportunity closes' : 'opportunities close'} today`
+        } else {
+          subject = `${sevenDay.length} ${sevenDay.length === 1 ? 'opportunity closes' : 'opportunities close'} this week`
+        }
+
+        await ctx.runMutation(internal.emails.send.sendDeadlineReminder, {
+          to: user.email,
+          subject,
+          html: emailContent,
+          unsubscribeUrl,
+        })
+
+        // Mark reminders as sent
+        if (oneDay.length > 0) {
+          await ctx.runMutation(
+            internal.emails.send.markDeadlineRemindersSent,
+            {
+              matchIds: oneDay.map((m) => m.matchId),
+              reminderType: 'oneDay',
+            },
+          )
+        }
+        if (sevenDay.length > 0) {
+          await ctx.runMutation(
+            internal.emails.send.markDeadlineRemindersSent,
+            {
+              matchIds: sevenDay.map((m) => m.matchId),
+              reminderType: 'sevenDay',
+            },
+          )
+        }
+
+        emailsSent++
+      }
+    }
+
+    log('info', 'Deadline reminder batch complete', {
       emailsSent,
       processed: users.length,
     })

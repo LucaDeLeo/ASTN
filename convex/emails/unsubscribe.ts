@@ -69,10 +69,11 @@ export const disableAllNotifications = internalMutation({
     const profile = await ctx.db.get('profiles', profileId)
     if (!profile) return null
 
-    // Disable match alerts and weekly digest
+    // Disable match alerts, weekly digest, and deadline reminders
     const prefs = profile.notificationPreferences ?? {
       matchAlerts: { enabled: false },
       weeklyDigest: { enabled: false },
+      deadlineReminders: { enabled: false },
       timezone: 'UTC',
     }
 
@@ -81,6 +82,7 @@ export const disableAllNotifications = internalMutation({
         ...prefs,
         matchAlerts: { enabled: false },
         weeklyDigest: { enabled: false },
+        deadlineReminders: { enabled: false },
       },
     })
 

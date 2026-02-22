@@ -9,6 +9,7 @@
 - [ ] Location doesn't work — _partially fixed: `formatLocation.ts` handles period→comma, but edge cases remain with inconsistent source data_
 - [x] Some matches are duplicated — _fixed: fuzzy dedup in `convex/aggregation/dedup.ts` + match mutation duplicate prevention_
 - [ ] Location string formatting inconsistent ("San Francisco Bay Area.USA" — period instead of comma) — _partially fixed: `formatLocation()` handles this case, but source data still varies across aggregators_
+- [ ] Bottom mobile nav bar sometimes visible on desktop — _`MobileShell` is gated by `useIsMobile()` hook but `BottomTabBar` has no defensive `md:hidden` class; likely a hydration/resize race condition. One-line fix: add `md:hidden` to the `<nav>` in `bottom-tab-bar.tsx`_
 
 ---
 
@@ -31,6 +32,9 @@
 - [x] Add streaming to chat
 - [x] Extract info in a better, clearer way
 - [x] Consider moving chat to its own separate section/page — _moved to persistent sidebar; `/profile/agent` is a legacy redirect_
+- [x] Robustify chatbot prompt so it knows PDFs/CVs can be read and processed — _added document processing capability and CV/resume mention to system prompt_
+- [x] Agent should explain its own capabilities to the user (what it can do, file uploads, etc.) — _system prompt now lists all 5 capabilities and instructs agent to mention them when asked_
+- [x] Improve mobile LLM chat view — _responsive bubbles (95%/80%), touch-target buttons, responsive padding, safe-area inset for notched devices_
 
 ---
 
@@ -52,6 +56,8 @@
 - [ ] Revamp entire profile + settings flow — `/settings` route now exists with notification prefs, privacy, and location toggle, but still needs a unified UX pass tying profile editing + settings together
 - [x] Add info to landing page explaining it's a prototype and what features are available — _"Prototype" badge in hero section_
 - [ ] Add application form fields as standard profile fields — career stage, fields of study, location, profile URL / LinkedIn, other profile link, proudest achievement, AI safety engagement, relevant skills. Pre-fill applications from profile and keep profile as the canonical source.
+- [ ] Robustify LinkedIn link parser — _backend `validateLinkedInUrl()` in `convex/extraction/linkedin.ts` is solid (handles protocol, subdomains, query params, normalizes to canonical form). **Frontend** regex in `LinkedInImport.tsx` is the weak link: just checks `linkedin.com/in/` loosely, doesn't handle `/pub/` legacy URLs. Fix frontend to match backend robustness._
+- [ ] When a user gets linked from BAISH CRM, prompt them to upload their CV — _no referral URL params exist (`?ref=`, `?source=`). BAISH import is server-side only (`baishImport.ts` pulls from Airtable). Users arriving from BAISH get no special onboarding flow or CV prompt._
 
 ---
 
@@ -71,6 +77,7 @@
 - [x] Set `UNSUBSCRIBE_SECRET` on prod
 - [ ] Verify Gmail shows native "Unsubscribe" button next to sender name — _headers implemented, needs manual Gmail verification_
 - [ ] Add unsubscribe link to email footer templates (currently just "Manage notification preferences")
+- [ ] Email notifications for org admins (new applications, profile updates, etc.) — _no admin email system exists; current emails are user-facing only (match alerts, weekly digests, event digests). Org admin actions only create in-app notifications via `createNotification()` in `orgApplications.ts`_
 
 ---
 
@@ -80,6 +87,7 @@
 - [ ] Make it easy to apply to orgs and see which are near — _`/orgs` has map + search + country filters; "apply" flow still unclear_
 - [x] Add robust feedback feature — _`feedback-dialog.tsx` with floating button, backend mutation, hamburger menu integration_
 - [x] Add active states to navigation — _`activeProps` on desktop, `isActive()` on mobile bottom tabs, profile nav highlighting_
+- [ ] If user is admin of an org, show org name prominently in the nav bar — _org name currently only appears in breadcrumbs on admin sub-pages (`OrgName / Admin / Members`); global `AuthHeader` and hamburger menu show no org context_
 
 ---
 

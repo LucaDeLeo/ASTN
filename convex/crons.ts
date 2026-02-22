@@ -28,6 +28,15 @@ crons.hourly(
   {},
 )
 
+// Run hourly at :15 to process deadline reminders for each timezone's 8 AM
+// Offset from match alerts at :00 and event digests at :30
+crons.cron(
+  'send-deadline-reminders',
+  '15 * * * *',
+  internal.emails.batchActions.processDeadlineReminderBatch,
+  {},
+)
+
 // Run weekly on Sunday evening UTC
 // Covers Sunday afternoon/evening in Americas
 crons.weekly(

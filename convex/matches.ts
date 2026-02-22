@@ -102,6 +102,11 @@ export const getMyMatches = query({
       .filter((m) => m.status === 'saved')
       .sort((a, b) => b.score - a.score)
 
+    // Applied matches (cross-cutting view — orthogonal to status)
+    const appliedMatches = validMatches
+      .filter((m) => m.appliedAt != null)
+      .sort((a, b) => (b.appliedAt ?? 0) - (a.appliedAt ?? 0))
+
     // Filter to only active matches (exclude dismissed and saved)
     const activeMatches = validMatches.filter(
       (m) => m.status !== 'dismissed' && m.status !== 'saved',
@@ -134,6 +139,7 @@ export const getMyMatches = query({
     return {
       matches: grouped,
       savedMatches,
+      appliedMatches,
       allRecommendations,
       newMatchCount,
       computedAt,
@@ -365,5 +371,35 @@ export const saveMatch = mutation({
     // Toggle: if already saved, unsave (set to active)
     const newStatus = match.status === 'saved' ? 'active' : 'saved'
     await ctx.db.patch('matches', matchId, { status: newStatus })
+  },
+})
+
+/**
+ * Mark a match as applied (toggle) — orthogonal to saved/dismissed status
+ */
+export const markAsApplied = mutation({
+  args: { matchId: v.id('matches') },
+  returns: v.null(),
+  handler: async (ctx, { matchId }) => {
+    const userId = await getUserId(ctx)
+    if (!userId) throw new Error('Not authenticated')
+
+    const match = await ctx.db.get('matches', matchId)
+    if (!match) throw new Error('Match not found')
+
+    // Verify ownership
+    const profile = await ctx.db
+      .query('profiles')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .unique()
+    if (!profile || match.profileId !== profile._id) {
+      throw new Error('Not authorized')
+    }
+
+    // Toggle: if already applied, clear it; otherwise set timestamp
+    await ctx.db.patch('matches', matchId, {
+      appliedAt: match.appliedAt ? undefined : Date.now(),
+    })
+    return null
   },
 })

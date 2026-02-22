@@ -29,6 +29,7 @@ interface MatchAlertProps {
     tier: string
     explanation: string
     recommendations: Array<string>
+    deadline?: number
   }>
   unsubscribeUrl?: string
 }
@@ -82,6 +83,20 @@ export function MatchAlertEmail({
                   {match.title}
                 </Text>
                 <Text className="text-gray-600 text-sm mb-2">{match.org}</Text>
+                {match.deadline &&
+                  match.deadline - Date.now() <= 7 * 24 * 60 * 60 * 1000 && (
+                    <Text className="text-red-600 text-sm font-semibold mb-2">
+                      Closing soon —{' '}
+                      {format(new Date(match.deadline), 'MMM d, yyyy')}
+                    </Text>
+                  )}
+                {match.deadline &&
+                  match.deadline - Date.now() > 7 * 24 * 60 * 60 * 1000 && (
+                    <Text className="text-gray-500 text-sm mb-2">
+                      Deadline:{' '}
+                      {format(new Date(match.deadline), 'MMM d, yyyy')}
+                    </Text>
+                  )}
                 <Text className="text-gray-700 text-sm mb-3">
                   {match.explanation}
                 </Text>
@@ -162,6 +177,14 @@ interface WeeklyDigestProps {
     org: string
     tier: string
   }>
+  closingSoon?: Array<{
+    title: string
+    org: string
+    tier: string
+    deadline: number
+    status: string
+    sourceUrl: string
+  }>
   profileNudges: Array<string>
   unsubscribeUrl?: string
 }
@@ -170,6 +193,7 @@ export function WeeklyDigestEmail({
   userName,
   newMatchesCount,
   topOpportunities,
+  closingSoon,
   profileNudges,
   unsubscribeUrl,
 }: WeeklyDigestProps) {
@@ -240,6 +264,37 @@ export function WeeklyDigestEmail({
                 </Text>
               )}
             </Section>
+
+            {/* Closing Soon Section */}
+            {closingSoon && closingSoon.length > 0 && (
+              <Section className="mb-6">
+                <Text className="text-lg font-semibold mb-3 text-red-600">
+                  Closing Soon
+                </Text>
+                <Section className="bg-red-50 p-4 rounded-lg border border-red-200">
+                  {closingSoon.slice(0, 5).map((item, index) => (
+                    <Section
+                      key={index}
+                      className="mb-2 pb-2 border-b border-red-100 last:border-0 last:mb-0 last:pb-0"
+                    >
+                      <Text className="font-medium text-gray-900 text-sm mb-0">
+                        {item.title}
+                        {item.status === 'saved' && (
+                          <span className="text-xs text-gray-500">
+                            {' '}
+                            (saved)
+                          </span>
+                        )}
+                      </Text>
+                      <Text className="text-gray-500 text-xs">
+                        {item.org} — Deadline:{' '}
+                        {format(new Date(item.deadline), 'MMM d, yyyy')}
+                      </Text>
+                    </Section>
+                  ))}
+                </Section>
+              </Section>
+            )}
 
             {/* Profile Improvement Suggestions */}
             {profileNudges.length > 0 && (
@@ -480,4 +535,200 @@ export async function renderEventDigest(
   props: EventDigestProps,
 ): Promise<string> {
   return await render(<EventDigestEmail {...props} />)
+}
+
+// ===== Deadline Reminder Email =====
+
+const RED = '#DC2626'
+
+interface DeadlineReminderItem {
+  title: string
+  org: string
+  tier: string
+  deadline: number
+  isSaved: boolean
+  sourceUrl: string
+}
+
+interface DeadlineReminderProps {
+  userName: string
+  oneDay: Array<DeadlineReminderItem>
+  sevenDay: Array<DeadlineReminderItem>
+  unsubscribeUrl?: string
+}
+
+export function DeadlineReminderEmail({
+  userName,
+  oneDay,
+  sevenDay,
+  unsubscribeUrl,
+}: DeadlineReminderProps) {
+  const previewText =
+    oneDay.length > 0
+      ? `${oneDay.length} ${oneDay.length === 1 ? 'opportunity closes' : 'opportunities close'} today`
+      : `${sevenDay.length} ${sevenDay.length === 1 ? 'opportunity closes' : 'opportunities close'} this week`
+
+  return (
+    <Html>
+      <Head />
+      <Preview>{previewText}</Preview>
+      <Tailwind>
+        <Body className="bg-gray-100 font-sans">
+          <Container className="bg-white mx-auto my-8 p-8 rounded-lg max-w-xl">
+            {/* Header with Logo */}
+            <Section>
+              <Img
+                src="https://safetytalent.org/logo.png"
+                width="120"
+                height="40"
+                alt="ASTN"
+                className="mx-auto mb-4"
+              />
+            </Section>
+
+            {/* Greeting */}
+            <Text className="text-xl font-semibold text-gray-900 mb-2">
+              Hi {userName},
+            </Text>
+            <Text className="text-gray-600 mb-6">
+              {oneDay.length > 0
+                ? "Don't miss out — some of your matched opportunities are closing very soon."
+                : 'Some of your matched opportunities are closing this week.'}
+            </Text>
+
+            {/* Last Day to Apply Section */}
+            {oneDay.length > 0 && (
+              <Section className="mb-6">
+                <Text
+                  className="text-lg font-semibold mb-3"
+                  style={{ color: RED }}
+                >
+                  Last Day to Apply
+                </Text>
+                {oneDay.map((item, index) => (
+                  <Section
+                    key={index}
+                    className="mb-4 p-4 border-l-4 rounded-r-lg bg-red-50"
+                    style={{ borderLeftColor: RED }}
+                  >
+                    <Text className="font-bold text-gray-900 mb-1 text-base">
+                      {item.title}
+                      {item.isSaved && (
+                        <span className="text-xs text-gray-500 font-normal">
+                          {' '}
+                          (saved)
+                        </span>
+                      )}
+                    </Text>
+                    <Text className="text-gray-600 text-sm mb-1">
+                      {item.org}
+                    </Text>
+                    <Text className="text-red-600 text-sm font-semibold mb-3">
+                      Deadline: {format(new Date(item.deadline), 'MMM d, yyyy')}
+                    </Text>
+                    {item.sourceUrl && (
+                      <Button
+                        href={item.sourceUrl}
+                        className="px-4 py-2 text-white text-sm font-medium rounded"
+                        style={{ backgroundColor: RED }}
+                      >
+                        Apply Now
+                      </Button>
+                    )}
+                  </Section>
+                ))}
+              </Section>
+            )}
+
+            {/* Closing This Week Section */}
+            {sevenDay.length > 0 && (
+              <Section className="mb-6">
+                <Text
+                  className="text-lg font-semibold mb-3"
+                  style={{ color: CORAL }}
+                >
+                  Closing This Week
+                </Text>
+                {sevenDay.map((item, index) => (
+                  <Section
+                    key={index}
+                    className="mb-4 p-4 border-l-4 rounded-r-lg bg-gray-50"
+                    style={{ borderLeftColor: CORAL }}
+                  >
+                    <Text className="font-bold text-gray-900 mb-1 text-base">
+                      {item.title}
+                      {item.isSaved && (
+                        <span className="text-xs text-gray-500 font-normal">
+                          {' '}
+                          (saved)
+                        </span>
+                      )}
+                    </Text>
+                    <Text className="text-gray-600 text-sm mb-1">
+                      {item.org}
+                    </Text>
+                    <Text className="text-gray-500 text-sm mb-3">
+                      Deadline: {format(new Date(item.deadline), 'MMM d, yyyy')}
+                    </Text>
+                    {item.sourceUrl && (
+                      <Button
+                        href={item.sourceUrl}
+                        className="px-4 py-2 text-white text-sm font-medium rounded"
+                        style={{ backgroundColor: CORAL }}
+                      >
+                        View Opportunity
+                      </Button>
+                    )}
+                  </Section>
+                ))}
+              </Section>
+            )}
+
+            <Hr className="my-6 border-gray-200" />
+
+            {/* CTA Button */}
+            <Section className="text-center">
+              <Button
+                href="https://safetytalent.org/matches"
+                className="px-6 py-3 text-white font-semibold rounded-lg"
+                style={{ backgroundColor: CORAL }}
+              >
+                View All Matches
+              </Button>
+            </Section>
+
+            <Hr className="my-6 border-gray-200" />
+
+            {/* Footer */}
+            <Text className="text-xs text-gray-400 text-center">
+              AI Safety Talent Network - Connecting talent with AI safety
+              opportunities
+            </Text>
+            <Text className="text-xs text-gray-400 text-center">
+              <a
+                href="https://safetytalent.org/settings"
+                className="text-gray-400"
+              >
+                Manage notification preferences
+              </a>
+              {unsubscribeUrl && (
+                <>
+                  {' | '}
+                  <a href={unsubscribeUrl} className="text-gray-400">
+                    Unsubscribe
+                  </a>
+                </>
+              )}
+            </Text>
+          </Container>
+        </Body>
+      </Tailwind>
+    </Html>
+  )
+}
+
+export async function renderDeadlineReminder(
+  props: DeadlineReminderProps,
+): Promise<string> {
+  return await render(<DeadlineReminderEmail {...props} />)
 }

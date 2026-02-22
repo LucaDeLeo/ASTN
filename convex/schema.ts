@@ -209,6 +209,7 @@ export default defineSchema({
         weeklyDigest: v.object({
           enabled: v.boolean(),
         }),
+        deadlineReminders: v.optional(v.object({ enabled: v.boolean() })),
         timezone: v.string(), // IANA timezone, e.g., "America/New_York"
       }),
     ),
@@ -602,6 +603,17 @@ export default defineSchema({
         deadline: v.optional(v.number()),
       }),
     ),
+
+    // Deadline reminder tracking (prevents duplicate emails)
+    deadlineRemindersSent: v.optional(
+      v.object({
+        sevenDay: v.optional(v.boolean()),
+        oneDay: v.optional(v.boolean()),
+      }),
+    ),
+
+    // Application tracking (orthogonal to status — a match can be saved AND applied)
+    appliedAt: v.optional(v.number()),
 
     // Metadata
     isNew: v.boolean(), // For "new high-fit" prioritization

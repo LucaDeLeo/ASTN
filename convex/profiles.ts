@@ -358,7 +358,13 @@ export const getNotificationPreferences = query({
       return null
     }
 
-    return profile.notificationPreferences ?? null
+    if (!profile.notificationPreferences) return null
+    return {
+      ...profile.notificationPreferences,
+      deadlineReminders: profile.notificationPreferences.deadlineReminders ?? {
+        enabled: true,
+      },
+    }
   },
 })
 
@@ -377,11 +383,17 @@ export const updateNotificationPreferences = mutation({
   args: {
     matchAlertsEnabled: v.boolean(),
     weeklyDigestEnabled: v.boolean(),
+    deadlineRemindersEnabled: v.boolean(),
     timezone: v.string(),
   },
   handler: async (
     ctx,
-    { matchAlertsEnabled, weeklyDigestEnabled, timezone },
+    {
+      matchAlertsEnabled,
+      weeklyDigestEnabled,
+      deadlineRemindersEnabled,
+      timezone,
+    },
   ) => {
     const userId = await getUserId(ctx)
     if (!userId) {
@@ -424,6 +436,7 @@ export const updateNotificationPreferences = mutation({
       notificationPreferences: {
         matchAlerts: { enabled: matchAlertsEnabled },
         weeklyDigest: { enabled: weeklyDigestEnabled },
+        deadlineReminders: { enabled: deadlineRemindersEnabled },
         timezone,
       },
       updatedAt: Date.now(),

@@ -23,6 +23,7 @@ import { Spinner } from '~/components/ui/spinner'
 import { PullToRefresh } from '~/components/ui/pull-to-refresh'
 import { MatchTierSection } from '~/components/matches/MatchTierSection'
 import { SavedMatchesSection } from '~/components/matches/SavedMatchesSection'
+import { AppliedMatchesSection } from '~/components/matches/AppliedMatchesSection'
 import { CareerActionsSection } from '~/components/actions/CareerActionsSection'
 import { GrowthAreas } from '~/components/matches/GrowthAreas'
 
@@ -308,7 +309,8 @@ function MatchesContent() {
     )
   }
 
-  const { matches, savedMatches, computedAt, matchesStaleAt } = matchesData
+  const { matches, savedMatches, appliedMatches, computedAt, matchesStaleAt } =
+    matchesData
   const hasMatches =
     matches.great.length + matches.good.length + matches.exploring.length > 0
   const hasSavedMatches = savedMatches.length > 0
@@ -389,6 +391,9 @@ function MatchesContent() {
 
           {/* Saved matches section (animates in/out, collapsed by default) */}
           <SavedMatchesSection matches={savedMatches} />
+
+          {/* Applied matches section */}
+          {appliedMatches && <AppliedMatchesSection matches={appliedMatches} />}
 
           {/* Match sections by tier */}
           {hasMatches && (

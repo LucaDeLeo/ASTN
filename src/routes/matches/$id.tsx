@@ -1,11 +1,17 @@
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
-import { AuthLoading, Authenticated, Unauthenticated } from 'convex/react'
+import {
+  AuthLoading,
+  Authenticated,
+  Unauthenticated,
+  useMutation,
+} from 'convex/react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
 import {
   AlertTriangle,
   ArrowLeft,
   Calendar,
+  Check,
   CheckCircle,
   Compass,
   ExternalLink,
@@ -14,7 +20,8 @@ import {
   Sparkles,
   ThumbsUp,
 } from 'lucide-react'
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
+import { toast } from 'sonner'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { AuthHeader } from '~/components/layout/auth-header'
@@ -95,6 +102,20 @@ function MatchDetailContent() {
       matchId: id as Id<'matches'>,
     }),
   )
+
+  const markAsApplied = useMutation(api.matches.markAsApplied)
+  const isApplied = !!match?.appliedAt
+
+  const handleToggleApplied = useCallback(async () => {
+    if (!match) return
+    const wasApplied = !!match.appliedAt
+    await markAsApplied({ matchId: match._id })
+    if (!wasApplied) {
+      toast.success('Nice work! Application tracked.', {
+        description: match.opportunity.organization,
+      })
+    }
+  }, [match, markAsApplied])
 
   if (match === null) {
     return (
@@ -196,16 +217,30 @@ function MatchDetailContent() {
               </div>
             </div>
 
-            <Button asChild className="w-full sm:w-auto shrink-0">
-              <a
-                href={match.opportunity.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
+              <Button asChild className="w-full sm:w-auto">
+                <a
+                  href={match.opportunity.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ExternalLink className="size-4 mr-2" />
+                  Apply
+                </a>
+              </Button>
+              <Button
+                variant={isApplied ? 'secondary' : 'outline'}
+                className={
+                  isApplied
+                    ? 'w-full sm:w-auto bg-violet-100 text-violet-800 hover:bg-violet-200'
+                    : 'w-full sm:w-auto'
+                }
+                onClick={handleToggleApplied}
               >
-                <ExternalLink className="size-4 mr-2" />
-                Apply
-              </a>
-            </Button>
+                <Check className="size-4 mr-2" />
+                {isApplied ? 'Applied' : 'Mark as Applied'}
+              </Button>
+            </div>
           </div>
         </Card>
 

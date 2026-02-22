@@ -258,6 +258,299 @@ export const getOpportunity = internalQuery({
   },
 })
 
+/**
+ * Get matches closing soon for a profile (deadline within 7 days)
+ * Used in weekly digest "Closing Soon" section
+ */
+export const getMatchesClosingSoon = internalQuery({
+  args: { profileId: v.id('profiles') },
+  returns: v.array(
+    v.object({
+      title: v.string(),
+      org: v.string(),
+      tier: v.string(),
+      deadline: v.number(),
+      status: v.string(),
+      sourceUrl: v.string(),
+    }),
+  ),
+  handler: async (ctx, { profileId }) => {
+    const matches = await ctx.db
+      .query('matches')
+      .withIndex('by_profile', (q) => q.eq('profileId', profileId))
+      .collect()
+
+    const now = Date.now()
+    const sevenDaysFromNow = now + 7 * 24 * 60 * 60 * 1000
+
+    const closingSoon: Array<{
+      title: string
+      org: string
+      tier: string
+      deadline: number
+      status: string
+      sourceUrl: string
+    }> = []
+
+    for (const match of matches) {
+      // Only saved or active, great or good tier
+      const status = match.status ?? 'active'
+      if (status !== 'saved' && status !== 'active') continue
+      if (match.tier !== 'great' && match.tier !== 'good') continue
+      if (match.appliedAt) continue
+
+      // Check deadline from snapshot
+      const deadline = match.opportunitySnapshot?.deadline
+      if (!deadline || deadline <= now || deadline > sevenDaysFromNow) continue
+
+      closingSoon.push({
+        title: match.opportunitySnapshot?.title ?? 'Unknown',
+        org: match.opportunitySnapshot?.organization ?? 'Unknown',
+        tier: match.tier,
+        deadline,
+        status,
+        sourceUrl: match.opportunitySnapshot?.sourceUrl ?? '',
+      })
+    }
+
+    // Sort by deadline ascending
+    return closingSoon.sort((a, b) => a.deadline - b.deadline)
+  },
+})
+
+// ===== Deadline Reminder Email Functions =====
+
+/**
+ * Get users whose local time matches the target hour for deadline reminders
+ * Same pattern as getUsersForMatchAlertBatch but filters on deadlineReminders pref
+ */
+export const getUsersForDeadlineReminderBatch = internalQuery({
+  args: { targetLocalHour: v.number() },
+  returns: v.array(
+    v.object({
+      userId: v.string(),
+      email: v.string(),
+      timezone: v.string(),
+      profileId: v.id('profiles'),
+      userName: v.string(),
+    }),
+  ),
+  handler: async (ctx, { targetLocalHour }) => {
+    const profiles = await ctx.db.query('profiles').collect()
+    const now = new Date()
+
+    // Filter: deadline reminders enabled (missing = enabled) + correct timezone hour
+    const eligible = profiles.filter((profile) => {
+      if (!profile.notificationPreferences) return false
+      const deadlineReminders =
+        profile.notificationPreferences.deadlineReminders
+      if (deadlineReminders && !deadlineReminders.enabled) return false
+      const timezone = profile.notificationPreferences.timezone || 'UTC'
+      const userLocalTime = toZonedTime(now, timezone)
+      const userLocalHour = userLocalTime.getHours()
+      return userLocalHour === targetLocalHour
+    })
+
+    const emails = await Promise.all(
+      eligible.map((p) => getLegacyUserEmail(ctx, p.userId)),
+    )
+
+    log('info', 'getUsersForDeadlineReminderBatch', {
+      totalProfiles: profiles.length,
+      eligible: eligible.length,
+    })
+
+    const usersToNotify: Array<{
+      userId: string
+      email: string
+      timezone: string
+      profileId: (typeof profiles)[0]['_id']
+      userName: string
+    }> = []
+
+    for (let i = 0; i < eligible.length; i++) {
+      const email = emails[i]
+      const profile = eligible[i]
+      if (email) {
+        usersToNotify.push({
+          userId: profile.userId,
+          email,
+          timezone: profile.notificationPreferences?.timezone || 'UTC',
+          profileId: profile._id,
+          userName: profile.name || 'there',
+        })
+      }
+    }
+
+    return usersToNotify
+  },
+})
+
+/**
+ * Get matches needing deadline reminders for a profile
+ * Returns oneDay (deadline <= 24h) and sevenDay (deadline <= 7d but > 1d) buckets
+ */
+export const getMatchesNeedingDeadlineReminder = internalQuery({
+  args: { profileId: v.id('profiles') },
+  returns: v.object({
+    oneDay: v.array(
+      v.object({
+        matchId: v.id('matches'),
+        title: v.string(),
+        org: v.string(),
+        tier: v.string(),
+        deadline: v.number(),
+        isSaved: v.boolean(),
+        sourceUrl: v.string(),
+      }),
+    ),
+    sevenDay: v.array(
+      v.object({
+        matchId: v.id('matches'),
+        title: v.string(),
+        org: v.string(),
+        tier: v.string(),
+        deadline: v.number(),
+        isSaved: v.boolean(),
+        sourceUrl: v.string(),
+      }),
+    ),
+  }),
+  handler: async (ctx, { profileId }) => {
+    const matches = await ctx.db
+      .query('matches')
+      .withIndex('by_profile', (q) => q.eq('profileId', profileId))
+      .collect()
+
+    const now = Date.now()
+    const oneDayFromNow = now + 24 * 60 * 60 * 1000
+    const sevenDaysFromNow = now + 7 * 24 * 60 * 60 * 1000
+
+    const oneDay: Array<{
+      matchId: (typeof matches)[0]['_id']
+      title: string
+      org: string
+      tier: string
+      deadline: number
+      isSaved: boolean
+      sourceUrl: string
+    }> = []
+
+    const sevenDay: Array<{
+      matchId: (typeof matches)[0]['_id']
+      title: string
+      org: string
+      tier: string
+      deadline: number
+      isSaved: boolean
+      sourceUrl: string
+    }> = []
+
+    for (const match of matches) {
+      const status = match.status ?? 'active'
+      if (status !== 'saved' && status !== 'active') continue
+      if (match.tier !== 'great' && match.tier !== 'good') continue
+      if (match.appliedAt) continue
+
+      // Use snapshot deadline, then verify with live opportunity
+      const snapshotDeadline = match.opportunitySnapshot?.deadline
+      if (!snapshotDeadline || snapshotDeadline <= now) continue
+
+      // Fetch live opportunity to verify deadline hasn't changed
+      const opportunity = await ctx.db.get('opportunities', match.opportunityId)
+      const deadline = opportunity?.deadline ?? snapshotDeadline
+      if (deadline <= now || deadline > sevenDaysFromNow) continue
+
+      const item = {
+        matchId: match._id,
+        title:
+          match.opportunitySnapshot?.title ?? opportunity?.title ?? 'Unknown',
+        org:
+          match.opportunitySnapshot?.organization ??
+          opportunity?.organization ??
+          'Unknown',
+        tier: match.tier,
+        deadline,
+        isSaved: status === 'saved',
+        sourceUrl:
+          match.opportunitySnapshot?.sourceUrl ?? opportunity?.sourceUrl ?? '',
+      }
+
+      if (deadline <= oneDayFromNow) {
+        // One-day bucket: not already sent
+        if (!match.deadlineRemindersSent?.oneDay) {
+          oneDay.push(item)
+        }
+      } else {
+        // Seven-day bucket: not already sent
+        if (!match.deadlineRemindersSent?.sevenDay) {
+          sevenDay.push(item)
+        }
+      }
+    }
+
+    return {
+      oneDay: oneDay.sort((a, b) => a.deadline - b.deadline),
+      sevenDay: sevenDay.sort((a, b) => a.deadline - b.deadline),
+    }
+  },
+})
+
+/**
+ * Mark deadline reminders as sent for matches
+ */
+export const markDeadlineRemindersSent = internalMutation({
+  args: {
+    matchIds: v.array(v.id('matches')),
+    reminderType: v.union(v.literal('sevenDay'), v.literal('oneDay')),
+  },
+  returns: v.null(),
+  handler: async (ctx, { matchIds, reminderType }) => {
+    for (const matchId of matchIds) {
+      const match = await ctx.db.get('matches', matchId)
+      if (!match) continue
+      await ctx.db.patch('matches', matchId, {
+        deadlineRemindersSent: {
+          ...match.deadlineRemindersSent,
+          [reminderType]: true,
+        },
+      })
+    }
+    return null
+  },
+})
+
+/**
+ * Send a deadline reminder email
+ */
+export const sendDeadlineReminder = internalMutation({
+  args: {
+    to: v.string(),
+    subject: v.string(),
+    html: v.string(),
+    unsubscribeUrl: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, { to, subject, html, unsubscribeUrl }) => {
+    await resend.sendEmail(ctx, {
+      from: FROM_ADDRESS,
+      to,
+      subject,
+      html,
+      ...(unsubscribeUrl && {
+        headers: [
+          { name: 'List-Unsubscribe', value: `<${unsubscribeUrl}>` },
+          {
+            name: 'List-Unsubscribe-Post',
+            value: 'List-Unsubscribe=One-Click',
+          },
+        ],
+      }),
+    })
+    return null
+  },
+})
+
 // ===== Event Digest Email Functions =====
 
 /**

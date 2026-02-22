@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Bookmark, BookmarkX, X } from 'lucide-react'
+import { Bookmark, BookmarkX, Check, X } from 'lucide-react'
 import { Card } from '~/components/ui/card'
 import { Badge } from '~/components/ui/badge'
 import { formatLocation } from '~/lib/formatLocation'
@@ -13,6 +13,7 @@ interface MatchCardProps {
     _id: string
     tier: 'great' | 'good' | 'exploring'
     isNew: boolean
+    appliedAt?: number
     explanation: {
       strengths: Array<string>
     }
@@ -161,6 +162,15 @@ export function MatchCard({
               className="bg-orange-100 text-orange-800"
             >
               New
+            </Badge>
+          )}
+          {match.appliedAt && (
+            <Badge
+              variant="secondary"
+              className="bg-violet-100 text-violet-800"
+            >
+              <Check className="mr-1 size-3" />
+              Applied
             </Badge>
           )}
         </div>

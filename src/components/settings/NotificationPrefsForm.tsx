@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from 'convex/react'
 import { useEffect, useId, useState } from 'react'
 import { toast } from 'sonner'
-import { Bell, Globe, Mail } from 'lucide-react'
+import { Bell, Clock, Globe, Mail } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 import {
   Card,
@@ -80,6 +80,7 @@ export function NotificationPrefsForm() {
   // Local state for form
   const [matchAlerts, setMatchAlerts] = useState(false)
   const [weeklyDigest, setWeeklyDigest] = useState(false)
+  const [deadlineReminders, setDeadlineReminders] = useState(true)
   const [timezone, setTimezone] = useState(() => {
     // Auto-detect browser timezone
     try {
@@ -96,6 +97,7 @@ export function NotificationPrefsForm() {
     if (preferences) {
       setMatchAlerts(preferences.matchAlerts.enabled)
       setWeeklyDigest(preferences.weeklyDigest.enabled)
+      setDeadlineReminders(preferences.deadlineReminders.enabled)
       setTimezone(preferences.timezone)
       setHasChanges(false)
     }
@@ -112,6 +114,11 @@ export function NotificationPrefsForm() {
     setHasChanges(true)
   }
 
+  const handleDeadlineRemindersChange = (checked: boolean) => {
+    setDeadlineReminders(checked)
+    setHasChanges(true)
+  }
+
   const handleTimezoneChange = (value: string) => {
     setTimezone(value)
     setHasChanges(true)
@@ -123,6 +130,7 @@ export function NotificationPrefsForm() {
       await updatePreferences({
         matchAlertsEnabled: matchAlerts,
         weeklyDigestEnabled: weeklyDigest,
+        deadlineRemindersEnabled: deadlineReminders,
         timezone,
       })
       setHasChanges(false)
@@ -204,6 +212,28 @@ export function NotificationPrefsForm() {
             checked={weeklyDigest}
             onCheckedChange={handleWeeklyDigestChange}
             aria-describedby={weeklyDigestHelpId}
+          />
+        </div>
+
+        {/* Deadline Reminders Toggle */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label
+              htmlFor="deadline-reminders"
+              className="flex items-center gap-2 text-base font-medium"
+            >
+              <Clock className="size-4 text-primary" />
+              Deadline Reminders
+            </Label>
+            <p className="text-sm text-slate-500">
+              Get reminded when saved or matched opportunities are about to
+              close
+            </p>
+          </div>
+          <Switch
+            id="deadline-reminders"
+            checked={deadlineReminders}
+            onCheckedChange={handleDeadlineRemindersChange}
           />
         </div>
 
