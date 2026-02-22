@@ -1,6 +1,7 @@
 import { Link, useNavigate } from '@tanstack/react-router'
-import { Building2, Calendar, MapPin, Users } from 'lucide-react'
+import { Building2, Calendar, Check, MapPin, Users } from 'lucide-react'
 import type { Id } from '../../../convex/_generated/dataModel'
+import { Badge } from '~/components/ui/badge'
 import { Card } from '~/components/ui/card'
 import { Button } from '~/components/ui/button'
 import { cn } from '~/lib/utils'
@@ -16,6 +17,7 @@ export interface OrgCardProps {
     country?: string
     memberCount?: number
     upcomingEventCount?: number
+    isJoined?: boolean
   }
   variant?: 'carousel' | 'list'
 }
@@ -63,7 +65,18 @@ export function OrgCard({ org, variant = 'carousel' }: OrgCardProps) {
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <h3 className="font-medium text-foreground truncate">{org.name}</h3>
+          <div className="flex items-center gap-1.5">
+            <h3 className="font-medium text-foreground truncate">{org.name}</h3>
+            {org.isJoined && (
+              <Badge
+                variant="secondary"
+                className="shrink-0 text-[10px] px-1.5 py-0 h-4 gap-0.5"
+              >
+                <Check className="size-2.5" />
+                Joined
+              </Badge>
+            )}
+          </div>
           {location && (
             <div className="flex items-center gap-1 text-sm text-slate-500 mt-0.5">
               <MapPin className="size-3 shrink-0" />
