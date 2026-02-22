@@ -114,11 +114,12 @@ export function BookingCalendar({
       }}
       classNames={{
         root: 'p-3',
-        months: 'flex flex-col sm:flex-row gap-4',
-        month: 'relative space-y-4',
-        month_caption: 'flex justify-center pt-1 items-center',
+        months: 'flex flex-col sm:flex-row gap-4 justify-center',
+        month: 'grid gap-y-4',
+        month_caption:
+          'flex justify-center items-center col-start-1 row-start-1',
         caption_label: 'text-sm font-medium',
-        nav: 'absolute top-0 inset-x-0 flex items-center justify-between pt-1 z-10',
+        nav: 'flex items-center justify-between col-start-1 row-start-1 z-10',
         button_previous:
           'size-7 bg-transparent p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center rounded-md border border-input hover:bg-accent hover:text-accent-foreground',
         button_next:
