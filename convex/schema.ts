@@ -588,6 +588,21 @@ export default defineSchema({
       }),
     ),
 
+    // Denormalized opportunity snapshot (avoids N+1 reads in getMyMatches)
+    opportunitySnapshot: v.optional(
+      v.object({
+        title: v.string(),
+        organization: v.string(),
+        location: v.string(),
+        isRemote: v.boolean(),
+        roleType: v.string(),
+        experienceLevel: v.optional(v.string()),
+        salaryRange: v.optional(v.string()),
+        sourceUrl: v.string(),
+        deadline: v.optional(v.number()),
+      }),
+    ),
+
     // Metadata
     isNew: v.boolean(), // For "new high-fit" prioritization
     computedAt: v.number(),

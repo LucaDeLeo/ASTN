@@ -157,6 +157,9 @@ export const computeMatchesForProfile = internalAction({
     const totalBatches = Math.ceil(evaluationSet.length / BATCH_SIZE)
     const runTimestamp = Date.now()
 
+    // Fix 4: Build profile context once, pass as string to all batches
+    const profileContext = buildProfileContext(profile)
+
     log('info', 'computeMatchesForProfile: starting chained matching', {
       profileId,
       totalOpportunities: allOpportunities.length,
@@ -179,6 +182,7 @@ export const computeMatchesForProfile = internalAction({
       internal.matching.compute.processMatchBatch,
       {
         profileId,
+        profileContext,
         batchIndex: 0,
         totalBatches,
         retryCount: 0,
@@ -187,6 +191,8 @@ export const computeMatchesForProfile = internalAction({
         runTimestamp,
         validOpportunityIds,
         isFullRecompute,
+        totalOpportunities: evaluationSet.length,
+        startedAt: runTimestamp,
       },
     )
 
@@ -194,10 +200,36 @@ export const computeMatchesForProfile = internalAction({
   },
 })
 
+// Build opportunity snapshot for denormalization into match documents
+function buildOpportunitySnapshot(opp: {
+  title: string
+  organization: string
+  location: string
+  isRemote: boolean
+  roleType: string
+  experienceLevel?: string
+  salaryRange?: string
+  sourceUrl: string
+  deadline?: number
+}) {
+  return {
+    title: opp.title,
+    organization: opp.organization,
+    location: opp.location,
+    isRemote: opp.isRemote,
+    roleType: opp.roleType,
+    experienceLevel: opp.experienceLevel,
+    salaryRange: opp.salaryRange,
+    sourceUrl: opp.sourceUrl,
+    deadline: opp.deadline,
+  }
+}
+
 // Process a single batch of opportunities - called as a chained scheduled action
 export const processMatchBatch = internalAction({
   args: {
     profileId: v.id('profiles'),
+    profileContext: v.string(),
     batchIndex: v.number(),
     totalBatches: v.number(),
     retryCount: v.number(),
@@ -206,11 +238,14 @@ export const processMatchBatch = internalAction({
     runTimestamp: v.number(),
     validOpportunityIds: v.array(v.id('opportunities')),
     isFullRecompute: v.boolean(),
+    totalOpportunities: v.number(),
+    startedAt: v.number(),
   },
   handler: async (
     ctx,
     {
       profileId,
+      profileContext,
       batchIndex,
       totalBatches,
       retryCount,
@@ -219,20 +254,24 @@ export const processMatchBatch = internalAction({
       runTimestamp,
       validOpportunityIds,
       isFullRecompute,
+      totalOpportunities,
+      startedAt,
     },
   ) => {
     const startTime = Date.now()
 
-    const profile = await ctx.runQuery(
-      internal.matching.queries.getFullProfile,
-      { profileId },
-    )
-    if (!profile) {
-      log('error', 'processMatchBatch: profile not found', {
-        profileId,
-        batchIndex,
-      })
-      return
+    // Common args forwarded to all scheduler calls
+    const chainArgs = {
+      profileId,
+      profileContext,
+      totalBatches,
+      previousOppIds,
+      snapshotOpportunityIds,
+      runTimestamp,
+      validOpportunityIds,
+      isFullRecompute,
+      totalOpportunities,
+      startedAt,
     }
 
     // Slice batch from snapshot IDs, then fetch current data
@@ -256,6 +295,39 @@ export const processMatchBatch = internalAction({
 
     const isLastBatch = batchIndex + 1 >= totalBatches
 
+    // Build opportunity snapshots map from this batch (Fix 3b)
+    const opportunitySnapshots: Record<
+      string,
+      {
+        title: string
+        organization: string
+        location: string
+        isRemote: boolean
+        roleType: string
+        experienceLevel?: string
+        salaryRange?: string
+        sourceUrl: string
+        deadline?: number
+      }
+    > = {}
+    for (const opp of batch) {
+      opportunitySnapshots[String(opp._id)] = buildOpportunitySnapshot(opp)
+    }
+
+    // Common args for saveBatchResults calls
+    const saveBatchArgs = {
+      profileId,
+      batchIndex,
+      totalBatches,
+      previousOppIds,
+      runTimestamp,
+      validOpportunityIds,
+      isFullRecompute,
+      opportunitySnapshots,
+      totalOpportunities,
+      startedAt,
+    }
+
     if (batch.length === 0) {
       log('warn', 'processMatchBatch: all opportunities in batch inactive', {
         batchIndex,
@@ -264,31 +336,19 @@ export const processMatchBatch = internalAction({
       // If this is the last batch, still run saveBatchResults to trigger cleanup
       if (isLastBatch) {
         await ctx.runMutation(internal.matching.mutations.saveBatchResults, {
-          profileId,
-          batchIndex,
-          totalBatches,
+          ...saveBatchArgs,
           matches: [],
           modelVersion: MODEL_GEMINI_FAST,
           isLastBatch: true,
-          previousOppIds,
-          runTimestamp,
-          validOpportunityIds,
-          isFullRecompute,
         })
       } else {
         await ctx.scheduler.runAfter(
           RATE_LIMIT_DELAY_MS,
           internal.matching.compute.processMatchBatch,
           {
-            profileId,
+            ...chainArgs,
             batchIndex: batchIndex + 1,
-            totalBatches,
             retryCount: 0,
-            previousOppIds,
-            snapshotOpportunityIds,
-            runTimestamp,
-            validOpportunityIds,
-            isFullRecompute,
           },
         )
       }
@@ -308,7 +368,7 @@ export const processMatchBatch = internalAction({
     }> = []
 
     try {
-      const profileContext = buildProfileContext(profile)
+      // Fix 4: Use pre-built profileContext instead of re-reading profile
       const opportunitiesContext = buildOpportunitiesContext(batch)
 
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! })
@@ -384,15 +444,9 @@ export const processMatchBatch = internalAction({
           delay,
           internal.matching.compute.processMatchBatch,
           {
-            profileId,
+            ...chainArgs,
             batchIndex,
-            totalBatches,
             retryCount: retryCount + 1,
-            previousOppIds,
-            snapshotOpportunityIds,
-            runTimestamp,
-            validOpportunityIds,
-            isFullRecompute,
           },
         )
         return
@@ -407,15 +461,9 @@ export const processMatchBatch = internalAction({
           RATE_LIMIT_DELAY_MS,
           internal.matching.compute.processMatchBatch,
           {
-            profileId,
+            ...chainArgs,
             batchIndex,
-            totalBatches,
             retryCount: 1,
-            previousOppIds,
-            snapshotOpportunityIds,
-            runTimestamp,
-            validOpportunityIds,
-            isFullRecompute,
           },
         )
         return
@@ -430,9 +478,7 @@ export const processMatchBatch = internalAction({
     // Save results when we have matches or this is the final batch
     if (batchMatches.length > 0 || isLastBatch) {
       await ctx.runMutation(internal.matching.mutations.saveBatchResults, {
-        profileId,
-        batchIndex,
-        totalBatches,
+        ...saveBatchArgs,
         matches: batchMatches.map((m) => ({
           opportunityId: m.opportunityId,
           tier: m.tier,
@@ -443,10 +489,6 @@ export const processMatchBatch = internalAction({
         })),
         modelVersion: MODEL_GEMINI_FAST,
         isLastBatch,
-        previousOppIds,
-        runTimestamp,
-        validOpportunityIds,
-        isFullRecompute,
       })
     }
 
@@ -465,15 +507,9 @@ export const processMatchBatch = internalAction({
         RATE_LIMIT_DELAY_MS,
         internal.matching.compute.processMatchBatch,
         {
-          profileId,
+          ...chainArgs,
           batchIndex: batchIndex + 1,
-          totalBatches,
           retryCount: 0,
-          previousOppIds,
-          snapshotOpportunityIds,
-          runTimestamp,
-          validOpportunityIds,
-          isFullRecompute,
         },
       )
     }

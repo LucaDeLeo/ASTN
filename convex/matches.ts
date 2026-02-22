@@ -52,9 +52,20 @@ export const getMyMatches = query({
       }
     }
 
-    // Enrich matches with opportunity data
+    // Enrich matches with opportunity data (use denormalized snapshot when available)
     const enrichedMatches = await Promise.all(
       matches.map(async (match) => {
+        // Use denormalized snapshot if available (avoids N+1 reads)
+        if (match.opportunitySnapshot) {
+          return {
+            ...match,
+            opportunity: {
+              _id: match.opportunityId,
+              ...match.opportunitySnapshot,
+            },
+          }
+        }
+        // Fallback: read live opportunity for pre-migration matches
         const opportunity = await ctx.db.get(
           'opportunities',
           match.opportunityId,

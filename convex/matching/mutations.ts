@@ -57,6 +57,19 @@ export const clearMatchProgress = internalMutation({
   },
 })
 
+// Opportunity snapshot validator (denormalized into match documents)
+const opportunitySnapshotValidator = v.object({
+  title: v.string(),
+  organization: v.string(),
+  location: v.string(),
+  isRemote: v.boolean(),
+  roleType: v.string(),
+  experienceLevel: v.optional(v.string()),
+  salaryRange: v.optional(v.string()),
+  sourceUrl: v.string(),
+  deadline: v.optional(v.number()),
+})
+
 // Save a single batch of match results incrementally (chained action architecture)
 export const saveBatchResults = internalMutation({
   args: {
@@ -70,7 +83,11 @@ export const saveBatchResults = internalMutation({
     runTimestamp: v.number(),
     validOpportunityIds: v.array(v.id('opportunities')),
     isFullRecompute: v.boolean(),
+    opportunitySnapshots: v.record(v.string(), opportunitySnapshotValidator),
+    totalOpportunities: v.number(),
+    startedAt: v.number(),
   },
+  returns: v.null(),
   handler: async (
     ctx,
     {
@@ -84,6 +101,9 @@ export const saveBatchResults = internalMutation({
       runTimestamp,
       validOpportunityIds,
       isFullRecompute,
+      opportunitySnapshots,
+      totalOpportunities,
+      startedAt,
     },
   ) => {
     const existingMatches = await ctx.db
@@ -98,10 +118,14 @@ export const saveBatchResults = internalMutation({
 
     const previousOppSet = new Set(previousOppIds)
 
-    // Per-match replacement with status preservation
+    // Track which opportunity IDs were touched this batch (for cleanup in Fix 2)
+    const touchedOppIds = new Set<string>()
+
+    // Per-match: PATCH existing or INSERT new (Fix 1: avoids delete+insert)
     for (const match of matches) {
       const existing = existingByOppId.get(match.opportunityId)
       const isNew = !previousOppSet.has(match.opportunityId)
+      const snapshot = opportunitySnapshots[String(match.opportunityId)]
 
       // Preserve saved/dismissed status from old match
       const preservedStatus =
@@ -111,58 +135,72 @@ export const saveBatchResults = internalMutation({
           ? existing.status
           : ('active' as const)
 
-      // Delete old match for this opportunity if it exists and is from a previous run
-      if (existing && existing.computedAt !== runTimestamp) {
-        await ctx.db.delete('matches', existing._id)
-      }
+      touchedOppIds.add(String(match.opportunityId))
 
-      await ctx.db.insert('matches', {
-        profileId,
-        opportunityId: match.opportunityId,
-        tier: match.tier,
-        score: match.score,
-        status: preservedStatus,
-        explanation: {
-          strengths: match.strengths,
-          ...(match.gap != null && { gap: match.gap }),
-        },
-        recommendations: match.recommendations,
-        isNew,
-        computedAt: runTimestamp,
-        modelVersion,
-      })
+      if (existing && existing.computedAt === runTimestamp) {
+        // Retry safety: already processed in this run, skip
+        continue
+      } else if (existing) {
+        // Existing match from previous run: PATCH in place
+        await ctx.db.patch('matches', existing._id, {
+          tier: match.tier,
+          score: match.score,
+          status: preservedStatus,
+          explanation: {
+            strengths: match.strengths,
+            ...(match.gap != null && { gap: match.gap }),
+          },
+          recommendations: match.recommendations,
+          isNew,
+          computedAt: runTimestamp,
+          modelVersion,
+          opportunitySnapshot: snapshot,
+        })
+      } else {
+        // Truly new match: INSERT
+        await ctx.db.insert('matches', {
+          profileId,
+          opportunityId: match.opportunityId,
+          tier: match.tier,
+          score: match.score,
+          status: preservedStatus,
+          explanation: {
+            strengths: match.strengths,
+            ...(match.gap != null && { gap: match.gap }),
+          },
+          recommendations: match.recommendations,
+          isNew,
+          computedAt: runTimestamp,
+          modelVersion,
+          opportunitySnapshot: snapshot,
+        })
+      }
     }
 
-    // Update progress on profile
+    // Update progress on profile (Fix 6: use passed args instead of re-reading)
     if (isLastBatch) {
-      // Clear progress entirely on completion
       await ctx.db.patch('profiles', profileId, {
         matchProgress: undefined,
       })
     } else {
-      // Read current progress to preserve totalOpportunities and startedAt
-      const profile = await ctx.db.get('profiles', profileId)
-      const existing = profile?.matchProgress
       await ctx.db.patch('profiles', profileId, {
         matchProgress: {
           totalBatches,
           completedBatches: batchIndex + 1,
-          totalOpportunities: existing?.totalOpportunities ?? 0,
-          startedAt: existing?.startedAt ?? Date.now(),
+          totalOpportunities,
+          startedAt,
         },
       })
     }
 
-    // Last-batch cleanup: remove stale matches
+    // Last-batch cleanup: reuse already-loaded existingMatches (Fix 2: no second .collect())
     if (isLastBatch) {
-      const remainingOld = await ctx.db
-        .query('matches')
-        .withIndex('by_profile', (q) => q.eq('profileId', profileId))
-        .collect()
-
       const validOppSet = new Set(validOpportunityIds.map(String))
 
-      for (const match of remainingOld) {
+      for (const match of existingMatches) {
+        // Skip matches we just touched in this batch
+        if (touchedOppIds.has(String(match.opportunityId))) continue
+
         if (isFullRecompute) {
           // Full recompute: delete anything not from this run
           if (match.computedAt !== runTimestamp) {
@@ -170,7 +208,6 @@ export const saveBatchResults = internalMutation({
           }
         } else {
           // Incremental: delete matches for opps no longer in valid set
-          // (archived/expired/filtered-out opportunities)
           if (!validOppSet.has(String(match.opportunityId))) {
             await ctx.db.delete('matches', match._id)
           }
@@ -188,7 +225,7 @@ export const saveBatchResults = internalMutation({
       isLastBatch,
     })
 
-    return { savedCount: matches.length }
+    return null
   },
 })
 

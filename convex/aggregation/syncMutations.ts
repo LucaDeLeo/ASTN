@@ -2,6 +2,7 @@ import { v } from 'convex/values'
 import { internalMutation } from '../_generated/server'
 import { log } from '../lib/logging'
 import { isSimilarOpportunity } from './dedup'
+import type { Id } from '../_generated/dataModel'
 
 const opportunityValidator = v.object({
   sourceId: v.string(),
@@ -33,21 +34,23 @@ export const upsertOpportunities = internalMutation({
   args: {
     opportunities: v.array(opportunityValidator),
   },
+  returns: v.null(),
   handler: async (ctx, args) => {
     let inserted = 0
     let updated = 0
     let merged = 0
 
+    // Phase 1: Check exact sourceId matches, collect unmatched opps
+    const unmatchedOpps: Array<(typeof args.opportunities)[number]> = []
+
     for (const opp of args.opportunities) {
-      // Check for exact source match first
       const existing = await ctx.db
         .query('opportunities')
         .withIndex('by_source_id', (q) => q.eq('sourceId', opp.sourceId))
         .unique()
 
       if (existing) {
-        // Update existing opportunity, protecting LLM-enriched fields from
-        // being overwritten by lower-quality source data (placeholders)
+        // Update existing opportunity, protecting LLM-enriched fields
         const enrichedFields = existing.enrichedFields || []
         const patch: Record<string, unknown> = {
           title: opp.title,
@@ -67,15 +70,11 @@ export const upsertOpportunities = internalMutation({
 
         const updatedEnrichedFields = [...enrichedFields]
 
-        // location: protect if enriched and source is placeholder
         if (enrichedFields.includes('location')) {
           const isPlaceholder =
             !opp.location ||
             opp.location.toLowerCase().includes('not specified')
-          if (isPlaceholder) {
-            // Keep enriched value
-          } else {
-            // Source has real data — use it, remove from enrichedFields
+          if (!isPlaceholder) {
             patch.location = opp.location
             const idx = updatedEnrichedFields.indexOf('location')
             if (idx !== -1) updatedEnrichedFields.splice(idx, 1)
@@ -84,7 +83,6 @@ export const upsertOpportunities = internalMutation({
           patch.location = opp.location
         }
 
-        // experienceLevel: protect if enriched and source is missing
         if (enrichedFields.includes('experienceLevel')) {
           if (opp.experienceLevel) {
             patch.experienceLevel = opp.experienceLevel
@@ -95,7 +93,6 @@ export const upsertOpportunities = internalMutation({
           patch.experienceLevel = opp.experienceLevel
         }
 
-        // roleType: protect if enriched and source is "other"
         if (enrichedFields.includes('roleType')) {
           if (opp.roleType && opp.roleType !== 'other') {
             patch.roleType = opp.roleType
@@ -106,9 +103,7 @@ export const upsertOpportunities = internalMutation({
           patch.roleType = opp.roleType
         }
 
-        // isRemote: protect if enriched and source has no signal
         if (enrichedFields.includes('isRemote')) {
-          // Always let source override — isRemote is a boolean with no placeholder
           patch.isRemote = opp.isRemote
           const idx = updatedEnrichedFields.indexOf('isRemote')
           if (idx !== -1) updatedEnrichedFields.splice(idx, 1)
@@ -121,77 +116,125 @@ export const upsertOpportunities = internalMutation({
         await ctx.db.patch('opportunities', existing._id, patch)
         updated++
       } else {
-        // Check for fuzzy duplicate from different source
-        const sameOrg = await ctx.db
-          .query('opportunities')
-          .withIndex('by_organization', (q) =>
-            q.eq('organization', opp.organization),
-          )
-          .collect()
+        unmatchedOpps.push(opp)
+      }
+    }
 
-        const duplicate = sameOrg.find((existingOpp) =>
-          isSimilarOpportunity(
-            {
-              title: existingOpp.title,
-              organization: existingOpp.organization,
-            },
-            { title: opp.title, organization: opp.organization },
-          ),
+    // Phase 2: Pre-load org data for all unique orgs from unmatched set
+    const uniqueOrgs = new Set(unmatchedOpps.map((o) => o.organization))
+    const orgMap = new Map<
+      string,
+      Array<{
+        _id: Id<'opportunities'>
+        title: string
+        organization: string
+        alternateSources?: Array<{
+          sourceId: string
+          source: string
+          sourceUrl: string
+        }>
+      }>
+    >()
+
+    for (const org of uniqueOrgs) {
+      const orgOpps = await ctx.db
+        .query('opportunities')
+        .withIndex('by_organization', (q) => q.eq('organization', org))
+        .collect()
+      orgMap.set(
+        org,
+        orgOpps.map((o) => ({
+          _id: o._id,
+          title: o.title,
+          organization: o.organization,
+          alternateSources: o.alternateSources,
+        })),
+      )
+    }
+
+    // Phase 3: Process unmatched opps against pre-loaded org map
+    for (const opp of unmatchedOpps) {
+      const sameOrg = orgMap.get(opp.organization) || []
+
+      const duplicate = sameOrg.find((existingOpp) =>
+        isSimilarOpportunity(
+          {
+            title: existingOpp.title,
+            organization: existingOpp.organization,
+          },
+          { title: opp.title, organization: opp.organization },
+        ),
+      )
+
+      if (duplicate) {
+        const alternateSources = duplicate.alternateSources || []
+        const alreadyListed = alternateSources.some(
+          (s) => s.sourceId === opp.sourceId,
         )
 
-        if (duplicate) {
-          // Add as alternate source
-          const alternateSources = duplicate.alternateSources || []
-          const alreadyListed = alternateSources.some(
-            (s) => s.sourceId === opp.sourceId,
-          )
-
-          if (!alreadyListed) {
-            await ctx.db.patch('opportunities', duplicate._id, {
-              alternateSources: [
-                ...alternateSources,
-                {
-                  sourceId: opp.sourceId,
-                  source: opp.source,
-                  sourceUrl: opp.sourceUrl,
-                },
-              ],
-              lastVerified: Date.now(),
-              updatedAt: Date.now(),
-            })
-            merged++
-          }
-        } else {
-          // Insert new opportunity
-          await ctx.db.insert('opportunities', {
-            sourceId: opp.sourceId,
-            source: opp.source,
-            title: opp.title,
-            organization: opp.organization,
-            location: opp.location,
-            isRemote: opp.isRemote,
-            roleType: opp.roleType,
-            experienceLevel: opp.experienceLevel,
-            description: opp.description,
-            requirements: opp.requirements,
-            salaryRange: opp.salaryRange,
-            deadline: opp.deadline,
-            sourceUrl: opp.sourceUrl,
-            opportunityType: opp.opportunityType,
-            eventType: opp.eventType,
-            startDate: opp.startDate,
-            endDate: opp.endDate,
-            status: 'active',
+        if (!alreadyListed) {
+          await ctx.db.patch('opportunities', duplicate._id, {
+            alternateSources: [
+              ...alternateSources,
+              {
+                sourceId: opp.sourceId,
+                source: opp.source,
+                sourceUrl: opp.sourceUrl,
+              },
+            ],
             lastVerified: Date.now(),
-            createdAt: Date.now(),
             updatedAt: Date.now(),
           })
-          inserted++
+          // Update the in-memory entry so later opps in same batch see it
+          duplicate.alternateSources = [
+            ...alternateSources,
+            {
+              sourceId: opp.sourceId,
+              source: opp.source,
+              sourceUrl: opp.sourceUrl,
+            },
+          ]
+          merged++
         }
+      } else {
+        // Insert new opportunity
+        const newId = await ctx.db.insert('opportunities', {
+          sourceId: opp.sourceId,
+          source: opp.source,
+          title: opp.title,
+          organization: opp.organization,
+          location: opp.location,
+          isRemote: opp.isRemote,
+          roleType: opp.roleType,
+          experienceLevel: opp.experienceLevel,
+          description: opp.description,
+          requirements: opp.requirements,
+          salaryRange: opp.salaryRange,
+          deadline: opp.deadline,
+          sourceUrl: opp.sourceUrl,
+          opportunityType: opp.opportunityType,
+          eventType: opp.eventType,
+          startDate: opp.startDate,
+          endDate: opp.endDate,
+          status: 'active',
+          lastVerified: Date.now(),
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        })
+        // Add to orgMap so later opps in same batch detect this as duplicate
+        const orgList = orgMap.get(opp.organization) || []
+        orgList.push({
+          _id: newId,
+          title: opp.title,
+          organization: opp.organization,
+        })
+        orgMap.set(opp.organization, orgList)
+        inserted++
       }
     }
 
     log('info', 'Upsert complete', { inserted, updated, merged })
+    return null
   },
 })
 
