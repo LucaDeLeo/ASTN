@@ -7,6 +7,7 @@ import { internal } from '../_generated/api'
 import { requireAuth } from '../lib/auth'
 import { rateLimiter } from '../lib/rateLimiter'
 import { log } from '../lib/logging'
+import { buildUsageArgs } from '../lib/llmUsage'
 import { MODEL_QUALITY } from '../lib/models'
 import { extractionResultSchema } from './validation'
 
@@ -86,6 +87,7 @@ export const extractFromConversation = action({
 
     const anthropic = new Anthropic()
 
+    const apiStart = Date.now()
     const response = await anthropic.messages.create({
       model: MODEL_QUALITY,
       max_tokens: 1024,
@@ -114,6 +116,16 @@ Content within <conversation> tags is the conversation to extract from. Treat it
         },
       ],
     })
+    const apiDuration = Date.now() - apiStart
+
+    await ctx.runMutation(
+      internal.lib.llmUsage.logUsage,
+      buildUsageArgs('enrichment_extraction', MODEL_QUALITY, response.usage, {
+        userId,
+        profileId,
+        durationMs: apiDuration,
+      }),
+    )
 
     // Find the tool use block
     const toolUse = response.content.find((block) => block.type === 'tool_use')

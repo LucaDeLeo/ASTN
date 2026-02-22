@@ -272,6 +272,9 @@ export const streamChat = httpAction(async (ctx, request) => {
     const decoder = new TextDecoder()
     let fullText = ''
     let buffer = ''
+    let streamInputTokens = 0
+    let streamOutputTokens = 0
+    const streamStart = Date.now()
 
     for (;;) {
       const { done, value } = await reader.read()
@@ -297,11 +300,19 @@ export const streamChat = httpAction(async (ctx, request) => {
             fullText += parsed.delta.text
             await chunkAppender(parsed.delta.text)
           }
+          // Capture token usage from SSE events
+          if (parsed.type === 'message_start' && parsed.message?.usage) {
+            streamInputTokens = parsed.message.usage.input_tokens ?? 0
+          }
+          if (parsed.type === 'message_delta' && parsed.usage) {
+            streamOutputTokens = parsed.usage.output_tokens ?? 0
+          }
         } catch {
           // Skip malformed JSON lines
         }
       }
     }
+    const streamDuration = Date.now() - streamStart
 
     // Save assistant message to DB after streaming completes
     await ctx.runMutation(internal.enrichment.queries.saveMessage, {
@@ -310,6 +321,19 @@ export const streamChat = httpAction(async (ctx, request) => {
       content: fullText,
       ...(actionId ? { actionId: actionId as any } : {}),
     })
+
+    // Log LLM usage
+    if (streamInputTokens > 0 || streamOutputTokens > 0) {
+      await ctx.runMutation(internal.lib.llmUsage.logUsage, {
+        operation: 'enrichment_chat',
+        model: MODEL_QUALITY,
+        inputTokens: streamInputTokens,
+        outputTokens: streamOutputTokens,
+        userId,
+        profileId: profileId as any,
+        durationMs: streamDuration,
+      })
+    }
   }
 
   const response = await persistentTextStreaming.stream(

@@ -5,6 +5,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { internalAction } from '../_generated/server'
 import { internal } from '../_generated/api'
 import { log } from '../lib/logging'
+import { buildUsageArgs } from '../lib/llmUsage'
 import { MODEL_FAST } from '../lib/models'
 import {
   ENRICHMENT_SYSTEM_PROMPT,
@@ -125,6 +126,7 @@ export const processEnrichmentBatch = internalAction({
       const context = buildEnrichmentContext(batch)
 
       const anthropic = new Anthropic()
+      const apiStart = Date.now()
       const response = await anthropic.messages.create({
         model: MODEL_FAST,
         max_tokens: 2048,
@@ -138,6 +140,14 @@ export const processEnrichmentBatch = internalAction({
           },
         ],
       })
+      const apiDuration = Date.now() - apiStart
+
+      await ctx.runMutation(
+        internal.lib.llmUsage.logUsage,
+        buildUsageArgs('opportunity_enrichment', MODEL_FAST, response.usage, {
+          durationMs: apiDuration,
+        }),
+      )
 
       const toolUse = response.content.find(
         (block) => block.type === 'tool_use',

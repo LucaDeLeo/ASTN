@@ -5,6 +5,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { internalAction } from '../_generated/server'
 import { internal } from '../_generated/api'
 import { log } from '../lib/logging'
+import { buildUsageArgs } from '../lib/llmUsage'
 import { MODEL_FAST } from '../lib/models'
 import {
   DEFAULT_THRESHOLDS,
@@ -112,6 +113,7 @@ export const computeMemberEngagement = internalAction({
 
     // Call Claude with forced tool_choice
     const anthropic = new Anthropic()
+    const apiStart = Date.now()
     const response = await anthropic.messages.create({
       model: MODEL_FAST,
       max_tokens: 500,
@@ -125,6 +127,15 @@ export const computeMemberEngagement = internalAction({
         },
       ],
     })
+    const apiDuration = Date.now() - apiStart
+
+    await ctx.runMutation(
+      internal.lib.llmUsage.logUsage,
+      buildUsageArgs('engagement', MODEL_FAST, response.usage, {
+        userId,
+        durationMs: apiDuration,
+      }),
+    )
 
     // Extract tool use result
     const toolUse = response.content.find((block) => block.type === 'tool_use')

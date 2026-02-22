@@ -6,6 +6,7 @@ import { action } from '../_generated/server'
 import { internal } from '../_generated/api'
 import { FIELD_LIMITS } from '../lib/limits'
 import { log } from '../lib/logging'
+import { buildUsageArgs } from '../lib/llmUsage'
 import { MODEL_FAST } from '../lib/models'
 import { matchSkillsToTaxonomy } from './skills'
 import { EXTRACTION_SYSTEM_PROMPT, extractProfileTool } from './prompts'
@@ -26,7 +27,17 @@ export const extractFromText = action({
     }
 
     // 1. Extract with retry
-    const extractedData = await extractWithRetry(text)
+    const {
+      result: extractedData,
+      usage,
+      durationMs,
+    } = await extractWithRetry(text)
+
+    // 1b. Log LLM usage
+    await ctx.runMutation(
+      internal.lib.llmUsage.logUsage,
+      buildUsageArgs('text_extraction', MODEL_FAST, usage, { durationMs }),
+    )
 
     // 2. Match skills to taxonomy
     const taxonomy = await ctx.runQuery(
@@ -45,12 +56,17 @@ export const extractFromText = action({
   },
 })
 
-async function extractWithRetry(text: string): Promise<ExtractionResult> {
+async function extractWithRetry(text: string): Promise<{
+  result: ExtractionResult
+  usage: { input_tokens: number; output_tokens: number }
+  durationMs: number
+}> {
   const anthropic = new Anthropic()
   let lastError: Error | null = null
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
+      const apiStart = Date.now()
       const response = await anthropic.messages.create({
         model: MODEL_FAST,
         max_tokens: 4096,
@@ -64,6 +80,7 @@ async function extractWithRetry(text: string): Promise<ExtractionResult> {
           },
         ],
       })
+      const apiDuration = Date.now() - apiStart
 
       const toolUse = response.content.find(
         (block) => block.type === 'tool_use',
@@ -79,9 +96,13 @@ async function extractWithRetry(text: string): Promise<ExtractionResult> {
           issues: parseResult.error.issues,
         })
       }
-      return (
-        parseResult.success ? parseResult.data : rawInput
-      ) as ExtractionResult
+      return {
+        result: (parseResult.success
+          ? parseResult.data
+          : rawInput) as ExtractionResult,
+        usage: response.usage,
+        durationMs: apiDuration,
+      }
     } catch (error) {
       lastError = error as Error
       if (attempt < MAX_RETRIES - 1) {

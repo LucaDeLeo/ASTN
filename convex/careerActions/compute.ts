@@ -5,6 +5,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { internalAction } from '../_generated/server'
 import { internal } from '../_generated/api'
 import { log } from '../lib/logging'
+import { buildUsageArgs } from '../lib/llmUsage'
 import { MODEL_QUALITY } from '../lib/models'
 import {
   ACTION_GENERATION_SYSTEM_PROMPT,
@@ -65,6 +66,7 @@ export const computeActionsForProfile = internalAction({
 
       // 5. Call Sonnet for action generation
       const anthropic = new Anthropic()
+      const apiStart = Date.now()
       const response = await anthropic.messages.create({
         model: MODEL_QUALITY,
         max_tokens: 4096,
@@ -73,6 +75,15 @@ export const computeActionsForProfile = internalAction({
         system: ACTION_GENERATION_SYSTEM_PROMPT,
         messages: [{ role: 'user', content: contextString }],
       })
+      const apiDuration = Date.now() - apiStart
+
+      await ctx.runMutation(
+        internal.lib.llmUsage.logUsage,
+        buildUsageArgs('career_actions', MODEL_QUALITY, response.usage, {
+          profileId,
+          durationMs: apiDuration,
+        }),
+      )
 
       // 6. Extract tool_use block
       const toolUse = response.content.find(

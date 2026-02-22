@@ -5,6 +5,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { action } from '../_generated/server'
 import { internal } from '../_generated/api'
 import { log } from '../lib/logging'
+import { buildUsageArgs } from '../lib/llmUsage'
 import { MODEL_FAST } from '../lib/models'
 import { matchSkillsToTaxonomy } from './skills'
 import { EXTRACTION_SYSTEM_PROMPT, extractProfileTool } from './prompts'
@@ -45,7 +46,20 @@ export const extractFromPdf = action({
       const base64 = buffer.toString('base64')
 
       // 5. Call Claude with retry logic
-      const extractedData = await extractWithRetry(base64)
+      const {
+        result: extractedData,
+        usage,
+        durationMs,
+      } = await extractWithRetry(base64)
+
+      // 5b. Log LLM usage
+      await ctx.runMutation(
+        internal.lib.llmUsage.logUsage,
+        buildUsageArgs('pdf_extraction', MODEL_FAST, usage, {
+          userId: doc.userId,
+          durationMs,
+        }),
+      )
 
       // 6. Match skills to taxonomy
       const taxonomy = await ctx.runQuery(
@@ -88,12 +102,17 @@ export const extractFromPdf = action({
   },
 })
 
-async function extractWithRetry(pdfBase64: string): Promise<ExtractionResult> {
+async function extractWithRetry(pdfBase64: string): Promise<{
+  result: ExtractionResult
+  usage: { input_tokens: number; output_tokens: number }
+  durationMs: number
+}> {
   const anthropic = new Anthropic()
   let lastError: Error | null = null
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
+      const apiStart = Date.now()
       const response = await anthropic.messages.create({
         model: MODEL_FAST,
         max_tokens: 4096,
@@ -120,6 +139,7 @@ async function extractWithRetry(pdfBase64: string): Promise<ExtractionResult> {
           },
         ],
       })
+      const apiDuration = Date.now() - apiStart
 
       const toolUse = response.content.find(
         (block) => block.type === 'tool_use',
@@ -135,9 +155,13 @@ async function extractWithRetry(pdfBase64: string): Promise<ExtractionResult> {
           issues: parseResult.error.issues,
         })
       }
-      return (
-        parseResult.success ? parseResult.data : rawInput
-      ) as ExtractionResult
+      return {
+        result: (parseResult.success
+          ? parseResult.data
+          : rawInput) as ExtractionResult,
+        usage: response.usage,
+        durationMs: apiDuration,
+      }
     } catch (error) {
       lastError = error as Error
       if (attempt < MAX_RETRIES - 1) {

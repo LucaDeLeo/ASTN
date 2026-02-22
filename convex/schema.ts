@@ -1106,4 +1106,19 @@ export default defineSchema({
     page: v.string(),
     createdAt: v.number(),
   }).index('by_created', ['createdAt']),
+
+  // LLM usage tracking (token consumption per API call)
+  llmUsage: defineTable({
+    operation: v.string(), // "matching", "enrichment_chat", "enrichment_extraction", etc.
+    model: v.string(), // "claude-sonnet-4-6", "claude-haiku-4-5"
+    inputTokens: v.number(),
+    outputTokens: v.number(),
+    userId: v.optional(v.string()),
+    profileId: v.optional(v.id('profiles')),
+    durationMs: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index('by_operation_and_createdAt', ['operation', 'createdAt'])
+    .index('by_userId_and_createdAt', ['userId', 'createdAt'])
+    .index('by_createdAt', ['createdAt']),
 })
