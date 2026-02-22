@@ -60,6 +60,15 @@ function AdminContent() {
               >
                 Applications
               </Link>
+              <Link
+                to="/admin/users"
+                className="text-sm text-muted-foreground hover:text-foreground"
+                activeProps={{
+                  className: 'text-sm text-foreground font-medium',
+                }}
+              >
+                Users
+              </Link>
             </nav>
           </div>
           <Button variant="outline" size="sm" asChild>

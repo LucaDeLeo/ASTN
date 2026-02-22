@@ -36,6 +36,18 @@ function AdminDashboard() {
             </CardContent>
           </Card>
         </Link>
+        <Link to="/admin/users">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader>
+              <CardTitle className="text-lg">Users</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-slate-600">
+                Browse user profiles, view agent conversations, and review data.
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
     </div>
   )

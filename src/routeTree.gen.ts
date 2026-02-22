@@ -27,13 +27,16 @@ import { Route as ProfileAgentRouteImport } from './routes/profile/agent'
 import { Route as OpportunitiesIdRouteImport } from './routes/opportunities/$id'
 import { Route as MatchesIdRouteImport } from './routes/matches/$id'
 import { Route as ApplyStatusRouteImport } from './routes/apply/status'
+import { Route as AdminUsersRouteRouteImport } from './routes/admin/users/route'
 import { Route as AdminApplicationsRouteRouteImport } from './routes/admin/applications/route'
 import { Route as OrgSlugIndexRouteImport } from './routes/org/$slug/index'
+import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
 import { Route as AdminOpportunitiesIndexRouteImport } from './routes/admin/opportunities/index'
 import { Route as AdminApplicationsIndexRouteImport } from './routes/admin/applications/index'
 import { Route as OrgSlugVisitRouteImport } from './routes/org/$slug/visit'
 import { Route as OrgSlugJoinRouteImport } from './routes/org/$slug/join'
 import { Route as OrgSlugEventsRouteImport } from './routes/org/$slug/events'
+import { Route as AdminUsersUserIdRouteImport } from './routes/admin/users/$userId'
 import { Route as AdminOpportunitiesNewRouteImport } from './routes/admin/opportunities/new'
 import { Route as OrgSlugSpaceIndexRouteImport } from './routes/org/$slug/space/index'
 import { Route as OrgSlugAdminIndexRouteImport } from './routes/org/$slug/admin/index'
@@ -143,6 +146,11 @@ const ApplyStatusRoute = ApplyStatusRouteImport.update({
   path: '/status',
   getParentRoute: () => ApplyRouteRoute,
 } as any)
+const AdminUsersRouteRoute = AdminUsersRouteRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminApplicationsRouteRoute = AdminApplicationsRouteRouteImport.update({
   id: '/applications',
   path: '/applications',
@@ -152,6 +160,11 @@ const OrgSlugIndexRoute = OrgSlugIndexRouteImport.update({
   id: '/org/$slug/',
   path: '/org/$slug/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersIndexRoute = AdminUsersIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminUsersRouteRoute,
 } as any)
 const AdminOpportunitiesIndexRoute = AdminOpportunitiesIndexRouteImport.update({
   id: '/opportunities/',
@@ -177,6 +190,11 @@ const OrgSlugEventsRoute = OrgSlugEventsRouteImport.update({
   id: '/org/$slug/events',
   path: '/org/$slug/events',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersUserIdRoute = AdminUsersUserIdRouteImport.update({
+  id: '/$userId',
+  path: '/$userId',
+  getParentRoute: () => AdminUsersRouteRoute,
 } as any)
 const AdminOpportunitiesNewRoute = AdminOpportunitiesNewRouteImport.update({
   id: '/opportunities/new',
@@ -285,6 +303,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/admin/applications': typeof AdminApplicationsRouteRouteWithChildren
+  '/admin/users': typeof AdminUsersRouteRouteWithChildren
   '/apply/status': typeof ApplyStatusRoute
   '/matches/$id': typeof MatchesIdRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
@@ -299,11 +318,13 @@ export interface FileRoutesByFullPath {
   '/profile/': typeof ProfileIndexRoute
   '/settings/': typeof SettingsIndexRoute
   '/admin/opportunities/new': typeof AdminOpportunitiesNewRoute
+  '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/org/$slug/events': typeof OrgSlugEventsRoute
   '/org/$slug/join': typeof OrgSlugJoinRoute
   '/org/$slug/visit': typeof OrgSlugVisitRoute
   '/admin/applications/': typeof AdminApplicationsIndexRoute
   '/admin/opportunities/': typeof AdminOpportunitiesIndexRoute
+  '/admin/users/': typeof AdminUsersIndexRoute
   '/org/$slug/': typeof OrgSlugIndexRoute
   '/admin/opportunities/$id/edit': typeof AdminOpportunitiesIdEditRoute
   '/org/$slug/admin/bookings': typeof OrgSlugAdminBookingsRoute
@@ -340,11 +361,13 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileIndexRoute
   '/settings': typeof SettingsIndexRoute
   '/admin/opportunities/new': typeof AdminOpportunitiesNewRoute
+  '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/org/$slug/events': typeof OrgSlugEventsRoute
   '/org/$slug/join': typeof OrgSlugJoinRoute
   '/org/$slug/visit': typeof OrgSlugVisitRoute
   '/admin/applications': typeof AdminApplicationsIndexRoute
   '/admin/opportunities': typeof AdminOpportunitiesIndexRoute
+  '/admin/users': typeof AdminUsersIndexRoute
   '/org/$slug': typeof OrgSlugIndexRoute
   '/admin/opportunities/$id/edit': typeof AdminOpportunitiesIdEditRoute
   '/org/$slug/admin/bookings': typeof OrgSlugAdminBookingsRoute
@@ -372,6 +395,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/admin/applications': typeof AdminApplicationsRouteRouteWithChildren
+  '/admin/users': typeof AdminUsersRouteRouteWithChildren
   '/apply/status': typeof ApplyStatusRoute
   '/matches/$id': typeof MatchesIdRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
@@ -386,11 +410,13 @@ export interface FileRoutesById {
   '/profile/': typeof ProfileIndexRoute
   '/settings/': typeof SettingsIndexRoute
   '/admin/opportunities/new': typeof AdminOpportunitiesNewRoute
+  '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/org/$slug/events': typeof OrgSlugEventsRoute
   '/org/$slug/join': typeof OrgSlugJoinRoute
   '/org/$slug/visit': typeof OrgSlugVisitRoute
   '/admin/applications/': typeof AdminApplicationsIndexRoute
   '/admin/opportunities/': typeof AdminOpportunitiesIndexRoute
+  '/admin/users/': typeof AdminUsersIndexRoute
   '/org/$slug/': typeof OrgSlugIndexRoute
   '/admin/opportunities/$id/edit': typeof AdminOpportunitiesIdEditRoute
   '/org/$slug/admin/bookings': typeof OrgSlugAdminBookingsRoute
@@ -419,6 +445,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/login'
     | '/admin/applications'
+    | '/admin/users'
     | '/apply/status'
     | '/matches/$id'
     | '/opportunities/$id'
@@ -433,11 +460,13 @@ export interface FileRouteTypes {
     | '/profile/'
     | '/settings/'
     | '/admin/opportunities/new'
+    | '/admin/users/$userId'
     | '/org/$slug/events'
     | '/org/$slug/join'
     | '/org/$slug/visit'
     | '/admin/applications/'
     | '/admin/opportunities/'
+    | '/admin/users/'
     | '/org/$slug/'
     | '/admin/opportunities/$id/edit'
     | '/org/$slug/admin/bookings'
@@ -474,11 +503,13 @@ export interface FileRouteTypes {
     | '/profile'
     | '/settings'
     | '/admin/opportunities/new'
+    | '/admin/users/$userId'
     | '/org/$slug/events'
     | '/org/$slug/join'
     | '/org/$slug/visit'
     | '/admin/applications'
     | '/admin/opportunities'
+    | '/admin/users'
     | '/org/$slug'
     | '/admin/opportunities/$id/edit'
     | '/org/$slug/admin/bookings'
@@ -505,6 +536,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/login'
     | '/admin/applications'
+    | '/admin/users'
     | '/apply/status'
     | '/matches/$id'
     | '/opportunities/$id'
@@ -519,11 +551,13 @@ export interface FileRouteTypes {
     | '/profile/'
     | '/settings/'
     | '/admin/opportunities/new'
+    | '/admin/users/$userId'
     | '/org/$slug/events'
     | '/org/$slug/join'
     | '/org/$slug/visit'
     | '/admin/applications/'
     | '/admin/opportunities/'
+    | '/admin/users/'
     | '/org/$slug/'
     | '/admin/opportunities/$id/edit'
     | '/org/$slug/admin/bookings'
@@ -709,6 +743,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApplyStatusRouteImport
       parentRoute: typeof ApplyRouteRoute
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/applications': {
       id: '/admin/applications'
       path: '/applications'
@@ -722,6 +763,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/org/$slug/'
       preLoaderRoute: typeof OrgSlugIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/users/': {
+      id: '/admin/users/'
+      path: '/'
+      fullPath: '/admin/users/'
+      preLoaderRoute: typeof AdminUsersIndexRouteImport
+      parentRoute: typeof AdminUsersRouteRoute
     }
     '/admin/opportunities/': {
       id: '/admin/opportunities/'
@@ -757,6 +805,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/org/$slug/events'
       preLoaderRoute: typeof OrgSlugEventsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/users/$userId': {
+      id: '/admin/users/$userId'
+      path: '/$userId'
+      fullPath: '/admin/users/$userId'
+      preLoaderRoute: typeof AdminUsersUserIdRouteImport
+      parentRoute: typeof AdminUsersRouteRoute
     }
     '/admin/opportunities/new': {
       id: '/admin/opportunities/new'
@@ -901,8 +956,23 @@ const AdminApplicationsRouteRouteWithChildren =
     AdminApplicationsRouteRouteChildren,
   )
 
+interface AdminUsersRouteRouteChildren {
+  AdminUsersUserIdRoute: typeof AdminUsersUserIdRoute
+  AdminUsersIndexRoute: typeof AdminUsersIndexRoute
+}
+
+const AdminUsersRouteRouteChildren: AdminUsersRouteRouteChildren = {
+  AdminUsersUserIdRoute: AdminUsersUserIdRoute,
+  AdminUsersIndexRoute: AdminUsersIndexRoute,
+}
+
+const AdminUsersRouteRouteWithChildren = AdminUsersRouteRoute._addFileChildren(
+  AdminUsersRouteRouteChildren,
+)
+
 interface AdminRouteRouteChildren {
   AdminApplicationsRouteRoute: typeof AdminApplicationsRouteRouteWithChildren
+  AdminUsersRouteRoute: typeof AdminUsersRouteRouteWithChildren
   AdminIndexRoute: typeof AdminIndexRoute
   AdminOpportunitiesNewRoute: typeof AdminOpportunitiesNewRoute
   AdminOpportunitiesIndexRoute: typeof AdminOpportunitiesIndexRoute
@@ -911,6 +981,7 @@ interface AdminRouteRouteChildren {
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminApplicationsRouteRoute: AdminApplicationsRouteRouteWithChildren,
+  AdminUsersRouteRoute: AdminUsersRouteRouteWithChildren,
   AdminIndexRoute: AdminIndexRoute,
   AdminOpportunitiesNewRoute: AdminOpportunitiesNewRoute,
   AdminOpportunitiesIndexRoute: AdminOpportunitiesIndexRoute,
