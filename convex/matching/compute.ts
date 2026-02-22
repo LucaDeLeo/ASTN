@@ -1,17 +1,17 @@
 'use node'
 
 import { v } from 'convex/values'
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenAI } from '@google/genai'
 import { internalAction } from '../_generated/server'
 import { internal } from '../_generated/api'
 import { log } from '../lib/logging'
 import { buildUsageArgs } from '../lib/llmUsage'
-import { MODEL_QUALITY } from '../lib/models'
+import { MODEL_GEMINI_FAST } from '../lib/models'
 import {
   MATCHING_SYSTEM_PROMPT,
   buildOpportunitiesContext,
   buildProfileContext,
-  matchOpportunitiesTool,
+  matchResponseSchema,
 } from './prompts'
 import { matchResultSchema } from './validation'
 import type { Id } from '../_generated/dataModel'
@@ -268,7 +268,7 @@ export const processMatchBatch = internalAction({
           batchIndex,
           totalBatches,
           matches: [],
-          modelVersion: MODEL_QUALITY,
+          modelVersion: MODEL_GEMINI_FAST,
           isLastBatch: true,
           previousOppIds,
           runTimestamp,
@@ -311,64 +311,61 @@ export const processMatchBatch = internalAction({
       const profileContext = buildProfileContext(profile)
       const opportunitiesContext = buildOpportunitiesContext(batch)
 
-      const anthropic = new Anthropic()
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! })
       const apiStart = Date.now()
-      const response = await anthropic.messages.create({
-        model: MODEL_QUALITY,
-        max_tokens: 4096,
-        tools: [matchOpportunitiesTool],
-        tool_choice: { type: 'tool', name: 'score_opportunities' },
-        system: MATCHING_SYSTEM_PROMPT,
-        messages: [
-          {
-            role: 'user',
-            content: `${profileContext}\n\n${opportunitiesContext}\n\nScore all opportunities for this candidate. Include only opportunities with tier great, good, or exploring - skip any that have no reasonable fit.`,
-          },
-        ],
+      const response = await ai.models.generateContent({
+        model: MODEL_GEMINI_FAST,
+        contents: `${profileContext}\n\n${opportunitiesContext}\n\nScore all opportunities for this candidate. Include only opportunities with tier great, good, or exploring - skip any that have no reasonable fit.`,
+        config: {
+          systemInstruction: MATCHING_SYSTEM_PROMPT,
+          responseMimeType: 'application/json',
+          responseSchema: matchResponseSchema,
+        },
       })
       const apiDuration = Date.now() - apiStart
 
       await ctx.runMutation(
         internal.lib.llmUsage.logUsage,
-        buildUsageArgs('matching', MODEL_QUALITY, response.usage, {
-          profileId,
-          durationMs: apiDuration,
-        }),
+        buildUsageArgs(
+          'matching',
+          MODEL_GEMINI_FAST,
+          {
+            promptTokenCount: response.usageMetadata?.promptTokenCount ?? 0,
+            candidatesTokenCount:
+              response.usageMetadata?.candidatesTokenCount ?? 0,
+          },
+          {
+            profileId,
+            durationMs: apiDuration,
+          },
+        ),
       )
 
-      const toolUse = response.content.find(
-        (block) => block.type === 'tool_use',
-      )
-      if (!toolUse) {
-        log('error', 'processMatchBatch: no tool use in response', {
+      const parsed = JSON.parse(response.text!)
+      const parseResult = matchResultSchema.safeParse(parsed)
+      if (!parseResult.success) {
+        const issues = parseResult.error.issues
+          .map((i) => `${i.path.join('.')}: ${i.message}`)
+          .join('; ')
+        throw new Error(
+          `LLM validation failed for batch ${batchIndex}: ${issues}`,
+        )
+      }
+      const batchResult = parseResult.data
+
+      if (!Array.isArray(batchResult.matches)) {
+        log('error', 'processMatchBatch: invalid matches array', {
           batchIndex,
         })
       } else {
-        const parseResult = matchResultSchema.safeParse(toolUse.input)
-        if (!parseResult.success) {
-          const issues = parseResult.error.issues
-            .map((i) => `${i.path.join('.')}: ${i.message}`)
-            .join('; ')
-          throw new Error(
-            `LLM validation failed for batch ${batchIndex}: ${issues}`,
-          )
-        }
-        const batchResult = parseResult.data
-
-        if (!Array.isArray(batchResult.matches)) {
-          log('error', 'processMatchBatch: invalid matches array', {
-            batchIndex,
-          })
-        } else {
-          for (const match of batchResult.matches) {
-            const oppId = match.opportunityId as Id<'opportunities'>
-            const validOpp = batch.some((o: { _id: string }) => o._id === oppId)
-            if (validOpp) {
-              batchMatches.push({
-                ...match,
-                opportunityId: oppId,
-              })
-            }
+        for (const match of batchResult.matches) {
+          const oppId = match.opportunityId as Id<'opportunities'>
+          const validOpp = batch.some((o: { _id: string }) => o._id === oppId)
+          if (validOpp) {
+            batchMatches.push({
+              ...match,
+              opportunityId: oppId,
+            })
           }
         }
       }
@@ -444,7 +441,7 @@ export const processMatchBatch = internalAction({
           gap: m.gap ?? undefined,
           recommendations: m.recommendations,
         })),
-        modelVersion: MODEL_QUALITY,
+        modelVersion: MODEL_GEMINI_FAST,
         isLastBatch,
         previousOppIds,
         runTimestamp,

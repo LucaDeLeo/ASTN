@@ -381,6 +381,9 @@ export const matchOpportunitiesTool: Anthropic.Tool = {
   },
 }
 
+// JSON Schema for Gemini structured output (reuses the Anthropic tool schema)
+export const matchResponseSchema = matchOpportunitiesTool.input_schema
+
 // Type for the tool output
 export interface MatchingResult {
   matches: Array<{

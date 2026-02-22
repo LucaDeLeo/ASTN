@@ -2,10 +2,11 @@ import { v } from 'convex/values'
 import { internalMutation, internalQuery } from '../_generated/server'
 import type { Id } from '../_generated/dataModel'
 
-// Current Anthropic pricing (per million tokens)
+// LLM pricing (per million tokens)
 const PRICING: Partial<Record<string, { input: number; output: number }>> = {
   'claude-sonnet-4-6': { input: 3, output: 15 },
   'claude-haiku-4-5': { input: 0.8, output: 4 },
+  'gemini-3-flash-preview': { input: 0.5, output: 3 },
 }
 
 function estimateCost(
@@ -169,24 +170,31 @@ export const getUsageByUser = internalQuery({
 })
 
 /**
- * Helper to build logUsage args from an Anthropic API response.
- * Used by call sites to avoid repeating the same field extraction.
+ * Helper to build logUsage args from an LLM API response.
+ * Accepts both Anthropic (input_tokens/output_tokens) and
+ * Gemini (promptTokenCount/candidatesTokenCount) usage formats.
  */
 export function buildUsageArgs(
   operation: string,
   model: string,
-  usage: { input_tokens: number; output_tokens: number },
+  usage:
+    | { input_tokens: number; output_tokens: number }
+    | { promptTokenCount: number; candidatesTokenCount: number },
   opts?: {
     userId?: string
     profileId?: Id<'profiles'>
     durationMs?: number
   },
 ) {
+  const inputTokens =
+    'input_tokens' in usage ? usage.input_tokens : usage.promptTokenCount
+  const outputTokens =
+    'output_tokens' in usage ? usage.output_tokens : usage.candidatesTokenCount
   return {
     operation,
     model,
-    inputTokens: usage.input_tokens,
-    outputTokens: usage.output_tokens,
+    inputTokens,
+    outputTokens,
     ...opts,
   }
 }

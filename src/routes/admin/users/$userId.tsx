@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { useQuery } from 'convex/react'
+import { useMutation, useQuery } from 'convex/react'
 import { formatDistanceToNow } from 'date-fns'
 import {
   AlertTriangle,
@@ -11,8 +11,10 @@ import {
   Compass,
   ExternalLink,
   GraduationCap,
+  Loader2,
   MapPin,
   MessageSquare,
+  RefreshCw,
   Shield,
   Sparkles,
   Target,
@@ -20,9 +22,11 @@ import {
   User,
   Wrench,
 } from 'lucide-react'
+import { useState } from 'react'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { Badge } from '~/components/ui/badge'
+import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { Spinner } from '~/components/ui/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
@@ -503,6 +507,38 @@ const tierConfig = {
   },
 } as const
 
+function RecomputeButton({ profileId }: { profileId: Id<'profiles'> }) {
+  const recompute = useMutation(api.platformAdmin.users.recomputeMatches)
+  const [status, setStatus] = useState<'idle' | 'loading' | 'done'>('idle')
+
+  const handleClick = async () => {
+    setStatus('loading')
+    try {
+      await recompute({ profileId })
+      setStatus('done')
+      setTimeout(() => setStatus('idle'), 3000)
+    } catch {
+      setStatus('idle')
+    }
+  }
+
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={handleClick}
+      disabled={status === 'loading'}
+    >
+      {status === 'loading' ? (
+        <Loader2 className="size-3.5 mr-1.5 animate-spin" />
+      ) : (
+        <RefreshCw className="size-3.5 mr-1.5" />
+      )}
+      {status === 'done' ? 'Recomputing...' : 'Recompute Matches'}
+    </Button>
+  )
+}
+
 function MatchesTab({ profileId }: { profileId: Id<'profiles'> }) {
   const matches = useQuery(api.platformAdmin.users.getUserMatches, {
     profileId,
@@ -518,12 +554,17 @@ function MatchesTab({ profileId }: { profileId: Id<'profiles'> }) {
 
   if (matches.length === 0) {
     return (
-      <Card>
-        <CardContent className="py-8 text-center text-muted-foreground">
-          <Target className="size-8 mx-auto mb-2 text-muted-foreground/50" />
-          No matches computed for this user yet.
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <div className="flex justify-end">
+          <RecomputeButton profileId={profileId} />
+        </div>
+        <Card>
+          <CardContent className="py-8 text-center text-muted-foreground">
+            <Target className="size-8 mx-auto mb-2 text-muted-foreground/50" />
+            No matches computed for this user yet.
+          </CardContent>
+        </Card>
+      </div>
     )
   }
 
@@ -536,6 +577,9 @@ function MatchesTab({ profileId }: { profileId: Id<'profiles'> }) {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <RecomputeButton profileId={profileId} />
+      </div>
       {(['great', 'good', 'exploring'] as const).map((tier) => {
         const items = grouped[tier]
         if (items.length === 0) return null

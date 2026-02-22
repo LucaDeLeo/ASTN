@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
-import { components } from '../_generated/api'
-import { query } from '../_generated/server'
+import { components, internal } from '../_generated/api'
+import { mutation, query } from '../_generated/server'
 import { requirePlatformAdmin } from '../lib/auth'
 import { computeProfileCompleteness } from '../profiles'
 
@@ -235,5 +235,36 @@ export const getAgentToolCalls = query({
       .query('agentToolCalls')
       .withIndex('by_thread_and_createdAt', (q) => q.eq('threadId', threadId))
       .collect()
+  },
+})
+
+/**
+ * Admin action: recompute matches for a user's profile.
+ * Sets matchesStaleAt to force a full recompute and schedules the computation.
+ */
+export const recomputeMatches = mutation({
+  args: {
+    profileId: v.id('profiles'),
+  },
+  returns: v.null(),
+  handler: async (ctx, { profileId }) => {
+    await requirePlatformAdmin(ctx)
+
+    const profile = await ctx.db.get('profiles', profileId)
+    if (!profile) throw new Error('Profile not found')
+
+    // Mark matches as stale to force full recompute
+    await ctx.db.patch('profiles', profileId, {
+      matchesStaleAt: Date.now(),
+    })
+
+    // Schedule match computation
+    await ctx.scheduler.runAfter(
+      0,
+      internal.matching.compute.computeMatchesForProfile,
+      { profileId },
+    )
+
+    return null
   },
 })
