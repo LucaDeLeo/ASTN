@@ -11,6 +11,7 @@ import { routeTree } from './routeTree.gen'
 
 function UserMigration() {
   const migrateUser = useMutation(api.userMigration.migrateUserIfNeeded)
+  const ensureIdentity = useMutation(api.profiles.ensureIdentityFields)
   const didRun = useRef(false)
 
   useEffect(() => {
@@ -19,7 +20,10 @@ function UserMigration() {
     migrateUser().catch(() => {
       // Silent failure — migration is best-effort
     })
-  }, [migrateUser])
+    ensureIdentity().catch(() => {
+      // Silent failure — backfill is best-effort
+    })
+  }, [migrateUser, ensureIdentity])
 
   return null
 }

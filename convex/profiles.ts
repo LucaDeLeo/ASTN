@@ -696,3 +696,33 @@ export const updateEventNotificationPreferences = mutation({
     return { success: true }
   },
 })
+
+// Ensure email and name are populated from Clerk identity.
+// Call this from the frontend on auth to lazy-backfill existing profiles.
+export const ensureIdentityFields = mutation({
+  args: {},
+  returns: v.boolean(),
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity?.subject) return false
+
+    const userId = identity.subject
+    const profile = await ctx.db
+      .query('profiles')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .first()
+
+    if (!profile) return false
+
+    const patch: Record<string, string> = {}
+    if (!profile.email && identity.email) patch.email = identity.email
+    if (!profile.name && identity.name) patch.name = identity.name
+
+    if (Object.keys(patch).length > 0) {
+      await ctx.db.patch('profiles', profile._id, patch)
+      return true
+    }
+
+    return false
+  },
+})
