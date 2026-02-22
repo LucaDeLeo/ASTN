@@ -217,6 +217,11 @@ export const approve = mutation({
       ...(application.website && { website: application.website }),
     })
 
+    // Geocode org location for map display
+    await ctx.scheduler.runAfter(0, internal.orgs.geocode.geocodeOrg, {
+      orgId,
+    })
+
     // Create org membership for applicant as admin
     await ctx.db.insert('orgMemberships', {
       userId: application.applicantUserId,

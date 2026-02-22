@@ -102,6 +102,8 @@ import type * as organizations from "../organizations.js";
 import type * as orgs_admin from "../orgs/admin.js";
 import type * as orgs_directory from "../orgs/directory.js";
 import type * as orgs_discovery from "../orgs/discovery.js";
+import type * as orgs_geocode from "../orgs/geocode.js";
+import type * as orgs_geocodeHelpers from "../orgs/geocodeHelpers.js";
 import type * as orgs_members from "../orgs/members.js";
 import type * as orgs_membership from "../orgs/membership.js";
 import type * as orgs_queries from "../orgs/queries.js";
@@ -216,6 +218,8 @@ declare const fullApi: ApiFromModules<{
   "orgs/admin": typeof orgs_admin;
   "orgs/directory": typeof orgs_directory;
   "orgs/discovery": typeof orgs_discovery;
+  "orgs/geocode": typeof orgs_geocode;
+  "orgs/geocodeHelpers": typeof orgs_geocodeHelpers;
   "orgs/members": typeof orgs_members;
   "orgs/membership": typeof orgs_membership;
   "orgs/queries": typeof orgs_queries;
