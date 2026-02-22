@@ -24,7 +24,7 @@ export const recordConsent = mutation({
       return null
     }
 
-    await ctx.db.patch('profiles', profile._id, {
+    await ctx.db.patch(profile._id, {
       consentedAt: Date.now(),
       consentVersion: CURRENT_CONSENT_VERSION,
     })
