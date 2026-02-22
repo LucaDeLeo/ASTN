@@ -5,3 +5,38 @@ export const MODEL_FAST = 'claude-haiku-4-5'
 export const MODEL_QUALITY = 'claude-sonnet-4-6'
 // GEMINI_FAST: matching (structured JSON output, cheap)
 export const MODEL_GEMINI_FAST = 'gemini-3-flash-preview'
+
+// --- Provider-aware conversation model config ---
+
+export type ModelProvider = 'anthropic' | 'openai-compatible'
+
+export type ConversationModelConfig = {
+  model: string
+  provider: ModelProvider
+  baseUrl: string
+  apiKeyEnv: string
+  maxTokens: number
+}
+
+const SONNET_4_6: ConversationModelConfig = {
+  model: 'claude-sonnet-4-6',
+  provider: 'anthropic',
+  baseUrl: 'https://api.anthropic.com/v1/messages',
+  apiKeyEnv: 'ANTHROPIC_API_KEY',
+  maxTokens: 500,
+}
+
+const KIMI_K2_5: ConversationModelConfig = {
+  model: 'kimi-k2.5',
+  provider: 'openai-compatible',
+  baseUrl: 'https://api.moonshot.cn/v1/chat/completions',
+  apiKeyEnv: 'KIMI_API_KEY',
+  maxTokens: 500,
+}
+
+// Swap this one line to change the conversation model
+export const MODEL_CONVERSATION: ConversationModelConfig = SONNET_4_6
+// export const MODEL_CONVERSATION: ConversationModelConfig = KIMI_K2_5
+
+// Suppress unused-variable lint for the inactive config
+void KIMI_K2_5

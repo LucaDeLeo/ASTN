@@ -13,12 +13,13 @@ import {
 import { requireAuth } from '../lib/auth'
 import { rateLimiter } from '../lib/rateLimiter'
 import { FIELD_LIMITS } from '../lib/limits'
-import { MODEL_QUALITY } from '../lib/models'
+import { MODEL_CONVERSATION } from '../lib/models'
 import {
   CAREER_COACH_PROMPT,
   COMPLETION_COACH_PROMPT,
   buildProfileContext,
 } from './conversation'
+import type { ConversationModelConfig } from '../lib/models'
 import type { StreamId } from '@convex-dev/persistent-text-streaming'
 
 const persistentTextStreaming = new PersistentTextStreaming(
@@ -142,7 +143,88 @@ export const getCareerAction = internalQuery({
   },
 })
 
-// HTTP action that streams Claude's response
+// --- Provider helpers for multi-model streaming ---
+
+function buildProviderRequest(
+  config: ConversationModelConfig,
+  apiKey: string,
+  systemPrompt: string,
+  messages: Array<{ role: string; content: string }>,
+): { url: string; headers: Record<string, string>; body: string } {
+  if (config.provider === 'anthropic') {
+    return {
+      url: config.baseUrl,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: config.model,
+        max_tokens: config.maxTokens,
+        stream: true,
+        system: systemPrompt,
+        messages,
+      }),
+    }
+  }
+  // openai-compatible (Kimi, etc.)
+  return {
+    url: config.baseUrl,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: config.model,
+      max_tokens: config.maxTokens,
+      stream: true,
+      stream_options: { include_usage: true },
+      messages: [{ role: 'system', content: systemPrompt }, ...messages],
+    }),
+  }
+}
+
+function parseSSEChunk(
+  config: ConversationModelConfig,
+  parsed: any,
+): { text?: string; inputTokens?: number; outputTokens?: number } {
+  if (config.provider === 'anthropic') {
+    const result: {
+      text?: string
+      inputTokens?: number
+      outputTokens?: number
+    } = {}
+    if (
+      parsed.type === 'content_block_delta' &&
+      parsed.delta?.type === 'text_delta' &&
+      parsed.delta.text
+    ) {
+      result.text = parsed.delta.text
+    }
+    if (parsed.type === 'message_start' && parsed.message?.usage) {
+      result.inputTokens = parsed.message.usage.input_tokens ?? 0
+    }
+    if (parsed.type === 'message_delta' && parsed.usage) {
+      result.outputTokens = parsed.usage.output_tokens ?? 0
+    }
+    return result
+  }
+  // openai-compatible
+  const result: { text?: string; inputTokens?: number; outputTokens?: number } =
+    {}
+  const delta = parsed.choices?.[0]?.delta
+  if (delta?.content) {
+    result.text = delta.content
+  }
+  if (parsed.usage) {
+    result.inputTokens = parsed.usage.prompt_tokens ?? 0
+    result.outputTokens = parsed.usage.completion_tokens ?? 0
+  }
+  return result
+}
+
+// HTTP action that streams the LLM response
 // The useStream hook sends { streamId } in the body and passes custom headers
 // for profileId, mode, and actionId.
 export const streamChat = httpAction(async (ctx, request) => {
@@ -232,41 +314,42 @@ export const streamChat = httpAction(async (ctx, request) => {
   }
 
   // Get API key from environment
-  const apiKey = process.env.ANTHROPIC_API_KEY
+  const modelConfig = MODEL_CONVERSATION
+  const apiKey = process.env[modelConfig.apiKeyEnv]
   if (!apiKey) {
-    return new Response('ANTHROPIC_API_KEY not configured', { status: 500 })
+    return new Response(`${modelConfig.apiKeyEnv} not configured`, {
+      status: 500,
+    })
   }
 
-  // Stream Claude's response
+  // Stream the LLM response
   const generateChat = async (
     _ctx: any,
     _request: any,
     _streamId: StreamId,
     chunkAppender: (chunk: string) => Promise<void>,
   ) => {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const req = buildProviderRequest(
+      modelConfig,
+      apiKey,
+      systemPrompt,
+      messages,
+    )
+    const response = await fetch(req.url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: MODEL_QUALITY,
-        max_tokens: 500,
-        stream: true,
-        system: systemPrompt,
-        messages,
-      }),
+      headers: req.headers,
+      body: req.body,
     })
 
     if (!response.ok) {
       const errorText = await response.text()
-      throw new Error(`Anthropic API error: ${response.status} ${errorText}`)
+      throw new Error(
+        `${modelConfig.provider} API error: ${response.status} ${errorText}`,
+      )
     }
 
     if (!response.body) {
-      throw new Error('No response body from Anthropic API')
+      throw new Error(`No response body from ${modelConfig.provider} API`)
     }
     const reader = response.body.getReader()
     const decoder = new TextDecoder()
@@ -292,20 +375,16 @@ export const streamChat = httpAction(async (ctx, request) => {
 
         try {
           const parsed = JSON.parse(data)
-          if (
-            parsed.type === 'content_block_delta' &&
-            parsed.delta?.type === 'text_delta' &&
-            parsed.delta.text
-          ) {
-            fullText += parsed.delta.text
-            await chunkAppender(parsed.delta.text)
+          const chunk = parseSSEChunk(modelConfig, parsed)
+          if (chunk.text) {
+            fullText += chunk.text
+            await chunkAppender(chunk.text)
           }
-          // Capture token usage from SSE events
-          if (parsed.type === 'message_start' && parsed.message?.usage) {
-            streamInputTokens = parsed.message.usage.input_tokens ?? 0
+          if (chunk.inputTokens !== undefined) {
+            streamInputTokens = chunk.inputTokens
           }
-          if (parsed.type === 'message_delta' && parsed.usage) {
-            streamOutputTokens = parsed.usage.output_tokens ?? 0
+          if (chunk.outputTokens !== undefined) {
+            streamOutputTokens = chunk.outputTokens
           }
         } catch {
           // Skip malformed JSON lines
@@ -326,7 +405,7 @@ export const streamChat = httpAction(async (ctx, request) => {
     if (streamInputTokens > 0 || streamOutputTokens > 0) {
       await ctx.runMutation(internal.lib.llmUsage.logUsage, {
         operation: 'enrichment_chat',
-        model: MODEL_QUALITY,
+        model: modelConfig.model,
         inputTokens: streamInputTokens,
         outputTokens: streamOutputTokens,
         userId,
