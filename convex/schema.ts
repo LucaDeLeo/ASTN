@@ -61,6 +61,7 @@ export default defineSchema({
   // Profile tables
   profiles: defineTable({
     userId: v.string(),
+    email: v.optional(v.string()),
 
     // Basic info
     name: v.optional(v.string()),

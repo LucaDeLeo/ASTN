@@ -133,6 +133,17 @@ export const joinOrg = mutation({
       }
     }
 
+    // Backfill name and email from Clerk identity if profile is missing them
+    if (profile && (!profile.name || !profile.email)) {
+      const identity = await ctx.auth.getUserIdentity()
+      const patch: Record<string, string> = {}
+      if (!profile.name && identity?.name) patch.name = identity.name
+      if (!profile.email && identity?.email) patch.email = identity.email
+      if (Object.keys(patch).length > 0) {
+        await ctx.db.patch('profiles', profile._id, patch)
+      }
+    }
+
     // Insert membership
     const membershipId = await ctx.db.insert('orgMemberships', {
       userId,
@@ -227,6 +238,17 @@ export const joinOrgBySlug = mutation({
             hiddenFromOrgs: filtered,
           },
         })
+      }
+    }
+
+    // Backfill name and email from Clerk identity if profile is missing them
+    if (profile && (!profile.name || !profile.email)) {
+      const identity = await ctx.auth.getUserIdentity()
+      const patch: Record<string, string> = {}
+      if (!profile.name && identity?.name) patch.name = identity.name
+      if (!profile.email && identity?.email) patch.email = identity.email
+      if (Object.keys(patch).length > 0) {
+        await ctx.db.patch('profiles', profile._id, patch)
       }
     }
 

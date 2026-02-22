@@ -134,9 +134,13 @@ export const create = mutation({
       return existing._id
     }
 
+    // Grab email from Clerk identity to store on profile
+    const identity = await ctx.auth.getUserIdentity()
+
     const now = Date.now()
     const profileId = await ctx.db.insert('profiles', {
       userId,
+      email: identity?.email ?? undefined,
       createdAt: now,
       updatedAt: now,
     })
@@ -260,6 +264,15 @@ export const updateField = mutation({
       throw new Error('Profile not found or not authorized')
     }
 
+    // Lazy-backfill email from Clerk identity if missing
+    let emailBackfill: Record<string, string> = {}
+    if (!profile.email) {
+      const identity = await ctx.auth.getUserIdentity()
+      if (identity?.email) {
+        emailBackfill = { email: identity.email }
+      }
+    }
+
     // Fields that affect match quality - trigger staleness indicator
     const MATCH_AFFECTING_FIELDS = new Set([
       'skills',
@@ -279,6 +292,7 @@ export const updateField = mutation({
 
     await ctx.db.patch('profiles', profileId, {
       ...updates,
+      ...emailBackfill,
       updatedAt: Date.now(),
       ...(affectsMatches ? { matchesStaleAt: Date.now() } : {}),
     })

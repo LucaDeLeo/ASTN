@@ -74,6 +74,7 @@ import type * as lib_auth from "../lib/auth.js";
 import type * as lib_bookingValidation from "../lib/bookingValidation.js";
 import type * as lib_formFields from "../lib/formFields.js";
 import type * as lib_limits from "../lib/limits.js";
+import type * as lib_llmUsage from "../lib/llmUsage.js";
 import type * as lib_logging from "../lib/logging.js";
 import type * as lib_models from "../lib/models.js";
 import type * as lib_rateLimiter from "../lib/rateLimiter.js";
@@ -183,6 +184,7 @@ declare const fullApi: ApiFromModules<{
   "lib/bookingValidation": typeof lib_bookingValidation;
   "lib/formFields": typeof lib_formFields;
   "lib/limits": typeof lib_limits;
+  "lib/llmUsage": typeof lib_llmUsage;
   "lib/logging": typeof lib_logging;
   "lib/models": typeof lib_models;
   "lib/rateLimiter": typeof lib_rateLimiter;
