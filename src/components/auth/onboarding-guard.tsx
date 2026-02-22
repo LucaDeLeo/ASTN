@@ -17,7 +17,9 @@ export function OnboardingGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (profile === null && !creating.current) {
       creating.current = true
-      createProfile().finally(() => {
+      createProfile({
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      }).finally(() => {
         creating.current = false
       })
     }

@@ -101,7 +101,7 @@ export const saveBatchResults = internalMutation({
       previousOppIds,
       runTimestamp,
       validOpportunityIds,
-      isFullRecompute,
+      isFullRecompute: _isFullRecompute,
       opportunitySnapshots,
       totalOpportunities,
       startedAt,
@@ -202,16 +202,11 @@ export const saveBatchResults = internalMutation({
         // Skip matches we just touched in this batch
         if (touchedOppIds.has(String(match.opportunityId))) continue
 
-        if (isFullRecompute) {
-          // Full recompute: delete anything not from this run
-          if (match.computedAt !== runTimestamp) {
-            await ctx.db.delete('matches', match._id)
-          }
-        } else {
-          // Incremental: delete matches for opps no longer in valid set
-          if (!validOppSet.has(String(match.opportunityId))) {
-            await ctx.db.delete('matches', match._id)
-          }
+        // Both full recompute and incremental: only delete matches for
+        // opportunities no longer in the valid set (expired/archived/filtered).
+        // Matches for skipped or failed-batch opportunities are preserved.
+        if (!validOppSet.has(String(match.opportunityId))) {
+          await ctx.db.delete('matches', match._id)
         }
       }
 

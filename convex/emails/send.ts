@@ -230,6 +230,48 @@ export const getNewGreatMatches = internalQuery({
 })
 
 /**
+ * Get ALL great-tier matches for a profile (regardless of isNew).
+ * Used for the first-computation email where matches may already be viewed.
+ */
+export const getAllGreatMatches = internalQuery({
+  args: { profileId: v.id('profiles') },
+  returns: v.array(v.any()),
+  handler: async (ctx, { profileId }) => {
+    return await ctx.db
+      .query('matches')
+      .withIndex('by_profile_tier', (q) =>
+        q.eq('profileId', profileId).eq('tier', 'great'),
+      )
+      .collect()
+  },
+})
+
+/**
+ * Get profile email info by ID (for sending emails from actions)
+ */
+export const getProfileEmailInfo = internalQuery({
+  args: { profileId: v.id('profiles') },
+  returns: v.union(
+    v.object({
+      email: v.string(),
+      name: v.string(),
+      matchAlertsEnabled: v.boolean(),
+    }),
+    v.null(),
+  ),
+  handler: async (ctx, { profileId }) => {
+    const profile = await ctx.db.get('profiles', profileId)
+    if (!profile?.email) return null
+    return {
+      email: profile.email,
+      name: profile.name ?? 'there',
+      matchAlertsEnabled:
+        profile.notificationPreferences?.matchAlerts.enabled ?? false,
+    }
+  },
+})
+
+/**
  * Get recent matches for a profile (for weekly digest)
  */
 export const getRecentMatches = internalQuery({

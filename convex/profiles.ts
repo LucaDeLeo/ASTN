@@ -118,8 +118,9 @@ export const getOrCreateProfile = query({
 
 // Create profile for current user (called on first edit)
 export const create = mutation({
-  args: {},
-  handler: async (ctx) => {
+  args: { timezone: v.optional(v.string()) },
+  returns: v.id('profiles'),
+  handler: async (ctx, { timezone }) => {
     const userId = await getUserId(ctx)
     if (!userId) {
       throw new Error('Not authenticated')
@@ -138,12 +139,30 @@ export const create = mutation({
     // Grab email from Clerk identity to store on profile
     const identity = await ctx.auth.getUserIdentity()
 
+    // Validate timezone if provided
+    const validTimezone =
+      timezone && isValidIANATimezone(timezone) ? timezone : 'UTC'
+
     const now = Date.now()
     const profileId = await ctx.db.insert('profiles', {
       userId,
       email: identity?.email ?? undefined,
       createdAt: now,
       updatedAt: now,
+      notificationPreferences: {
+        matchAlerts: { enabled: true },
+        weeklyDigest: { enabled: true },
+        deadlineReminders: { enabled: true },
+        timezone: validTimezone,
+      },
+      eventNotificationPreferences: {
+        frequency: 'weekly',
+        reminderTiming: {
+          oneWeekBefore: true,
+          oneDayBefore: true,
+          oneHourBefore: true,
+        },
+      },
     })
 
     // Mark guest as having become a member (if they were a guest)

@@ -1,6 +1,7 @@
 'use node'
 // @ts-nocheck - Type inference issues with Convex internalAction handlers
 
+import { v } from 'convex/values'
 import { internalAction } from '../_generated/server'
 import { internal } from '../_generated/api'
 import { log } from '../lib/logging'
@@ -542,5 +543,107 @@ export const processWeeklyEventDigestBatch = internalAction({
       processed: users.length,
     })
     return { processed: users.length, emailsSent }
+  },
+})
+
+/**
+ * Send an immediate email with great-tier matches after first-ever computation.
+ * Unlike the hourly cron, this does NOT rely on isNew (the user may have already
+ * viewed matches on the /matches page). It marks matches as isNew=false afterward
+ * to prevent the hourly cron from double-sending.
+ */
+export const sendFirstMatchEmail = internalAction({
+  args: { profileId: v.id('profiles') },
+  returns: v.null(),
+  handler: async (ctx, { profileId }) => {
+    // Get profile email info
+    const profileInfo = await ctx.runQuery(
+      internal.emails.send.getProfileEmailInfo,
+      { profileId },
+    )
+
+    if (!profileInfo || !profileInfo.matchAlertsEnabled) {
+      log(
+        'info',
+        'sendFirstMatchEmail: skipping (no email or alerts disabled)',
+        {
+          profileId,
+        },
+      )
+      return null
+    }
+
+    // Get ALL great-tier matches (not filtered by isNew)
+    const matches: Array<Match> = await ctx.runQuery(
+      internal.emails.send.getAllGreatMatches,
+      { profileId },
+    )
+
+    if (matches.length === 0) {
+      log('info', 'sendFirstMatchEmail: no great-tier matches', { profileId })
+      return null
+    }
+
+    // Get opportunity details for each match
+    const matchesWithOpportunities = await Promise.all(
+      matches.map(async (match: Match) => {
+        const opportunity: Opportunity | null = await ctx.runQuery(
+          internal.emails.send.getOpportunity,
+          { opportunityId: match.opportunityId },
+        )
+        return { match, opportunity }
+      }),
+    )
+
+    const validMatches = matchesWithOpportunities.filter(
+      (m): m is { match: Match; opportunity: Opportunity } =>
+        m.opportunity !== null,
+    )
+
+    if (validMatches.length === 0) {
+      return null
+    }
+
+    // Render email
+    const unsubscribeUrl = getUnsubscribeUrl(profileId)
+    const emailContent = await renderMatchAlert({
+      userName: profileInfo.name,
+      matches: validMatches.map(({ match, opportunity }) => ({
+        title: opportunity.title,
+        org: opportunity.organization,
+        tier: match.tier,
+        explanation: match.explanation.strengths.join('. '),
+        recommendations: match.recommendations
+          .filter(
+            (r: { type: string; action: string; priority: string }) =>
+              r.priority === 'high',
+          )
+          .map(
+            (r: { type: string; action: string; priority: string }) => r.action,
+          ),
+        deadline: opportunity.deadline,
+      })),
+      unsubscribeUrl,
+    })
+
+    // Send email
+    await ctx.runMutation(internal.emails.send.sendMatchAlert, {
+      to: profileInfo.email,
+      subject: `${validMatches.length} great-fit ${validMatches.length === 1 ? 'opportunity' : 'opportunities'} found for you on ASTN`,
+      html: emailContent,
+      unsubscribeUrl,
+    })
+
+    // Mark matches as not new to prevent hourly cron from double-sending
+    await ctx.runMutation(internal.emails.send.markMatchesNotNew, {
+      matchIds: matches.map((m: Match) => m._id),
+    })
+
+    log('info', 'sendFirstMatchEmail: sent', {
+      profileId,
+      matchCount: validMatches.length,
+    })
+
+    return null
   },
 })

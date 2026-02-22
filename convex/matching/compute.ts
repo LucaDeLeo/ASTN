@@ -145,6 +145,9 @@ export const computeMatchesForProfile = internalAction({
       return { matchCount: 0, message: 'No active opportunities to match' }
     }
 
+    // Detect first computation: no existing matches means this is a brand new user
+    const isFirstComputation = existingMatches.length === 0
+
     const previousOppIds = existingMatches.map(
       (m: { opportunityId: string }) => m.opportunityId,
     )
@@ -193,6 +196,7 @@ export const computeMatchesForProfile = internalAction({
         isFullRecompute,
         totalOpportunities: evaluationSet.length,
         startedAt: runTimestamp,
+        isFirstComputation,
       },
     )
 
@@ -242,6 +246,7 @@ export const processMatchBatch = internalAction({
     isFullRecompute: v.boolean(),
     totalOpportunities: v.number(),
     startedAt: v.number(),
+    isFirstComputation: v.boolean(),
   },
   handler: async (
     ctx,
@@ -258,6 +263,7 @@ export const processMatchBatch = internalAction({
       isFullRecompute,
       totalOpportunities,
       startedAt,
+      isFirstComputation,
     },
   ) => {
     const startTime = Date.now()
@@ -274,6 +280,7 @@ export const processMatchBatch = internalAction({
       isFullRecompute,
       totalOpportunities,
       startedAt,
+      isFirstComputation,
     }
 
     // Slice batch from snapshot IDs, then fetch current data
@@ -378,7 +385,7 @@ export const processMatchBatch = internalAction({
       const apiStart = Date.now()
       const response = await ai.models.generateContent({
         model: MODEL_GEMINI_FAST,
-        contents: `${profileContext}\n\n${opportunitiesContext}\n\nScore all opportunities for this candidate. Include only opportunities with tier great, good, or exploring - skip any that have no reasonable fit.`,
+        contents: `${profileContext}\n\n${opportunitiesContext}\n\nScore ALL opportunities for this candidate. You MUST return a result for every opportunity — assign tier "exploring" with a low score to any that are a poor fit. Do not skip any.`,
         config: {
           systemInstruction: MATCHING_SYSTEM_PROMPT,
           responseMimeType: 'application/json',
@@ -478,21 +485,29 @@ export const processMatchBatch = internalAction({
       })
     }
 
-    // Save results when we have matches or this is the final batch
-    if (batchMatches.length > 0 || isLastBatch) {
-      await ctx.runMutation(internal.matching.mutations.saveBatchResults, {
-        ...saveBatchArgs,
-        matches: batchMatches.map((m) => ({
-          opportunityId: m.opportunityId,
-          tier: m.tier,
-          score: m.score,
-          strengths: m.strengths,
-          gap: m.gap ?? undefined,
-          recommendations: m.recommendations,
-        })),
-        modelVersion: MODEL_GEMINI_FAST,
-        isLastBatch,
-      })
+    // Always save batch results — even if empty (failed batch), so progress
+    // updates correctly and old matches for those opportunities are preserved
+    await ctx.runMutation(internal.matching.mutations.saveBatchResults, {
+      ...saveBatchArgs,
+      matches: batchMatches.map((m) => ({
+        opportunityId: m.opportunityId,
+        tier: m.tier,
+        score: m.score,
+        strengths: m.strengths,
+        gap: m.gap ?? undefined,
+        recommendations: m.recommendations,
+      })),
+      modelVersion: MODEL_GEMINI_FAST,
+      isLastBatch,
+    })
+
+    // On last batch of first-ever computation, send immediate email with great matches
+    if (isLastBatch && isFirstComputation) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.emails.batchActions.sendFirstMatchEmail,
+        { profileId },
+      )
     }
 
     const durationMs = Date.now() - startTime
