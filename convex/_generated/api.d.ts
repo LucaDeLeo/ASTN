@@ -72,6 +72,7 @@ import type * as guestProfiles from "../guestProfiles.js";
 import type * as http from "../http.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_bookingValidation from "../lib/bookingValidation.js";
+import type * as lib_debouncer from "../lib/debouncer.js";
 import type * as lib_formFields from "../lib/formFields.js";
 import type * as lib_limits from "../lib/limits.js";
 import type * as lib_llmUsage from "../lib/llmUsage.js";
@@ -184,6 +185,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   "lib/auth": typeof lib_auth;
   "lib/bookingValidation": typeof lib_bookingValidation;
+  "lib/debouncer": typeof lib_debouncer;
   "lib/formFields": typeof lib_formFields;
   "lib/limits": typeof lib_limits;
   "lib/llmUsage": typeof lib_llmUsage;
@@ -5400,6 +5402,47 @@ export declare const components: {
     };
     time: {
       getServerTime: FunctionReference<"mutation", "internal", {}, number>;
+    };
+  };
+  debouncer: {
+    lib: {
+      cancel: FunctionReference<
+        "mutation",
+        "internal",
+        { key: string; namespace: string },
+        boolean
+      >;
+      getCallDetails: FunctionReference<
+        "query",
+        "internal",
+        { key: string; namespace: string },
+        null | { functionArgs: any; functionPath: string }
+      >;
+      schedule: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          delay: number;
+          functionArgs: any;
+          functionPath: string;
+          key: string;
+          mode: "eager" | "fixed" | "sliding";
+          namespace: string;
+        },
+        { executed: boolean; scheduledFor: number }
+      >;
+      status: FunctionReference<
+        "query",
+        "internal",
+        { key: string; namespace: string },
+        null | {
+          hasTrailingCall: boolean;
+          mode: "eager" | "fixed" | "sliding";
+          pending: boolean;
+          retriggerCount: number;
+          scheduledFor: number;
+        }
+      >;
     };
   };
 };

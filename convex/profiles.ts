@@ -1,7 +1,8 @@
 import { v } from 'convex/values'
 import { internal } from './_generated/api'
-import { mutation, query } from './_generated/server'
+import { internalMutation, mutation, query } from './_generated/server'
 import { getUserId } from './lib/auth'
+import { debouncedSchedule } from './lib/debouncer'
 
 // Section completeness rules
 const COMPLETENESS_SECTIONS = [
@@ -155,6 +156,16 @@ export const create = mutation({
   },
 })
 
+// Debounced matchesStaleAt writer — target for debouncedSchedule
+export const setMatchesStale = internalMutation({
+  args: { profileId: v.id('profiles') },
+  returns: v.null(),
+  handler: async (ctx, { profileId }) => {
+    await ctx.db.patch('profiles', profileId, { matchesStaleAt: Date.now() })
+    return null
+  },
+})
+
 // Update specific field(s) with timestamp
 export const updateField = mutation({
   args: {
@@ -294,8 +305,17 @@ export const updateField = mutation({
       ...updates,
       ...emailBackfill,
       updatedAt: Date.now(),
-      ...(affectsMatches ? { matchesStaleAt: Date.now() } : {}),
     })
+
+    if (affectsMatches) {
+      await debouncedSchedule(
+        ctx,
+        'match-staleness',
+        profileId,
+        internal.profiles.setMatchesStale,
+        { profileId },
+      )
+    }
 
     return { success: true }
   },
@@ -557,8 +577,17 @@ export const applyExtractedProfile = mutation({
       await ctx.db.patch('profiles', profile._id, {
         ...updates,
         updatedAt: now,
-        ...(affectsMatches ? { matchesStaleAt: now } : {}),
       })
+
+      if (affectsMatches) {
+        await debouncedSchedule(
+          ctx,
+          'match-staleness',
+          profile._id,
+          internal.profiles.setMatchesStale,
+          { profileId: profile._id },
+        )
+      }
     }
 
     return { success: true, profileId: profile._id }

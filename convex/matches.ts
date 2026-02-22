@@ -1,7 +1,8 @@
 import { v } from 'convex/values'
-import { action, mutation, query } from './_generated/server'
+import { action, internalMutation, mutation, query } from './_generated/server'
 import { internal } from './_generated/api'
 import { getUserId } from './lib/auth'
+import { debouncedSchedule } from './lib/debouncer'
 import { rateLimiter } from './lib/rateLimiter'
 import type { Id } from './_generated/dataModel'
 
@@ -221,6 +222,23 @@ export const getNewMatchCount = query({
   },
 })
 
+// Helper mutation: debounce career actions from action context
+export const scheduleCareerActions = internalMutation({
+  args: { profileId: v.id('profiles') },
+  returns: v.null(),
+  handler: async (ctx, { profileId }) => {
+    await debouncedSchedule(
+      ctx,
+      'career-actions',
+      profileId,
+      internal.careerActions.compute.computeActionsForProfile,
+      { profileId },
+      { delay: 5000 },
+    )
+    return null
+  },
+})
+
 // Trigger match computation (called from UI when needed)
 export const triggerMatchComputation = action({
   args: {},
@@ -251,12 +269,10 @@ export const triggerMatchComputation = action({
       { profileId: profile._id },
     )
 
-    // Generate career actions in parallel (fire-and-forget via scheduler)
-    await ctx.scheduler.runAfter(
-      0,
-      internal.careerActions.compute.computeActionsForProfile,
-      { profileId: profile._id },
-    )
+    // Generate career actions (debounced to avoid redundant Sonnet calls)
+    await ctx.runMutation(internal.matches.scheduleCareerActions, {
+      profileId: profile._id,
+    })
 
     return result
   },

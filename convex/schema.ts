@@ -1131,4 +1131,12 @@ export default defineSchema({
     .index('by_operation_and_createdAt', ['operation', 'createdAt'])
     .index('by_userId_and_createdAt', ['userId', 'createdAt'])
     .index('by_createdAt', ['createdAt']),
+
+  // Debounce state tracking (cancel-and-reschedule for expensive operations)
+  debouncedJobs: defineTable({
+    namespace: v.string(),
+    key: v.string(),
+    scheduledFunctionId: v.id('_scheduled_functions'),
+    scheduledFor: v.number(),
+  }).index('by_namespace_and_key', ['namespace', 'key']),
 })

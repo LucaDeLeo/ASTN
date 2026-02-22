@@ -2,6 +2,7 @@ import { v } from 'convex/values'
 import { components, internal } from '../_generated/api'
 import { mutation, query } from '../_generated/server'
 import { requirePlatformAdmin } from '../lib/auth'
+import { debouncedSchedule } from '../lib/debouncer'
 import { computeProfileCompleteness } from '../profiles'
 
 /**
@@ -258,11 +259,14 @@ export const recomputeMatches = mutation({
       matchesStaleAt: Date.now(),
     })
 
-    // Schedule match computation
-    await ctx.scheduler.runAfter(
-      0,
+    // Debounce match computation — fixed mode absorbs double-clicks
+    await debouncedSchedule(
+      ctx,
+      'match-computation',
+      profileId,
       internal.matching.compute.computeMatchesForProfile,
       { profileId },
+      { delay: 2000, mode: 'fixed' },
     )
 
     return null
