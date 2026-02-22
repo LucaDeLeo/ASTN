@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery } from 'convex/react'
 import { Building2, ChevronDown, ChevronUp, Search, X } from 'lucide-react'
 import { api } from '../../../../convex/_generated/api'
@@ -22,9 +22,28 @@ export function OrgSelector({ selectedOrgs, onOrgsChange }: OrgSelectorProps) {
     searchQuery.trim() ? { query: searchQuery } : 'skip',
   )
 
-  // Get selected organization details
+  // Filter out orgs the user is a member of (members can't hide from their own orgs)
+  const userMemberships = useQuery(api.orgs.membership.getUserMemberships)
+  const memberOrgIds = useMemo(
+    () => new Set(userMemberships?.map((m) => m.orgId.toString()) ?? []),
+    [userMemberships],
+  )
+
+  // Get selected organization details (exclude member orgs from selection)
   const selectedOrgDetails =
-    allOrgs?.filter((org) => selectedOrgs.includes(org._id)) ?? []
+    allOrgs?.filter(
+      (org) => selectedOrgs.includes(org._id) && !memberOrgIds.has(org._id),
+    ) ?? []
+
+  // Filter available orgs to exclude ones the user belongs to
+  const availableOrgs = useMemo(
+    () => allOrgs?.filter((org) => !memberOrgIds.has(org._id)) ?? [],
+    [allOrgs, memberOrgIds],
+  )
+  const filteredSearchResults = useMemo(
+    () => searchResults?.filter((org) => !memberOrgIds.has(org._id)) ?? [],
+    [searchResults, memberOrgIds],
+  )
 
   const toggleOrg = (orgId: string) => {
     if (selectedOrgs.includes(orgId)) {
@@ -76,13 +95,13 @@ export function OrgSelector({ selectedOrgs, onOrgsChange }: OrgSelectorProps) {
       {/* Search results */}
       {searchQuery.trim() && searchResults && (
         <div className="border rounded-md max-h-48 overflow-y-auto">
-          {searchResults.length === 0 ? (
+          {filteredSearchResults.length === 0 ? (
             <p className="p-3 text-sm text-slate-500 text-center">
               No organizations found
             </p>
           ) : (
             <div className="divide-y">
-              {searchResults.map((org) => (
+              {filteredSearchResults.map((org) => (
                 <button
                   key={org._id}
                   onClick={() => toggleOrg(org._id)}
@@ -129,13 +148,13 @@ export function OrgSelector({ selectedOrgs, onOrgsChange }: OrgSelectorProps) {
           {/* Browse list */}
           {showBrowse && allOrgs && (
             <div className="mt-2 border rounded-md max-h-64 overflow-y-auto">
-              {allOrgs.length === 0 ? (
+              {availableOrgs.length === 0 ? (
                 <p className="p-3 text-sm text-slate-500 text-center">
                   No organizations available
                 </p>
               ) : (
                 <div className="divide-y">
-                  {allOrgs.map((org) => (
+                  {availableOrgs.map((org) => (
                     <label
                       key={org._id}
                       className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer transition-colors"
@@ -157,7 +176,8 @@ export function OrgSelector({ selectedOrgs, onOrgsChange }: OrgSelectorProps) {
       {/* Helper text */}
       <p className="text-xs text-slate-500">
         Selected organizations won&apos;t see your profile in search results or
-        matches.
+        matches. Organizations you&apos;ve joined always have access to your
+        profile.
       </p>
     </div>
   )

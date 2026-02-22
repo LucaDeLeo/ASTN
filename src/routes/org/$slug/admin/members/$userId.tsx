@@ -93,35 +93,9 @@ function MemberProfilePage() {
     return <NotFound message="Member not found" />
   }
 
-  // Member has hidden profile from this org
-  if ('restricted' in memberProfile && memberProfile.restricted) {
-    return (
-      <div className="min-h-screen bg-slate-50">
-        <AuthHeader />
-        <main className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto">
-            <BackButton slug={slug} orgName={org.name} />
-            <Card className="mt-6">
-              <CardContent className="py-12 text-center">
-                <EyeOff className="size-12 text-slate-300 mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-foreground mb-2">
-                  Profile Hidden
-                </h2>
-                <p className="text-slate-500">
-                  This member has chosen to hide their profile from your
-                  organization.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </main>
-      </div>
-    )
-  }
-
   // Type assertion - TypeScript narrowing doesn't work with Convex query return types
   const profile = memberProfile.profile as ProfileData
-  const email = memberProfile.email as string | null
+  const email = memberProfile.email
   const memberMembership = memberProfile.membership as {
     _id: string
     joinedAt: number

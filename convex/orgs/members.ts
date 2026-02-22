@@ -53,14 +53,8 @@ export const getMemberProfileForAdmin = query({
 
     if (!membership) return null
 
-    // Check if member has hidden themselves from this org
-    const hiddenOrgs = profile.privacySettings?.hiddenFromOrgs ?? []
-    if (hiddenOrgs.includes(orgId.toString())) {
-      return {
-        restricted: true,
-        reason: 'Member has hidden their profile from this organization',
-      }
-    }
+    // Members who join an org grant that org viewing privileges on their profile.
+    // The hiddenFromOrgs setting does not apply to the member's own org.
 
     // Apply section visibility (respect member's choices)
     const visibility = profile.privacySettings?.sectionVisibility ?? {}

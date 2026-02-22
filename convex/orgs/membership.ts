@@ -112,6 +112,27 @@ export const joinOrg = mutation({
 
     const role = existingMembers ? 'member' : 'admin'
 
+    // Remove this org from hiddenFromOrgs if present (joining = granting visibility)
+    const profile = await ctx.db
+      .query('profiles')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .first()
+
+    if (profile?.privacySettings?.hiddenFromOrgs?.length) {
+      const orgIdStr = orgId.toString()
+      const filtered = profile.privacySettings.hiddenFromOrgs.filter(
+        (id) => id !== orgIdStr,
+      )
+      if (filtered.length !== profile.privacySettings.hiddenFromOrgs.length) {
+        await ctx.db.patch('profiles', profile._id, {
+          privacySettings: {
+            ...profile.privacySettings,
+            hiddenFromOrgs: filtered,
+          },
+        })
+      }
+    }
+
     // Insert membership
     const membershipId = await ctx.db.insert('orgMemberships', {
       userId,
@@ -187,6 +208,27 @@ export const joinOrgBySlug = mutation({
       .first()
 
     const role = existingMembers ? 'member' : 'admin'
+
+    // Remove this org from hiddenFromOrgs if present (joining = granting visibility)
+    const profile = await ctx.db
+      .query('profiles')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .first()
+
+    if (profile?.privacySettings?.hiddenFromOrgs?.length) {
+      const orgIdStr = org._id.toString()
+      const filtered = profile.privacySettings.hiddenFromOrgs.filter(
+        (id) => id !== orgIdStr,
+      )
+      if (filtered.length !== profile.privacySettings.hiddenFromOrgs.length) {
+        await ctx.db.patch('profiles', profile._id, {
+          privacySettings: {
+            ...profile.privacySettings,
+            hiddenFromOrgs: filtered,
+          },
+        })
+      }
+    }
 
     await ctx.db.insert('orgMemberships', {
       userId,

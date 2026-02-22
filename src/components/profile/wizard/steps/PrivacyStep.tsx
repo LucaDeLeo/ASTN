@@ -212,7 +212,9 @@ export function PrivacyStep({
           Hide from Organizations
         </Label>
         <p className="text-sm text-slate-500 mb-4">
-          Select organizations that should not see your profile.
+          Select organizations that should not see your profile. Organizations
+          you&apos;ve joined always have access to your profile and cannot be
+          hidden.
         </p>
 
         <OrgSelector

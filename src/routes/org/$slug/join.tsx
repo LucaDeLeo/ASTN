@@ -276,18 +276,23 @@ function JoinForm({ token, orgId, orgName, orgSlug }: JoinFormProps) {
           Join {orgName}
         </h1>
         <p className="text-slate-600">
-          Choose how you want to appear in the member directory.
+          By joining, organization admins will be able to view your profile. If
+          you prefer to keep your profile private, you can use the platform
+          without joining an organization.
         </p>
       </div>
 
       <div className="space-y-3 mb-6">
+        <p className="text-sm font-medium text-slate-700">
+          Directory visibility
+        </p>
         <VisibilityOption
           value="visible"
           selected={visibility === 'visible'}
           onSelect={() => setVisibility('visible')}
           icon={Eye}
           title="Visible in Directory"
-          description="Your name and profile summary appear in the member directory. Other members can see you're part of the organization."
+          description="Your name and profile summary appear in the public member directory. Other members can see you're part of the organization."
         />
 
         <VisibilityOption
@@ -296,7 +301,7 @@ function JoinForm({ token, orgId, orgName, orgSlug }: JoinFormProps) {
           onSelect={() => setVisibility('hidden')}
           icon={EyeOff}
           title="Hidden from Directory"
-          description="You're a member but won't appear in the public directory. Only organization admins can see your membership."
+          description="You won't appear in the public member directory, but organization admins can still view your profile."
         />
       </div>
 
