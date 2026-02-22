@@ -18,7 +18,7 @@ export type ConversationModelConfig = {
   maxTokens: number
 }
 
-const SONNET_4_6: ConversationModelConfig = {
+const _SONNET_4_6: ConversationModelConfig = {
   model: 'claude-sonnet-4-6',
   provider: 'anthropic',
   baseUrl: 'https://api.anthropic.com/v1/messages',
@@ -35,8 +35,8 @@ const KIMI_K2_5: ConversationModelConfig = {
 }
 
 // Swap this one line to change the conversation model
-export const MODEL_CONVERSATION: ConversationModelConfig = SONNET_4_6
-// export const MODEL_CONVERSATION: ConversationModelConfig = KIMI_K2_5
+// export const MODEL_CONVERSATION: ConversationModelConfig = _SONNET_4_6
+export const MODEL_CONVERSATION: ConversationModelConfig = KIMI_K2_5
 
 // Suppress unused-variable lint for the inactive config
-void KIMI_K2_5
+void _SONNET_4_6
