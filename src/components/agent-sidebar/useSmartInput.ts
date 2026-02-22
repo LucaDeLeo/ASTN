@@ -5,7 +5,8 @@ import type { Id } from '../../../convex/_generated/dataModel'
 import { useExtraction } from '~/components/profile/upload/hooks/useExtraction'
 import { useFileUpload } from '~/components/profile/upload/hooks/useFileUpload'
 
-const LINKEDIN_URL_RE = /https?:\/\/(?:www\.)?linkedin\.com\/in\/[^\s]+/i
+const LINKEDIN_URL_RE =
+  /(?:https?:\/\/)?(?:[\w-]+\.)?linkedin\.com\/in\/[^\s]+/i
 
 function looksLikeCV(text: string): boolean {
   return text.length > 300 && text.split('\n').length >= 5
