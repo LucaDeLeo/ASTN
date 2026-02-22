@@ -45,6 +45,8 @@ interface OpportunityData {
   isRemote: boolean
   roleType: string
   experienceLevel?: string
+  salaryRange?: string
+  extractedSkills?: Array<string>
   description: string
   requirements?: Array<string>
   deadline?: number
@@ -259,6 +261,12 @@ export function buildOpportunitiesContext(
     }
     if (opp.experienceLevel) {
       sections.push(`Experience Level: ${opp.experienceLevel}`)
+    }
+    if (opp.salaryRange) {
+      sections.push(`Salary: ${opp.salaryRange}`)
+    }
+    if (opp.extractedSkills?.length) {
+      sections.push(`Key Skills: ${opp.extractedSkills.join(', ')}`)
     }
     sections.push(`\nDescription:\n${opp.description}`)
     if (opp.requirements && opp.requirements.length > 0) {

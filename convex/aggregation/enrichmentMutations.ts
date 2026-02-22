@@ -2,6 +2,8 @@ import { v } from 'convex/values'
 import { internalMutation, internalQuery } from '../_generated/server'
 import { log } from '../lib/logging'
 
+export const CURRENT_ENRICHMENT_VERSION = 2
+
 export const getUnenrichedOpportunities = internalQuery({
   args: {},
   returns: v.array(
@@ -15,6 +17,7 @@ export const getUnenrichedOpportunities = internalQuery({
       experienceLevel: v.optional(v.string()),
       description: v.string(),
       requirements: v.optional(v.array(v.string())),
+      salaryRange: v.optional(v.string()),
       opportunityType: v.optional(
         v.union(v.literal('job'), v.literal('event')),
       ),
@@ -28,7 +31,9 @@ export const getUnenrichedOpportunities = internalQuery({
       .collect()
 
     const unenriched = opportunities.filter(
-      (opp) => opp.enrichedAt === undefined,
+      (opp) =>
+        opp.enrichedAt === undefined ||
+        (opp.enrichmentVersion ?? 0) < CURRENT_ENRICHMENT_VERSION,
     )
 
     return unenriched.map((opp) => ({
@@ -41,6 +46,7 @@ export const getUnenrichedOpportunities = internalQuery({
       experienceLevel: opp.experienceLevel,
       description: opp.description,
       requirements: opp.requirements,
+      salaryRange: opp.salaryRange,
       opportunityType: opp.opportunityType,
       eventType: opp.eventType,
     }))
@@ -53,6 +59,8 @@ const enrichmentValidator = v.object({
   experienceLevel: v.optional(v.string()),
   roleType: v.optional(v.string()),
   isRemote: v.optional(v.boolean()),
+  salaryRange: v.optional(v.string()),
+  skills: v.optional(v.array(v.string())),
 })
 
 export const applyEnrichments = internalMutation({
@@ -115,12 +123,25 @@ export const applyEnrichments = internalMutation({
           fieldsToUpdate.isRemote = enrichment.isRemote
           enrichedFields.push('isRemote')
         }
+
+        // Only apply salaryRange if currently missing from source
+        if (enrichment.salaryRange && !opp.salaryRange) {
+          fieldsToUpdate.salaryRange = enrichment.salaryRange
+          enrichedFields.push('salaryRange')
+        }
+
+        // Apply extracted skills if LLM returned them
+        if (enrichment.skills && enrichment.skills.length > 0) {
+          fieldsToUpdate.extractedSkills = enrichment.skills
+          enrichedFields.push('extractedSkills')
+        }
       }
 
       // Mark as enriched regardless (so it's not reprocessed)
       await ctx.db.patch('opportunities', oppId, {
         ...fieldsToUpdate,
         enrichedAt: Date.now(),
+        enrichmentVersion: CURRENT_ENRICHMENT_VERSION,
         enrichedFields:
           enrichedFields.length > 0
             ? [...(opp.enrichedFields || []), ...enrichedFields]

@@ -101,7 +101,11 @@ function normalizeEightyKJob(hit: AlgoliaHit): NormalizedOpportunity {
       hit.remote ?? hit.location?.toLowerCase().includes('remote') ?? false,
     roleType: mapRoleType(hit.job_type),
     experienceLevel: mapExperienceLevel(hit.experience_required),
-    description: hit.description || hit.description_short || '',
+    description:
+      hit.description ||
+      hit.description_short ||
+      (hit as Record<string, unknown>).plain_text_description?.toString() ||
+      '',
     requirements: hit.requirements,
     salaryRange: hit.salary_text,
     deadline: hit.closing_date

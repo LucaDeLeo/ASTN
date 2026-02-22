@@ -10,6 +10,7 @@ interface OpportunityForEnrichment {
   experienceLevel?: string
   description: string
   requirements?: Array<string>
+  salaryRange?: string
   opportunityType?: 'job' | 'event'
   eventType?: string
 }
@@ -24,6 +25,8 @@ For each opportunity, analyze the title, organization, description, and requirem
 2. **experienceLevel**: One of "entry", "mid", "senior", or "lead". Infer from required years of experience, seniority words in the title, or requirement complexity. Only output if currently missing.
 3. **roleType**: One of "research", "engineering", "operations", "policy", "training", or "other". Only output if the current value is "other" and a more specific type is clearly appropriate.
 4. **isRemote**: true or false. Only output if the description mentions remote work availability that contradicts the current value.
+5. **salaryRange**: Extract salary, compensation, or stipend information as a human-readable string (e.g., "$80,000-$120,000/year", "£45k-£60k", "$2,000/month stipend"). Only output if the current value is missing and the description contains salary/compensation info.
+6. **skills**: Extract 3-8 key skills or competencies as concise labels (e.g., "Python", "alignment research", "policy analysis", "machine learning"). Focus on the most important and specific skills mentioned in the description and requirements.
 
 ## Rules
 
@@ -32,6 +35,8 @@ For each opportunity, analyze the title, organization, description, and requirem
 - For experienceLevel: 0-2 years or "junior" = "entry", 3-5 years = "mid", 6-10 years or "senior" in title = "senior", 10+ years or "lead"/"director"/"head" = "lead".
 - For roleType: consider the full description, not just the title. A "Data Science Lead" doing alignment research = "research".
 - For isRemote: look for phrases like "remote-friendly", "work from anywhere", "distributed team", "hybrid", etc.
+- For salaryRange: look for explicit salary mentions, compensation ranges, stipends, or pay rates. Do not guess or infer salary from job level.
+- For skills: extract specific technical skills, domain expertise, and key competencies. Prefer concise labels (2-3 words max per skill). Omit generic skills like "communication" or "teamwork".
 - For events (courses, fellowships, conferences): experienceLevel can still apply (e.g., "introductory" = "entry", "advanced" = "senior").
 
 ## Data Handling
@@ -55,6 +60,11 @@ export function buildEnrichmentContext(
       sections.push(`Current experienceLevel: ${opp.experienceLevel}`)
     } else {
       sections.push(`Current experienceLevel: (missing)`)
+    }
+    if (opp.salaryRange) {
+      sections.push(`Current salaryRange: ${opp.salaryRange}`)
+    } else {
+      sections.push(`Current salaryRange: (missing)`)
     }
     if (opp.opportunityType === 'event' && opp.eventType) {
       sections.push(`Event Type: ${opp.eventType}`)
@@ -117,6 +127,17 @@ export const enrichOpportunitiesTool: Anthropic.Tool = {
               type: 'boolean',
               description:
                 'Inferred remote status. Only include if description contradicts current value.',
+            },
+            salaryRange: {
+              type: 'string',
+              description:
+                'Extracted salary/compensation/stipend info. Only include if currently missing and explicitly mentioned in description.',
+            },
+            skills: {
+              type: 'array',
+              items: { type: 'string' },
+              description:
+                'Key skills/competencies extracted from description (3-8 concise labels).',
             },
           },
           required: ['opportunityId'],

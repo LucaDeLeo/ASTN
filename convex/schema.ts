@@ -599,6 +599,7 @@ export default defineSchema({
         roleType: v.string(),
         experienceLevel: v.optional(v.string()),
         salaryRange: v.optional(v.string()),
+        extractedSkills: v.optional(v.array(v.string())),
         sourceUrl: v.string(),
         deadline: v.optional(v.number()),
       }),
@@ -671,9 +672,13 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
 
+    // LLM-extracted fields
+    extractedSkills: v.optional(v.array(v.string())),
+
     // LLM enrichment metadata
     enrichedAt: v.optional(v.number()),
     enrichedFields: v.optional(v.array(v.string())),
+    enrichmentVersion: v.optional(v.number()),
   })
     .index('by_source_id', ['sourceId'])
     .index('by_organization', ['organization'])

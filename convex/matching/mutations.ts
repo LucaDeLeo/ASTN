@@ -66,6 +66,7 @@ const opportunitySnapshotValidator = v.object({
   roleType: v.string(),
   experienceLevel: v.optional(v.string()),
   salaryRange: v.optional(v.string()),
+  extractedSkills: v.optional(v.array(v.string())),
   sourceUrl: v.string(),
   deadline: v.optional(v.number()),
 })

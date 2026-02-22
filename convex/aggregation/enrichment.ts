@@ -172,6 +172,8 @@ export const processEnrichmentBatch = internalAction({
                 experienceLevel: e.experienceLevel,
                 roleType: e.roleType,
                 isRemote: e.isRemote,
+                salaryRange: e.salaryRange,
+                skills: e.skills,
               })),
               batchIds,
             },

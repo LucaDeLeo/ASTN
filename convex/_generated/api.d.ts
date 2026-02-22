@@ -27,6 +27,7 @@ import type * as aggregation_enrichmentPrompts from "../aggregation/enrichmentPr
 import type * as aggregation_enrichmentValidation from "../aggregation/enrichmentValidation.js";
 import type * as aggregation_sync from "../aggregation/sync.js";
 import type * as aggregation_syncMutations from "../aggregation/syncMutations.js";
+import type * as aggregation_validation from "../aggregation/validation.js";
 import type * as attendance_mutations from "../attendance/mutations.js";
 import type * as attendance_queries from "../attendance/queries.js";
 import type * as attendance_scheduler from "../attendance/scheduler.js";
@@ -140,6 +141,7 @@ declare const fullApi: ApiFromModules<{
   "aggregation/enrichmentValidation": typeof aggregation_enrichmentValidation;
   "aggregation/sync": typeof aggregation_sync;
   "aggregation/syncMutations": typeof aggregation_syncMutations;
+  "aggregation/validation": typeof aggregation_validation;
   "attendance/mutations": typeof attendance_mutations;
   "attendance/queries": typeof attendance_queries;
   "attendance/scheduler": typeof attendance_scheduler;

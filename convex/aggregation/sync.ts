@@ -2,6 +2,7 @@
 import { internalAction } from '../_generated/server'
 import { internal } from '../_generated/api'
 import { log } from '../lib/logging'
+import { validateAndSanitizeBatch } from './validation'
 
 export const runFullSync = internalAction({
   args: {},
@@ -29,17 +30,25 @@ export const runFullSync = internalAction({
       return
     }
 
+    // Validate and sanitize before upserting
+    const { valid } = validateAndSanitizeBatch(allJobs)
+
+    if (valid.length === 0) {
+      log('warn', 'No valid opportunities after validation')
+      return
+    }
+
     // Upsert opportunities with deduplication
     await ctx.runMutation(
       internal.aggregation.syncMutations.upsertOpportunities,
       {
-        opportunities: allJobs,
+        opportunities: valid,
       },
     )
 
     // Archive opportunities that disappeared from sources
     await ctx.runMutation(internal.aggregation.syncMutations.archiveMissing, {
-      currentSourceIds: allJobs.map((j) => j.sourceId),
+      currentSourceIds: valid.map((j) => j.sourceId),
     })
 
     // Schedule LLM enrichment for any new/unenriched opportunities

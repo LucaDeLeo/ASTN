@@ -209,6 +209,7 @@ function buildOpportunitySnapshot(opp: {
   roleType: string
   experienceLevel?: string
   salaryRange?: string
+  extractedSkills?: Array<string>
   sourceUrl: string
   deadline?: number
 }) {
@@ -220,6 +221,7 @@ function buildOpportunitySnapshot(opp: {
     roleType: opp.roleType,
     experienceLevel: opp.experienceLevel,
     salaryRange: opp.salaryRange,
+    extractedSkills: opp.extractedSkills,
     sourceUrl: opp.sourceUrl,
     deadline: opp.deadline,
   }
@@ -306,6 +308,7 @@ export const processMatchBatch = internalAction({
         roleType: string
         experienceLevel?: string
         salaryRange?: string
+        extractedSkills?: Array<string>
         sourceUrl: string
         deadline?: number
       }

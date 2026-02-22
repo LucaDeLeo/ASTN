@@ -15,6 +15,8 @@ export const enrichmentItemSchema = z.object({
     ])
     .optional(),
   isRemote: z.boolean().optional(),
+  salaryRange: z.string().optional(),
+  skills: z.array(z.string()).optional(),
 })
 
 export const enrichmentResultSchema = z.object({
