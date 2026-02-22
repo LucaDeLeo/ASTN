@@ -113,16 +113,16 @@ export function BookingCalendar({
         DayButton: CustomDayButton,
       }}
       classNames={{
-        root: 'relative p-3',
+        root: 'p-3',
         months: 'flex flex-col sm:flex-row gap-4',
-        month: 'space-y-4',
-        month_caption: 'flex justify-center pt-1 relative items-center',
+        month: 'relative space-y-4',
+        month_caption: 'flex justify-center pt-1 items-center',
         caption_label: 'text-sm font-medium',
-        nav: 'flex items-center gap-1',
+        nav: 'absolute top-0 inset-x-0 flex items-center justify-between pt-1 z-10',
         button_previous:
-          'absolute left-1 size-7 bg-transparent p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center rounded-md border border-input hover:bg-accent hover:text-accent-foreground',
+          'size-7 bg-transparent p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center rounded-md border border-input hover:bg-accent hover:text-accent-foreground',
         button_next:
-          'absolute right-1 size-7 bg-transparent p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center rounded-md border border-input hover:bg-accent hover:text-accent-foreground',
+          'size-7 bg-transparent p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center rounded-md border border-input hover:bg-accent hover:text-accent-foreground',
         month_grid: 'w-full border-collapse space-y-1',
         weekdays: 'flex',
         weekday:
