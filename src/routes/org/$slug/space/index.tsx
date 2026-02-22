@@ -432,7 +432,6 @@ function MemberBookingForm({
   const [startMinutes, setStartMinutes] = useState(540)
   const [endMinutes, setEndMinutes] = useState(1020)
   const [workingOn, setWorkingOn] = useState('')
-  const [interestedInMeeting, setInterestedInMeeting] = useState('')
   const [consentChecked, setConsentChecked] = useState(false)
   const [isBooking, setIsBooking] = useState(false)
 
@@ -497,7 +496,6 @@ function MemberBookingForm({
         startMinutes,
         endMinutes,
         workingOn: workingOn.trim() || undefined,
-        interestedInMeeting: interestedInMeeting.trim() || undefined,
         consentToProfileSharing: true,
       })
 
@@ -511,7 +509,6 @@ function MemberBookingForm({
 
       setSelectedDate(undefined)
       setWorkingOn('')
-      setInterestedInMeeting('')
       setConsentChecked(false)
     } catch (error) {
       console.error('Failed to book:', error)
@@ -632,24 +629,6 @@ function MemberBookingForm({
                     </p>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="interestedInMeeting">
-                      Who would you like to meet? (optional)
-                    </Label>
-                    <Textarea
-                      id="interestedInMeeting"
-                      value={interestedInMeeting}
-                      onChange={(e) =>
-                        setInterestedInMeeting(e.target.value.slice(0, 140))
-                      }
-                      placeholder="e.g., AI safety researchers, ML engineers..."
-                      rows={2}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {interestedInMeeting.length}/140 characters
-                    </p>
-                  </div>
-
                   <div className="flex items-start gap-3 p-3 rounded-lg border bg-muted/50">
                     <Checkbox
                       id="consent"
@@ -662,8 +641,8 @@ function MemberBookingForm({
                       htmlFor="consent"
                       className="text-sm font-normal cursor-pointer leading-relaxed"
                     >
-                      I agree that others booked on this day can see my name,
-                      headline, and skills
+                      I agree that others booked on this day can see my full
+                      profile
                     </Label>
                   </div>
 
