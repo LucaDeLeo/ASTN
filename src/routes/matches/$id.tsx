@@ -10,6 +10,7 @@ import { convexQuery } from '@convex-dev/react-query'
 import {
   AlertTriangle,
   ArrowLeft,
+  Bookmark,
   Calendar,
   Check,
   CheckCircle,
@@ -104,7 +105,9 @@ function MatchDetailContent() {
   )
 
   const markAsApplied = useMutation(api.matches.markAsApplied)
+  const saveMatch = useMutation(api.matches.saveMatch)
   const isApplied = !!match?.appliedAt
+  const isSaved = match?.status === 'saved'
 
   const handleToggleApplied = useCallback(async () => {
     if (!match) return
@@ -239,6 +242,20 @@ function MatchDetailContent() {
               >
                 <Check className="size-4 mr-2" />
                 {isApplied ? 'Applied' : 'Mark as Applied'}
+              </Button>
+              <Button
+                variant={isSaved ? 'secondary' : 'outline'}
+                className={
+                  isSaved
+                    ? 'w-full sm:w-auto bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                    : 'w-full sm:w-auto'
+                }
+                onClick={() => saveMatch({ matchId: match._id })}
+              >
+                <Bookmark
+                  className={`size-4 mr-2 ${isSaved ? 'fill-current' : ''}`}
+                />
+                {isSaved ? 'Saved' : 'Save'}
               </Button>
             </div>
           </div>

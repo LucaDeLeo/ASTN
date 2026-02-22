@@ -97,12 +97,12 @@ export const getMyMatches = query({
         m.opportunity !== null,
     )
 
-    // Separate saved matches from active matches
+    // Separate saved matches from active matches (exclude applied — they show in Applied section)
     const savedMatches = validMatches
-      .filter((m) => m.status === 'saved')
+      .filter((m) => m.status === 'saved' && !m.appliedAt)
       .sort((a, b) => b.score - a.score)
 
-    // Applied matches (cross-cutting view — orthogonal to status)
+    // Applied matches (cross-cutting view — shown regardless of saved/active status)
     const appliedMatches = validMatches
       .filter((m) => m.appliedAt != null)
       .sort((a, b) => (b.appliedAt ?? 0) - (a.appliedAt ?? 0))
