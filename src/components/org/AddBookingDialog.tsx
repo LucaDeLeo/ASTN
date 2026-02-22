@@ -6,6 +6,7 @@ import { DayPicker } from 'react-day-picker'
 import { toast } from 'sonner'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
+import { calendarClassNames } from '~/lib/calendar-styles'
 import { Button } from '~/components/ui/button'
 import {
   Dialog,
@@ -227,6 +228,7 @@ export function AddBookingDialog({
                     setDatePickerOpen(false)
                   }}
                   disabled={(date) => isBefore(date, today)}
+                  classNames={calendarClassNames}
                 />
               </PopoverContent>
             </Popover>
