@@ -109,6 +109,72 @@ export const getProfileDetail = query({
 })
 
 /**
+ * Get all matches for a profile with joined opportunity data.
+ * Sorted by tier priority (great → good → exploring), then score desc.
+ */
+export const getUserMatches = query({
+  args: {
+    profileId: v.id('profiles'),
+  },
+  returns: v.any(),
+  handler: async (ctx, { profileId }) => {
+    await requirePlatformAdmin(ctx)
+
+    const matches = await ctx.db
+      .query('matches')
+      .withIndex('by_profile', (q) => q.eq('profileId', profileId))
+      .collect()
+
+    const enriched = await Promise.all(
+      matches.map(async (match) => {
+        const opp = await ctx.db.get('opportunities', match.opportunityId)
+        return {
+          _id: match._id,
+          tier: match.tier,
+          score: match.score,
+          status: match.status ?? 'active',
+          explanation: match.explanation,
+          recommendations: match.recommendations,
+          isNew: match.isNew,
+          computedAt: match.computedAt,
+          modelVersion: match.modelVersion,
+          opportunity: opp
+            ? {
+                title: opp.title,
+                organization: opp.organization,
+                location: opp.location,
+                isRemote: opp.isRemote,
+                roleType: opp.roleType,
+                experienceLevel: opp.experienceLevel,
+                salaryRange: opp.salaryRange,
+                deadline: opp.deadline,
+                sourceUrl: opp.sourceUrl,
+              }
+            : null,
+        }
+      }),
+    )
+
+    // Filter out matches where opportunity was deleted
+    const valid = enriched.filter((m) => m.opportunity !== null)
+
+    // Sort by tier priority, then score desc
+    const tierOrder: Record<string, number> = {
+      great: 0,
+      good: 1,
+      exploring: 2,
+    }
+    valid.sort((a, b) => {
+      const tierDiff = (tierOrder[a.tier] ?? 3) - (tierOrder[b.tier] ?? 3)
+      if (tierDiff !== 0) return tierDiff
+      return b.score - a.score
+    })
+
+    return valid
+  },
+})
+
+/**
  * Get agent thread messages for a profile (read-only admin view).
  * Uses the @convex-dev/agent component's internal query.
  */

@@ -2,14 +2,21 @@ import { Link, createFileRoute } from '@tanstack/react-router'
 import { useQuery } from 'convex/react'
 import { formatDistanceToNow } from 'date-fns'
 import {
+  AlertTriangle,
   ArrowLeft,
   Bot,
   Briefcase,
   Building2,
+  Calendar,
+  Compass,
+  ExternalLink,
   GraduationCap,
   MapPin,
   MessageSquare,
   Shield,
+  Sparkles,
+  Target,
+  ThumbsUp,
   User,
   Wrench,
 } from 'lucide-react'
@@ -151,6 +158,13 @@ function UserDetail({ userId }: { userId: string }) {
       <Tabs defaultValue="profile">
         <TabsList>
           <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="matches">
+            Matches (
+            {profile.matchCounts.great +
+              profile.matchCounts.good +
+              profile.matchCounts.exploring}
+            )
+          </TabsTrigger>
           <TabsTrigger value="agent" disabled={!hasAgent}>
             Agent Chat
           </TabsTrigger>
@@ -161,6 +175,10 @@ function UserDetail({ userId }: { userId: string }) {
 
         <TabsContent value="profile">
           <ProfileTab profile={profile} />
+        </TabsContent>
+
+        <TabsContent value="matches">
+          <MatchesTab profileId={profile._id} />
         </TabsContent>
 
         <TabsContent value="agent">
@@ -464,6 +482,220 @@ function ProfileTab({ profile }: { profile: Record<string, any> }) {
         </Card>
       )}
     </div>
+  )
+}
+
+const tierConfig = {
+  great: {
+    label: 'Great match',
+    color: 'bg-emerald-100 text-emerald-800',
+    icon: Sparkles,
+  },
+  good: {
+    label: 'Good match',
+    color: 'bg-blue-100 text-blue-800',
+    icon: ThumbsUp,
+  },
+  exploring: {
+    label: 'Worth exploring',
+    color: 'bg-amber-100 text-amber-800',
+    icon: Compass,
+  },
+} as const
+
+function MatchesTab({ profileId }: { profileId: Id<'profiles'> }) {
+  const matches = useQuery(api.platformAdmin.users.getUserMatches, {
+    profileId,
+  })
+
+  if (matches === undefined) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Spinner />
+      </div>
+    )
+  }
+
+  if (matches.length === 0) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center text-muted-foreground">
+          <Target className="size-8 mx-auto mb-2 text-muted-foreground/50" />
+          No matches computed for this user yet.
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Group by tier
+  const grouped = {
+    great: matches.filter((m: { tier: string }) => m.tier === 'great'),
+    good: matches.filter((m: { tier: string }) => m.tier === 'good'),
+    exploring: matches.filter((m: { tier: string }) => m.tier === 'exploring'),
+  }
+
+  return (
+    <div className="space-y-6">
+      {(['great', 'good', 'exploring'] as const).map((tier) => {
+        const items = grouped[tier]
+        if (items.length === 0) return null
+        const config = tierConfig[tier]
+        const TierIcon = config.icon
+
+        return (
+          <div key={tier}>
+            <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-3">
+              <TierIcon className="size-4" />
+              {config.label} ({items.length})
+            </h3>
+            <div className="space-y-3">
+              {items.map((match: any) => (
+                <MatchCard key={match._id} match={match} />
+              ))}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function MatchCard({ match }: { match: any }) {
+  const config = tierConfig[match.tier as keyof typeof tierConfig]
+
+  return (
+    <Card>
+      <CardContent className="p-4 space-y-3">
+        {/* Header */}
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <Badge className={config.color}>{config.label}</Badge>
+              <Badge variant="outline">Score: {match.score}</Badge>
+              {match.status !== 'active' && (
+                <Badge
+                  variant={match.status === 'saved' ? 'secondary' : 'outline'}
+                >
+                  {match.status}
+                </Badge>
+              )}
+              {match.isNew && <Badge variant="secondary">New</Badge>}
+            </div>
+            <p className="font-medium text-foreground">
+              {match.opportunity.title}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {match.opportunity.organization}
+            </p>
+          </div>
+          {match.opportunity.sourceUrl && (
+            <a
+              href={match.opportunity.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground shrink-0"
+            >
+              <ExternalLink className="size-4" />
+            </a>
+          )}
+        </div>
+
+        {/* Details row */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          {match.opportunity.location && (
+            <span className="flex items-center gap-1">
+              <MapPin className="size-3" />
+              {match.opportunity.location}
+            </span>
+          )}
+          {match.opportunity.isRemote && (
+            <Badge variant="outline" className="text-xs py-0">
+              Remote
+            </Badge>
+          )}
+          {match.opportunity.roleType && (
+            <span>{match.opportunity.roleType}</span>
+          )}
+          {match.opportunity.experienceLevel && (
+            <Badge variant="outline" className="text-xs py-0">
+              {match.opportunity.experienceLevel}
+            </Badge>
+          )}
+          {match.opportunity.salaryRange &&
+            match.opportunity.salaryRange !== 'Not Found' && (
+              <span>{match.opportunity.salaryRange}</span>
+            )}
+          {match.opportunity.deadline && (
+            <span className="flex items-center gap-1">
+              <Calendar className="size-3" />
+              {new Date(match.opportunity.deadline).toLocaleDateString()}
+            </span>
+          )}
+        </div>
+
+        {/* Strengths */}
+        {match.explanation.strengths.length > 0 && (
+          <div>
+            <ul className="space-y-1">
+              {match.explanation.strengths.map((s: string, i: number) => (
+                <li key={i} className="flex items-start gap-2 text-sm">
+                  <span className="size-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs shrink-0 mt-0.5">
+                    +
+                  </span>
+                  <span className="text-muted-foreground">{s}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Gap */}
+        {match.explanation.gap && (
+          <div className="flex items-start gap-2 text-sm rounded-md bg-amber-50 dark:bg-amber-950/30 p-2">
+            <AlertTriangle className="size-3.5 text-amber-500 shrink-0 mt-0.5" />
+            <span className="text-amber-800 dark:text-amber-200">
+              {match.explanation.gap}
+            </span>
+          </div>
+        )}
+
+        {/* Recommendations */}
+        {match.recommendations.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {match.recommendations.map(
+              (
+                rec: { type: string; priority: string; action: string },
+                i: number,
+              ) => (
+                <Badge
+                  key={i}
+                  variant="outline"
+                  className={`text-xs ${
+                    rec.priority === 'high'
+                      ? 'border-primary/50 text-primary'
+                      : rec.priority === 'medium'
+                        ? 'border-blue-400/50 text-blue-600'
+                        : ''
+                  }`}
+                >
+                  {rec.type === 'specific' ? 'Role-specific' : rec.type}:{' '}
+                  {rec.action}
+                </Badge>
+              ),
+            )}
+          </div>
+        )}
+
+        {/* Meta */}
+        <div className="flex flex-wrap gap-3 text-xs text-muted-foreground pt-1 border-t">
+          <span>
+            Computed{' '}
+            {formatDistanceToNow(match.computedAt, { addSuffix: true })}
+          </span>
+          <span>Model: {match.modelVersion}</span>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
