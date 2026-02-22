@@ -53,41 +53,27 @@ export const getMemberProfileForAdmin = query({
 
     if (!membership) return null
 
-    // Members who join an org grant that org viewing privileges on their profile.
-    // The hiddenFromOrgs setting does not apply to the member's own org.
-
-    // Apply section visibility (respect member's choices)
-    const visibility = profile.privacySettings?.sectionVisibility ?? {}
-    const defaultVis = profile.privacySettings?.defaultVisibility ?? 'private'
-
-    // Helper: check if section is visible to org admin
-    // "public" or "connections" visible to org admin (org membership = connection)
-    const isVisible = (section: string): boolean => {
-      const sectionVis =
-        (visibility as Record<string, string>)[section] ?? defaultVis
-      return sectionVis !== 'private'
-    }
+    // Members who join an org grant that org full viewing privileges on their profile.
+    // Per CONTEXT.md: "Admins see full profiles (joining means consent)".
+    // Privacy settings control visibility to OTHER orgs and external viewers,
+    // not to the member's own org admin.
 
     const email = profile.email ?? null
 
     return {
       restricted: false,
       profile: {
-        name: profile.name, // Always visible (needed for identification)
-        headline: isVisible('basicInfo') ? profile.headline : null,
-        location: isVisible('basicInfo') ? profile.location : null,
-        pronouns: isVisible('basicInfo') ? profile.pronouns : null,
-        education: isVisible('education') ? profile.education : null,
-        workHistory: isVisible('workHistory') ? profile.workHistory : null,
-        skills: isVisible('skills') ? profile.skills : null,
-        careerGoals: isVisible('careerGoals') ? profile.careerGoals : null,
-        seeking: isVisible('careerGoals') ? profile.seeking : null,
-        aiSafetyInterests: isVisible('careerGoals')
-          ? profile.aiSafetyInterests
-          : null,
-        enrichmentSummary: isVisible('careerGoals')
-          ? profile.enrichmentSummary
-          : null,
+        name: profile.name,
+        headline: profile.headline ?? null,
+        location: profile.location ?? null,
+        pronouns: profile.pronouns ?? null,
+        education: profile.education ?? null,
+        workHistory: profile.workHistory ?? null,
+        skills: profile.skills ?? null,
+        careerGoals: profile.careerGoals ?? null,
+        seeking: profile.seeking ?? null,
+        aiSafetyInterests: profile.aiSafetyInterests ?? null,
+        enrichmentSummary: profile.enrichmentSummary ?? null,
       },
       email,
       membership: {
@@ -97,11 +83,11 @@ export const getMemberProfileForAdmin = query({
         directoryVisibility: membership.directoryVisibility,
       },
       visibleSections: {
-        basicInfo: isVisible('basicInfo'),
-        education: isVisible('education'),
-        workHistory: isVisible('workHistory'),
-        skills: isVisible('skills'),
-        careerGoals: isVisible('careerGoals'),
+        basicInfo: true,
+        education: true,
+        workHistory: true,
+        skills: true,
+        careerGoals: true,
       },
     }
   },
