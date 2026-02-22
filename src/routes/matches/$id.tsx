@@ -11,9 +11,9 @@ import {
   AlertTriangle,
   ArrowLeft,
   Bookmark,
-  Calendar,
   Check,
   CheckCircle,
+  Clock,
   Compass,
   ExternalLink,
   Lightbulb,
@@ -31,6 +31,7 @@ import { Button } from '~/components/ui/button'
 import { Card } from '~/components/ui/card'
 import { Badge } from '~/components/ui/badge'
 import { Spinner } from '~/components/ui/spinner'
+import { formatDeadline } from '~/lib/formatDeadline'
 
 export const Route = createFileRoute('/matches/$id')({
   loader: async ({ context, params }) => {
@@ -92,6 +93,45 @@ const tierConfig = {
     color: 'bg-amber-100 text-amber-800',
     icon: Compass,
   },
+}
+
+function DeadlineBanner({ deadline }: { deadline?: number }) {
+  if (!deadline) return null
+
+  const now = new Date()
+  const daysUntil = Math.ceil(
+    (deadline - now.getTime()) / (1000 * 60 * 60 * 24),
+  )
+  const absoluteDate = new Date(deadline).toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  })
+
+  let borderBg: string
+  let text: string
+  if (daysUntil < 0) {
+    borderBg = 'border-slate-200 bg-slate-50'
+    text = `Applications closed (${absoluteDate})`
+  } else if (daysUntil <= 3) {
+    borderBg = 'border-red-200 bg-red-50'
+    text = `${formatDeadline(deadline)} — ${absoluteDate}`
+  } else if (daysUntil <= 7) {
+    borderBg = 'border-amber-200 bg-amber-50'
+    text = `${formatDeadline(deadline)} — ${absoluteDate}`
+  } else {
+    borderBg = 'border-border bg-muted/50'
+    text = `Deadline: ${absoluteDate}`
+  }
+
+  return (
+    <div
+      className={`mb-6 flex items-center gap-3 rounded-lg border px-4 py-3 ${borderBg}`}
+    >
+      <Clock className="size-4 shrink-0 text-muted-foreground" />
+      <p className="text-sm">{text}</p>
+    </div>
+  )
 }
 
 function MatchDetailContent() {
@@ -206,17 +246,6 @@ function MatchDetailContent() {
                     </Badge>
                   </div>
                 )}
-                {match.opportunity.deadline && (
-                  <div className="flex items-center gap-1">
-                    <Calendar className="size-4 shrink-0" />
-                    <span>
-                      Deadline:{' '}
-                      {new Date(
-                        match.opportunity.deadline,
-                      ).toLocaleDateString()}
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -259,6 +288,42 @@ function MatchDetailContent() {
               </Button>
             </div>
           </div>
+        </Card>
+
+        {/* Deadline banner */}
+        <DeadlineBanner deadline={match.opportunity.deadline} />
+
+        {/* Opportunity description */}
+        <Card className="p-6 mb-6">
+          <h2 className="text-lg font-display font-semibold text-foreground mb-4">
+            About This Opportunity
+          </h2>
+
+          <div className="prose prose-slate max-w-none">
+            <p className="whitespace-pre-wrap">
+              {match.opportunity.description}
+            </p>
+          </div>
+
+          {match.opportunity.requirements &&
+            match.opportunity.requirements.length > 0 && (
+              <div className="mt-6 pt-4 border-t">
+                <h3 className="font-medium text-foreground mb-3">
+                  Requirements
+                </h3>
+                <ul className="space-y-2">
+                  {match.opportunity.requirements.map((req, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start gap-2 text-slate-600"
+                    >
+                      <span className="text-slate-400">-</span>
+                      {req}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
         </Card>
 
         {/* Why this matches */}
@@ -327,39 +392,6 @@ function MatchDetailContent() {
               </div>
             ))}
           </div>
-        </Card>
-
-        {/* Opportunity description */}
-        <Card className="p-6">
-          <h2 className="text-lg font-display font-semibold text-foreground mb-4">
-            About This Opportunity
-          </h2>
-
-          <div className="prose prose-slate max-w-none">
-            <p className="whitespace-pre-wrap">
-              {match.opportunity.description}
-            </p>
-          </div>
-
-          {match.opportunity.requirements &&
-            match.opportunity.requirements.length > 0 && (
-              <div className="mt-6 pt-4 border-t">
-                <h3 className="font-medium text-foreground mb-3">
-                  Requirements
-                </h3>
-                <ul className="space-y-2">
-                  {match.opportunity.requirements.map((req, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-2 text-slate-600"
-                    >
-                      <span className="text-slate-400">-</span>
-                      {req}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
         </Card>
       </div>
     </main>
