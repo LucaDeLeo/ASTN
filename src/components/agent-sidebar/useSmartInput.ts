@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
+import type { ExtractedData } from '~/components/profile/upload/hooks/useExtraction'
 import { useExtraction } from '~/components/profile/upload/hooks/useExtraction'
 import { useFileUpload } from '~/components/profile/upload/hooks/useFileUpload'
 
@@ -20,6 +21,45 @@ interface UseSmartInputProps {
   onComplete?: () => void
 }
 
+/**
+ * Build a preview summary of extracted LinkedIn data for the agent thread.
+ */
+function buildLinkedInPreview(data: ExtractedData): string {
+  const lines: Array<string> = [
+    '[LinkedIn profile extracted — awaiting confirmation]',
+  ]
+  if (data.name) lines.push(`Name: ${data.name}`)
+
+  // Find current role from work history
+  const currentJob = data.workHistory?.find(
+    (w) => !w.endDate || w.endDate.toLowerCase() === 'present',
+  )
+  if (currentJob) {
+    lines.push(
+      `Current role: ${currentJob.title} at ${currentJob.organization}`,
+    )
+  }
+
+  if (data.education && data.education.length > 0) {
+    const institutions = data.education.map((e) => e.institution).join(', ')
+    lines.push(
+      `Education: ${data.education.length} ${data.education.length === 1 ? 'entry' : 'entries'} (${institutions})`,
+    )
+  }
+
+  if (data.workHistory && data.workHistory.length > 0) {
+    lines.push(`Work history: ${data.workHistory.length} positions`)
+  }
+
+  if (data.skills && data.skills.length > 0) {
+    lines.push(
+      `Skills: ${data.skills.length} matched (${data.skills.slice(0, 5).join(', ')}${data.skills.length > 5 ? ', ...' : ''})`,
+    )
+  }
+
+  return lines.join('\n')
+}
+
 export function useSmartInput({
   profileId,
   threadId,
@@ -33,6 +73,11 @@ export function useSmartInput({
   const [isApplying, setIsApplying] = useState(false)
   const [showCVConfirm, setShowCVConfirm] = useState(false)
   const [pendingCVText, setPendingCVText] = useState<string | null>(null)
+
+  // Two-phase LinkedIn confirmation state
+  const [pendingLinkedInData, setPendingLinkedInData] =
+    useState<ExtractedData | null>(null)
+  const [showLinkedInConfirm, setShowLinkedInConfirm] = useState(false)
 
   const applyMut = useMutation(api.agent.mutations.applyExtractionResults)
   const sendMut = useMutation(api.agent.threadOps.sendMessage)
@@ -65,6 +110,19 @@ export function useSmartInput({
     hasApplied.current = true
 
     const data = extraction.state.extractedData
+
+    // LinkedIn: hold data for confirmation instead of applying immediately
+    if (sourceRef.current === 'linkedin') {
+      setPendingLinkedInData(data)
+      setShowLinkedInConfirm(true)
+
+      // Send preview to agent thread so it can discuss with user
+      const preview = buildLinkedInPreview(data)
+      void sendMut({ threadId, prompt: preview, profileId })
+
+      extraction.reset()
+      return
+    }
 
     void (async () => {
       try {
@@ -115,6 +173,66 @@ export function useSmartInput({
     extraction,
     fileUpload,
   ])
+
+  // Confirm LinkedIn import — apply the pending data
+  const confirmLinkedInImport = useCallback(async () => {
+    if (!pendingLinkedInData) return
+
+    try {
+      setIsApplying(true)
+      const data = pendingLinkedInData
+      const { summary } = await applyMut({
+        profileId,
+        threadId,
+        extractedData: {
+          name: data.name,
+          location: data.location,
+          education: data.education?.map((e) => ({
+            institution: e.institution,
+            degree: e.degree,
+            field: e.field,
+            startYear: e.startYear,
+            endYear: e.endYear,
+          })),
+          workHistory: data.workHistory?.map((w) => ({
+            organization: w.organization,
+            title: w.title,
+            startDate: w.startDate,
+            endDate: w.endDate,
+            description: w.description,
+          })),
+          skills: data.skills,
+        },
+        source: 'linkedin',
+      })
+
+      await sendMut({ threadId, prompt: summary, profileId })
+
+      setPendingLinkedInData(null)
+      setShowLinkedInConfirm(false)
+      fileUpload.clearFile()
+      onCompleteRef.current?.()
+    } catch (err) {
+      console.error('Failed to apply LinkedIn import:', err)
+    } finally {
+      setIsApplying(false)
+    }
+  }, [pendingLinkedInData, applyMut, sendMut, profileId, threadId, fileUpload])
+
+  // Cancel LinkedIn import — discard pending data and notify agent
+  const cancelLinkedInImport = useCallback(() => {
+    setPendingLinkedInData(null)
+    setShowLinkedInConfirm(false)
+    extraction.reset()
+
+    // Notify agent that user rejected the import
+    void sendMut({
+      threadId,
+      prompt:
+        '[LinkedIn import cancelled — user indicated this is not their profile]',
+      profileId,
+    })
+  }, [extraction, sendMut, threadId, profileId])
 
   /**
    * Detect LinkedIn URLs or CV-like text pastes and handle them.
@@ -206,5 +324,10 @@ export function useSmartInput({
     showCVConfirm,
     confirmCVPaste,
     cancelCVPaste,
+    // LinkedIn two-phase confirmation
+    showLinkedInConfirm,
+    pendingLinkedInData,
+    confirmLinkedInImport,
+    cancelLinkedInImport,
   }
 }

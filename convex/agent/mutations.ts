@@ -153,7 +153,7 @@ export const batchApprovePending = mutation({
 
     let count = 0
     for (const tc of pending) {
-      if (tc.status === 'pending') {
+      if (tc.status === 'pending' && !tc.requiresManualApproval) {
         await ctx.db.patch('agentToolCalls', tc._id, { status: 'approved' })
         count++
       }
@@ -223,6 +223,7 @@ export const applyExtractionResults = mutation({
     const profile = await ctx.db.get('profiles', profileId)
     if (!profile || profile.userId !== userId) throw new Error('Not authorized')
 
+    const manualApproval = source === 'linkedin'
     const toolCallIds: Array<Id<'agentToolCalls'>> = []
     const summaryParts: Array<string> = []
     let affectsMatches = false
@@ -253,6 +254,7 @@ export const applyExtractionResults = mutation({
         updates: JSON.stringify(basicUpdates),
         previousValues: JSON.stringify(basicPrevious),
         status: 'pending',
+        ...(manualApproval ? { requiresManualApproval: true } : {}),
         createdAt: Date.now(),
       })
       toolCallIds.push(id)
@@ -283,6 +285,7 @@ export const applyExtractionResults = mutation({
         updates: JSON.stringify({ education: updated }),
         previousValues: JSON.stringify({ education: existing }),
         status: 'pending',
+        ...(manualApproval ? { requiresManualApproval: true } : {}),
         createdAt: Date.now(),
       })
       toolCallIds.push(id)
@@ -317,6 +320,7 @@ export const applyExtractionResults = mutation({
         updates: JSON.stringify({ workHistory: updated }),
         previousValues: JSON.stringify({ workHistory: existing }),
         status: 'pending',
+        ...(manualApproval ? { requiresManualApproval: true } : {}),
         createdAt: Date.now(),
       })
       toolCallIds.push(id)
@@ -339,6 +343,7 @@ export const applyExtractionResults = mutation({
           updates: JSON.stringify({ skills: merged }),
           previousValues: JSON.stringify({ skills: existing }),
           status: 'pending',
+          ...(manualApproval ? { requiresManualApproval: true } : {}),
           createdAt: Date.now(),
         })
         toolCallIds.push(id)

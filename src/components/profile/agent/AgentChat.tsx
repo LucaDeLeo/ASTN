@@ -130,11 +130,12 @@ export function AgentChat({
     localStorage.setItem('agent-auto-approve', String(autoApprove))
   }, [autoApprove])
 
-  // Auto-approve new tool calls when toggle is on
+  // Auto-approve new tool calls when toggle is on (skip manual-approval items)
   useEffect(() => {
     if (!autoApprove || !toolCalls) return
     const pending = toolCalls.filter(
-      (tc: Doc<'agentToolCalls'>) => tc.status === 'pending',
+      (tc: Doc<'agentToolCalls'>) =>
+        tc.status === 'pending' && !tc.requiresManualApproval,
     )
     for (const tc of pending) {
       resolveToolChange({ toolCallId: tc._id, action: 'approve' })
@@ -506,6 +507,45 @@ export function AgentChat({
         </div>
       )}
 
+      {smartInput.showLinkedInConfirm && smartInput.pendingLinkedInData && (
+        <div className="px-4 py-2 border-t bg-blue-50 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-xs text-blue-800 min-w-0">
+            <Link2 className="size-3 shrink-0" />
+            <span className="truncate">
+              {smartInput.pendingLinkedInData.name
+                ? `${smartInput.pendingLinkedInData.name}`
+                : 'LinkedIn profile found'}
+              {(() => {
+                const currentJob =
+                  smartInput.pendingLinkedInData.workHistory?.find(
+                    (w) => !w.endDate || w.endDate.toLowerCase() === 'present',
+                  )
+                return currentJob
+                  ? ` — ${currentJob.title} at ${currentJob.organization}`
+                  : ''
+              })()}
+            </span>
+          </div>
+          <div className="flex gap-1 shrink-0">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 px-2 text-xs"
+              onClick={smartInput.cancelLinkedInImport}
+            >
+              Not me
+            </Button>
+            <Button
+              size="sm"
+              className="h-6 px-2 text-xs"
+              onClick={smartInput.confirmLinkedInImport}
+            >
+              This is my profile
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Input area */}
       <form
         onSubmit={handleSubmit}
@@ -754,6 +794,7 @@ function MessageBubble({
               displayText={tc.displayText}
               status={tc.status}
               autoApprove={autoApprove}
+              requiresManualApproval={tc.requiresManualApproval ?? undefined}
               onApprove={() => onApprove(tc._id)}
               onUndo={() => onUndo(tc._id)}
             />,
@@ -775,6 +816,7 @@ function MessageBubble({
           displayText={tc.displayText}
           status={tc.status}
           autoApprove={autoApprove}
+          requiresManualApproval={tc.requiresManualApproval ?? undefined}
           onApprove={() => onApprove(tc._id)}
           onUndo={() => onUndo(tc._id)}
         />,
@@ -796,12 +838,14 @@ function ToolCallInline({
   displayText,
   status,
   autoApprove,
+  requiresManualApproval,
   onApprove,
   onUndo,
 }: {
   displayText: string
   status: 'pending' | 'approved' | 'undone'
   autoApprove: boolean
+  requiresManualApproval?: boolean
   onApprove?: () => void
   onUndo?: () => void
 }) {
@@ -835,7 +879,7 @@ function ToolCallInline({
         {safeDisplayText}
       </span>
 
-      {status === 'pending' && !autoApprove && (
+      {status === 'pending' && (!autoApprove || requiresManualApproval) && (
         <div className="flex gap-1 shrink-0">
           <button
             onClick={onApprove}

@@ -278,6 +278,7 @@ export default defineSchema({
       v.literal('approved'),
       v.literal('undone'),
     ),
+    requiresManualApproval: v.optional(v.boolean()),
     createdAt: v.number(),
   })
     .index('by_thread_and_createdAt', ['threadId', 'createdAt'])
