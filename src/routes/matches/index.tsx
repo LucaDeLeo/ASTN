@@ -27,6 +27,19 @@ import { AppliedMatchesSection } from '~/components/matches/AppliedMatchesSectio
 import { CareerActionsSection } from '~/components/actions/CareerActionsSection'
 import { GrowthAreas } from '~/components/matches/GrowthAreas'
 
+// Parse rate limit retryAfter (ms) from ConvexError chain
+function parseRateLimitRetryAfter(err: unknown): number | null {
+  try {
+    const msg = err instanceof Error ? err.message : String(err)
+    // ConvexError wraps the data as JSON in the message
+    const match = msg.match(/"retryAfter"\s*:\s*([\d.]+)/)
+    if (match) return Number(match[1])
+  } catch {
+    // ignore parse failures
+  }
+  return null
+}
+
 // Aggregate recommendations into growth areas
 function aggregateGrowthAreas(
   recommendations: Array<{ type: string; action: string }> | undefined,
@@ -144,19 +157,7 @@ function ComputingState() {
             <p className="text-muted-foreground mb-4">
               Analyzing opportunities against your profile...
             </p>
-            {/* Progress bar */}
-            <div className="w-full bg-muted rounded-full h-2.5 mb-3">
-              <div
-                className="bg-primary h-2.5 rounded-full transition-all duration-500 ease-out"
-                style={{
-                  width: `${Math.max(5, (progress.completedBatches / progress.totalBatches) * 100)}%`,
-                }}
-              />
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {progress.completedBatches} of {progress.totalBatches} batches
-              complete
-            </p>
+            <ProgressBar progress={progress} />
           </>
         ) : (
           <>
@@ -166,8 +167,61 @@ function ComputingState() {
             <Spinner />
           </>
         )}
+        <p className="text-xs text-muted-foreground mt-4">
+          This runs in the background — you can leave and come back anytime.
+        </p>
       </Card>
     </main>
+  )
+}
+
+function ProgressBar({
+  progress,
+}: {
+  progress: { completedBatches: number; totalBatches: number }
+}) {
+  return (
+    <>
+      <div className="w-full bg-muted rounded-full h-2.5 mb-3">
+        <div
+          className="bg-primary h-2.5 rounded-full transition-all duration-500 ease-out"
+          style={{
+            width: `${Math.max(5, (progress.completedBatches / progress.totalBatches) * 100)}%`,
+          }}
+        />
+      </div>
+      <p className="text-sm text-muted-foreground">
+        {progress.completedBatches} of {progress.totalBatches} batches complete
+      </p>
+    </>
+  )
+}
+
+function ComputingBanner({
+  progress,
+}: {
+  progress: { completedBatches: number; totalBatches: number } | null
+}) {
+  return (
+    <div className="mb-4 flex flex-col gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
+      <div className="flex items-center gap-3">
+        <Sparkles className="size-4 shrink-0 text-primary animate-pulse" />
+        <p className="flex-1 text-sm font-medium text-foreground">
+          Refreshing your matches...
+        </p>
+        <span className="text-xs text-muted-foreground shrink-0">
+          Runs in background
+        </span>
+      </div>
+      {progress ? (
+        <ProgressBar progress={progress} />
+      ) : (
+        <div className="flex items-center gap-2">
+          <Spinner className="size-3" />
+          <p className="text-xs text-muted-foreground">Starting...</p>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -176,14 +230,31 @@ function MatchesContent() {
   const { data: matchesData } = useSuspenseQuery(
     convexQuery(api.matches.getMyMatches, {}),
   )
+  const matchProgress = useQuery(api.matches.getMatchProgress)
   const triggerComputation = useAction(api.matches.triggerMatchComputation)
   const markViewed = useAction(api.matches.markMatchesViewed)
-  const [isComputing, setIsComputing] = useState(false)
+  // Brief local state: true between clicking refresh and matchProgress appearing
+  const [isTriggering, setIsTriggering] = useState(false)
   const [computeError, setComputeError] = useState<string | null>(null)
-  // Track the computedAt value when refresh was triggered to detect when fresh results arrive
-  const [waitingForComputedAt, setWaitingForComputedAt] = useState<
-    number | null
-  >(null)
+  const [retryAfter, setRetryAfter] = useState<number | null>(null) // seconds
+
+  // Countdown timer for rate limit
+  useEffect(() => {
+    if (retryAfter == null || retryAfter <= 0) return
+    const timer = setTimeout(() => {
+      setRetryAfter((prev) => (prev != null && prev > 1 ? prev - 1 : null))
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [retryAfter])
+
+  const isComputing = isTriggering || matchProgress != null
+
+  // Clear isTriggering once backend progress appears
+  useEffect(() => {
+    if (matchProgress != null) {
+      setIsTriggering(false)
+    }
+  }, [matchProgress])
 
   // Mark matches as viewed on mount
   useEffect(() => {
@@ -197,49 +268,24 @@ function MatchesContent() {
   }, [matchesData?.needsComputation, matchesData?.needsProfile, markViewed])
 
   const handleCompute = async () => {
-    setIsComputing(true)
+    setIsTriggering(true)
     setComputeError(null)
-    // Remember current computedAt - we'll clear loading when it changes
-    setWaitingForComputedAt(matchesData?.computedAt ?? -1)
+    setRetryAfter(null)
     try {
       await triggerComputation()
-      // Don't clear isComputing here - wait for matches to actually update
     } catch (err) {
-      setComputeError(
-        err instanceof Error ? err.message : 'Failed to compute matches',
-      )
-      setIsComputing(false)
-      setWaitingForComputedAt(null)
+      // Parse rate limit errors from ConvexError
+      const retryMs = parseRateLimitRetryAfter(err)
+      if (retryMs != null) {
+        setRetryAfter(Math.ceil(retryMs / 1000))
+      } else {
+        setComputeError(
+          err instanceof Error ? err.message : 'Failed to compute matches',
+        )
+      }
+      setIsTriggering(false)
     }
   }
-
-  // Clear computing state when fresh matches arrive (computedAt changes)
-  useEffect(() => {
-    if (
-      waitingForComputedAt !== null &&
-      matchesData &&
-      !matchesData.needsComputation &&
-      matchesData.computedAt != null &&
-      matchesData.computedAt !== waitingForComputedAt
-    ) {
-      setIsComputing(false)
-      setWaitingForComputedAt(null)
-    }
-  }, [
-    matchesData?.computedAt,
-    waitingForComputedAt,
-    matchesData?.needsComputation,
-  ])
-
-  // Safety timeout - if matches don't update within 90s, stop loading
-  useEffect(() => {
-    if (waitingForComputedAt === null) return
-    const timer = setTimeout(() => {
-      setIsComputing(false)
-      setWaitingForComputedAt(null)
-    }, 90_000)
-    return () => clearTimeout(timer)
-  }, [waitingForComputedAt])
 
   // Auto-trigger computation if needed (ref prevents runaway re-triggers)
   const hasAutoTriggered = useRef(false)
@@ -247,7 +293,8 @@ function MatchesContent() {
     if (
       matchesData?.needsComputation &&
       !isComputing &&
-      !hasAutoTriggered.current
+      !hasAutoTriggered.current &&
+      retryAfter == null
     ) {
       hasAutoTriggered.current = true
       handleCompute()
@@ -255,7 +302,7 @@ function MatchesContent() {
     if (!matchesData?.needsComputation) {
       hasAutoTriggered.current = false
     }
-  }, [matchesData?.needsComputation, isComputing])
+  }, [matchesData?.needsComputation, isComputing, retryAfter])
 
   // Aggregate growth areas from ALL matches (including dismissed) - React hooks rule
   const growthAreas = useMemo(() => {
@@ -289,9 +336,30 @@ function MatchesContent() {
     )
   }
 
-  // Computing matches
-  if (isComputing) {
-    return <ComputingState />
+  // Rate limited
+  if (retryAfter != null) {
+    return (
+      <main className="container mx-auto px-4 py-8">
+        <Card className="max-w-lg mx-auto p-8 text-center">
+          <div className="size-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-4">
+            <RefreshCw className="size-8 text-amber-600 dark:text-amber-400" />
+          </div>
+          <h1 className="text-2xl font-display font-semibold text-foreground mb-2">
+            Too many requests
+          </h1>
+          <p className="text-muted-foreground mb-6">
+            Match computation is limited to avoid overuse. Try again in{' '}
+            <span className="font-medium tabular-nums">
+              {Math.floor(retryAfter / 60)}:
+              {String(retryAfter % 60).padStart(2, '0')}
+            </span>
+          </p>
+          <Button onClick={handleCompute} disabled={retryAfter > 0}>
+            Refresh Matches
+          </Button>
+        </Card>
+      </main>
+    )
   }
 
   // Compute error
@@ -314,6 +382,11 @@ function MatchesContent() {
   const hasMatches =
     matches.great.length + matches.good.length + matches.exploring.length > 0
   const hasSavedMatches = savedMatches.length > 0
+
+  // First computation with no existing matches: full-page takeover
+  if (isComputing && !hasMatches && !hasSavedMatches) {
+    return <ComputingState />
+  }
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -339,13 +412,18 @@ function MatchesContent() {
             disabled={isComputing}
             className="w-full sm:w-auto shrink-0"
           >
-            <RefreshCw className="size-4 mr-2" />
+            <RefreshCw
+              className={`size-4 mr-2 ${isComputing ? 'animate-spin' : ''}`}
+            />
             Refresh Matches
           </Button>
         </div>
 
-        {/* Staleness banner */}
-        {matchesStaleAt && (
+        {/* Computing progress banner (inline, with existing matches visible below) */}
+        {isComputing && <ComputingBanner progress={matchProgress ?? null} />}
+
+        {/* Staleness banner (hidden while computing) */}
+        {!isComputing && matchesStaleAt && (
           <div className="mb-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900 dark:bg-amber-950">
             <AlertTriangle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
             <p className="flex-1 text-sm text-amber-800 dark:text-amber-200">
