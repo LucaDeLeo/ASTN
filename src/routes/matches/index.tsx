@@ -4,6 +4,7 @@ import {
   Authenticated,
   Unauthenticated,
   useAction,
+  useMutation,
   useQuery,
 } from 'convex/react'
 import { useSuspenseQuery } from '@tanstack/react-query'
@@ -21,11 +22,14 @@ import { Card } from '~/components/ui/card'
 import { Empty } from '~/components/ui/empty'
 import { Spinner } from '~/components/ui/spinner'
 import { PullToRefresh } from '~/components/ui/pull-to-refresh'
-import { MatchTierSection } from '~/components/matches/MatchTierSection'
+import { MatchCard } from '~/components/matches/MatchCard'
+import { AnimatedCard } from '~/components/animation/AnimatedCard'
+import { SwipeableCard } from '~/components/gestures/swipeable-card'
 import { SavedMatchesSection } from '~/components/matches/SavedMatchesSection'
 import { AppliedMatchesSection } from '~/components/matches/AppliedMatchesSection'
 import { CareerActionsSection } from '~/components/actions/CareerActionsSection'
 import { GrowthAreas } from '~/components/matches/GrowthAreas'
+import { computeCombinedScore } from '~/lib/matchScoring'
 
 // Parse rate limit retryAfter (ms) from ConvexError
 function parseRateLimitRetryAfter(err: unknown): number | null {
@@ -391,10 +395,23 @@ function MatchesContent() {
     )
   }
 
+  const isMobile = useIsMobile()
+  const dismissMatch = useMutation(api.matches.dismissMatch)
+  const saveMatch = useMutation(api.matches.saveMatch)
+
   const { matches, savedMatches, appliedMatches, computedAt, matchesStaleAt } =
     matchesData
-  const hasMatches =
-    matches.great.length + matches.good.length + matches.exploring.length > 0
+
+  const sortedMatches = useMemo(() => {
+    const all = [...matches.great, ...matches.good, ...matches.exploring]
+    return all.sort(
+      (a, b) =>
+        computeCombinedScore(b.tier, b.score, b.opportunity.deadline) -
+        computeCombinedScore(a.tier, a.score, a.opportunity.deadline),
+    )
+  }, [matches.great, matches.good, matches.exploring])
+
+  const hasMatches = sortedMatches.length > 0
   const hasSavedMatches = savedMatches.length > 0
 
   // First computation with no existing matches: full-page takeover
@@ -412,7 +429,9 @@ function MatchesContent() {
               Your Matches
             </h1>
             <p className="text-muted-foreground mt-1">
-              Opportunities matched to your profile and goals
+              {hasMatches
+                ? `${sortedMatches.length} opportunities matched to your profile`
+                : 'Opportunities matched to your profile and goals'}
             </p>
             {computedAt !== null && computedAt !== undefined && (
               <p className="text-xs text-muted-foreground mt-1">
@@ -487,13 +506,39 @@ function MatchesContent() {
           {/* Applied matches section */}
           {appliedMatches && <AppliedMatchesSection matches={appliedMatches} />}
 
-          {/* Match sections by tier */}
+          {/* Matches sorted by fit + urgency */}
           {hasMatches && (
-            <>
-              <MatchTierSection tier="great" matches={matches.great} />
-              <MatchTierSection tier="good" matches={matches.good} />
-              <MatchTierSection tier="exploring" matches={matches.exploring} />
-            </>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+              {sortedMatches.map((match, index) => {
+                if (isMobile) {
+                  return (
+                    <SwipeableCard
+                      key={match._id}
+                      onSwipeLeft={() => dismissMatch({ matchId: match._id })}
+                      onSwipeRight={() => saveMatch({ matchId: match._id })}
+                    >
+                      <AnimatedCard index={index}>
+                        <MatchCard
+                          match={match}
+                          isSaved={match.status === 'saved'}
+                        />
+                      </AnimatedCard>
+                    </SwipeableCard>
+                  )
+                }
+
+                return (
+                  <AnimatedCard key={match._id} index={index}>
+                    <MatchCard
+                      match={match}
+                      isSaved={match.status === 'saved'}
+                      onSave={() => saveMatch({ matchId: match._id })}
+                      onDismiss={() => dismissMatch({ matchId: match._id })}
+                    />
+                  </AnimatedCard>
+                )
+              })}
+            </div>
           )}
 
           {/* Career actions - "Your Next Moves" between tiers and growth areas */}

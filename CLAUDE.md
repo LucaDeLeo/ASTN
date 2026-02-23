@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-AI Safety Talent Network (ASTN) - A career command center for AI safety talent. Users maintain profiles and get matched to opportunities with acceptance probability estimates. Initial pilot targets BAISH (Buenos Aires AI Safety Hub) with 50-100 profiles.
+AI Safety Talent Network (ASTN) - A career command center for AI safety talent. Users maintain profiles and get matched to opportunities. Initial pilot targets BAISH (Buenos Aires AI Safety Hub) with 50-100 profiles. Live at safetytalent.org with ~40 users.
 
 ## Development Commands
 
@@ -42,52 +42,10 @@ bun run build
 
 - **Convex** for database, real-time sync, and serverless functions
 - **Clerk** for authentication (GitHub, Google, Email+Password) via `@clerk/clerk-react` + `convex/react-clerk`
-- **Claude API** for LLM features (Sonnet 4.5 for quality, Haiku 4.5 for speed)
-
-### Convex Structure
-
-```
-convex/
-├── schema.ts          # Database schema (profiles, opportunities, matches, etc.)
-├── auth.config.ts     # Clerk JWT provider configuration
-├── profiles.ts        # Profile CRUD and completeness tracking
-├── opportunities.ts   # Opportunity queries
-├── crons.ts           # Daily opportunity sync at 6 AM UTC
-├── aggregation/       # Fetches opportunities from 80K Hours + aisafety.com
-├── enrichment/        # LLM-powered profile enrichment conversations
-└── matching/          # Profile-to-opportunity matching logic
-```
+- **Claude API** + Gemini + Kimi for LLM features
 
 ### Key Patterns
 
 **Convex Actions with Node.js**: Files using external APIs (like Claude) require `"use node"` at the top.
 
 **Internal vs Public Functions**: Use `internal` from `_generated/api` for functions that should only be called by other Convex functions, not the client.
-
-**Profile Completeness**: Defined in `convex/profiles.ts` - tracks 7 sections (basicInfo, education, workHistory, careerGoals, skills, enrichment, privacy).
-
-**Match Tiers**: Uses "great", "good", "exploring" labels (not percentages) per project requirements.
-
-**No Vector Search**: Context for LLM calls is programmatically constructed, not using embeddings.
-
-### Route Structure
-
-- `/` - Home/landing
-- `/login` - Authentication
-- `/profile/*` - Profile management (protected)
-- `/opportunities/*` - Browse opportunities (protected)
-- `/matches` - View matched opportunities by tier (protected)
-- `/matches/$id` - Match detail with explanation and recommendations (protected)
-- `/admin/*` - Admin dashboard for org management
-
-## Environment Variables
-
-Required in `.env.local`:
-
-- `VITE_CONVEX_URL` - Convex deployment URL
-- `VITE_CLERK_PUBLISHABLE_KEY` - Clerk publishable key
-
-Set via Convex dashboard:
-
-- `ANTHROPIC_API_KEY` - For LLM features
-- `CLERK_JWT_ISSUER_DOMAIN` - Clerk JWT issuer domain

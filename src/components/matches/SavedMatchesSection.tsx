@@ -13,6 +13,7 @@ interface SavedMatchesSectionProps {
   matches: Array<{
     _id: Id<'matches'>
     tier: 'great' | 'good' | 'exploring'
+    score: number
     isNew: boolean
     status?: 'active' | 'dismissed' | 'saved'
     explanation: { strengths: Array<string> }

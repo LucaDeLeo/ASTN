@@ -11,6 +11,7 @@ interface AppliedMatchesSectionProps {
   matches: Array<{
     _id: Id<'matches'>
     tier: 'great' | 'good' | 'exploring'
+    score: number
     isNew: boolean
     appliedAt?: number
     status?: 'active' | 'dismissed' | 'saved'

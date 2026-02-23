@@ -1,10 +1,11 @@
 import { Link } from '@tanstack/react-router'
-import { Bookmark, BookmarkX, Check, X } from 'lucide-react'
+import { Bookmark, BookmarkX, Check, Clock, X } from 'lucide-react'
 import { Card } from '~/components/ui/card'
 import { Badge } from '~/components/ui/badge'
 import { formatLocation } from '~/lib/formatLocation'
 import { formatDeadline, getDeadlineUrgency } from '~/lib/formatDeadline'
 import { ROLE_TYPE_COLORS } from '~/lib/roleTypes'
+import { computeGlobalFitScore, getFitScoreColor } from '~/lib/matchScoring'
 
 const ACTIVE_MATCH_KEY = 'view-transition-match-id'
 
@@ -12,6 +13,7 @@ interface MatchCardProps {
   match: {
     _id: string
     tier: 'great' | 'good' | 'exploring'
+    score: number
     isNew: boolean
     appliedAt?: number
     explanation: {
@@ -55,6 +57,7 @@ export function MatchCard({
 }: MatchCardProps) {
   const roleColorClass =
     ROLE_TYPE_COLORS[match.opportunity.roleType] || ROLE_TYPE_COLORS.other
+  const fitScore = computeGlobalFitScore(match.tier, match.score)
 
   // Check if this card should have view-transition-name (for back navigation)
   // Must be synchronous so the name is set during first render for view transition capture
@@ -173,6 +176,11 @@ export function MatchCard({
               Applied
             </Badge>
           )}
+          <span
+            className={`ml-auto text-xs font-medium tabular-nums ${getFitScoreColor(fitScore)}`}
+          >
+            {fitScore}% fit
+          </span>
         </div>
 
         {/* Row 2: Title */}
@@ -196,11 +204,20 @@ export function MatchCard({
           </p>
         </div>
 
-        {/* Row 4: Salary + Experience + Deadline */}
+        {/* Row 4: Deadline (promoted) */}
+        {match.opportunity.deadline && (
+          <div
+            className={`flex items-center gap-1.5 mt-1.5 text-sm font-medium ${getDeadlineUrgency(match.opportunity.deadline)}`}
+          >
+            <Clock className="size-3.5" />
+            {formatDeadline(match.opportunity.deadline)}
+          </div>
+        )}
+
+        {/* Row 5: Salary + Experience */}
         {(match.opportunity.salaryRange ||
-          match.opportunity.experienceLevel ||
-          match.opportunity.deadline) && (
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-2 text-sm text-muted-foreground">
+          match.opportunity.experienceLevel) && (
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5 text-sm text-muted-foreground">
             {match.opportunity.salaryRange &&
               match.opportunity.salaryRange !== 'Not Found' && (
                 <span>{match.opportunity.salaryRange}</span>
@@ -217,18 +234,10 @@ export function MatchCard({
                   {EXPERIENCE_LEVEL_LABELS[match.opportunity.experienceLevel]}
                 </span>
               )}
-            {(match.opportunity.salaryRange ||
-              match.opportunity.experienceLevel) &&
-              match.opportunity.deadline && <span>·</span>}
-            {match.opportunity.deadline && (
-              <span className={getDeadlineUrgency(match.opportunity.deadline)}>
-                {formatDeadline(match.opportunity.deadline)}
-              </span>
-            )}
           </div>
         )}
 
-        {/* Row 5: One key strength (truncated to 1 line) */}
+        {/* Row 6: One key strength (truncated to 1 line) */}
         {match.explanation.strengths[0] && (
           <p
             suppressHydrationWarning
