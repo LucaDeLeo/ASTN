@@ -426,8 +426,21 @@ function MatchesContent() {
 
   const sortedMatches = useMemo(() => {
     const all = [...matches.great, ...matches.good, ...matches.exploring]
-    return sortMatches(all, sortOrder)
-  }, [matches.great, matches.good, matches.exploring, sortOrder])
+    // Exclude matches already shown in saved/applied sections
+    const excludeIds = new Set([
+      ...savedMatches.map((m) => m._id),
+      ...(appliedMatches ?? []).map((m) => m._id),
+    ])
+    const filtered = all.filter((m) => !excludeIds.has(m._id))
+    return sortMatches(filtered, sortOrder)
+  }, [
+    matches.great,
+    matches.good,
+    matches.exploring,
+    savedMatches,
+    appliedMatches,
+    sortOrder,
+  ])
 
   const PAGE_SIZE = 12
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
@@ -501,8 +514,8 @@ function MatchesContent() {
               className={cn(
                 'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
                 savedExpanded
-                  ? 'border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                  : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40',
+                  ? 'border-emerald-400 bg-emerald-100 text-emerald-800 dark:border-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300'
+                  : 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40',
               )}
             >
               <Bookmark className="size-3.5 fill-current" />
@@ -516,8 +529,8 @@ function MatchesContent() {
               className={cn(
                 'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
                 appliedExpanded
-                  ? 'border-violet-300 bg-violet-100 text-violet-800 dark:border-violet-700 dark:bg-violet-900/40 dark:text-violet-300'
-                  : 'border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-900/20 dark:text-violet-400 dark:hover:bg-violet-900/40',
+                  ? 'border-violet-400 bg-violet-100 text-violet-800 dark:border-violet-600 dark:bg-violet-900/40 dark:text-violet-300'
+                  : 'border-violet-300 bg-violet-50 text-violet-700 hover:bg-violet-100 dark:border-violet-700 dark:bg-violet-900/20 dark:text-violet-400 dark:hover:bg-violet-900/40',
               )}
             >
               <Check className="size-3.5" />
