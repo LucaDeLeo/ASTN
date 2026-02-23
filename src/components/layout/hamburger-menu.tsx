@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Link } from '@tanstack/react-router'
 import { useClerk } from '@clerk/clerk-react'
-import { useMutation } from 'convex/react'
+import { useMutation, useQuery } from 'convex/react'
 import {
   Building2,
   HelpCircle,
@@ -51,6 +51,7 @@ export function HamburgerMenu({ user }: HamburgerMenuProps) {
   const [submitting, setSubmitting] = React.useState(false)
   const { signOut } = useClerk()
   const submitFeedback = useMutation(api.feedback.submit)
+  const memberships = useQuery(api.orgs.membership.getUserMemberships)
 
   const handleNavigation = () => {
     setOpen(false)
@@ -155,6 +156,29 @@ export function HamburgerMenu({ user }: HamburgerMenuProps) {
                 <span>Organizations</span>
               </Link>
             </SheetClose>
+
+            {memberships
+              ?.filter((m) => m.org.slug)
+              .map((m) => (
+                <SheetClose key={m._id} asChild>
+                  <Link
+                    to="/org/$slug"
+                    params={{ slug: m.org.slug! }}
+                    onClick={handleNavigation}
+                    className="flex items-center gap-3 rounded-md py-2 pl-6 pr-3 hover:bg-accent"
+                  >
+                    <Avatar className="size-5">
+                      {m.org.logoUrl ? (
+                        <AvatarImage src={m.org.logoUrl} alt={m.org.name} />
+                      ) : null}
+                      <AvatarFallback className="text-[9px] bg-primary/10 text-primary">
+                        {m.org.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm">{m.org.name}</span>
+                  </Link>
+                </SheetClose>
+              ))}
 
             <SheetClose asChild>
               <Link

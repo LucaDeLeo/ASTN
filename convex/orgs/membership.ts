@@ -23,6 +23,24 @@ export const getMembership = query({
 // Get all orgs the current user belongs to
 export const getUserMemberships = query({
   args: {},
+  returns: v.array(
+    v.object({
+      _id: v.id('orgMemberships'),
+      _creationTime: v.number(),
+      userId: v.string(),
+      orgId: v.id('organizations'),
+      role: v.string(),
+      directoryVisibility: v.string(),
+      joinedAt: v.number(),
+      invitedBy: v.optional(v.id('orgMemberships')),
+      org: v.object({
+        _id: v.id('organizations'),
+        name: v.string(),
+        slug: v.optional(v.string()),
+        logoUrl: v.optional(v.string()),
+      }),
+    }),
+  ),
   handler: async (ctx) => {
     const userId = await getUserId(ctx)
     if (!userId) {
@@ -34,18 +52,35 @@ export const getUserMemberships = query({
       .withIndex('by_user', (q) => q.eq('userId', userId))
       .collect()
 
-    // Fetch org details for each membership
-    const membershipsWithOrgs = await Promise.all(
-      memberships.map(async (membership) => {
-        const org = await ctx.db.get('organizations', membership.orgId)
-        return {
-          ...membership,
-          org,
-        }
-      }),
-    )
+    // Fetch org details for each membership, resolving logo storage URLs
+    const results = []
+    for (const membership of memberships) {
+      const org = await ctx.db.get('organizations', membership.orgId)
+      if (!org) continue
+      let logoUrl = org.logoUrl
+      if (org.logoStorageId) {
+        const url = await ctx.storage.getUrl(org.logoStorageId)
+        if (url) logoUrl = url
+      }
+      results.push({
+        _id: membership._id,
+        _creationTime: membership._creationTime,
+        userId: membership.userId,
+        orgId: membership.orgId,
+        role: membership.role,
+        directoryVisibility: membership.directoryVisibility,
+        joinedAt: membership.joinedAt,
+        invitedBy: membership.invitedBy,
+        org: {
+          _id: org._id,
+          name: org.name,
+          slug: org.slug,
+          logoUrl,
+        },
+      })
+    }
 
-    return membershipsWithOrgs
+    return results
   },
 })
 

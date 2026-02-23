@@ -1,11 +1,51 @@
 import { Link } from '@tanstack/react-router'
 import { UserButton, useUser } from '@clerk/clerk-react'
-import { AuthLoading, Authenticated, Unauthenticated } from 'convex/react'
+import {
+  AuthLoading,
+  Authenticated,
+  Unauthenticated,
+  useQuery,
+} from 'convex/react'
 import { Settings, User } from 'lucide-react'
 
+import { api } from '../../../convex/_generated/api'
 import { HamburgerMenu } from '~/components/layout/hamburger-menu'
 import { NotificationBell } from '~/components/notifications'
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import { Button } from '~/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '~/components/ui/tooltip'
+
+function OrgAvatars() {
+  const memberships = useQuery(api.orgs.membership.getUserMemberships)
+  if (!memberships?.length) return null
+  return (
+    <>
+      {memberships.map((m) =>
+        m.org.slug ? (
+          <Tooltip key={m._id}>
+            <TooltipTrigger asChild>
+              <Link to="/org/$slug" params={{ slug: m.org.slug }}>
+                <Avatar className="size-6">
+                  {m.org.logoUrl ? (
+                    <AvatarImage src={m.org.logoUrl} alt={m.org.name} />
+                  ) : null}
+                  <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+                    {m.org.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>{m.org.name}</TooltipContent>
+          </Tooltip>
+        ) : null,
+      )}
+    </>
+  )
+}
 
 export function AuthHeader() {
   const { user } = useUser()
@@ -72,6 +112,7 @@ export function AuthHeader() {
           </Link>
 
           <Authenticated>
+            <OrgAvatars />
             <Link
               to="/matches"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors relative py-2"
