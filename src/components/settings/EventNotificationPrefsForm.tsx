@@ -258,7 +258,6 @@ export function EventNotificationPrefsForm() {
           ) : (
             <div className="space-y-3 pt-2">
               {memberships.map((membership) => {
-                if (!membership.org) return null
                 const isMuted = mutedOrgIds.includes(membership.orgId)
 
                 return (
