@@ -7,14 +7,13 @@ import type { VariantProps } from 'class-variance-authority'
 import { cn } from '~/lib/utils'
 
 const triggerVariants = cva(
-  'w-full flex items-center justify-between gap-2 p-3 rounded-lg transition-colors text-left',
+  'w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left hover:bg-accent/50',
   {
     variants: {
       variant: {
-        default: 'border bg-card hover:bg-accent/50',
-        emerald:
-          'bg-emerald-50 border border-emerald-200 hover:bg-emerald-50/70',
-        violet: 'bg-violet-50 border border-violet-200 hover:bg-violet-50/70',
+        default: 'border bg-card',
+        emerald: 'bg-emerald-50 border border-emerald-200',
+        violet: 'bg-violet-50 border border-violet-200',
       },
     },
     defaultVariants: { variant: 'default' },
@@ -31,18 +30,6 @@ const titleColorMap = {
   default: 'text-foreground',
   emerald: 'text-emerald-800',
   violet: 'text-violet-800',
-} as const
-
-const subtitleColorMap = {
-  default: 'text-muted-foreground',
-  emerald: 'text-emerald-600',
-  violet: 'text-violet-600',
-} as const
-
-const chevronColorMap = {
-  default: 'text-muted-foreground',
-  emerald: 'text-emerald-600',
-  violet: 'text-violet-600',
 } as const
 
 interface CollapsibleSectionProps extends VariantProps<typeof triggerVariants> {
@@ -107,7 +94,6 @@ export function CollapsibleSection({
 
   const hasPresence = itemCount != null
   const isPresent = !hasPresence || (isVisible && itemCount > 0)
-  const isThemed = v !== 'default'
 
   return (
     <CollapsiblePrimitive.Root open={open} onOpenChange={setOpen} asChild>
@@ -124,50 +110,26 @@ export function CollapsibleSection({
         <CollapsiblePrimitive.CollapsibleTrigger
           className={cn(triggerVariants({ variant }))}
         >
-          {isThemed ? (
-            /* Themed: single-row layout */
-            <>
-              <div className="flex items-center gap-2">
-                <Icon
-                  className={cn('size-5', iconColorMap[v], iconClassName)}
-                />
-                <span className={cn('font-medium', titleColorMap[v])}>
-                  {count != null ? `${count} ${title}` : title}
+          <Icon
+            className={cn('size-5 shrink-0', iconColorMap[v], iconClassName)}
+          />
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span className={cn('text-sm font-semibold', titleColorMap[v])}>
+              {count != null ? `${count} ${title}` : title}
+            </span>
+            {subtitle && (
+              <>
+                <span className="text-muted-foreground">·</span>
+                <span className="text-sm text-muted-foreground">
+                  {subtitle}
                 </span>
-                {subtitle && (
-                  <span className={cn('text-sm', subtitleColorMap[v])}>
-                    {subtitle}
-                  </span>
-                )}
-              </div>
-            </>
-          ) : (
-            /* Default: stacked layout */
-            <>
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <Icon
-                  className={cn(
-                    'size-5 shrink-0',
-                    iconColorMap[v],
-                    iconClassName,
-                  )}
-                />
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-sm font-semibold text-foreground">
-                    {title}
-                  </h2>
-                  {subtitle && (
-                    <p className="text-xs text-muted-foreground">{subtitle}</p>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
           <ChevronDown
             suppressHydrationWarning
             className={cn(
-              'size-5 shrink-0 transition-transform duration-200',
-              chevronColorMap[v],
+              'size-4 shrink-0 transition-transform duration-200 text-muted-foreground',
               open && 'rotate-180',
             )}
           />
