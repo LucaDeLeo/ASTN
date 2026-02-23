@@ -1,4 +1,4 @@
-import { v } from 'convex/values'
+import { ConvexError, v } from 'convex/values'
 import { action, internalMutation, mutation, query } from './_generated/server'
 import { internal } from './_generated/api'
 import { getUserId } from './lib/auth'
@@ -265,10 +265,15 @@ export const triggerMatchComputation = action({
       throw new Error('Not authenticated')
     }
 
-    await rateLimiter.limit(ctx, 'matchComputation', {
+    const rl = await rateLimiter.limit(ctx, 'matchComputation', {
       key: userId,
-      throws: true,
     })
+    if (!rl.ok) {
+      throw new ConvexError({
+        kind: 'RateLimited' as const,
+        retryAfter: rl.retryAfter,
+      })
+    }
 
     // Get profile
     const profile: { _id: Id<'profiles'> } | null = await ctx.runQuery(

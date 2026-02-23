@@ -27,11 +27,25 @@ import { AppliedMatchesSection } from '~/components/matches/AppliedMatchesSectio
 import { CareerActionsSection } from '~/components/actions/CareerActionsSection'
 import { GrowthAreas } from '~/components/matches/GrowthAreas'
 
-// Parse rate limit retryAfter (ms) from ConvexError chain
+// Parse rate limit retryAfter (ms) from ConvexError
 function parseRateLimitRetryAfter(err: unknown): number | null {
   try {
+    // ConvexError exposes .data with the structured payload
+    if (
+      err != null &&
+      typeof err === 'object' &&
+      'data' in err &&
+      err.data != null &&
+      typeof err.data === 'object' &&
+      'kind' in err.data &&
+      err.data.kind === 'RateLimited' &&
+      'retryAfter' in err.data &&
+      typeof err.data.retryAfter === 'number'
+    ) {
+      return err.data.retryAfter
+    }
+    // Fallback: regex on message for double-wrapped errors
     const msg = err instanceof Error ? err.message : String(err)
-    // ConvexError wraps the data as JSON in the message
     const match = msg.match(/"retryAfter"\s*:\s*([\d.]+)/)
     if (match) return Number(match[1])
   } catch {
