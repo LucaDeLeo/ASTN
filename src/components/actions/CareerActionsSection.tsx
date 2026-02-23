@@ -18,7 +18,9 @@ interface ActionData {
   status: string
 }
 
-export function CareerActionsSection() {
+export function CareerActionsSection({
+  hideHeader = false,
+}: { hideHeader?: boolean } = {}) {
   const actionsData = useQuery(api.careerActions.queries.getMyActions)
 
   const saveAction = useMutation(api.careerActions.mutations.saveAction)
@@ -79,10 +81,12 @@ export function CareerActionsSection() {
   // Empty state: user has profile but no actions
   if (!hasAnyActions && hasProfile) {
     return (
-      <section className="mt-8">
-        <h2 className="text-lg font-display font-semibold text-foreground mb-4">
-          Your Next Moves
-        </h2>
+      <section>
+        {!hideHeader && (
+          <h2 className="text-lg font-display font-semibold text-foreground mb-4">
+            Your Next Moves
+          </h2>
+        )}
         <p className="text-sm text-muted-foreground">
           Refresh your matches to generate personalized career actions.
         </p>
@@ -94,10 +98,12 @@ export function CareerActionsSection() {
   if (!hasAnyActions) return null
 
   return (
-    <section className="mt-8">
-      <h2 className="text-lg font-display font-semibold text-foreground mb-4">
-        Your Next Moves
-      </h2>
+    <section>
+      {!hideHeader && (
+        <h2 className="text-lg font-display font-semibold text-foreground mb-4">
+          Your Next Moves
+        </h2>
+      )}
 
       {/* Active, saved, and in-progress actions grid */}
       {displayActions.length > 0 && (

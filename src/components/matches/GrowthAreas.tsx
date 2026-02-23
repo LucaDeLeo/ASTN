@@ -6,6 +6,7 @@ interface GrowthAreasProps {
     theme: string
     items: Array<string>
   }>
+  hideHeader?: boolean
 }
 
 const themeIcons: Record<string, typeof TrendingUp> = {
@@ -14,20 +15,25 @@ const themeIcons: Record<string, typeof TrendingUp> = {
   'Knowledge to deepen': BookOpen,
 }
 
-export function GrowthAreas({ areas }: GrowthAreasProps) {
+export function GrowthAreas({ areas, hideHeader = false }: GrowthAreasProps) {
   if (areas.length === 0) return null
 
   return (
     <Card className="p-6 bg-slate-50">
-      <div className="flex items-center gap-2 mb-4">
-        <TrendingUp className="size-5 text-primary" />
-        <h2 className="text-lg font-semibold text-foreground">
-          Your Growth Areas
-        </h2>
-      </div>
-      <p className="text-sm text-slate-500 mb-4">
-        Based on your matches, here are areas to focus on to improve your fit
-      </p>
+      {!hideHeader && (
+        <>
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp className="size-5 text-primary" />
+            <h2 className="text-lg font-semibold text-foreground">
+              Your Growth Areas
+            </h2>
+          </div>
+          <p className="text-sm text-slate-500 mb-4">
+            Based on your matches, here are areas to focus on to improve your
+            fit
+          </p>
+        </>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {areas.map((area) => {
