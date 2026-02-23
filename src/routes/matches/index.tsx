@@ -11,7 +11,6 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
 import {
   AlertTriangle,
-  ChevronRight,
   RefreshCw,
   Sparkles,
   TrendingUp,
@@ -37,11 +36,7 @@ import { SavedMatchesSection } from '~/components/matches/SavedMatchesSection'
 import { AppliedMatchesSection } from '~/components/matches/AppliedMatchesSection'
 import { CareerActionsSection } from '~/components/actions/CareerActionsSection'
 import { GrowthAreas } from '~/components/matches/GrowthAreas'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '~/components/ui/collapsible'
+import { CollapsibleSection } from '~/components/ui/collapsible-section'
 import { computeCombinedScore } from '~/lib/matchScoring'
 
 // Parse rate limit retryAfter (ms) from ConvexError
@@ -253,38 +248,6 @@ function ComputingBanner({
         </div>
       )}
     </div>
-  )
-}
-
-function CollapsibleInsight({
-  icon: Icon,
-  title,
-  subtitle,
-  defaultOpen = false,
-  children,
-}: {
-  icon: React.ComponentType<{ className?: string }>
-  title: string
-  subtitle: string
-  defaultOpen?: boolean
-  children: React.ReactNode
-}) {
-  const [open, setOpen] = useState(defaultOpen)
-
-  return (
-    <Collapsible open={open} onOpenChange={setOpen} className="mb-6">
-      <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg border bg-card px-4 py-3 text-left hover:bg-accent/50 transition-colors">
-        <Icon className="size-5 text-primary shrink-0" />
-        <div className="flex-1 min-w-0">
-          <h2 className="text-sm font-semibold text-foreground">{title}</h2>
-          <p className="text-xs text-muted-foreground">{subtitle}</p>
-        </div>
-        <ChevronRight
-          className={`size-4 text-muted-foreground shrink-0 transition-transform duration-200 ${open ? 'rotate-90' : ''}`}
-        />
-      </CollapsibleTrigger>
-      <CollapsibleContent className="pt-4">{children}</CollapsibleContent>
-    </Collapsible>
   )
 }
 
@@ -563,24 +526,26 @@ function MatchesContent() {
           {appliedMatches && <AppliedMatchesSection matches={appliedMatches} />}
 
           {/* Career actions - collapsible "Your Next Moves" */}
-          <CollapsibleInsight
+          <CollapsibleSection
             icon={Zap}
             title="Your Next Moves"
             subtitle="Personalized career actions based on your matches"
             defaultOpen
+            className="mb-6"
           >
             <CareerActionsSection hideHeader />
-          </CollapsibleInsight>
+          </CollapsibleSection>
 
           {/* Growth areas - collapsible, keep visible even when all matches dismissed */}
           {growthAreas.length > 0 && (
-            <CollapsibleInsight
+            <CollapsibleSection
               icon={TrendingUp}
               title="Your Growth Areas"
               subtitle="Focus areas to improve your fit"
+              className="mb-6"
             >
               <GrowthAreas areas={growthAreas} hideHeader />
-            </CollapsibleInsight>
+            </CollapsibleSection>
           )}
 
           {/* Matches sorted by fit + urgency (paginated) */}
