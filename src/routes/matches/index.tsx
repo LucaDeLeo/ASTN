@@ -411,6 +411,17 @@ function MatchesContent() {
     )
   }, [matches.great, matches.good, matches.exploring])
 
+  const PAGE_SIZE = 12
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+
+  // Reset pagination when match list changes (refresh, dismiss, etc.)
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE)
+  }, [sortedMatches.length])
+
+  const visibleMatches = sortedMatches.slice(0, visibleCount)
+  const remainingCount = sortedMatches.length - visibleCount
+
   const hasMatches = sortedMatches.length > 0
   const hasSavedMatches = savedMatches.length > 0
 
@@ -506,49 +517,62 @@ function MatchesContent() {
           {/* Applied matches section */}
           {appliedMatches && <AppliedMatchesSection matches={appliedMatches} />}
 
-          {/* Matches sorted by fit + urgency */}
-          {hasMatches && (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-              {sortedMatches.map((match, index) => {
-                if (isMobile) {
-                  return (
-                    <SwipeableCard
-                      key={match._id}
-                      onSwipeLeft={() => dismissMatch({ matchId: match._id })}
-                      onSwipeRight={() => saveMatch({ matchId: match._id })}
-                    >
-                      <AnimatedCard index={index}>
-                        <MatchCard
-                          match={match}
-                          isSaved={match.status === 'saved'}
-                        />
-                      </AnimatedCard>
-                    </SwipeableCard>
-                  )
-                }
-
-                return (
-                  <AnimatedCard key={match._id} index={index}>
-                    <MatchCard
-                      match={match}
-                      isSaved={match.status === 'saved'}
-                      onSave={() => saveMatch({ matchId: match._id })}
-                      onDismiss={() => dismissMatch({ matchId: match._id })}
-                    />
-                  </AnimatedCard>
-                )
-              })}
-            </div>
-          )}
-
-          {/* Career actions - "Your Next Moves" between tiers and growth areas */}
+          {/* Career actions - "Your Next Moves" */}
           <CareerActionsSection />
 
           {/* Growth areas - keep visible even when all matches dismissed */}
           {growthAreas.length > 0 && (
-            <div className="mt-8">
+            <div className="mb-8">
               <GrowthAreas areas={growthAreas} />
             </div>
+          )}
+
+          {/* Matches sorted by fit + urgency (paginated) */}
+          {hasMatches && (
+            <>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+                {visibleMatches.map((match, index) => {
+                  if (isMobile) {
+                    return (
+                      <SwipeableCard
+                        key={match._id}
+                        onSwipeLeft={() => dismissMatch({ matchId: match._id })}
+                        onSwipeRight={() => saveMatch({ matchId: match._id })}
+                      >
+                        <AnimatedCard index={index}>
+                          <MatchCard
+                            match={match}
+                            isSaved={match.status === 'saved'}
+                          />
+                        </AnimatedCard>
+                      </SwipeableCard>
+                    )
+                  }
+
+                  return (
+                    <AnimatedCard key={match._id} index={index}>
+                      <MatchCard
+                        match={match}
+                        isSaved={match.status === 'saved'}
+                        onSave={() => saveMatch({ matchId: match._id })}
+                        onDismiss={() => dismissMatch({ matchId: match._id })}
+                      />
+                    </AnimatedCard>
+                  )
+                })}
+              </div>
+
+              {remainingCount > 0 && (
+                <div className="flex justify-center mb-8">
+                  <Button
+                    variant="outline"
+                    onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
+                  >
+                    Show more ({remainingCount} remaining)
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </PullToRefresh>
       </div>
