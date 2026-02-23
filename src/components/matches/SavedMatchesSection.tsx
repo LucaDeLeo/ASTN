@@ -29,8 +29,6 @@ interface SavedMatchesSectionProps {
 }
 
 export function SavedMatchesSection({ matches }: SavedMatchesSectionProps) {
-  const toggleSaveMatch = useMutation(api.matches.saveMatch)
-
   return (
     <CollapsibleSection
       icon={Bookmark}
@@ -43,17 +41,26 @@ export function SavedMatchesSection({ matches }: SavedMatchesSectionProps) {
       itemCount={matches.length}
       className="mb-8"
     >
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 pb-1">
-        {matches.map((match, index) => (
-          <AnimatedCard key={match._id} index={index}>
-            <MatchCard
-              match={match}
-              isSaved
-              onUnsave={() => toggleSaveMatch({ matchId: match._id })}
-            />
-          </AnimatedCard>
-        ))}
-      </div>
+      <SavedMatchesGrid matches={matches} />
     </CollapsibleSection>
+  )
+}
+
+/** Card grid without the CollapsibleSection wrapper. */
+export function SavedMatchesGrid({ matches }: SavedMatchesSectionProps) {
+  const toggleSaveMatch = useMutation(api.matches.saveMatch)
+
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 pb-1">
+      {matches.map((match, index) => (
+        <AnimatedCard key={match._id} index={index}>
+          <MatchCard
+            match={match}
+            isSaved
+            onUnsave={() => toggleSaveMatch({ matchId: match._id })}
+          />
+        </AnimatedCard>
+      ))}
+    </div>
   )
 }

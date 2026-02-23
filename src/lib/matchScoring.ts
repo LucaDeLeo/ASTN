@@ -40,6 +40,62 @@ export function computeCombinedScore(
   )
 }
 
+// ---------------------------------------------------------------------------
+// Sort utilities
+// ---------------------------------------------------------------------------
+
+export type MatchSortOrder = 'combined' | 'fit' | 'deadline' | 'newest'
+
+export const SORT_OPTIONS: Array<{ value: MatchSortOrder; label: string }> = [
+  { value: 'combined', label: 'Best match' },
+  { value: 'fit', label: 'Highest fit' },
+  { value: 'deadline', label: 'Most urgent' },
+  { value: 'newest', label: 'Newest' },
+]
+
+interface Sortable {
+  tier: 'great' | 'good' | 'exploring'
+  score: number
+  isNew: boolean
+  opportunity: { deadline?: number }
+}
+
+export function sortMatches<T extends Sortable>(
+  matches: Array<T>,
+  order: MatchSortOrder,
+): Array<T> {
+  const copy = [...matches]
+
+  switch (order) {
+    case 'combined':
+      return copy.sort(
+        (a, b) =>
+          computeCombinedScore(b.tier, b.score, b.opportunity.deadline) -
+          computeCombinedScore(a.tier, a.score, a.opportunity.deadline),
+      )
+    case 'fit':
+      return copy.sort(
+        (a, b) =>
+          computeGlobalFitScore(b.tier, b.score) -
+          computeGlobalFitScore(a.tier, a.score),
+      )
+    case 'deadline':
+      return copy.sort(
+        (a, b) =>
+          computeUrgencyScore(b.opportunity.deadline) -
+          computeUrgencyScore(a.opportunity.deadline),
+      )
+    case 'newest':
+      return copy.sort((a, b) => {
+        if (a.isNew !== b.isNew) return a.isNew ? -1 : 1
+        return (
+          computeCombinedScore(b.tier, b.score, b.opportunity.deadline) -
+          computeCombinedScore(a.tier, a.score, a.opportunity.deadline)
+        )
+      })
+  }
+}
+
 /** Tailwind color class for fit score display. */
 export function getFitScoreColor(fitScore: number): string {
   if (fitScore >= 67) return 'text-emerald-600'

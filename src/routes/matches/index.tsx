@@ -11,6 +11,8 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
 import {
   AlertTriangle,
+  Bookmark,
+  Check,
   RefreshCw,
   Sparkles,
   TrendingUp,
@@ -19,6 +21,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { api } from '../../../convex/_generated/api'
+import type { MatchSortOrder } from '~/lib/matchScoring'
 import { OnboardingGuard } from '~/components/auth/onboarding-guard'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { GradientBg } from '~/components/layout/GradientBg'
@@ -32,12 +35,20 @@ import { PullToRefresh } from '~/components/ui/pull-to-refresh'
 import { MatchCard } from '~/components/matches/MatchCard'
 import { AnimatedCard } from '~/components/animation/AnimatedCard'
 import { SwipeableCard } from '~/components/gestures/swipeable-card'
-import { SavedMatchesSection } from '~/components/matches/SavedMatchesSection'
-import { AppliedMatchesSection } from '~/components/matches/AppliedMatchesSection'
+import { SavedMatchesGrid } from '~/components/matches/SavedMatchesSection'
+import { AppliedMatchesGrid } from '~/components/matches/AppliedMatchesSection'
 import { CareerActionsSection } from '~/components/actions/CareerActionsSection'
 import { GrowthAreas } from '~/components/matches/GrowthAreas'
 import { CollapsibleSection } from '~/components/ui/collapsible-section'
-import { computeCombinedScore } from '~/lib/matchScoring'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '~/components/ui/select'
+import { SORT_OPTIONS, sortMatches } from '~/lib/matchScoring'
+import { cn } from '~/lib/utils'
 
 // Parse rate limit retryAfter (ms) from ConvexError
 function parseRateLimitRetryAfter(err: unknown): number | null {
@@ -410,22 +421,21 @@ function MatchesContent() {
   const { matches, savedMatches, appliedMatches, computedAt, matchesStaleAt } =
     matchesData
 
+  // Sort order state
+  const [sortOrder, setSortOrder] = useState<MatchSortOrder>('combined')
+
   const sortedMatches = useMemo(() => {
     const all = [...matches.great, ...matches.good, ...matches.exploring]
-    return all.sort(
-      (a, b) =>
-        computeCombinedScore(b.tier, b.score, b.opportunity.deadline) -
-        computeCombinedScore(a.tier, a.score, a.opportunity.deadline),
-    )
-  }, [matches.great, matches.good, matches.exploring])
+    return sortMatches(all, sortOrder)
+  }, [matches.great, matches.good, matches.exploring, sortOrder])
 
   const PAGE_SIZE = 12
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
-  // Reset pagination when match list changes (refresh, dismiss, etc.)
+  // Reset pagination when match list or sort order changes
   useEffect(() => {
     setVisibleCount(PAGE_SIZE)
-  }, [sortedMatches.length])
+  }, [sortedMatches.length, sortOrder])
 
   const visibleMatches = sortedMatches.slice(0, visibleCount)
   const remainingCount = sortedMatches.length - visibleCount
@@ -433,42 +443,104 @@ function MatchesContent() {
   const hasMatches = sortedMatches.length > 0
   const hasSavedMatches = savedMatches.length > 0
 
+  // Saved/Applied inline expansion state (persisted to sessionStorage)
+  const [savedExpanded, setSavedExpanded] = useSessionState(
+    'saved-matches-expanded',
+    false,
+  )
+  const [appliedExpanded, setAppliedExpanded] = useSessionState(
+    'applied-matches-expanded',
+    false,
+  )
+
   // First computation with no existing matches: full-page takeover
   if (isComputing && !hasMatches && !hasSavedMatches) {
     return <ComputingState />
   }
 
+  // Relative time label
+  const updatedLabel =
+    computedAt != null ? formatRelativeTime(computedAt) : null
+
   return (
     <main className="container mx-auto px-4 py-8">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-          <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-display font-semibold text-foreground">
-              Your Matches
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              {hasMatches
-                ? `${sortedMatches.length} opportunities matched to your profile`
-                : 'Opportunities matched to your profile and goals'}
-            </p>
-            {computedAt !== null && computedAt !== undefined && (
-              <p className="text-xs text-muted-foreground mt-1">
-                Last updated: {new Date(computedAt).toLocaleDateString()}
-              </p>
-            )}
-          </div>
+        {/* Row 1: Title + Refresh */}
+        <div className="flex items-start justify-between gap-4 mb-1">
+          <h1 className="text-xl sm:text-2xl font-display font-semibold text-foreground">
+            Your Matches
+          </h1>
           <Button
             variant="outline"
+            size="sm"
             onClick={handleCompute}
             disabled={isComputing}
-            className="w-full sm:w-auto shrink-0"
+            className="shrink-0"
           >
             <RefreshCw
-              className={`size-4 mr-2 ${isComputing ? 'animate-spin' : ''}`}
+              className={cn('size-4', isComputing && 'animate-spin')}
             />
-            Refresh Matches
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
+        </div>
+
+        {/* Row 2: Subtitle */}
+        <p className="text-sm text-muted-foreground mb-4">
+          {hasMatches
+            ? `${sortedMatches.length} opportunities`
+            : 'Opportunities matched to your profile'}
+          {updatedLabel && ` · ${updatedLabel}`}
+        </p>
+
+        {/* Row 3: Toolbar — chips left, sort right */}
+        <div className="flex flex-wrap items-center gap-2 mb-6">
+          {savedMatches.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setSavedExpanded((o) => !o)}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                savedExpanded
+                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
+                  : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40',
+              )}
+            >
+              <Bookmark className="size-3.5 fill-current" />
+              {savedMatches.length} Saved
+            </button>
+          )}
+          {appliedMatches && appliedMatches.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setAppliedExpanded((o) => !o)}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                appliedExpanded
+                  ? 'bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-300'
+                  : 'bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-900/20 dark:text-violet-400 dark:hover:bg-violet-900/40',
+              )}
+            >
+              <Check className="size-3.5" />
+              {appliedMatches.length} Applied
+            </button>
+          )}
+          <div className="ml-auto">
+            <Select
+              value={sortOrder}
+              onValueChange={(v) => setSortOrder(v as MatchSortOrder)}
+            >
+              <SelectTrigger className="h-8 w-[150px] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SORT_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Computing progress banner (inline, with existing matches visible below) */}
@@ -519,41 +591,43 @@ function MatchesContent() {
             </Card>
           )}
 
-          {/* Saved matches section (animates in/out, collapsed by default) */}
-          <SavedMatchesSection matches={savedMatches} />
-
-          {/* Applied matches section */}
-          {appliedMatches && <AppliedMatchesSection matches={appliedMatches} />}
-
-          {/* Career actions - collapsible "Your Next Moves" */}
-          <CollapsibleSection
-            icon={Zap}
-            title="Your Next Moves"
-            subtitle="Personalized career actions based on your matches"
-            defaultOpen
-            className="mb-6"
+          {/* Saved matches inline expansion */}
+          <div
+            className={cn(
+              'grid will-change-[grid-template-rows]',
+              'transition-[grid-template-rows] duration-200 ease-out',
+              savedExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+            )}
           >
-            <CareerActionsSection hideHeader />
-          </CollapsibleSection>
+            <div className="overflow-hidden">
+              {savedMatches.length > 0 && (
+                <div className="mb-6">
+                  <SavedMatchesGrid matches={savedMatches} />
+                </div>
+              )}
+            </div>
+          </div>
 
-          {/* Growth areas - collapsible, keep visible even when all matches dismissed */}
-          {growthAreas.length > 0 && (
-            <CollapsibleSection
-              icon={TrendingUp}
-              title="Your Growth Areas"
-              subtitle="Focus areas to improve your fit"
-              className="mb-6"
-            >
-              <GrowthAreas areas={growthAreas} hideHeader />
-            </CollapsibleSection>
-          )}
+          {/* Applied matches inline expansion */}
+          <div
+            className={cn(
+              'grid will-change-[grid-template-rows]',
+              'transition-[grid-template-rows] duration-200 ease-out',
+              appliedExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+            )}
+          >
+            <div className="overflow-hidden">
+              {appliedMatches && appliedMatches.length > 0 && (
+                <div className="mb-6">
+                  <AppliedMatchesGrid matches={appliedMatches} />
+                </div>
+              )}
+            </div>
+          </div>
 
-          {/* Matches sorted by fit + urgency (paginated) */}
+          {/* Match grid (primary content — now immediately visible) */}
           {hasMatches && (
             <>
-              <h2 className="text-lg font-display font-semibold text-foreground mb-4">
-                All Matches
-              </h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
                 {visibleMatches.map((match, index) => {
                   if (isMobile) {
@@ -598,8 +672,61 @@ function MatchesContent() {
               )}
             </>
           )}
+
+          {/* Career actions - collapsible "Your Next Moves" (collapsed by default) */}
+          <CollapsibleSection
+            icon={Zap}
+            title="Your Next Moves"
+            subtitle="Personalized career actions based on your matches"
+            className="mb-6"
+          >
+            <CareerActionsSection hideHeader />
+          </CollapsibleSection>
+
+          {/* Growth areas - collapsible, keep visible even when all matches dismissed */}
+          {growthAreas.length > 0 && (
+            <CollapsibleSection
+              icon={TrendingUp}
+              title="Your Growth Areas"
+              subtitle="Focus areas to improve your fit"
+              className="mb-6"
+            >
+              <GrowthAreas areas={growthAreas} hideHeader />
+            </CollapsibleSection>
+          )}
         </PullToRefresh>
       </div>
     </main>
   )
+}
+
+/** Persist a boolean to sessionStorage. */
+function useSessionState(
+  key: string,
+  defaultValue: boolean,
+): [boolean, React.Dispatch<React.SetStateAction<boolean>>] {
+  const [state, setState] = useState(() => {
+    if (typeof window === 'undefined') return defaultValue
+    const stored = sessionStorage.getItem(key)
+    return stored !== null ? stored === 'true' : defaultValue
+  })
+
+  useEffect(() => {
+    sessionStorage.setItem(key, String(state))
+  }, [key, state])
+
+  return [state, setState]
+}
+
+/** Format a timestamp as a relative time string. */
+function formatRelativeTime(timestamp: number): string {
+  const seconds = Math.floor((Date.now() - timestamp) / 1000)
+  if (seconds < 60) return 'Updated just now'
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `Updated ${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `Updated ${hours}h ago`
+  const days = Math.floor(hours / 24)
+  if (days === 1) return 'Updated yesterday'
+  return `Updated ${days}d ago`
 }

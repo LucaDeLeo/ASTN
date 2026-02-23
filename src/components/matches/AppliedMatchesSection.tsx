@@ -39,13 +39,20 @@ export function AppliedMatchesSection({ matches }: AppliedMatchesSectionProps) {
       itemCount={matches.length}
       className="mb-8"
     >
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 pb-1">
-        {matches.map((match, index) => (
-          <AnimatedCard key={match._id} index={index}>
-            <MatchCard match={match} />
-          </AnimatedCard>
-        ))}
-      </div>
+      <AppliedMatchesGrid matches={matches} />
     </CollapsibleSection>
+  )
+}
+
+/** Card grid without the CollapsibleSection wrapper. */
+export function AppliedMatchesGrid({ matches }: AppliedMatchesSectionProps) {
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 pb-1">
+      {matches.map((match, index) => (
+        <AnimatedCard key={match._id} index={index}>
+          <MatchCard match={match} />
+        </AnimatedCard>
+      ))}
+    </div>
   )
 }
