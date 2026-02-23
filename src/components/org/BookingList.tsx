@@ -2,6 +2,7 @@ import { useQuery } from 'convex/react'
 import { format } from 'date-fns'
 import { Calendar, Loader2, Users } from 'lucide-react'
 import { useCallback, useState } from 'react'
+import { Link } from '@tanstack/react-router'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { Badge } from '~/components/ui/badge'
@@ -16,6 +17,7 @@ interface BookingListProps {
 
 type BookingItem = {
   _id: Id<'spaceBookings'>
+  userId: string
   date: string
   startMinutes: number
   endMinutes: number
@@ -176,6 +178,7 @@ export function BookingList({ spaceId, startDate, endDate }: BookingListProps) {
 interface BookingListItemProps {
   booking: {
     _id: Id<'spaceBookings'>
+    userId: string
     startMinutes: number
     endMinutes: number
     bookingType: 'member' | 'guest'
@@ -209,9 +212,13 @@ function BookingListItem({ booking }: BookingListItemProps) {
 
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-medium">
+                <Link
+                  to="/admin/users/$userId"
+                  params={{ userId: booking.userId }}
+                  className="font-medium hover:underline"
+                >
                   {booking.profile?.name ?? 'Unknown'}
-                </span>
+                </Link>
                 {booking.profile?.isGuest && (
                   <Badge variant="secondary" className="text-xs">
                     Guest
