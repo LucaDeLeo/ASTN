@@ -12,8 +12,9 @@ const triggerVariants = cva(
     variants: {
       variant: {
         default: 'border bg-card hover:bg-accent/50',
-        emerald: 'bg-emerald-50 border border-emerald-200 hover:bg-emerald-100',
-        violet: 'bg-violet-50 border border-violet-200 hover:bg-violet-100',
+        emerald:
+          'bg-emerald-50 border border-emerald-200 hover:bg-emerald-50/70',
+        violet: 'bg-violet-50 border border-violet-200 hover:bg-violet-50/70',
       },
     },
     defaultVariants: { variant: 'default' },

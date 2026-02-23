@@ -37,6 +37,7 @@ export function SavedMatchesSection({ matches }: SavedMatchesSectionProps) {
       iconClassName="fill-emerald-600"
       title="Saved"
       count={matches.length}
+      subtitle="Opportunities you're interested in"
       variant="emerald"
       storageKey="saved-matches-expanded"
       itemCount={matches.length}

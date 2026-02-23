@@ -33,6 +33,7 @@ export function AppliedMatchesSection({ matches }: AppliedMatchesSectionProps) {
       icon={Check}
       title="Applied"
       count={matches.length}
+      subtitle="Opportunities you've applied to"
       variant="violet"
       storageKey="applied-matches-expanded"
       itemCount={matches.length}
