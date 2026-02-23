@@ -6,6 +6,7 @@ import { formatLocation } from '~/lib/formatLocation'
 import { formatDeadline, getDeadlineUrgency } from '~/lib/formatDeadline'
 import { ROLE_TYPE_COLORS } from '~/lib/roleTypes'
 import { computeGlobalFitScore, getFitScoreColor } from '~/lib/matchScoring'
+import { cn } from '~/lib/utils'
 
 const ACTIVE_MATCH_KEY = 'view-transition-match-id'
 
@@ -39,6 +40,8 @@ interface MatchCardProps {
   onSave?: () => void
   /** Callback to dismiss this match (desktop hover action) */
   onDismiss?: () => void
+  /** Extra className applied to the Card wrapper */
+  className?: string
 }
 
 const EXPERIENCE_LEVEL_LABELS: Record<string, string> = {
@@ -54,6 +57,7 @@ export function MatchCard({
   onUnsave,
   onSave,
   onDismiss,
+  className,
 }: MatchCardProps) {
   const roleColorClass =
     ROLE_TYPE_COLORS[match.opportunity.roleType] || ROLE_TYPE_COLORS.other
@@ -90,7 +94,12 @@ export function MatchCard({
         if (strength) strength.style.viewTransitionName = 'match-strength'
       }}
     >
-      <Card className="group/card relative p-4 transition-shadow hover:shadow-md cursor-pointer">
+      <Card
+        className={cn(
+          'group/card relative p-4 transition-shadow hover:shadow-md cursor-pointer',
+          className,
+        )}
+      >
         {/* Desktop hover actions: save & dismiss */}
         {(onSave || onDismiss) && (
           <div className="absolute top-2 right-2 hidden items-center gap-1 group-hover/card:flex">

@@ -50,7 +50,7 @@ export function AppliedMatchesGrid({ matches }: AppliedMatchesSectionProps) {
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 pb-1">
       {matches.map((match, index) => (
         <AnimatedCard key={match._id} index={index}>
-          <MatchCard match={match} />
+          <MatchCard match={match} className="border-violet-200" />
         </AnimatedCard>
       ))}
     </div>
