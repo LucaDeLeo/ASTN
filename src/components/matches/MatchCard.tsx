@@ -177,7 +177,7 @@ export function MatchCard({
             </Badge>
           )}
           <span
-            className={`ml-auto text-xs font-medium tabular-nums ${getFitScoreColor(fitScore)}`}
+            className={`ml-auto text-xs font-medium tabular-nums transition-opacity group-hover/card:opacity-0 ${getFitScoreColor(fitScore)}`}
           >
             {fitScore}% fit
           </span>
