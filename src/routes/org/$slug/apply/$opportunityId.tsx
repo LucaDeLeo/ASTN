@@ -1,4 +1,6 @@
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
+import { convexQuery } from '@convex-dev/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { useConvexAuth, useMutation, useQuery } from 'convex/react'
 import { useUser } from '@clerk/clerk-react'
 import { useState } from 'react'
@@ -21,6 +23,42 @@ import { Button } from '~/components/ui/button'
 import { saveGuestApplicationEmail } from '~/lib/pendingGuestApplication'
 
 export const Route = createFileRoute('/org/$slug/apply/$opportunityId')({
+  loader: async ({ context, params }) => {
+    const [org, opportunity] = await Promise.all([
+      context.queryClient.ensureQueryData(
+        convexQuery(api.orgs.directory.getOrgBySlug, { slug: params.slug }),
+      ),
+      context.queryClient.ensureQueryData(
+        convexQuery(api.orgOpportunities.get, {
+          id: params.opportunityId as Id<'orgOpportunities'>,
+        }),
+      ),
+    ])
+    return { org, opportunity }
+  },
+  head: ({ loaderData }) => {
+    const org = loaderData?.org
+    const opportunity = loaderData?.opportunity
+    const orgName = org?.name ?? 'Organization'
+    const title = opportunity
+      ? `${opportunity.title} — Apply at ${orgName}`
+      : `Apply — ${orgName}`
+    const rawDesc = opportunity?.description ?? ''
+    const description =
+      rawDesc.length > 155 ? rawDesc.slice(0, 152) + '...' : rawDesc
+    const fallback = `Apply for this opportunity at ${orgName} on AI Safety Talent Network.`
+
+    return {
+      meta: [
+        { title },
+        { name: 'description', content: description || fallback },
+        { property: 'og:title', content: title },
+        { property: 'og:description', content: description || fallback },
+        { name: 'twitter:title', content: title },
+        { name: 'twitter:description', content: description || fallback },
+      ],
+    }
+  },
   component: ApplyPage,
 })
 
@@ -39,10 +77,14 @@ function ApplyPage() {
   const { isAuthenticated } = useConvexAuth()
   const { user } = useUser()
 
-  const org = useQuery(api.orgs.directory.getOrgBySlug, { slug })
-  const opportunity = useQuery(api.orgOpportunities.get, {
-    id: opportunityId as Id<'orgOpportunities'>,
-  })
+  const { data: org } = useSuspenseQuery(
+    convexQuery(api.orgs.directory.getOrgBySlug, { slug }),
+  )
+  const { data: opportunity } = useSuspenseQuery(
+    convexQuery(api.orgOpportunities.get, {
+      id: opportunityId as Id<'orgOpportunities'>,
+    }),
+  )
   const existingApplication = useQuery(
     api.opportunityApplications.getMyApplication,
     isAuthenticated && opportunity
@@ -94,23 +136,6 @@ function ApplyPage() {
       setResponses((prev) => ({ ...prev, ...updates }))
     }
     setPreFilled(true)
-  }
-
-  // Loading states
-  if (org === undefined || opportunity === undefined) {
-    return (
-      <GradientBg>
-        <AuthHeader />
-        <main className="container mx-auto px-4 py-8">
-          <div className="max-w-2xl mx-auto">
-            <div className="animate-pulse space-y-6">
-              <div className="h-8 bg-slate-100 rounded w-1/3" />
-              <div className="h-64 bg-slate-100 rounded-xl" />
-            </div>
-          </div>
-        </main>
-      </GradientBg>
-    )
   }
 
   if (!org || !opportunity) {
