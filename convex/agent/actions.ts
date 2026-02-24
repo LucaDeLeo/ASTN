@@ -4,7 +4,7 @@ import { v } from 'convex/values'
 import { internal } from '../_generated/api'
 import { internalAction } from '../_generated/server'
 import { buildProfileContext } from '../enrichment/conversation'
-import { computeProfileCompleteness } from '../profiles'
+import { computeProfileCompleteness, isProfileMatchReady } from '../profiles'
 import {
   buildAgentSystemPrompt,
   buildBaishContextBlock,
@@ -87,11 +87,14 @@ export const streamResponse = internalAction({
 
     const pageContextData = buildPageContextBlock(pageContext, entityData)
 
-    // Compute profile completeness for the system prompt
-    const completeness = computeProfileCompleteness(
-      profile as unknown as Record<string, unknown> | null,
+    // Compute profile completeness and match readiness for the system prompt
+    const profileRecord = profile as unknown as Record<string, unknown> | null
+    const completeness = computeProfileCompleteness(profileRecord)
+    const matchReadiness = isProfileMatchReady(profileRecord)
+    const completenessBlock = buildCompletenessBlock(
+      completeness,
+      matchReadiness,
     )
-    const completenessBlock = buildCompletenessBlock(completeness)
 
     // Check for BAISH CRM data for new profiles
     // Profile from DB has hasEnrichmentConversation but ProfileData type doesn't include it

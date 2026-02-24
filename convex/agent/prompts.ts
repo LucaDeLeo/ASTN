@@ -204,6 +204,7 @@ ${lines.join('\n')}
 Returning BAISH member — first interaction:
 - This is a BAISH (Buenos Aires) community member — if their preferred language is "es" or unset, default to conversing in Spanish.
 - Greet them warmly as a returning BAISH community member. Use their name if available.
+- Include a brief, natural note that if they'd prefer to switch to English or another language, they can just reply in it and the conversation will continue in that language.
 - IMMEDIATELY call your profile tools to populate their profile from the CRM data above:
   - Call update_basic_info with their name and location "Buenos Aires, Argentina"${record.linkedin ? ` and linkedinUrl "${record.linkedin}"` : ''}
   - If they have a role, use it to set a headline via update_basic_info (can combine with the call above)
@@ -223,13 +224,22 @@ Returning BAISH member — first interaction:
 /**
  * Format profile completeness data into an XML block for the system prompt.
  */
-export function buildCompletenessBlock(completeness: {
-  sections: Array<{ id: string; label: string; isComplete: boolean }>
-  completedCount: number
-  totalCount: number
-  percentage: number
-  isFullyComplete: boolean
-}): string {
+export function buildCompletenessBlock(
+  completeness: {
+    sections: Array<{ id: string; label: string; isComplete: boolean }>
+    completedCount: number
+    totalCount: number
+    percentage: number
+    isFullyComplete: boolean
+  },
+  matchReadiness?: {
+    ready: boolean
+    completedCount: number
+    totalCount: number
+    missingRequired: Array<string>
+    sectionsNeeded: number
+  },
+): string {
   const completed = completeness.sections
     .filter((s) => s.isComplete)
     .map((s) => s.label)
@@ -237,11 +247,33 @@ export function buildCompletenessBlock(completeness: {
     .filter((s) => !s.isComplete)
     .map((s) => s.label)
 
-  return `\n\n<profile_completeness>
+  let block = `\n\n<profile_completeness>
 Progress: ${completeness.completedCount}/${completeness.totalCount} sections (${completeness.percentage}%)
 Completed: ${completed.length > 0 ? completed.join(', ') : 'None'}
-Missing: ${missing.length > 0 ? missing.join(', ') : 'None — profile is complete!'}
-</profile_completeness>`
+Missing: ${missing.length > 0 ? missing.join(', ') : 'None — profile is complete!'}`
+
+  if (matchReadiness) {
+    if (matchReadiness.ready) {
+      block += `\n\nMatching: UNLOCKED — profile meets all requirements`
+    } else {
+      const needs: Array<string> = []
+      if (matchReadiness.missingRequired.length > 0) {
+        const labels = matchReadiness.missingRequired.map(
+          (id) => completeness.sections.find((s) => s.id === id)?.label ?? id,
+        )
+        needs.push(`${labels.join(', ')} (required)`)
+      }
+      if (matchReadiness.sectionsNeeded > 0) {
+        needs.push(
+          `${matchReadiness.sectionsNeeded} more section${matchReadiness.sectionsNeeded === 1 ? '' : 's'} (${matchReadiness.completedCount} of ${matchReadiness.totalCount}, minimum ${matchReadiness.totalCount - (matchReadiness.totalCount - 5)})`,
+        )
+      }
+      block += `\n\nMatching: LOCKED\nNeeds: ${needs.join(' and ')}`
+    }
+  }
+
+  block += `\n</profile_completeness>`
+  return block
 }
 
 export function buildAgentSystemPrompt(
@@ -310,6 +342,12 @@ Match preferences:
 Skills taxonomy:
 When setting skills, use ONLY names from this list: ${SKILLS_LIST_STRING}
 Pick the closest matches. If a user mentions a skill not in the list, map it to the nearest equivalent.
+
+Match readiness:
+- Check the <profile_completeness> block for matching status (LOCKED/UNLOCKED)
+- When matching is LOCKED, naturally steer toward filling the missing required sections (especially career goals) and reaching the 5-section threshold — but don't block other actions the user wants to take
+- When a section you just filled unlocks matching, let the user know: "Your profile now qualifies for matching — you can [view your matches](/matches) to see opportunities."
+- If the user wants to browse opportunities or do something else, help them — just weave in profile completion when there's a natural opening
 </profile_building>
 
 <conversation_approach>
@@ -328,6 +366,7 @@ Non-technical backgrounds are equally valid:
 New users:
 If the profile below is mostly empty, welcome them and offer concrete next steps:
 "Hey! I'm here to help you build your AI safety profile. You can paste your LinkedIn URL, drop a CV, or just tell me about yourself — whatever's easiest."
+Include a brief note that they can reply in whatever language they're most comfortable with — the conversation will continue in their chosen language. Keep it natural and short (one sentence), not a formal disclaimer.
 Then guide them through filling out their profile conversationally.
 
 If the profile is partially filled, focus on what's missing rather than re-asking about what's already there.
