@@ -36,7 +36,7 @@ export const Route = createFileRoute('/org/$slug/apply/$opportunityId')({
     ])
     return { org, opportunity }
   },
-  head: ({ loaderData }) => {
+  head: ({ loaderData, params }) => {
     const org = loaderData?.org
     const opportunity = loaderData?.opportunity
     const orgName = org?.name ?? 'Organization'
@@ -47,11 +47,13 @@ export const Route = createFileRoute('/org/$slug/apply/$opportunityId')({
     const description =
       rawDesc.length > 155 ? rawDesc.slice(0, 152) + '...' : rawDesc
     const fallback = `Apply for this opportunity at ${orgName} on AI Safety Talent Network.`
+    const url = `https://safetytalent.org/org/${params.slug}/apply/${params.opportunityId}`
 
     return {
       meta: [
         { title },
         { name: 'description', content: description || fallback },
+        { property: 'og:url', content: url },
         { property: 'og:title', content: title },
         { property: 'og:description', content: description || fallback },
         { name: 'twitter:title', content: title },
