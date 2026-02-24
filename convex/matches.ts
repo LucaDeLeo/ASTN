@@ -4,6 +4,7 @@ import { internal } from './_generated/api'
 import { getUserId } from './lib/auth'
 import { debouncedSchedule } from './lib/debouncer'
 import { rateLimiter } from './lib/rateLimiter'
+import { isProfileMatchReady } from './profiles'
 import type { Id } from './_generated/dataModel'
 
 // Type for match computation result (chained scheduled action architecture)
@@ -33,6 +34,29 @@ export const getMyMatches = query({
         matches: { great: [], good: [], exploring: [] },
         savedMatches: [],
         needsProfile: true,
+      }
+    }
+
+    // Check profile completeness before matching
+    const readiness = isProfileMatchReady(
+      profile as unknown as Record<string, unknown>,
+    )
+    if (!readiness.ready) {
+      // Check if there are any existing matches (user may have had matches before editing profile)
+      const existingMatches = await ctx.db
+        .query('matches')
+        .withIndex('by_profile', (q) => q.eq('profileId', profile._id))
+        .first()
+
+      return {
+        matches: { great: [], good: [], exploring: [] },
+        savedMatches: [],
+        needsProfile: false,
+        needsComputation: false,
+        needsCompleteness: true,
+        completeness: readiness,
+        hasExistingMatches: existingMatches !== null,
+        profileId: profile._id,
       }
     }
 
@@ -297,6 +321,27 @@ export const triggerMatchComputation = action({
 
     if (!profile) {
       throw new Error('Profile not found - please create a profile first')
+    }
+
+    // Check profile completeness
+    const readiness: {
+      ready: boolean
+      completedCount: number
+      totalCount: number
+      missingRequired: Array<string>
+      sectionsNeeded: number
+    } = await ctx.runQuery(
+      internal.matching.queries.getProfileMatchReadiness,
+      { profileId: profile._id },
+    )
+    if (!readiness.ready) {
+      throw new ConvexError({
+        kind: 'ProfileIncomplete' as const,
+        completedCount: readiness.completedCount,
+        totalCount: readiness.totalCount,
+        missingRequired: readiness.missingRequired,
+        sectionsNeeded: readiness.sectionsNeeded,
+      })
     }
 
     // Trigger computation

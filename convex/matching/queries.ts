@@ -1,5 +1,6 @@
 import { v } from 'convex/values'
 import { internalQuery } from '../_generated/server'
+import { isProfileMatchReady } from '../profiles'
 
 // Get full profile data for context construction
 export const getFullProfile = internalQuery({
@@ -81,6 +82,24 @@ export const getOpportunitiesByIds = internalQuery({
     return results.filter(
       (opp): opp is NonNullable<typeof opp> =>
         opp !== null && opp.status === 'active',
+    )
+  },
+})
+
+// Check whether a profile meets the completeness bar for matching
+export const getProfileMatchReadiness = internalQuery({
+  args: { profileId: v.id('profiles') },
+  returns: v.object({
+    ready: v.boolean(),
+    completedCount: v.number(),
+    totalCount: v.number(),
+    missingRequired: v.array(v.string()),
+    sectionsNeeded: v.number(),
+  }),
+  handler: async (ctx, { profileId }) => {
+    const profile = await ctx.db.get('profiles', profileId)
+    return isProfileMatchReady(
+      profile as unknown as Record<string, unknown> | null,
     )
   },
 })

@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   Bookmark,
   Check,
+  Lock,
   RefreshCw,
   Sparkles,
   TrendingUp,
@@ -177,6 +178,77 @@ function UnauthenticatedRedirect() {
   return <LoadingState />
 }
 
+function IncompleteProfileState({
+  completeness,
+  hasExistingMatches,
+}: {
+  completeness: {
+    completedCount: number
+    totalCount: number
+    missingRequired: Array<string>
+    sectionsNeeded: number
+  }
+  hasExistingMatches: boolean
+}) {
+  const { completedCount, totalCount, missingRequired, sectionsNeeded } =
+    completeness
+
+  return (
+    <main className="container mx-auto px-4 py-8">
+      <Card className="max-w-lg mx-auto p-8 text-center">
+        <div className="size-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-4">
+          <Lock className="size-8 text-amber-600 dark:text-amber-400" />
+        </div>
+        <h1 className="text-2xl font-display font-semibold text-foreground mb-2">
+          Complete Your Profile to Get Matches
+        </h1>
+        <p className="text-muted-foreground mb-6">
+          We need a bit more information to find opportunities tailored to you.
+        </p>
+
+        {/* Progress bar */}
+        <div className="w-full bg-muted rounded-full h-2.5 mb-3">
+          <div
+            className="bg-amber-500 h-2.5 rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${(completedCount / totalCount) * 100}%` }}
+          />
+        </div>
+        <p className="text-sm text-muted-foreground mb-4">
+          {completedCount} of {totalCount} sections complete (5 needed)
+        </p>
+
+        {/* Missing info */}
+        <div className="text-sm text-left bg-muted/50 rounded-lg p-4 mb-6 space-y-2">
+          {missingRequired.length > 0 && (
+            <p className="text-amber-700 dark:text-amber-300 font-medium">
+              Required:{' '}
+              {missingRequired
+                .map((s) => (s === 'careerGoals' ? 'Career Goals' : s))
+                .join(', ')}
+            </p>
+          )}
+          {sectionsNeeded > 0 && (
+            <p className="text-muted-foreground">
+              {sectionsNeeded} more section{sectionsNeeded !== 1 ? 's' : ''}{' '}
+              needed to reach the threshold
+            </p>
+          )}
+        </div>
+
+        <Button asChild>
+          <Link to="/profile">Complete Profile</Link>
+        </Button>
+
+        {hasExistingMatches && (
+          <p className="text-xs text-muted-foreground mt-4">
+            Your previous matches will refresh once your profile is complete.
+          </p>
+        )}
+      </Card>
+    </main>
+  )
+}
+
 function ComputingState() {
   const progress = useQuery(api.matches.getMatchProgress)
 
@@ -315,6 +387,13 @@ function MatchesContent() {
       const retryMs = parseRateLimitRetryAfter(err)
       if (retryMs != null) {
         setRetryAfter(Math.ceil(retryMs / 1000))
+      } else if (
+        err != null &&
+        typeof err === 'object' &&
+        'data' in err &&
+        (err as { data?: { kind?: string } }).data?.kind === 'ProfileIncomplete'
+      ) {
+        // Profile incomplete — the reactive query will show the gate card
       } else {
         setComputeError(
           err instanceof Error ? err.message : 'Failed to compute matches',
@@ -370,6 +449,16 @@ function MatchesContent() {
           </Button>
         </Card>
       </main>
+    )
+  }
+
+  // Profile incomplete — gate matching
+  if (matchesData.needsCompleteness) {
+    return (
+      <IncompleteProfileState
+        completeness={matchesData.completeness}
+        hasExistingMatches={matchesData.hasExistingMatches}
+      />
     )
   }
 

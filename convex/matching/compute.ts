@@ -4,6 +4,7 @@ import { v } from 'convex/values'
 import { GoogleGenAI } from '@google/genai'
 import { internalAction } from '../_generated/server'
 import { internal } from '../_generated/api'
+import { isProfileMatchReady } from '../profiles'
 import { log } from '../lib/logging'
 import { buildUsageArgs } from '../lib/llmUsage'
 import { MODEL_GEMINI_FAST } from '../lib/models'
@@ -122,6 +123,17 @@ export const computeMatchesForProfile = internalAction({
     )
     if (!profile) {
       throw new Error('Profile not found')
+    }
+
+    // Defense-in-depth: verify profile completeness before running expensive LLM pipeline
+    const readiness = isProfileMatchReady(profile)
+    if (!readiness.ready) {
+      log('warn', 'computeMatchesForProfile: profile incomplete, skipping', {
+        profileId,
+        completedCount: readiness.completedCount,
+        missingRequired: readiness.missingRequired,
+      })
+      return { matchCount: 0, message: 'Profile incomplete' }
     }
 
     // Tier 1: availability check — skip matching entirely for unavailable users

@@ -92,6 +92,38 @@ export function computeProfileCompleteness(
   }
 }
 
+/** Threshold: minimum completed sections to unlock matching. */
+export const MATCH_UNLOCK_THRESHOLD = 5
+
+/** Sections that must be complete regardless of threshold. */
+export const MATCH_REQUIRED_SECTIONS = ['careerGoals'] as const
+
+/** Check whether a profile meets the completeness bar for match computation. */
+export function isProfileMatchReady(profile: Record<string, unknown> | null) {
+  const completeness = computeProfileCompleteness(profile)
+
+  const missingRequired = MATCH_REQUIRED_SECTIONS.filter(
+    (id) => !completeness.sections.find((s) => s.id === id)?.isComplete,
+  )
+
+  const sectionsNeeded = Math.max(
+    0,
+    MATCH_UNLOCK_THRESHOLD - completeness.completedCount,
+  )
+
+  const ready =
+    completeness.completedCount >= MATCH_UNLOCK_THRESHOLD &&
+    missingRequired.length === 0
+
+  return {
+    ready,
+    completedCount: completeness.completedCount,
+    totalCount: completeness.totalCount,
+    missingRequired: missingRequired as Array<string>,
+    sectionsNeeded,
+  }
+}
+
 // Get or create profile for current user
 export const getOrCreateProfile = query({
   args: {},
