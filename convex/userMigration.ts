@@ -86,17 +86,17 @@ export const migrateUserIfNeeded = mutation({
       await ctx.db.patch('programParticipation', r._id, { userId: clerkUserId })
     }
 
-    // scheduledReminders — no by_user index, use filter
+    // scheduledReminders
     for (const r of await ctx.db
       .query('scheduledReminders')
-      .filter((q) => q.eq(q.field('userId'), oldUserId))
+      .withIndex('by_user', (q) => q.eq('userId', oldUserId))
       .collect()) {
       await ctx.db.patch('scheduledReminders', r._id, { userId: clerkUserId })
     }
     // scheduledAttendancePrompts
     for (const r of await ctx.db
       .query('scheduledAttendancePrompts')
-      .filter((q) => q.eq(q.field('userId'), oldUserId))
+      .withIndex('by_user', (q) => q.eq('userId', oldUserId))
       .collect()) {
       await ctx.db.patch('scheduledAttendancePrompts', r._id, {
         userId: clerkUserId,
@@ -105,14 +105,14 @@ export const migrateUserIfNeeded = mutation({
     // memberEngagement
     for (const r of await ctx.db
       .query('memberEngagement')
-      .filter((q) => q.eq(q.field('userId'), oldUserId))
+      .withIndex('by_user_org', (q) => q.eq('userId', oldUserId))
       .collect()) {
       await ctx.db.patch('memberEngagement', r._id, { userId: clerkUserId })
     }
     // engagementOverrideHistory
     for (const r of await ctx.db
       .query('engagementOverrideHistory')
-      .filter((q) => q.eq(q.field('userId'), oldUserId))
+      .withIndex('by_user', (q) => q.eq('userId', oldUserId))
       .collect()) {
       await ctx.db.patch('engagementOverrideHistory', r._id, {
         userId: clerkUserId,

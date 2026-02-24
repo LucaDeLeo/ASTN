@@ -303,6 +303,7 @@ export default defineSchema({
     ),
     uploadedAt: v.number(), // Unix timestamp
     errorMessage: v.optional(v.string()), // For failed status
+    extractionStartedAt: v.optional(v.number()), // Timestamp-based CAS for extraction dedup
     // Extracted data from LLM (stored for user review before applying to profile)
     extractedData: v.optional(
       v.object({
@@ -821,6 +822,7 @@ export default defineSchema({
     scheduledFor: v.number(),
   })
     .index('by_event', ['eventId'])
+    .index('by_user', ['userId'])
     .index('by_user_event', ['userId', 'eventId']),
 
   // Attendance records (post-event confirmation and feedback)
@@ -864,6 +866,7 @@ export default defineSchema({
     promptNumber: v.number(), // 1 or 2
   })
     .index('by_event', ['eventId'])
+    .index('by_user', ['userId'])
     .index('by_user_event', ['userId', 'eventId']),
 
   // Member engagement levels (per user-org pair)
@@ -933,7 +936,8 @@ export default defineSchema({
     performedAt: v.number(),
   })
     .index('by_engagement', ['engagementId'])
-    .index('by_org', ['orgId']),
+    .index('by_org', ['orgId'])
+    .index('by_user', ['userId']),
 
   // Programs (org-specific activities like reading groups, fellowships)
   programs: defineTable({

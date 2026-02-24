@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useAction, useQuery } from 'convex/react'
+import { useAction, useMutation, useQuery } from 'convex/react'
 import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 
@@ -65,7 +65,9 @@ export function useExtraction(): UseExtractionReturn {
   const [lastText, setLastText] = useState<string | null>(null)
   const [lastLinkedInUrl, setLastLinkedInUrl] = useState<string | null>(null)
 
-  const extractPdfAction = useAction(api.extraction.pdf.extractFromPdf)
+  const requestExtractionMutation = useMutation(
+    api.extraction.mutations.requestExtraction,
+  )
   const extractTextAction = useAction(api.extraction.text.extractFromText)
   const extractLinkedInAction = useAction(
     api.extraction.linkedin.extractFromLinkedIn,
@@ -125,21 +127,23 @@ export function useExtraction(): UseExtractionReturn {
       }, 2000)
 
       try {
-        // Action runs and updates document status
-        // Polling above will catch success/failure
-        await extractPdfAction({ documentId })
+        // Mutation claims the document and schedules the internal action.
+        // Returns false if already extracting/extracted (no-op).
+        // Polling above will catch success/failure from the scheduled action.
+        await requestExtractionMutation({ documentId })
       } catch (error) {
-        // Action threw - set error state directly
+        // Mutation threw - set error state directly
         setState({
           status: 'error',
           error: error instanceof Error ? error.message : 'Extraction failed',
           canRetry: true,
         })
       } finally {
+        // Always release the guard — server-side CAS prevents duplicate extractions
         extractingRef.current = false
       }
     },
-    [extractPdfAction],
+    [requestExtractionMutation],
   )
 
   const extractFromText = useCallback(

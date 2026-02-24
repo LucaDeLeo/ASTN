@@ -2,7 +2,7 @@
 
 import { v } from 'convex/values'
 import Anthropic from '@anthropic-ai/sdk'
-import { action } from '../_generated/server'
+import { internalAction } from '../_generated/server'
 import { internal } from '../_generated/api'
 import { log } from '../lib/logging'
 import { buildUsageArgs } from '../lib/llmUsage'
@@ -14,45 +14,38 @@ import type { ExtractionResult } from './prompts'
 
 const MAX_RETRIES = 3
 
-export const extractFromPdf = action({
-  args: { documentId: v.id('uploadedDocuments') },
-  handler: async (ctx, { documentId }) => {
-    // 1. Atomically claim the document — bail out if already being extracted
-    const claimed: boolean = await ctx.runMutation(
-      internal.extraction.mutations.claimForExtraction,
-      { documentId },
-    )
-    if (!claimed) {
-      log('warn', 'Skipping duplicate extraction — document already claimed', {
-        documentId,
-      })
-      return { success: false, reason: 'already_extracting' }
-    }
+export const extractFromPdf = internalAction({
+  args: {
+    documentId: v.id('uploadedDocuments'),
+    extractionStartedAt: v.number(),
+  },
+  handler: async (ctx, { documentId, extractionStartedAt }) => {
+    // Claiming now happens in requestExtraction mutation — no CAS call needed here.
 
     try {
-      // 2. Get document record to find storageId
+      // 1. Get document record to find storageId
       const doc = await ctx.runQuery(internal.extraction.queries.getDocument, {
         documentId,
       })
       if (!doc) throw new Error('Document not found')
 
-      // 3. Get file blob from storage
+      // 2. Get file blob from storage
       const blob = await ctx.storage.get(doc.storageId)
       if (!blob) throw new Error('File not found in storage')
 
-      // 4. Convert blob to base64
+      // 3. Convert blob to base64
       const arrayBuffer = await blob.arrayBuffer()
       const buffer = Buffer.from(arrayBuffer)
       const base64 = buffer.toString('base64')
 
-      // 5. Call Claude with retry logic
+      // 4. Call Claude with retry logic
       const {
         result: extractedData,
         usage,
         durationMs,
       } = await extractWithRetry(base64)
 
-      // 5b. Log LLM usage
+      // 4b. Log LLM usage
       await ctx.runMutation(
         internal.lib.llmUsage.logUsage,
         buildUsageArgs('pdf_extraction', MODEL_FAST, usage, {
@@ -61,7 +54,7 @@ export const extractFromPdf = action({
         }),
       )
 
-      // 6. Match skills to taxonomy
+      // 5. Match skills to taxonomy
       const taxonomy = await ctx.runQuery(
         internal.extraction.queries.getSkillsTaxonomy,
       )
@@ -70,7 +63,7 @@ export const extractFromPdf = action({
         taxonomy,
       )
 
-      // 7. Save results
+      // 6. Save results (with CAS timestamp)
       await ctx.runMutation(
         internal.extraction.mutations.saveExtractionResult,
         {
@@ -79,6 +72,7 @@ export const extractFromPdf = action({
             ...extractedData,
             skills: matchedSkills,
           },
+          extractionStartedAt,
         },
       )
 
@@ -87,7 +81,7 @@ export const extractFromPdf = action({
         extractedData: { ...extractedData, skills: matchedSkills },
       }
     } catch (error) {
-      // Mark as failed
+      // Mark as failed (with CAS timestamp — stale handlers become no-ops)
       await ctx.runMutation(
         internal.extraction.mutations.updateDocumentStatus,
         {
@@ -95,6 +89,7 @@ export const extractFromPdf = action({
           status: 'failed',
           errorMessage:
             error instanceof Error ? error.message : 'Extraction failed',
+          extractionStartedAt,
         },
       )
       throw error
