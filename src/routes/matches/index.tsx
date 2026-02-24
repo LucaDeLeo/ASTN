@@ -214,23 +214,24 @@ function IncompleteProfileState({
           />
         </div>
         <p className="text-sm text-muted-foreground mb-4">
-          {completedCount} of {totalCount} sections complete (5 needed)
+          {completedCount} of {totalCount} sections complete
         </p>
 
         {/* Missing info */}
         <div className="text-sm text-left bg-muted/50 rounded-lg p-4 mb-6 space-y-2">
           {missingRequired.length > 0 && (
             <p className="text-amber-700 dark:text-amber-300 font-medium">
-              Required:{' '}
+              Fill in your{' '}
               {missingRequired
                 .map((s) => (s === 'careerGoals' ? 'Career Goals' : s))
-                .join(', ')}
+                .join(', ')}{' '}
+              to unlock matching
             </p>
           )}
           {sectionsNeeded > 0 && (
             <p className="text-muted-foreground">
-              {sectionsNeeded} more section{sectionsNeeded !== 1 ? 's' : ''}{' '}
-              needed to reach the threshold
+              Complete {sectionsNeeded} more section
+              {sectionsNeeded !== 1 ? 's' : ''} (minimum 5 of 7)
             </p>
           )}
         </div>
