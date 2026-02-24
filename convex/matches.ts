@@ -57,11 +57,23 @@ export const getMyMatches = query({
       matches.map(async (match) => {
         // Use denormalized snapshot if available (avoids N+1 reads)
         if (match.opportunitySnapshot) {
+          const snap = match.opportunitySnapshot
+          // Supplement postedAt/opportunityType from live data if missing from older snapshots
+          if (
+            snap.postedAt === undefined ||
+            snap.opportunityType === undefined
+          ) {
+            const opp = await ctx.db.get('opportunities', match.opportunityId)
+            if (opp) {
+              snap.postedAt = snap.postedAt ?? opp.postedAt
+              snap.opportunityType = snap.opportunityType ?? opp.opportunityType
+            }
+          }
           return {
             ...match,
             opportunity: {
               _id: match.opportunityId,
-              ...match.opportunitySnapshot,
+              ...snap,
             },
           }
         }
