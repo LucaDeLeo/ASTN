@@ -10,14 +10,18 @@ import { Toaster } from 'sonner'
 // Font preloads for FOIT/FOUT prevention
 import plusJakartaWoff2 from '@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2?url'
 import spaceGroteskWoff2 from '@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2?url'
-import type { QueryClient } from '@tanstack/react-query'
 
+import { useQuery } from 'convex/react'
+import { api } from '../../convex/_generated/api'
+import type { QueryClient } from '@tanstack/react-query'
 import appCss from '~/styles/app.css?url'
 import { ThemeProvider } from '~/components/theme/theme-provider'
 import { FeedbackDialog } from '~/components/feedback-dialog'
 import { AgentSidebarProvider } from '~/components/agent-sidebar/AgentSidebarProvider'
 import { AgentSidebar } from '~/components/agent-sidebar/AgentSidebar'
 import { SidebarAwareWrapper } from '~/components/agent-sidebar/SidebarAwareWrapper'
+import { MobileShell } from '~/components/layout/mobile-shell'
+import { isTauri } from '~/lib/platform'
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
@@ -29,7 +33,8 @@ export const Route = createRootRouteWithContext<{
       },
       {
         name: 'viewport',
-        content: 'width=device-width, initial-scale=1.0, viewport-fit=cover',
+        content:
+          'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover',
       },
       {
         name: 'description',
@@ -147,13 +152,27 @@ export const Route = createRootRouteWithContext<{
   component: RootComponent,
 })
 
+function TauriShell({ children }: { children: React.ReactNode }) {
+  const profile = useQuery(api.profiles.getOrCreateProfile)
+  const user = profile ? { name: profile.name || 'User' } : null
+  return <MobileShell user={user}>{children}</MobileShell>
+}
+
 function RootComponent() {
   return (
     <RootDocument>
       <AgentSidebarProvider>
-        <SidebarAwareWrapper>
-          <Outlet />
-        </SidebarAwareWrapper>
+        {isTauri() ? (
+          <TauriShell>
+            <SidebarAwareWrapper>
+              <Outlet />
+            </SidebarAwareWrapper>
+          </TauriShell>
+        ) : (
+          <SidebarAwareWrapper>
+            <Outlet />
+          </SidebarAwareWrapper>
+        )}
         <AgentSidebar />
       </AgentSidebarProvider>
     </RootDocument>

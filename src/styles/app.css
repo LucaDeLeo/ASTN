@@ -737,12 +737,20 @@
   --safe-area-inset-right: env(safe-area-inset-right, 0px);
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-inset-left: env(safe-area-inset-left, 0px);
-  --tab-bar-height: 4rem;
+  --tab-bar-height: 3.5rem;
 }
 
-/* Content padding for bottom tab bar - 4rem (64px) + safe area */
+/* Content padding for bottom tab bar - 3.5rem (56px) + safe area */
 .pb-safe-bottom {
-  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* ==========================================================================
+   VIEW TRANSITIONS - Keep shell chrome stable during page transitions
+   ========================================================================== */
+::view-transition-group(bottom-tab-bar),
+::view-transition-group(mobile-header) {
+  animation: none;
 }
 
 /* ==========================================================================

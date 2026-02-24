@@ -2,5 +2,9 @@
   "convex": {
     "command": "npx",
     "args": ["-y", "convex@latest", "mcp", "start"]
+  },
+  "XcodeBuildMCP": {
+    "command": "xcodebuildmcp",
+    "args": ["mcp"]
   }
 }

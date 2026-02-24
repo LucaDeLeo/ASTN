@@ -13,7 +13,10 @@ export function MobileHeader({ user }: MobileHeaderProps) {
   return (
     <header
       className="shrink-0 border-b bg-background"
-      style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+      style={{
+        paddingTop: 'env(safe-area-inset-top, 0px)',
+        viewTransitionName: 'mobile-header',
+      }}
     >
       <div className="flex h-14 items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2">

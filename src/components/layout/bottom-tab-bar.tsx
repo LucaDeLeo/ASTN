@@ -10,12 +10,7 @@ interface TabConfig {
 
 const tabs: Array<TabConfig> = [
   { to: '/', label: 'Home', icon: Home, exact: true },
-  {
-    to: '/opportunities',
-    label: 'Opportunities',
-    icon: Briefcase,
-    exact: false,
-  },
+  { to: '/opportunities', label: 'Jobs', icon: Briefcase, exact: false },
   { to: '/matches', label: 'Matches', icon: Target, exact: false },
   { to: '/profile', label: 'Profile', icon: User, exact: false },
   { to: '/settings', label: 'Settings', icon: Settings, exact: false },
@@ -45,11 +40,16 @@ export function BottomTabBar() {
   return (
     <nav
       className="shrink-0 border-t bg-background"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      style={{
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        paddingLeft: 'env(safe-area-inset-left, 0px)',
+        paddingRight: 'env(safe-area-inset-right, 0px)',
+        viewTransitionName: 'bottom-tab-bar',
+      }}
       role="navigation"
       aria-label="Main navigation"
     >
-      <div className="flex items-stretch h-16">
+      <div className="flex items-stretch h-14">
         {tabs.map((tab) => {
           const Icon = tab.icon
           return (
@@ -58,14 +58,16 @@ export function BottomTabBar() {
               to={tab.to}
               onClick={(e) => handleClick(e, tab)}
               activeOptions={{ exact: tab.exact }}
-              className="flex flex-1 flex-col items-center justify-center gap-1 min-h-[44px] py-2 text-muted-foreground transition-colors"
+              className="flex flex-1 flex-col items-center justify-center gap-0.5 min-w-0 min-h-[44px] py-1.5 text-muted-foreground transition-colors"
               activeProps={{
                 className:
-                  'flex flex-1 flex-col items-center justify-center gap-1 min-h-[44px] py-2 text-primary font-semibold transition-colors',
+                  'flex flex-1 flex-col items-center justify-center gap-0.5 min-w-0 min-h-[44px] py-1.5 text-primary font-semibold transition-colors',
               }}
             >
               <Icon className="size-5" />
-              <span className="text-xs">{tab.label}</span>
+              <span className="text-[10px] leading-tight truncate max-w-full px-0.5">
+                {tab.label}
+              </span>
             </Link>
           )
         })}

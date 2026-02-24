@@ -52,7 +52,10 @@ export function FeedbackDialog() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-24 right-5 z-50 flex size-12 items-center justify-center rounded-full bg-coral-500 text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
+        className="fixed right-5 z-50 flex size-12 items-center justify-center rounded-full bg-coral-500 text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
+        style={{
+          bottom: 'calc(4.5rem + env(safe-area-inset-bottom, 0px))',
+        }}
         aria-label="Share feedback"
       >
         <MessageCircleHeart className="size-5" />
