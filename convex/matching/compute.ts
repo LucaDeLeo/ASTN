@@ -216,6 +216,8 @@ function buildOpportunitySnapshot(opp: {
   extractedSkills?: Array<string>
   sourceUrl: string
   deadline?: number
+  postedAt?: number
+  opportunityType?: string
 }) {
   return {
     title: opp.title,
@@ -228,6 +230,8 @@ function buildOpportunitySnapshot(opp: {
     extractedSkills: opp.extractedSkills,
     sourceUrl: opp.sourceUrl,
     deadline: opp.deadline,
+    postedAt: opp.postedAt,
+    opportunityType: opp.opportunityType,
   }
 }
 
@@ -318,6 +322,8 @@ export const processMatchBatch = internalAction({
         extractedSkills?: Array<string>
         sourceUrl: string
         deadline?: number
+        postedAt?: number
+        opportunityType?: string
       }
     > = {}
     for (const opp of batch) {

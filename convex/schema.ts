@@ -607,6 +607,8 @@ export default defineSchema({
         extractedSkills: v.optional(v.array(v.string())),
         sourceUrl: v.string(),
         deadline: v.optional(v.number()),
+        postedAt: v.optional(v.number()),
+        opportunityType: v.optional(v.string()),
       }),
     ),
 
@@ -654,6 +656,7 @@ export default defineSchema({
     requirements: v.optional(v.array(v.string())),
     salaryRange: v.optional(v.string()),
     deadline: v.optional(v.number()), // Unix timestamp
+    postedAt: v.optional(v.number()), // Unix timestamp — when the opportunity was published at source
     opportunityType: v.optional(v.union(v.literal('job'), v.literal('event'))),
     eventType: v.optional(v.string()), // "course", "fellowship", "conference", "talk", "meetup"
     startDate: v.optional(v.number()), // Unix timestamp

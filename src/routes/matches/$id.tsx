@@ -31,7 +31,7 @@ import { Button } from '~/components/ui/button'
 import { Card } from '~/components/ui/card'
 import { Badge } from '~/components/ui/badge'
 import { Spinner } from '~/components/ui/spinner'
-import { formatDeadline } from '~/lib/formatDeadline'
+import { formatDeadline, formatPostedAt } from '~/lib/formatDeadline'
 
 export const Route = createFileRoute('/matches/$id')({
   loader: async ({ context, params }) => {
@@ -95,7 +95,30 @@ const tierConfig = {
   },
 }
 
-function DeadlineBanner({ deadline }: { deadline?: number }) {
+function DeadlineBanner({
+  deadline,
+  postedAt,
+  opportunityType,
+}: {
+  deadline?: number
+  postedAt?: number
+  opportunityType?: string
+}) {
+  if (!deadline && !postedAt) return null
+  // Don't show posted date for events
+  if (!deadline && opportunityType === 'event') return null
+
+  if (!deadline && postedAt) {
+    return (
+      <div className="mb-6 flex items-center gap-3 rounded-lg border border-border bg-muted/50 px-4 py-3">
+        <Clock className="size-4 shrink-0 text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">
+          {formatPostedAt(postedAt)}
+        </p>
+      </div>
+    )
+  }
+
   if (!deadline) return null
 
   const now = new Date()
@@ -290,8 +313,12 @@ function MatchDetailContent() {
           </div>
         </Card>
 
-        {/* Deadline banner */}
-        <DeadlineBanner deadline={match.opportunity.deadline} />
+        {/* Deadline / Posted date banner */}
+        <DeadlineBanner
+          deadline={match.opportunity.deadline}
+          postedAt={match.opportunity.postedAt}
+          opportunityType={match.opportunity.opportunityType}
+        />
 
         {/* Opportunity description */}
         <Card className="p-6 mb-6">

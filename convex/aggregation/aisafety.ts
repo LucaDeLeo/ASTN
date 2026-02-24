@@ -22,6 +22,7 @@ type AirtableRecord = {
     '!Date it closes'?: string
     'Skill set'?: Array<string>
     '!MinimumExperienceLevel'?: Array<string>
+    'Date published'?: string
   }
 }
 
@@ -38,6 +39,7 @@ type NormalizedOpportunity = {
   requirements?: Array<string>
   salaryRange?: string
   deadline?: number
+  postedAt?: number
   sourceUrl: string
 }
 
@@ -130,6 +132,7 @@ function normalizeAirtableRecord(
       : undefined,
     salaryRange: fields['!Salary (display)'],
     deadline: parseDeadline(fields['!Date it closes']),
+    postedAt: parsePostedDate(fields['Date published']),
     sourceUrl: fields['Vacancy Button'] || `https://www.aisafety.com/jobs`,
   }
 }
@@ -141,6 +144,16 @@ function mapExperienceLevel(level?: string): string | undefined {
   if (lower.includes('mid') || lower.includes('5-9')) return 'mid'
   if (lower.includes('senior') || lower.includes('10+')) return 'senior'
   return undefined
+}
+
+function parsePostedDate(dateStr?: string): number | undefined {
+  if (!dateStr) return undefined
+  try {
+    const date = new Date(dateStr)
+    return isNaN(date.getTime()) ? undefined : date.getTime()
+  } catch {
+    return undefined
+  }
 }
 
 function parseDeadline(dateStr?: string): number | undefined {

@@ -84,6 +84,8 @@ export const getMyMatches = query({
                 salaryRange: opportunity.salaryRange,
                 sourceUrl: opportunity.sourceUrl,
                 deadline: opportunity.deadline,
+                postedAt: opportunity.postedAt,
+                opportunityType: opportunity.opportunityType,
               }
             : null,
         }

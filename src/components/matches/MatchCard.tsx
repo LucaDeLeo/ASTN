@@ -3,7 +3,12 @@ import { Bookmark, BookmarkX, Check, Clock, X } from 'lucide-react'
 import { Card } from '~/components/ui/card'
 import { Badge } from '~/components/ui/badge'
 import { formatLocation } from '~/lib/formatLocation'
-import { formatDeadline, getDeadlineUrgency } from '~/lib/formatDeadline'
+import {
+  formatDeadline,
+  formatPostedAt,
+  getDeadlineUrgency,
+  getPostedAtColor,
+} from '~/lib/formatDeadline'
 import { ROLE_TYPE_COLORS } from '~/lib/roleTypes'
 import { computeGlobalFitScore, getFitScoreColor } from '~/lib/matchScoring'
 import { cn } from '~/lib/utils'
@@ -30,6 +35,8 @@ interface MatchCardProps {
       experienceLevel?: string
       salaryRange?: string
       deadline?: number
+      postedAt?: number
+      opportunityType?: string
     }
   }
   /** Whether this match is saved/bookmarked */
@@ -213,15 +220,23 @@ export function MatchCard({
           </p>
         </div>
 
-        {/* Row 4: Deadline (promoted) */}
-        {match.opportunity.deadline && (
+        {/* Row 4: Deadline or Posted date */}
+        {match.opportunity.deadline ? (
           <div
             className={`flex items-center gap-1.5 mt-1.5 text-sm font-medium ${getDeadlineUrgency(match.opportunity.deadline)}`}
           >
             <Clock className="size-3.5" />
             {formatDeadline(match.opportunity.deadline)}
           </div>
-        )}
+        ) : match.opportunity.postedAt &&
+          match.opportunity.opportunityType !== 'event' ? (
+          <div
+            className={`flex items-center gap-1.5 mt-1.5 text-sm ${getPostedAtColor(match.opportunity.postedAt)}`}
+          >
+            <Clock className="size-3.5" />
+            {formatPostedAt(match.opportunity.postedAt)}
+          </div>
+        ) : null}
 
         {/* Row 5: Salary + Experience */}
         {(match.opportunity.salaryRange ||
