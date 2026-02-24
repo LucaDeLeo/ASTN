@@ -46,6 +46,32 @@ export const setMatchProgress = internalMutation({
   },
 })
 
+// Update match progress (called during coarse scoring batches)
+export const updateMatchProgress = internalMutation({
+  args: {
+    profileId: v.id('profiles'),
+    completedBatches: v.number(),
+    totalBatches: v.number(),
+    totalOpportunities: v.number(),
+    startedAt: v.number(),
+  },
+  returns: v.null(),
+  handler: async (
+    ctx,
+    { profileId, completedBatches, totalBatches, totalOpportunities, startedAt },
+  ) => {
+    await ctx.db.patch('profiles', profileId, {
+      matchProgress: {
+        totalBatches,
+        completedBatches,
+        totalOpportunities,
+        startedAt,
+      },
+    })
+    return null
+  },
+})
+
 // Clear match progress from profile (called on completion or error)
 export const clearMatchProgress = internalMutation({
   args: { profileId: v.id('profiles') },
@@ -87,6 +113,7 @@ export const saveBatchResults = internalMutation({
     opportunitySnapshots: v.record(v.string(), opportunitySnapshotValidator),
     totalOpportunities: v.number(),
     startedAt: v.number(),
+    progressBatchOffset: v.optional(v.number()),
   },
   returns: v.null(),
   handler: async (
@@ -105,6 +132,7 @@ export const saveBatchResults = internalMutation({
       opportunitySnapshots,
       totalOpportunities,
       startedAt,
+      progressBatchOffset,
     },
   ) => {
     const existingMatches = await ctx.db
@@ -179,6 +207,7 @@ export const saveBatchResults = internalMutation({
     }
 
     // Update progress on profile (Fix 6: use passed args instead of re-reading)
+    const effectiveCompleted = (progressBatchOffset ?? 0) + batchIndex + 1
     if (isLastBatch) {
       await ctx.db.patch('profiles', profileId, {
         matchProgress: undefined,
@@ -187,7 +216,7 @@ export const saveBatchResults = internalMutation({
       await ctx.db.patch('profiles', profileId, {
         matchProgress: {
           totalBatches,
-          completedBatches: batchIndex + 1,
+          completedBatches: effectiveCompleted,
           totalOpportunities,
           startedAt,
         },

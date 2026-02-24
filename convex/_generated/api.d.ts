@@ -84,6 +84,7 @@ import type * as lib_rateLimiter from "../lib/rateLimiter.js";
 import type * as lib_seedPlatformAdmin from "../lib/seedPlatformAdmin.js";
 import type * as lib_slug from "../lib/slug.js";
 import type * as matches from "../matches.js";
+import type * as matching_coarse from "../matching/coarse.js";
 import type * as matching_compute from "../matching/compute.js";
 import type * as matching_mutations from "../matching/mutations.js";
 import type * as matching_prompts from "../matching/prompts.js";
@@ -201,6 +202,7 @@ declare const fullApi: ApiFromModules<{
   "lib/seedPlatformAdmin": typeof lib_seedPlatformAdmin;
   "lib/slug": typeof lib_slug;
   matches: typeof matches;
+  "matching/coarse": typeof matching_coarse;
   "matching/compute": typeof matching_compute;
   "matching/mutations": typeof matching_mutations;
   "matching/prompts": typeof matching_prompts;

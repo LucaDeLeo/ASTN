@@ -34,3 +34,16 @@ export const matchResultSchema = z.object({
 })
 
 export type MatchingResultValidated = z.infer<typeof matchResultSchema>
+
+// --- Coarse scoring (Tier 2) ---
+
+export const coarseScoreItemSchema = z.object({
+  opportunityId: z.string(),
+  score: z.coerce.number().min(0).max(100),
+})
+
+export const coarseResultSchema = z.object({
+  scores: z.array(coarseScoreItemSchema),
+})
+
+export type CoarseResultValidated = z.infer<typeof coarseResultSchema>

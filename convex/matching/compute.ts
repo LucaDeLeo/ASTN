@@ -16,7 +16,9 @@ import {
 import { matchResultSchema } from './validation'
 import type { Id } from '../_generated/dataModel'
 
-const BATCH_SIZE = 15 // Process up to 15 opportunities per LLM call
+const BATCH_SIZE = 15 // Detailed scoring (Tier 3) batch size
+const COARSE_BATCH_SIZE = 50 // Coarse scoring (Tier 2) batch size
+const TOP_N = 25 // Top candidates selected for detailed scoring
 const MAX_RETRIES = 10
 const RATE_LIMIT_DELAY_MS = 1000
 
@@ -37,6 +39,38 @@ function isRateLimitError(error: unknown): boolean {
   return false
 }
 
+// Extract the maximum USD salary from a free-text salaryRange field.
+// Returns null if unparseable — err on the side of passing through (zero false negatives).
+export function parseMaxSalary(
+  salaryRange: string | undefined,
+): number | null {
+  if (!salaryRange) return null
+
+  // Non-USD currencies — can't compare to minimumSalaryUSD
+  if (/[€£¥₹]/.test(salaryRange)) return null
+  if (/\b(EUR|GBP|JPY|INR|CAD|AUD|CHF|CNY)\b/i.test(salaryRange)) return null
+
+  // Non-annual rates — can't reliably convert to annual
+  if (/\b(hour|hr|month|week|day)\b/i.test(salaryRange)) return null
+
+  // Open-ended ranges like "$50,000+" indicate a floor, not a ceiling —
+  // can't determine max salary, so pass through to avoid false negatives
+  if (/\d\s*\+/.test(salaryRange)) return null
+
+  const amounts: Array<number> = []
+  const regex = /\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*([kK])?\b/g
+  let m
+  while ((m = regex.exec(salaryRange)) !== null) {
+    let value = parseFloat(m[1].replace(/,/g, ''))
+    if (m[2]) value *= 1000
+    // Ignore tiny numbers (likely not salaries, e.g., "2 years experience")
+    if (value >= 1000) amounts.push(value)
+  }
+
+  if (amounts.length === 0) return null
+  return Math.max(...amounts)
+}
+
 // Programmatic hard filters — applied before LLM sees any opportunity
 function applyHardFilters<
   T extends {
@@ -44,6 +78,7 @@ function applyHardFilters<
     isRemote: boolean
     roleType: string
     experienceLevel?: string
+    salaryRange?: string
   },
 >(
   opportunities: Array<T>,
@@ -51,6 +86,7 @@ function applyHardFilters<
     remotePreference?: string
     roleTypes?: Array<string>
     experienceLevels?: Array<string>
+    minimumSalaryUSD?: number
   },
 ): Array<T> {
   if (!prefs) return opportunities
@@ -65,11 +101,19 @@ function applyHardFilters<
       !prefs.experienceLevels.includes(opp.experienceLevel)
     )
       return false
+    // Salary filter: only filter if max salary is parseable AND below user's minimum
+    if (prefs.minimumSalaryUSD) {
+      const maxSalary = parseMaxSalary(opp.salaryRange)
+      if (maxSalary !== null && maxSalary < prefs.minimumSalaryUSD) return false
+    }
     return true
   })
 }
 
-// Entry point: starts the chained matching process for a profile
+// Entry point: starts the 3-tier matching pipeline for a profile
+// Tier 1: Programmatic hard filters (instant)
+// Tier 2: Coarse LLM scoring in large batches (cheap)
+// Tier 3: Detailed LLM scoring on top candidates (expensive, same as before)
 export const computeMatchesForProfile = internalAction({
   args: { profileId: v.id('profiles') },
   handler: async (ctx, { profileId }) => {
@@ -81,13 +125,25 @@ export const computeMatchesForProfile = internalAction({
       throw new Error('Profile not found')
     }
 
+    // Tier 1: availability check — skip matching entirely for unavailable users
+    if (profile.matchPreferences?.availability === 'not_available') {
+      await ctx.runMutation(
+        internal.matching.mutations.clearMatchesForProfile,
+        { profileId },
+      )
+      log('info', 'computeMatchesForProfile: user not available, skipping', {
+        profileId,
+      })
+      return { matchCount: 0, message: 'User not available for matching' }
+    }
+
     const hiddenOrgs = profile.privacySettings?.hiddenFromOrgs || []
     const allOpportunities = await ctx.runQuery(
       internal.matching.queries.getCandidateOpportunities,
       { hiddenOrgs },
     )
 
-    // Apply programmatic hard filters
+    // Tier 1: Apply programmatic hard filters
     const filteredOpportunities = applyHardFilters(
       allOpportunities,
       profile.matchPreferences,
@@ -157,18 +213,28 @@ export const computeMatchesForProfile = internalAction({
       (o: { _id: Id<'opportunities'> }) => o._id,
     )
 
-    const totalBatches = Math.ceil(evaluationSet.length / BATCH_SIZE)
     const runTimestamp = Date.now()
 
-    // Fix 4: Build profile context once, pass as string to all batches
+    // Build profile context once, pass as string to all batches
     const profileContext = buildProfileContext(profile)
 
-    log('info', 'computeMatchesForProfile: starting chained matching', {
+    // Calculate batch counts for 3-tier pipeline
+    const totalCoarseBatches = Math.ceil(
+      evaluationSet.length / COARSE_BATCH_SIZE,
+    )
+    const estimatedDetailedBatches = isFullRecompute
+      ? Math.ceil(TOP_N / BATCH_SIZE)
+      : Math.ceil(Math.min(evaluationSet.length, TOP_N) / BATCH_SIZE)
+    const totalBatches = totalCoarseBatches + estimatedDetailedBatches
+
+    log('info', 'computeMatchesForProfile: starting 3-tier matching', {
       profileId,
       totalOpportunities: allOpportunities.length,
       filteredCount: filteredOpportunities.length,
       evaluationCount: evaluationSet.length,
       isFullRecompute,
+      totalCoarseBatches,
+      estimatedDetailedBatches,
       totalBatches,
       runTimestamp,
     })
@@ -180,20 +246,23 @@ export const computeMatchesForProfile = internalAction({
       totalOpportunities: evaluationSet.length,
     })
 
+    // Schedule Tier 2: coarse scoring
     await ctx.scheduler.runAfter(
       0,
-      internal.matching.compute.processMatchBatch,
+      internal.matching.coarse.processCoarseBatch,
       {
         profileId,
         profileContext,
         batchIndex: 0,
-        totalBatches,
+        totalCoarseBatches,
         retryCount: 0,
-        previousOppIds,
         snapshotOpportunityIds,
-        runTimestamp,
+        coarseScores: [],
+        previousOppIds,
         validOpportunityIds,
         isFullRecompute,
+        runTimestamp,
+        totalBatches,
         totalOpportunities: evaluationSet.length,
         startedAt: runTimestamp,
         isFirstComputation,
@@ -235,7 +304,8 @@ function buildOpportunitySnapshot(opp: {
   }
 }
 
-// Process a single batch of opportunities - called as a chained scheduled action
+// Process a single batch of opportunities (Tier 3: detailed scoring)
+// Called as a chained scheduled action, typically after Tier 2 coarse scoring
 export const processMatchBatch = internalAction({
   args: {
     profileId: v.id('profiles'),
@@ -251,6 +321,10 @@ export const processMatchBatch = internalAction({
     totalOpportunities: v.number(),
     startedAt: v.number(),
     isFirstComputation: v.boolean(),
+    // Offset for progress bar: number of coarse batches already completed
+    progressBatchOffset: v.optional(v.number()),
+    // Combined T2+T3 total for progress display (defaults to totalBatches)
+    totalBatchesForProgress: v.optional(v.number()),
   },
   handler: async (
     ctx,
@@ -268,6 +342,8 @@ export const processMatchBatch = internalAction({
       totalOpportunities,
       startedAt,
       isFirstComputation,
+      progressBatchOffset,
+      totalBatchesForProgress,
     },
   ) => {
     const startTime = Date.now()
@@ -285,6 +361,8 @@ export const processMatchBatch = internalAction({
       totalOpportunities,
       startedAt,
       isFirstComputation,
+      progressBatchOffset,
+      totalBatchesForProgress,
     }
 
     // Slice batch from snapshot IDs, then fetch current data
@@ -334,7 +412,7 @@ export const processMatchBatch = internalAction({
     const saveBatchArgs = {
       profileId,
       batchIndex,
-      totalBatches,
+      totalBatches: totalBatchesForProgress ?? totalBatches,
       previousOppIds,
       runTimestamp,
       validOpportunityIds,
@@ -342,6 +420,7 @@ export const processMatchBatch = internalAction({
       opportunitySnapshots,
       totalOpportunities,
       startedAt,
+      progressBatchOffset,
     }
 
     if (batch.length === 0) {
