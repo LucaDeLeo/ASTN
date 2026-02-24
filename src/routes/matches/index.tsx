@@ -614,7 +614,7 @@ function MatchesContent() {
           >
             <div className="overflow-hidden">
               {savedMatches.length > 0 && (
-                <div className="mb-6">
+                <div className="rounded-xl bg-emerald-50/70 border border-emerald-200 p-4 mb-6">
                   <SavedMatchesGrid matches={savedMatches} />
                 </div>
               )}
@@ -631,7 +631,7 @@ function MatchesContent() {
           >
             <div className="overflow-hidden">
               {appliedMatches && appliedMatches.length > 0 && (
-                <div className="mb-6">
+                <div className="rounded-xl bg-violet-50/70 border border-violet-200 p-4 mb-6">
                   <AppliedMatchesGrid matches={appliedMatches} />
                 </div>
               )}

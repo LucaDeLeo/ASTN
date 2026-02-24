@@ -58,7 +58,6 @@ export function SavedMatchesGrid({ matches }: SavedMatchesSectionProps) {
             match={match}
             isSaved
             onUnsave={() => toggleSaveMatch({ matchId: match._id })}
-            className="border-emerald-200"
           />
         </AnimatedCard>
       ))}
