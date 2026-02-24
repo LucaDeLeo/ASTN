@@ -14,7 +14,7 @@ import {
   matchResponseSchema,
 } from './prompts'
 import { matchResultSchema } from './validation'
-import type { Id } from '../_generated/dataModel'
+import type { Doc, Id } from '../_generated/dataModel'
 
 const BATCH_SIZE = 15 // Detailed scoring (Tier 3) batch size
 const COARSE_BATCH_SIZE = 50 // Coarse scoring (Tier 2) batch size
@@ -41,9 +41,7 @@ function isRateLimitError(error: unknown): boolean {
 
 // Extract the maximum USD salary from a free-text salaryRange field.
 // Returns null if unparseable — err on the side of passing through (zero false negatives).
-export function parseMaxSalary(
-  salaryRange: string | undefined,
-): number | null {
+export function parseMaxSalary(salaryRange: string | undefined): number | null {
   if (!salaryRange) return null
 
   // Non-USD currencies — can't compare to minimumSalaryUSD
@@ -117,7 +115,8 @@ function applyHardFilters<
 export const computeMatchesForProfile = internalAction({
   args: { profileId: v.id('profiles') },
   handler: async (ctx, { profileId }) => {
-    const profile = await ctx.runQuery(
+    // Explicit type annotations break circular inference from internal.matching.coarse ref
+    const profile: Record<string, unknown> | null = await ctx.runQuery(
       internal.matching.queries.getFullProfile,
       { profileId },
     )
@@ -126,7 +125,19 @@ export const computeMatchesForProfile = internalAction({
     }
 
     // Tier 1: availability check — skip matching entirely for unavailable users
-    if (profile.matchPreferences?.availability === 'not_available') {
+    const matchPrefs = profile.matchPreferences as
+      | {
+          remotePreference?: string
+          roleTypes?: Array<string>
+          experienceLevels?: Array<string>
+          minimumSalaryUSD?: number
+          availability?: string
+          commitmentTypes?: Array<string>
+          willingToRelocate?: boolean
+          workAuthorization?: string
+        }
+      | undefined
+    if (matchPrefs?.availability === 'not_available') {
       await ctx.runMutation(
         internal.matching.mutations.clearMatchesForProfile,
         { profileId },
@@ -137,38 +148,38 @@ export const computeMatchesForProfile = internalAction({
       return { matchCount: 0, message: 'User not available for matching' }
     }
 
-    const hiddenOrgs = profile.privacySettings?.hiddenFromOrgs || []
-    const allOpportunities = await ctx.runQuery(
+    const privacySettings = profile.privacySettings as
+      | { hiddenFromOrgs?: Array<string> }
+      | undefined
+    const hiddenOrgs: Array<string> = privacySettings?.hiddenFromOrgs || []
+    const allOpportunities: Array<Doc<'opportunities'>> = await ctx.runQuery(
       internal.matching.queries.getCandidateOpportunities,
       { hiddenOrgs },
     )
 
     // Tier 1: Apply programmatic hard filters
-    const filteredOpportunities = applyHardFilters(
+    const filteredOpportunities: Array<Doc<'opportunities'>> = applyHardFilters(
       allOpportunities,
-      profile.matchPreferences,
+      matchPrefs,
     )
 
     // Get existing matches for incremental logic
-    const existingMatches = await ctx.runQuery(
-      internal.matching.queries.getExistingMatches,
-      { profileId },
-    )
+    const existingMatches: Array<{
+      opportunityId: string
+      computedAt: number
+    }> = await ctx.runQuery(internal.matching.queries.getExistingMatches, {
+      profileId,
+    })
 
     const existingByOppId = new Map(
-      existingMatches.map(
-        (m: { opportunityId: string; computedAt: number }) => [
-          m.opportunityId,
-          m,
-        ],
-      ),
+      existingMatches.map((m) => [m.opportunityId, m]),
     )
 
     // Determine mode: full recompute if profile fields changed (matchesStaleAt set)
     const isFullRecompute = Boolean(profile.matchesStaleAt)
 
     // Build evaluation set
-    let evaluationSet: typeof filteredOpportunities
+    let evaluationSet: Array<Doc<'opportunities'>>
     if (isFullRecompute) {
       evaluationSet = filteredOpportunities
     } else {
@@ -176,12 +187,13 @@ export const computeMatchesForProfile = internalAction({
       evaluationSet = filteredOpportunities.filter((opp) => {
         const existing = existingByOppId.get(opp._id)
         if (!existing) return true // New opportunity, no match exists
-        return opp.updatedAt > (existing as { computedAt: number }).computedAt
+        return opp.updatedAt > existing.computedAt
       })
     }
 
     // Valid opportunity IDs = all filtered opportunities (for cleanup)
-    const validOpportunityIds = filteredOpportunities.map((o) => o._id)
+    const validOpportunityIds: Array<Id<'opportunities'>> =
+      filteredOpportunities.map((o) => o._id)
 
     if (evaluationSet.length === 0 && !isFullRecompute) {
       // Nothing to evaluate — just clean up stale matches
@@ -216,16 +228,16 @@ export const computeMatchesForProfile = internalAction({
     const runTimestamp = Date.now()
 
     // Build profile context once, pass as string to all batches
-    const profileContext = buildProfileContext(profile)
+    const profileContext = buildProfileContext(profile as any)
 
     // Calculate batch counts for 3-tier pipeline
     const totalCoarseBatches = Math.ceil(
       evaluationSet.length / COARSE_BATCH_SIZE,
     )
-    const estimatedDetailedBatches = isFullRecompute
+    const estimatedDetailedBatches: number = isFullRecompute
       ? Math.ceil(TOP_N / BATCH_SIZE)
       : Math.ceil(Math.min(evaluationSet.length, TOP_N) / BATCH_SIZE)
-    const totalBatches = totalCoarseBatches + estimatedDetailedBatches
+    const totalBatches: number = totalCoarseBatches + estimatedDetailedBatches
 
     log('info', 'computeMatchesForProfile: starting 3-tier matching', {
       profileId,

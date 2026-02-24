@@ -374,7 +374,9 @@ export const processDeadlineReminderBatch = internalAction({
           await ctx.runMutation(
             internal.emails.send.markDeadlineRemindersSent,
             {
-              matchIds: oneDay.map((m) => m.matchId),
+              matchIds: oneDay.map(
+                (m: { matchId: Id<'matches'> }) => m.matchId,
+              ),
               reminderType: 'oneDay',
             },
           )
@@ -383,7 +385,9 @@ export const processDeadlineReminderBatch = internalAction({
           await ctx.runMutation(
             internal.emails.send.markDeadlineRemindersSent,
             {
-              matchIds: sevenDay.map((m) => m.matchId),
+              matchIds: sevenDay.map(
+                (m: { matchId: Id<'matches'> }) => m.matchId,
+              ),
               reminderType: 'sevenDay',
             },
           )
