@@ -491,9 +491,9 @@ export default defineSchema({
       v.literal('rejected'), // For guests (Phase 33)
     ),
 
-    // Optional tags
-    workingOn: v.optional(v.string()), // Max 140 chars, enforced in mutation
-    interestedInMeeting: v.optional(v.string()), // Max 140 chars
+    // Networking tags (offer/ask format)
+    workingOn: v.optional(v.string()), // "Can help with" — Max 140 chars, enforced in mutation
+    interestedInMeeting: v.optional(v.string()), // "Looking for" — Max 140 chars
 
     // Consent for attendee visibility (required for booking)
     consentToProfileSharing: v.boolean(),
@@ -502,6 +502,11 @@ export default defineSchema({
     approvedBy: v.optional(v.id('orgMemberships')),
     approvedAt: v.optional(v.number()),
     rejectionReason: v.optional(v.string()),
+
+    // No-show tracking
+    noShow: v.optional(v.boolean()),
+    noShowMarkedAt: v.optional(v.number()),
+    noShowMarkedBy: v.optional(v.id('orgMemberships')),
 
     // Metadata
     createdAt: v.number(),
@@ -1183,4 +1188,14 @@ export default defineSchema({
     scheduledFunctionId: v.id('_scheduled_functions'),
     scheduledFor: v.number(),
   }).index('by_namespace_and_key', ['namespace', 'key']),
+
+  // Push notification tokens for mobile (Tauri) clients
+  pushTokens: defineTable({
+    userId: v.string(),
+    token: v.string(),
+    platform: v.union(v.literal('ios'), v.literal('android')),
+    createdAt: v.number(),
+  })
+    .index('by_userId', ['userId'])
+    .index('by_token', ['token']),
 })

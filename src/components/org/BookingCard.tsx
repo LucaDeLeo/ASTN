@@ -205,12 +205,12 @@ export function BookingCard({
             {booking.workingOn && (
               <Badge variant="outline" className="text-xs font-normal">
                 <Users className="size-3 mr-1" />
-                Working on: {booking.workingOn}
+                Can help with: {booking.workingOn}
               </Badge>
             )}
             {booking.interestedInMeeting && (
               <Badge variant="outline" className="text-xs font-normal">
-                Meeting: {booking.interestedInMeeting}
+                Looking for: {booking.interestedInMeeting}
               </Badge>
             )}
           </div>

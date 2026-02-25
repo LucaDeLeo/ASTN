@@ -21,7 +21,7 @@ interface BookingHistoryProps {
   spaceId: Id<'coworkingSpaces'>
 }
 
-type StatusFilter = 'all' | 'confirmed' | 'cancelled' | 'rejected'
+type StatusFilter = 'all' | 'confirmed' | 'cancelled' | 'rejected' | 'no_show'
 
 type HistoryBooking = {
   _id: Id<'spaceBookings'>
@@ -34,6 +34,7 @@ type HistoryBooking = {
   interestedInMeeting?: string
   rejectionReason?: string
   approvedByName?: string
+  noShow?: boolean
   profile?: {
     name?: string
     headline?: string
@@ -153,6 +154,7 @@ export function BookingHistory({ spaceId }: BookingHistoryProps) {
                   <SelectItem value="confirmed">Confirmed</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value="no_show">No-show</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -226,6 +228,7 @@ interface HistoryBookingCardProps {
     interestedInMeeting?: string
     rejectionReason?: string
     approvedByName?: string
+    noShow?: boolean
     profile?: {
       name?: string
       headline?: string
@@ -278,6 +281,11 @@ function HistoryBookingCard({ booking }: HistoryBookingCardProps) {
                 <Badge variant={statusVariant} className="text-xs capitalize">
                   {booking.status}
                 </Badge>
+                {booking.noShow && (
+                  <Badge variant="destructive" className="text-xs">
+                    No-show
+                  </Badge>
+                )}
               </div>
               {booking.profile?.headline && (
                 <p className="text-sm text-muted-foreground">
@@ -317,12 +325,12 @@ function HistoryBookingCard({ booking }: HistoryBookingCardProps) {
           <div className="flex flex-wrap gap-1.5 mt-3">
             {booking.workingOn && (
               <Badge variant="outline" className="text-xs font-normal">
-                Working on: {booking.workingOn}
+                Can help with: {booking.workingOn}
               </Badge>
             )}
             {booking.interestedInMeeting && (
               <Badge variant="outline" className="text-xs font-normal">
-                Meeting: {booking.interestedInMeeting}
+                Looking for: {booking.interestedInMeeting}
               </Badge>
             )}
           </div>

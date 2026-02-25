@@ -77,20 +77,18 @@ function AttendeeCard({ attendee }: { attendee: Attendee }) {
           </div>
         )}
 
-        {/* Working on / Interested in meeting tags */}
+        {/* Networking tags (offer/ask) */}
         {(workingOn || interestedInMeeting) && (
           <div className="pt-2 space-y-1.5 border-t">
             {workingOn && (
               <div className="text-sm">
-                <span className="text-muted-foreground">Working on:</span>{' '}
+                <span className="text-muted-foreground">Can help with:</span>{' '}
                 <span>{workingOn}</span>
               </div>
             )}
             {interestedInMeeting && (
               <div className="text-sm">
-                <span className="text-muted-foreground">
-                  Interested in meeting:
-                </span>{' '}
+                <span className="text-muted-foreground">Looking for:</span>{' '}
                 <span>{interestedInMeeting}</span>
               </div>
             )}

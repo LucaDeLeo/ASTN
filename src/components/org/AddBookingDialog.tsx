@@ -122,11 +122,11 @@ export function AddBookingDialog({
     }
 
     if (workingOn.length > 140) {
-      toast.error('Working on must be 140 characters or less')
+      toast.error('Can help with must be 140 characters or less')
       return
     }
     if (interestedInMeeting.length > 140) {
-      toast.error('Interested in meeting must be 140 characters or less')
+      toast.error('Looking for must be 140 characters or less')
       return
     }
 
@@ -268,14 +268,14 @@ export function AddBookingDialog({
             </div>
           </div>
 
-          {/* Working on */}
+          {/* Can help with */}
           <div className="space-y-2">
-            <Label htmlFor="workingOn">Working on (optional)</Label>
+            <Label htmlFor="workingOn">Can help with (optional)</Label>
             <Textarea
               id="workingOn"
               value={workingOn}
               onChange={(e) => setWorkingOn(e.target.value.slice(0, 140))}
-              placeholder="What will they be working on?"
+              placeholder="e.g., ML expertise, grant writing..."
               rows={2}
             />
             <p className="text-xs text-muted-foreground text-right">
@@ -283,18 +283,16 @@ export function AddBookingDialog({
             </p>
           </div>
 
-          {/* Interested in meeting */}
+          {/* Looking for */}
           <div className="space-y-2">
-            <Label htmlFor="interestedInMeeting">
-              Interested in meeting (optional)
-            </Label>
+            <Label htmlFor="interestedInMeeting">Looking for (optional)</Label>
             <Textarea
               id="interestedInMeeting"
               value={interestedInMeeting}
               onChange={(e) =>
                 setInterestedInMeeting(e.target.value.slice(0, 140))
               }
-              placeholder="Who would they like to meet?"
+              placeholder="e.g., feedback on research, introductions..."
               rows={2}
             />
             <p className="text-xs text-muted-foreground text-right">

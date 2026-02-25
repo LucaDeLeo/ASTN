@@ -24,6 +24,7 @@ type BookingItem = {
   bookingType: 'member' | 'guest'
   workingOn?: string
   interestedInMeeting?: string
+  noShow?: boolean
   profile?: {
     name?: string
     headline?: string
@@ -184,6 +185,7 @@ interface BookingListItemProps {
     bookingType: 'member' | 'guest'
     workingOn?: string
     interestedInMeeting?: string
+    noShow?: boolean
     profile?: {
       name?: string
       headline?: string
@@ -224,6 +226,11 @@ function BookingListItem({ booking }: BookingListItemProps) {
                     Guest
                   </Badge>
                 )}
+                {booking.noShow && (
+                  <Badge variant="destructive" className="text-xs">
+                    No-show
+                  </Badge>
+                )}
               </div>
               {booking.profile?.headline && (
                 <p className="text-sm text-muted-foreground">
@@ -248,12 +255,12 @@ function BookingListItem({ booking }: BookingListItemProps) {
           <div className="flex flex-wrap gap-1.5 mt-3">
             {booking.workingOn && (
               <Badge variant="outline" className="text-xs font-normal">
-                Working on: {booking.workingOn}
+                Can help with: {booking.workingOn}
               </Badge>
             )}
             {booking.interestedInMeeting && (
               <Badge variant="outline" className="text-xs font-normal">
-                Meeting: {booking.interestedInMeeting}
+                Looking for: {booking.interestedInMeeting}
               </Badge>
             )}
           </div>

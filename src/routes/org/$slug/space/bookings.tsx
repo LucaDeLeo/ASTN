@@ -380,13 +380,13 @@ function BookingCard({ booking, showActions }: BookingCardProps) {
             <div className="space-y-3 pt-2">
               <div className="space-y-1.5">
                 <Label htmlFor={`workingOn-${booking._id}`} className="text-xs">
-                  Working on
+                  Can help with
                 </Label>
                 <Textarea
                   id={`workingOn-${booking._id}`}
                   value={workingOn}
                   onChange={(e) => setWorkingOn(e.target.value.slice(0, 140))}
-                  placeholder="What are you working on?"
+                  placeholder="e.g., ML expertise, grant writing..."
                   rows={2}
                   className="text-sm"
                 />
@@ -399,7 +399,7 @@ function BookingCard({ booking, showActions }: BookingCardProps) {
                   htmlFor={`interestedInMeeting-${booking._id}`}
                   className="text-xs"
                 >
-                  Interested in meeting
+                  Looking for
                 </Label>
                 <Textarea
                   id={`interestedInMeeting-${booking._id}`}
@@ -407,7 +407,7 @@ function BookingCard({ booking, showActions }: BookingCardProps) {
                   onChange={(e) =>
                     setInterestedInMeeting(e.target.value.slice(0, 140))
                   }
-                  placeholder="Who would you like to meet?"
+                  placeholder="e.g., feedback on research, introductions..."
                   rows={2}
                   className="text-sm"
                 />
@@ -444,15 +444,13 @@ function BookingCard({ booking, showActions }: BookingCardProps) {
                 <div className="text-sm space-y-1 text-muted-foreground">
                   {booking.workingOn && (
                     <p>
-                      <span className="text-foreground">Working on:</span>{' '}
+                      <span className="text-foreground">Can help with:</span>{' '}
                       {booking.workingOn}
                     </p>
                   )}
                   {booking.interestedInMeeting && (
                     <p>
-                      <span className="text-foreground">
-                        Interested in meeting:
-                      </span>{' '}
+                      <span className="text-foreground">Looking for:</span>{' '}
                       {booking.interestedInMeeting}
                     </p>
                   )}

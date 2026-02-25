@@ -107,6 +107,7 @@ type ExportBooking = {
   workingOn?: string
   interestedInMeeting?: string
   rejectionReason?: string
+  noShow?: boolean
   createdAt: number
   profile: {
     name: string | undefined
@@ -136,9 +137,10 @@ function exportCsv(bookings: Array<ExportBooking>, filename: string) {
     'Email',
     'Type',
     'Status',
+    'No-show',
     'Time Range',
-    'Working On',
-    'Interested In Meeting',
+    'Can Help With',
+    'Looking For',
     'Created At',
     'Approved By',
     'Rejection Reason',
@@ -152,9 +154,10 @@ function exportCsv(bookings: Array<ExportBooking>, filename: string) {
       escapeCsvField(data.email),
       escapeCsvField(data.type),
       escapeCsvField(data.status),
+      escapeCsvField(data.noShow),
       escapeCsvField(data.timeRange),
-      escapeCsvField(data.workingOn),
-      escapeCsvField(data.interestedInMeeting),
+      escapeCsvField(data.canHelpWith),
+      escapeCsvField(data.lookingFor),
       escapeCsvField(data.createdAt),
       escapeCsvField(data.approvedBy),
       escapeCsvField(data.rejectionReason),
@@ -177,9 +180,10 @@ function transformBookingForExport(booking: ExportBooking) {
     email: booking.profile?.email || '',
     type: bookingTypeLabels[booking.bookingType] || booking.bookingType,
     status: statusLabels[booking.status] || booking.status,
+    noShow: booking.noShow ? 'Yes' : 'No',
     timeRange: `${formatTime(booking.startMinutes)} - ${formatTime(booking.endMinutes)}`,
-    workingOn: booking.workingOn || '',
-    interestedInMeeting: booking.interestedInMeeting || '',
+    canHelpWith: booking.workingOn || '',
+    lookingFor: booking.interestedInMeeting || '',
     createdAt: new Date(booking.createdAt).toISOString().split('T')[0],
     approvedBy: booking.approvedByName || '',
     rejectionReason: booking.rejectionReason || '',

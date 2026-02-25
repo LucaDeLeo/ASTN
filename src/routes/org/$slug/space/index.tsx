@@ -613,7 +613,7 @@ function MemberBookingForm({
 
                   <div className="space-y-2">
                     <Label htmlFor="workingOn">
-                      What are you working on? (optional)
+                      How can you help others? (optional)
                     </Label>
                     <Textarea
                       id="workingOn"
@@ -621,7 +621,7 @@ function MemberBookingForm({
                       onChange={(e) =>
                         setWorkingOn(e.target.value.slice(0, 140))
                       }
-                      placeholder="e.g., ML research, writing, studying..."
+                      placeholder="e.g., ML expertise, grant writing, policy analysis..."
                       rows={2}
                     />
                     <p className="text-xs text-muted-foreground">

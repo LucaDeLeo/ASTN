@@ -101,6 +101,7 @@ export const getAdminBookingsForDateRange = query({
         v.literal('cancelled'),
         v.literal('pending'),
         v.literal('rejected'),
+        v.literal('no_show'),
       ),
     ),
     limit: v.optional(v.number()),
@@ -132,9 +133,18 @@ export const getAdminBookingsForDateRange = query({
 
     // Apply status filter if not 'all'
     if (status && status !== 'all') {
-      bookingsQuery = bookingsQuery.filter((q) =>
-        q.eq(q.field('status'), status),
-      )
+      if (status === 'no_show') {
+        bookingsQuery = bookingsQuery.filter((q) =>
+          q.and(
+            q.eq(q.field('status'), 'confirmed'),
+            q.eq(q.field('noShow'), true),
+          ),
+        )
+      } else {
+        bookingsQuery = bookingsQuery.filter((q) =>
+          q.eq(q.field('status'), status),
+        )
+      }
     }
 
     // Collect all matching bookings (pagination happens after enrichment)
@@ -582,5 +592,40 @@ export const adminCancelBooking = mutation({
     })
 
     return { success: true }
+  },
+})
+
+/**
+ * Toggle no-show status on a confirmed booking.
+ * Only org admins can mark bookings as no-show.
+ */
+export const toggleNoShow = mutation({
+  args: {
+    bookingId: v.id('spaceBookings'),
+  },
+  returns: v.object({ noShow: v.boolean() }),
+  handler: async (ctx, { bookingId }) => {
+    const booking = await ctx.db.get('spaceBookings', bookingId)
+    if (!booking) throw new Error('Booking not found')
+
+    // Verify admin access via the booking's space
+    const { membership } = await requireSpaceAdmin(ctx, booking.spaceId)
+
+    // Only confirmed bookings can be marked as no-show
+    if (booking.status !== 'confirmed') {
+      throw new Error('Only confirmed bookings can be marked as no-show')
+    }
+
+    const newNoShow = !booking.noShow
+    const now = Date.now()
+
+    await ctx.db.patch('spaceBookings', bookingId, {
+      noShow: newNoShow,
+      noShowMarkedAt: newNoShow ? now : undefined,
+      noShowMarkedBy: newNoShow ? membership._id : undefined,
+      updatedAt: now,
+    })
+
+    return { noShow: newNoShow }
   },
 })

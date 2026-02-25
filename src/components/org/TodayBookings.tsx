@@ -1,8 +1,11 @@
-import { useQuery } from 'convex/react'
-import { CalendarDays, Clock, Loader2, Users } from 'lucide-react'
+import { useMutation, useQuery } from 'convex/react'
+import { CalendarDays, Clock, Loader2, UserX, Users } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { Badge } from '~/components/ui/badge'
+import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { cn } from '~/lib/utils'
 
@@ -39,6 +42,20 @@ export function TodayBookings({ spaceId, capacity }: TodayBookingsProps) {
   const bookings = useQuery(api.spaceBookings.admin.getTodaysBookings, {
     spaceId,
   })
+  const toggleNoShow = useMutation(api.spaceBookings.admin.toggleNoShow)
+  const [togglingId, setTogglingId] = useState<string | null>(null)
+
+  const handleToggleNoShow = async (bookingId: Id<'spaceBookings'>) => {
+    setTogglingId(bookingId)
+    try {
+      const result = await toggleNoShow({ bookingId })
+      toast.success(result.noShow ? 'Marked as no-show' : 'No-show removed')
+    } catch (e) {
+      toast.error('Failed to update no-show status')
+    } finally {
+      setTogglingId(null)
+    }
+  }
 
   // Loading state
   if (bookings === undefined) {
@@ -113,7 +130,10 @@ export function TodayBookings({ spaceId, capacity }: TodayBookingsProps) {
             {bookings.map((booking) => (
               <div
                 key={booking._id}
-                className="flex items-start gap-3 p-3 rounded-lg border bg-card"
+                className={cn(
+                  'flex items-start gap-3 p-3 rounded-lg border bg-card',
+                  booking.noShow && 'border-l-4 border-l-red-500 bg-muted/50',
+                )}
               >
                 {/* Avatar */}
                 <div className="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 font-medium text-sm">
@@ -131,6 +151,11 @@ export function TodayBookings({ spaceId, capacity }: TodayBookingsProps) {
                     {booking.profile?.isGuest && (
                       <Badge variant="secondary" className="text-xs">
                         Guest
+                      </Badge>
+                    )}
+                    {booking.noShow && (
+                      <Badge variant="destructive" className="text-xs">
+                        No-show
                       </Badge>
                     )}
                   </div>
@@ -156,7 +181,7 @@ export function TodayBookings({ spaceId, capacity }: TodayBookingsProps) {
                           variant="outline"
                           className="text-xs font-normal"
                         >
-                          Working on: {booking.workingOn}
+                          Can help with: {booking.workingOn}
                         </Badge>
                       )}
                       {booking.interestedInMeeting && (
@@ -164,12 +189,28 @@ export function TodayBookings({ spaceId, capacity }: TodayBookingsProps) {
                           variant="outline"
                           className="text-xs font-normal"
                         >
-                          Meeting: {booking.interestedInMeeting}
+                          Looking for: {booking.interestedInMeeting}
                         </Badge>
                       )}
                     </div>
                   )}
                 </div>
+
+                {/* No-show toggle */}
+                <Button
+                  variant={booking.noShow ? 'destructive' : 'ghost'}
+                  size="icon"
+                  className="shrink-0 size-8"
+                  disabled={togglingId === booking._id}
+                  onClick={() => handleToggleNoShow(booking._id)}
+                  title={booking.noShow ? 'Remove no-show' : 'Mark as no-show'}
+                >
+                  {togglingId === booking._id ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <UserX className="size-4" />
+                  )}
+                </Button>
               </div>
             ))}
           </div>
