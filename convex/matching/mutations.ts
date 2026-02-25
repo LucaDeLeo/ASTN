@@ -58,7 +58,13 @@ export const updateMatchProgress = internalMutation({
   returns: v.null(),
   handler: async (
     ctx,
-    { profileId, completedBatches, totalBatches, totalOpportunities, startedAt },
+    {
+      profileId,
+      completedBatches,
+      totalBatches,
+      totalOpportunities,
+      startedAt,
+    },
   ) => {
     await ctx.db.patch('profiles', profileId, {
       matchProgress: {
@@ -95,6 +101,8 @@ const opportunitySnapshotValidator = v.object({
   extractedSkills: v.optional(v.array(v.string())),
   sourceUrl: v.string(),
   deadline: v.optional(v.number()),
+  postedAt: v.optional(v.number()),
+  opportunityType: v.optional(v.string()),
 })
 
 // Save a single batch of match results incrementally (chained action architecture)
