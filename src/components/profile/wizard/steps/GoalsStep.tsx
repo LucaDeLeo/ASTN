@@ -13,22 +13,30 @@ interface GoalsStepProps {
   lastSaved: Date | null
 }
 
-// Pre-defined AI safety interest areas
+// Pre-defined AI safety interest areas — covering research, engineering, policy, and ops
 const AI_SAFETY_AREAS = [
+  // Research
   'Alignment Research',
   'Interpretability',
-  'AI Governance',
-  'AI Policy',
   'Technical Safety',
   'Robustness',
-  'AI Ethics',
   'Scalable Oversight',
-  'Red Teaming',
-  'Deceptive Alignment',
-  'Value Learning',
   'Multi-Agent Safety',
+  'Red Teaming',
+  // Engineering
+  'ML Engineering',
+  'Safety Infrastructure',
+  'Evaluation & Testing',
+  // Policy & Governance
+  'AI Governance',
+  'AI Policy',
+  'AI Ethics',
   'Existential Risk',
-  'Constitutional AI',
+  // Operations & Field-Building
+  'Field-Building',
+  'Operations & Strategy',
+  'Communications',
+  'Community Building',
 ]
 
 export function GoalsStep({
@@ -123,7 +131,7 @@ export function GoalsStep({
             value={seeking}
             onChange={(e) => setSeeking(e.target.value)}
             onBlur={() => saveField('seeking', seeking)}
-            placeholder="Are you looking for full-time roles, research positions, fellowships, mentorship, collaborators, or something else?"
+            placeholder="Are you looking for full-time roles, engineering positions, fellowships, policy work, mentorship, collaborators, or something else?"
             rows={3}
             aria-describedby={seekingHelpId}
           />
