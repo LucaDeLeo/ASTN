@@ -113,6 +113,8 @@ import type * as orgs_stats from "../orgs/stats.js";
 import type * as platformAdmin_users from "../platformAdmin/users.js";
 import type * as profiles from "../profiles.js";
 import type * as programs from "../programs.js";
+import type * as push from "../push.js";
+import type * as pushTokens from "../pushTokens.js";
 import type * as skills from "../skills.js";
 import type * as spaceBookings from "../spaceBookings.js";
 import type * as spaceBookings_admin from "../spaceBookings/admin.js";
@@ -231,6 +233,8 @@ declare const fullApi: ApiFromModules<{
   "platformAdmin/users": typeof platformAdmin_users;
   profiles: typeof profiles;
   programs: typeof programs;
+  push: typeof push;
+  pushTokens: typeof pushTokens;
   skills: typeof skills;
   spaceBookings: typeof spaceBookings;
   "spaceBookings/admin": typeof spaceBookings_admin;

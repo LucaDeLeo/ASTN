@@ -115,6 +115,8 @@ export function AgentChat({
     optimisticallySendMessage(api.agent.queries.listMessages),
   )
   const resolveToolChange = useMutation(api.agent.mutations.resolveToolChange)
+  const approveProposal = useMutation(api.agent.mutations.approveProposal)
+  const denyProposal = useMutation(api.agent.mutations.denyProposal)
   const batchApprove = useMutation(api.agent.mutations.batchApprovePending)
   const abortGeneration = useMutation(api.agent.threadOps.abortGeneration)
   const createThread = useMutation(api.agent.threadOps.createAgentThread)
@@ -133,14 +135,15 @@ export function AgentChat({
   // Auto-approve new tool calls when toggle is on (skip manual-approval items)
   useEffect(() => {
     if (!autoApprove || !toolCalls) return
-    const pending = toolCalls.filter(
-      (tc: Doc<'agentToolCalls'>) =>
-        tc.status === 'pending' && !tc.requiresManualApproval,
-    )
-    for (const tc of pending) {
-      resolveToolChange({ toolCallId: tc._id, action: 'approve' })
+    for (const tc of toolCalls) {
+      if (tc.requiresManualApproval) continue
+      if (tc.status === 'proposed') {
+        approveProposal({ toolCallId: tc._id })
+      } else if (tc.status === 'pending') {
+        resolveToolChange({ toolCallId: tc._id, action: 'approve' })
+      }
     }
-  }, [autoApprove, toolCalls, resolveToolChange])
+  }, [autoApprove, toolCalls, resolveToolChange, approveProposal])
 
   // Track user scroll to determine if they scrolled up
   useEffect(() => {
@@ -404,6 +407,17 @@ export function AgentChat({
                   onUndo={(id) =>
                     resolveToolChange({ toolCallId: id, action: 'undo' })
                   }
+                  onApproveProposal={(id) =>
+                    approveProposal({ toolCallId: id })
+                  }
+                  onDenyProposal={async (id, displayText) => {
+                    await denyProposal({ toolCallId: id })
+                    await sendMessageMut({
+                      threadId,
+                      prompt: `[I rejected: "${displayText}"]`,
+                      profileId,
+                    })
+                  }}
                   isLastUserMessage={message.key === lastUserMessageKey}
                   onEdit={handleEditMessage}
                 />
@@ -671,6 +685,8 @@ function MessageBubble({
   autoApprove,
   onApprove,
   onUndo,
+  onApproveProposal,
+  onDenyProposal,
   isLastUserMessage,
   onEdit,
 }: {
@@ -679,6 +695,8 @@ function MessageBubble({
   autoApprove: boolean
   onApprove: (id: Id<'agentToolCalls'>) => void
   onUndo: (id: Id<'agentToolCalls'>) => void
+  onApproveProposal: (id: Id<'agentToolCalls'>) => void
+  onDenyProposal: (id: Id<'agentToolCalls'>, displayText: string) => void
   isLastUserMessage?: boolean
   onEdit?: (text: string, order: number) => void
 }) {
@@ -789,14 +807,14 @@ function MessageBubble({
           toolCallCursors.set(toolName, cursor + 1)
           matchedToolCallIds.add(tc._id)
           elements.push(
-            <ToolCallInline
+            <ToolCallCard
               key={tc._id}
-              displayText={tc.displayText}
-              status={tc.status}
+              toolCall={tc}
               autoApprove={autoApprove}
-              requiresManualApproval={tc.requiresManualApproval ?? undefined}
               onApprove={() => onApprove(tc._id)}
               onUndo={() => onUndo(tc._id)}
+              onApproveProposal={() => onApproveProposal(tc._id)}
+              onDenyProposal={() => onDenyProposal(tc._id, tc.displayText)}
             />,
           )
         }
@@ -811,14 +829,14 @@ function MessageBubble({
   for (const tc of relatedToolCalls) {
     if (!matchedToolCallIds.has(tc._id)) {
       elements.push(
-        <ToolCallInline
+        <ToolCallCard
           key={tc._id}
-          displayText={tc.displayText}
-          status={tc.status}
+          toolCall={tc}
           autoApprove={autoApprove}
-          requiresManualApproval={tc.requiresManualApproval ?? undefined}
           onApprove={() => onApprove(tc._id)}
           onUndo={() => onUndo(tc._id)}
+          onApproveProposal={() => onApproveProposal(tc._id)}
+          onDenyProposal={() => onDenyProposal(tc._id, tc.displayText)}
         />,
       )
     }
@@ -833,29 +851,238 @@ function MessageBubble({
   )
 }
 
-// Compact inline tool call status
-function ToolCallInline({
-  displayText,
-  status,
+// Format a diff between old and new values for display
+function renderDiffLines(
+  updates: Record<string, unknown>,
+  previousValues: Record<string, unknown>,
+): Array<{
+  field: string
+  old: string
+  new: string
+  type: 'scalar' | 'array' | 'object'
+}> {
+  const lines: Array<{
+    field: string
+    old: string
+    new: string
+    type: 'scalar' | 'array' | 'object'
+  }> = []
+
+  for (const key of Object.keys(updates)) {
+    const newVal = updates[key]
+    const oldVal = previousValues[key]
+
+    if (Array.isArray(newVal)) {
+      const oldArr = Array.isArray(oldVal) ? oldVal : []
+      // For arrays of objects (education, workHistory), show as object
+      if (newVal.length > 0 && typeof newVal[0] === 'object') {
+        lines.push({
+          field: key,
+          old: oldArr.length > 0 ? JSON.stringify(oldArr) : '',
+          new: JSON.stringify(newVal),
+          type: 'object',
+        })
+      } else {
+        // Simple arrays (skills, interests) — show +added / -removed
+        const oldSet = new Set(oldArr.map(String))
+        const newSet = new Set(newVal.map(String))
+        const added = newVal.filter((v: unknown) => !oldSet.has(String(v)))
+        const removed = oldArr.filter((v: unknown) => !newSet.has(String(v)))
+        lines.push({
+          field: key,
+          old: removed.length > 0 ? removed.map(String).join(', ') : '',
+          new: added.length > 0 ? added.map(String).join(', ') : '',
+          type: 'array',
+        })
+      }
+    } else if (typeof newVal === 'object' && newVal !== null) {
+      lines.push({
+        field: key,
+        old: oldVal ? JSON.stringify(oldVal) : '',
+        new: JSON.stringify(newVal),
+        type: 'object',
+      })
+    } else {
+      lines.push({
+        field: key,
+        old: oldVal != null ? String(oldVal) : '',
+        new: newVal != null ? String(newVal) : '',
+        type: 'scalar',
+      })
+    }
+  }
+
+  return lines
+}
+
+// Pretty field name for display
+function prettyFieldName(field: string): string {
+  const map: Record<string, string> = {
+    name: 'Name',
+    pronouns: 'Pronouns',
+    location: 'Location',
+    headline: 'Headline',
+    linkedinUrl: 'LinkedIn',
+    education: 'Education',
+    workHistory: 'Work experience',
+    skills: 'Skills',
+    careerGoals: 'Career goals',
+    aiSafetyInterests: 'AI safety interests',
+    seeking: 'Looking for',
+    matchPreferences: 'Match preferences',
+    preferredLanguage: 'Language',
+  }
+  return map[field] ?? field
+}
+
+// Format education/work entries for display
+function formatEntries(json: string, field: string): string {
+  try {
+    const arr = JSON.parse(json) as Array<Record<string, unknown>>
+    if (field === 'education') {
+      return arr
+        .map(
+          (e) =>
+            `${e.degree ? `${e.degree} ` : ''}${e.field ? `in ${e.field} ` : ''}at ${e.institution}`,
+        )
+        .join('; ')
+    }
+    if (field === 'workHistory') {
+      return arr.map((w) => `${w.title} at ${w.organization}`).join('; ')
+    }
+    if (field === 'matchPreferences') {
+      const parts: Array<string> = []
+      for (const [k, v] of Object.entries(arr.length ? arr[0] : {})) {
+        if (v != null)
+          parts.push(`${k}: ${Array.isArray(v) ? v.join(', ') : v}`)
+      }
+      return parts.join('; ')
+    }
+    return json
+  } catch {
+    return json
+  }
+}
+
+// Unified tool call card — handles proposed, denied, pending, approved, undone
+function ToolCallCard({
+  toolCall,
   autoApprove,
-  requiresManualApproval,
   onApprove,
   onUndo,
+  onApproveProposal,
+  onDenyProposal,
 }: {
-  displayText: string
-  status: 'pending' | 'approved' | 'undone'
+  toolCall: Doc<'agentToolCalls'>
   autoApprove: boolean
-  requiresManualApproval?: boolean
-  onApprove?: () => void
-  onUndo?: () => void
+  onApprove: () => void
+  onUndo: () => void
+  onApproveProposal: () => void
+  onDenyProposal: () => void
 }) {
-  // Runtime guard: displayText may be non-string from stale agent data
+  const { status, displayText } = toolCall
   const rawDisplayText = displayText as unknown
   const safeDisplayText =
     typeof rawDisplayText === 'string'
       ? rawDisplayText
       : String(rawDisplayText ?? '')
 
+  // Proposed: show diff view with approve/deny
+  if (status === 'proposed') {
+    let diffLines: Array<{
+      field: string
+      old: string
+      new: string
+      type: 'scalar' | 'array' | 'object'
+    }> = []
+    try {
+      const updates = JSON.parse(toolCall.updates) as Record<string, unknown>
+      const prev = JSON.parse(toolCall.previousValues) as Record<
+        string,
+        unknown
+      >
+      diffLines = renderDiffLines(updates, prev)
+    } catch {
+      // Fallback: just show display text
+    }
+
+    return (
+      <div className="max-w-[95%] md:max-w-[80%] rounded-lg border border-blue-200 bg-blue-50 text-sm overflow-hidden">
+        <div className="flex items-center gap-2 px-3 py-1.5 border-b border-blue-100">
+          <Sparkles className="size-3.5 text-blue-500 shrink-0" />
+          <span className="text-xs font-medium text-blue-800 flex-1 truncate">
+            {safeDisplayText}
+          </span>
+          <span className="text-[10px] text-blue-400 shrink-0">Proposed</span>
+        </div>
+
+        {diffLines.length > 0 && (
+          <div className="px-3 py-2 space-y-1.5">
+            {diffLines.map((line) => (
+              <div key={line.field} className="text-xs">
+                <span className="font-medium text-blue-700">
+                  {prettyFieldName(line.field)}
+                </span>
+                {line.type === 'scalar' && (
+                  <span className="ml-1.5">
+                    {line.old && (
+                      <span className="text-red-500 line-through mr-1">
+                        {line.old}
+                      </span>
+                    )}
+                    <span className="text-green-700">{line.new}</span>
+                  </span>
+                )}
+                {line.type === 'array' && (
+                  <span className="ml-1.5">
+                    {line.old && (
+                      <span className="text-red-500 mr-1">-{line.old}</span>
+                    )}
+                    {line.new && (
+                      <span className="text-green-700">+{line.new}</span>
+                    )}
+                  </span>
+                )}
+                {line.type === 'object' && (
+                  <div className="mt-0.5 text-[11px] text-blue-600">
+                    {formatEntries(line.new, line.field)}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex gap-1.5 px-3 py-1.5 border-t border-blue-100">
+          <button
+            onClick={onApproveProposal}
+            className="touch-target px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700 hover:bg-green-200 transition-colors"
+          >
+            Approve
+          </button>
+          <button
+            onClick={onDenyProposal}
+            className="touch-target px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+          >
+            Deny
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Denied: gray with strikethrough
+  if (status === 'denied') {
+    return (
+      <div className="max-w-[95%] md:max-w-[80%] flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-lg text-xs border border-slate-200 bg-slate-50 text-slate-400">
+        <X className="size-3.5 shrink-0 text-red-400" />
+        <span className="flex-1 truncate line-through">{safeDisplayText}</span>
+        <span className="text-xs text-slate-400 shrink-0">Denied</span>
+      </div>
+    )
+  }
+
+  // Pending / approved / undone: original inline behavior
   return (
     <div
       className={cn(
@@ -879,22 +1106,23 @@ function ToolCallInline({
         {safeDisplayText}
       </span>
 
-      {status === 'pending' && (!autoApprove || requiresManualApproval) && (
-        <div className="flex gap-1 shrink-0">
-          <button
-            onClick={onApprove}
-            className="touch-target px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 hover:bg-green-200 transition-colors"
-          >
-            Approve
-          </button>
-          <button
-            onClick={onUndo}
-            className="touch-target px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
-          >
-            Undo
-          </button>
-        </div>
-      )}
+      {status === 'pending' &&
+        (!autoApprove || toolCall.requiresManualApproval) && (
+          <div className="flex gap-1 shrink-0">
+            <button
+              onClick={onApprove}
+              className="touch-target px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 hover:bg-green-200 transition-colors"
+            >
+              Approve
+            </button>
+            <button
+              onClick={onUndo}
+              className="touch-target px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+            >
+              Undo
+            </button>
+          </div>
+        )}
 
       {status === 'undone' && (
         <span className="text-xs text-slate-400 shrink-0">Undone</span>

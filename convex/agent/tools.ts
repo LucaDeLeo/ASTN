@@ -117,7 +117,7 @@ export const updateBasicInfo = createTool({
     const displayText = `Updated ${displayParts.join(', ')}`
 
     await ctx.runMutation(
-      internal.agent.mutations.applyToolChange as never,
+      internal.agent.mutations.proposeToolChange as never,
       {
         profileId: profile._id,
         threadId: ctx.threadId,
@@ -167,7 +167,7 @@ export const addEducation = createTool({
     const displayText = `Added education: ${input.degree ? `${input.degree} ` : ''}${input.field ? `in ${input.field} ` : ''}at ${input.institution}`
 
     await ctx.runMutation(
-      internal.agent.mutations.applyToolChange as never,
+      internal.agent.mutations.proposeToolChange as never,
       {
         profileId: profile._id,
         threadId: ctx.threadId,
@@ -220,7 +220,7 @@ export const addWorkExperience = createTool({
     const displayText = `Added work experience: ${input.title} at ${input.organization}`
 
     await ctx.runMutation(
-      internal.agent.mutations.applyToolChange as never,
+      internal.agent.mutations.proposeToolChange as never,
       {
         profileId: profile._id,
         threadId: ctx.threadId,
@@ -250,7 +250,7 @@ export const setSkills = createTool({
     const displayText = `Updated skills`
 
     await ctx.runMutation(
-      internal.agent.mutations.applyToolChange as never,
+      internal.agent.mutations.proposeToolChange as never,
       {
         profileId: profile._id,
         threadId: ctx.threadId,
@@ -279,7 +279,7 @@ export const setCareerGoals = createTool({
     const displayText = `Updated career goals`
 
     await ctx.runMutation(
-      internal.agent.mutations.applyToolChange as never,
+      internal.agent.mutations.proposeToolChange as never,
       {
         profileId: profile._id,
         threadId: ctx.threadId,
@@ -310,7 +310,7 @@ export const setAiSafetyInterests = createTool({
     const displayText = `Updated areas of interest`
 
     await ctx.runMutation(
-      internal.agent.mutations.applyToolChange as never,
+      internal.agent.mutations.proposeToolChange as never,
       {
         profileId: profile._id,
         threadId: ctx.threadId,
@@ -339,7 +339,7 @@ export const setSeeking = createTool({
     const displayText = `Updated looking for`
 
     await ctx.runMutation(
-      internal.agent.mutations.applyToolChange as never,
+      internal.agent.mutations.proposeToolChange as never,
       {
         profileId: profile._id,
         threadId: ctx.threadId,
@@ -464,7 +464,7 @@ export const setMatchPreferences = createTool({
         : 'Updated match preferences'
 
     await ctx.runMutation(
-      internal.agent.mutations.applyToolChange as never,
+      internal.agent.mutations.proposeToolChange as never,
       {
         profileId: profile._id,
         threadId: ctx.threadId,
@@ -496,7 +496,7 @@ export const setLanguagePreference = createTool({
     const displayText = `Set language preference to ${input.languageCode}`
 
     await ctx.runMutation(
-      internal.agent.mutations.applyToolChange as never,
+      internal.agent.mutations.proposeToolChange as never,
       {
         profileId: profile._id,
         threadId: ctx.threadId,

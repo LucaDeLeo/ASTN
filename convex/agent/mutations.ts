@@ -38,6 +38,40 @@ const MATCH_AFFECTING_FIELDS = new Set([
 ])
 
 /**
+ * Propose a tool change without touching the profile.
+ * Creates a record with status 'proposed' that waits for user approval.
+ * Called by agent tools when auto-approve may be off.
+ */
+export const proposeToolChange = internalMutation({
+  args: {
+    profileId: v.id('profiles'),
+    threadId: v.string(),
+    toolName: v.string(),
+    displayText: v.string(),
+    updates: v.string(), // JSON
+    previousValues: v.string(), // JSON
+  },
+  returns: v.id('agentToolCalls'),
+  handler: async (ctx, args) => {
+    const profile = await ctx.db.get('profiles', args.profileId)
+    if (!profile) throw new Error('Profile not found')
+
+    const toolCallId = await ctx.db.insert('agentToolCalls', {
+      profileId: args.profileId,
+      threadId: args.threadId,
+      toolName: args.toolName,
+      displayText: args.displayText,
+      updates: args.updates,
+      previousValues: args.previousValues,
+      status: 'proposed',
+      createdAt: Date.now(),
+    })
+
+    return toolCallId
+  },
+})
+
+/**
  * Apply a tool change to the profile and record it for approve/undo UI.
  * Called by agent tools after extracting information from conversation.
  */
@@ -134,6 +168,84 @@ export const resolveToolChange = mutation({
 })
 
 /**
+ * Approve a proposed tool change — apply its updates to the profile.
+ * Called by frontend when user clicks Approve on a proposed change.
+ */
+export const approveProposal = mutation({
+  args: {
+    toolCallId: v.id('agentToolCalls'),
+    editedUpdates: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, { toolCallId, editedUpdates }) => {
+    const userId = await getUserId(ctx)
+    if (!userId) throw new Error('Not authenticated')
+
+    const toolCall = await ctx.db.get('agentToolCalls', toolCallId)
+    if (!toolCall) throw new Error('Tool call not found')
+
+    const profile = await ctx.db.get('profiles', toolCall.profileId)
+    if (!profile || profile.userId !== userId) {
+      throw new Error('Not authorized')
+    }
+
+    if (toolCall.status !== 'proposed') {
+      throw new Error('Tool call is not in proposed state')
+    }
+
+    const updatesJson = editedUpdates ?? toolCall.updates
+    const updates = JSON.parse(updatesJson) as Record<string, unknown>
+    const affectsMatches = Object.keys(updates).some((f) =>
+      MATCH_AFFECTING_FIELDS.has(f),
+    )
+
+    await ctx.db.patch('profiles', toolCall.profileId, {
+      ...updates,
+      updatedAt: Date.now(),
+      ...(affectsMatches ? { matchesStaleAt: Date.now() } : {}),
+    })
+
+    await ctx.db.patch('agentToolCalls', toolCallId, {
+      status: 'approved',
+      ...(editedUpdates ? { editedUpdates } : {}),
+    })
+
+    return null
+  },
+})
+
+/**
+ * Deny a proposed tool change — mark as denied without touching the profile.
+ * Called by frontend when user clicks Deny on a proposed change.
+ */
+export const denyProposal = mutation({
+  args: {
+    toolCallId: v.id('agentToolCalls'),
+  },
+  returns: v.null(),
+  handler: async (ctx, { toolCallId }) => {
+    const userId = await getUserId(ctx)
+    if (!userId) throw new Error('Not authenticated')
+
+    const toolCall = await ctx.db.get('agentToolCalls', toolCallId)
+    if (!toolCall) throw new Error('Tool call not found')
+
+    const profile = await ctx.db.get('profiles', toolCall.profileId)
+    if (!profile || profile.userId !== userId) {
+      throw new Error('Not authorized')
+    }
+
+    if (toolCall.status !== 'proposed') {
+      throw new Error('Tool call is not in proposed state')
+    }
+
+    await ctx.db.patch('agentToolCalls', toolCallId, { status: 'denied' })
+
+    return null
+  },
+})
+
+/**
  * Batch-approve all pending tool calls for a thread.
  * Called when the user sends a new message (auto-approve on send).
  */
@@ -154,6 +266,23 @@ export const batchApprovePending = mutation({
     let count = 0
     for (const tc of pending) {
       if (tc.status === 'pending' && !tc.requiresManualApproval) {
+        // Legacy: already applied, just mark approved
+        await ctx.db.patch('agentToolCalls', tc._id, { status: 'approved' })
+        count++
+      } else if (tc.status === 'proposed' && !tc.requiresManualApproval) {
+        // New flow: apply updates to profile then mark approved
+        const profile = await ctx.db.get('profiles', tc.profileId)
+        if (profile) {
+          const updates = JSON.parse(tc.updates) as Record<string, unknown>
+          const affectsMatches = Object.keys(updates).some((f) =>
+            MATCH_AFFECTING_FIELDS.has(f),
+          )
+          await ctx.db.patch('profiles', tc.profileId, {
+            ...updates,
+            updatedAt: Date.now(),
+            ...(affectsMatches ? { matchesStaleAt: Date.now() } : {}),
+          })
+        }
         await ctx.db.patch('agentToolCalls', tc._id, { status: 'approved' })
         count++
       }

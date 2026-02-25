@@ -278,11 +278,14 @@ export default defineSchema({
     updates: v.string(), // JSON of what was written
     previousValues: v.string(), // JSON snapshot for undo
     status: v.union(
+      v.literal('proposed'),
       v.literal('pending'),
       v.literal('approved'),
       v.literal('undone'),
+      v.literal('denied'),
     ),
     requiresManualApproval: v.optional(v.boolean()),
+    editedUpdates: v.optional(v.string()),
     createdAt: v.number(),
   })
     .index('by_thread_and_createdAt', ['threadId', 'createdAt'])
