@@ -10,15 +10,12 @@ import { SignIn, SignUp } from '@clerk/clerk-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Bookmark,
-  Building2,
   Calendar,
   FileText,
   MapPin,
-  MessageSquare,
   Settings,
   Sparkles,
   Target,
-  Zap,
 } from 'lucide-react'
 import { api } from '../../convex/_generated/api'
 import { ActionCard } from '~/components/actions/ActionCard'
@@ -264,40 +261,27 @@ function PostAuthSetup() {
 }
 
 function LandingPage() {
-  const features = [
-    {
-      icon: MessageSquare,
-      title: 'AI Profile Enrichment',
-      description:
-        'Conversational AI that understands your background and goals',
-    },
+  const steps = [
     {
       icon: FileText,
-      title: 'Resume Upload',
-      description: 'Upload your CV and auto-populate your profile',
+      step: '1',
+      title: 'Build your profile',
+      description:
+        'Upload your resume or chat with our AI to capture your skills, experience, and goals.',
     },
     {
       icon: Target,
-      title: 'Smart Matching',
+      step: '2',
+      title: 'Get matched to roles',
       description:
-        'Get matched to relevant roles from across the AI safety ecosystem',
+        'We match you to curated AI safety roles across research, policy, governance, and operations.',
     },
     {
       icon: Sparkles,
-      title: 'Match Explanations',
+      step: '3',
+      title: 'See your fit and next steps',
       description:
-        'See your strengths, gaps, and recommendations for each role',
-    },
-    {
-      icon: Zap,
-      title: 'Career Actions',
-      description: 'Personalized next steps tailored to your goals',
-    },
-    {
-      icon: Building2,
-      title: 'Organizations & Events',
-      description:
-        'Discover AI safety orgs, join events, connect with community',
+        'For each role, see why you match, where the gaps are, and what to do to close them.',
     },
   ]
 
@@ -313,12 +297,12 @@ function LandingPage() {
                 Prototype
               </Badge>
               <h1 className="text-4xl md:text-5xl font-display font-semibold text-foreground mb-4 tracking-tight">
-                AI Safety Talent Network
+                AI safety roles matched to your profile
               </h1>
               <p className="text-lg text-muted-foreground max-w-lg">
-                Your career command center for AI safety. Get matched to
-                opportunities and receive AI-powered career guidance — all in
-                one place.
+                Upload your resume, tell us your goals, and we'll match you to
+                open roles across the AI safety ecosystem. For each match, see
+                why you fit, where your gaps are, and what to do next.
               </p>
             </div>
             {/* Right: Auth */}
@@ -326,40 +310,46 @@ function LandingPage() {
           </div>
         </section>
 
-        {/* What is ASTN */}
+        {/* How it works */}
+        <section className="max-w-4xl mx-auto mb-16 md:mb-20">
+          <h2 className="text-2xl font-display font-semibold text-foreground text-center mb-8">
+            How it works
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {steps.map((step, index) => (
+              <AnimatedCard key={step.title} index={index}>
+                <Card className="p-6 text-center h-full">
+                  <div className="size-10 rounded-full bg-coral-100 flex items-center justify-center mx-auto mb-4">
+                    <span className="text-sm font-semibold text-coral-600">
+                      {step.step}
+                    </span>
+                  </div>
+                  <h3 className="font-display font-medium text-foreground mb-2">
+                    {step.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {step.description}
+                  </p>
+                </Card>
+              </AnimatedCard>
+            ))}
+          </div>
+        </section>
+
+        {/* Who it's for */}
         <section
           id="about"
           className="max-w-3xl mx-auto text-center mb-16 md:mb-20"
         >
           <h2 className="text-2xl font-display font-semibold text-foreground mb-4">
-            What is ASTN?
+            Who it's for
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            ASTN is a matching platform for AI safety talent. Build your profile
-            through AI-powered conversations, get matched to open roles, and
-            receive personalized career actions to close your skill gaps.
-            Started as a pilot for BAISH (Buenos Aires AI Safety Hub), ASTN is
-            designed to connect the right people with the right opportunities in
-            AI safety.
+            Whether you're a researcher, engineer, policy analyst, or operations
+            specialist looking to work in AI safety — ASTN helps you find the
+            right opportunity. Started as a pilot for BAISH (Buenos Aires AI
+            Safety Hub), now open to anyone in the AI safety community.
           </p>
-        </section>
-
-        {/* What's Built */}
-        <section className="max-w-4xl mx-auto mb-16 md:mb-20">
-          <h2 className="text-2xl font-display font-semibold text-foreground text-center mb-8">
-            What's Built
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {features.map((feature, index) => (
-              <AnimatedCard key={feature.title} index={index}>
-                <FeatureCard
-                  icon={feature.icon}
-                  title={feature.title}
-                  description={feature.description}
-                />
-              </AnimatedCard>
-            ))}
-          </div>
         </section>
       </main>
       <footer className="border-t py-6">
@@ -671,30 +661,6 @@ function EventsEmptyState() {
       <Button asChild variant="outline" size="sm">
         <Link to="/orgs">Browse Organizations</Link>
       </Button>
-    </Card>
-  )
-}
-
-function FeatureCard({
-  icon: Icon,
-  title,
-  description,
-}: {
-  icon: React.ComponentType<{ className?: string }>
-  title: string
-  description: string
-}) {
-  return (
-    <Card className="p-5 flex items-start gap-4">
-      <div className="size-10 rounded-full bg-coral-100 flex items-center justify-center shrink-0">
-        <Icon className="size-5 text-coral-600" />
-      </div>
-      <div>
-        <h3 className="font-display font-medium text-foreground mb-1">
-          {title}
-        </h3>
-        <p className="text-sm text-muted-foreground">{description}</p>
-      </div>
     </Card>
   )
 }
