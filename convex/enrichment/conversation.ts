@@ -80,6 +80,7 @@ export interface ProfileData {
   name?: string
   location?: string
   headline?: string
+  linkedinUrl?: string
   skills?: Array<string>
   careerGoals?: string
   aiSafetyInterests?: Array<string>
@@ -108,6 +109,7 @@ export function buildProfileContext(profile: ProfileData): string {
   if (profile.name) contextParts.push(`Name: ${profile.name}`)
   if (profile.location) contextParts.push(`Location: ${profile.location}`)
   if (profile.headline) contextParts.push(`Headline: ${profile.headline}`)
+  if (profile.linkedinUrl) contextParts.push(`LinkedIn: ${profile.linkedinUrl}`)
   if (profile.skills && profile.skills.length > 0) {
     contextParts.push(`Skills: ${profile.skills.join(', ')}`)
   }
