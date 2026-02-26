@@ -347,7 +347,7 @@ function LandingPage() {
             {/* Left: Hero text */}
             <div className="flex-1 text-center md:text-left">
               <Badge variant="secondary" className="mb-4">
-                Prototype
+                Open Alpha
               </Badge>
               <h1 className="text-4xl md:text-5xl font-display font-semibold text-foreground mb-4 tracking-tight">
                 AI safety roles matched to your profile
