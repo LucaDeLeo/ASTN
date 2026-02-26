@@ -30,6 +30,7 @@ import type { ErrorInfo, ReactNode } from 'react'
 import type { UIMessage } from '@convex-dev/agent'
 import type { Doc, Id } from '../../../../convex/_generated/dataModel'
 import type { AgentPageContext } from '~/hooks/use-agent-page-context'
+import { useAgentSidebar } from '~/components/agent-sidebar/AgentSidebarProvider'
 import { useSmartInput } from '~/components/agent-sidebar/useSmartInput'
 import { Button } from '~/components/ui/button'
 import { Textarea } from '~/components/ui/textarea'
@@ -206,6 +207,33 @@ export function AgentChat({
       return () => clearTimeout(timer)
     }
   }, [isOpen])
+
+  // Auto-send pending message from openWithMessage()
+  const { pendingMessage, clearPendingMessage } = useAgentSidebar()
+
+  useEffect(() => {
+    if (!pendingMessage) return
+    if (!threadId || !profileId) return
+    if (isLoading) return
+
+    const sendPending = async () => {
+      clearPendingMessage()
+      userScrolledUpRef.current = false
+      setShowScrollToBottom(false)
+
+      await sendMessageMut({
+        threadId,
+        prompt: pendingMessage,
+        profileId,
+        pageContext: pageContext?.type,
+        pageContextEntityId: pageContext?.entityId,
+        browserLocale:
+          typeof navigator !== 'undefined' ? navigator.language : undefined,
+      })
+    }
+
+    sendPending()
+  }, [pendingMessage, threadId, profileId, isLoading])
 
   // Find the last user message key for edit button
   const lastUserMessageKey = (() => {

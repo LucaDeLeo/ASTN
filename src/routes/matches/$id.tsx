@@ -18,7 +18,9 @@ import {
   ExternalLink,
   Lightbulb,
   MapPin,
+  MessageSquare,
   Sparkles,
+  ThumbsDown,
   ThumbsUp,
 } from 'lucide-react'
 import { useCallback, useEffect } from 'react'
@@ -32,6 +34,7 @@ import { Card } from '~/components/ui/card'
 import { Badge } from '~/components/ui/badge'
 import { Spinner } from '~/components/ui/spinner'
 import { formatDeadline, formatPostedAt } from '~/lib/formatDeadline'
+import { useAgentSidebar } from '~/components/agent-sidebar/AgentSidebarProvider'
 
 export const Route = createFileRoute('/matches/$id')({
   loader: async ({ context, params }) => {
@@ -167,6 +170,7 @@ function MatchDetailContent() {
     }),
   )
 
+  const { openWithMessage } = useAgentSidebar()
   const markAsApplied = useMutation(api.matches.markAsApplied)
   const saveMatch = useMutation(api.matches.saveMatch)
   const isApplied = !!match?.appliedAt
@@ -312,6 +316,41 @@ function MatchDetailContent() {
             </div>
           </div>
         </Card>
+
+        {/* AI discussion prompt */}
+        <div className="mb-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 rounded-lg border border-border bg-card px-4 py-3">
+          <p className="text-sm text-muted-foreground mr-auto">
+            <Sparkles className="size-4 inline-block mr-1.5 -mt-0.5 text-primary" />
+            Want to talk about this match?
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                openWithMessage(
+                  `I'd like to discuss this match with ${match.opportunity.organization} for the "${match.opportunity.title}" role. What do you think about my fit?`,
+                )
+              }
+            >
+              <MessageSquare className="size-4 mr-1.5" />
+              Discuss match
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground"
+              onClick={() =>
+                openWithMessage(
+                  `This match with ${match.opportunity.organization} for the "${match.opportunity.title}" role doesn't seem right for me.`,
+                )
+              }
+            >
+              <ThumbsDown className="size-4 mr-1.5" />
+              Not for me
+            </Button>
+          </div>
+        </div>
 
         {/* Deadline / Posted date banner */}
         <DeadlineBanner

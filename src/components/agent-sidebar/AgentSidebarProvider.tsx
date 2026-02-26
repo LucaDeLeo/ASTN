@@ -23,6 +23,9 @@ interface AgentSidebarContextValue {
   setSidebarWidth: (width: number) => void
   isResizing: boolean
   setIsResizing: (v: boolean) => void
+  pendingMessage: string | null
+  clearPendingMessage: () => void
+  openWithMessage: (message: string) => void
 }
 
 const AgentSidebarContext = createContext<AgentSidebarContextValue | null>(null)
@@ -65,6 +68,8 @@ export function AgentSidebarProvider({
   const autoOpenedRef = useRef(false)
   const previousFocusRef = useRef<HTMLElement | null>(null)
   const [showConsentDialog, setShowConsentDialog] = useState(false)
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null)
+  const clearPendingMessage = useCallback(() => setPendingMessage(null), [])
 
   // Persist open state
   useEffect(() => {
@@ -156,6 +161,18 @@ export function AgentSidebarProvider({
     previousFocusRef.current = document.activeElement as HTMLElement | null
     setIsOpen(true)
   }, [profile])
+  const openWithMessage = useCallback(
+    (message: string) => {
+      setPendingMessage(message)
+      if (profile && !profile.consentedAt) {
+        setShowConsentDialog(true)
+        return
+      }
+      previousFocusRef.current = document.activeElement as HTMLElement | null
+      setIsOpen(true)
+    },
+    [profile],
+  )
   const close = useCallback(() => {
     setIsOpen(false)
     const el = previousFocusRef.current
@@ -188,6 +205,9 @@ export function AgentSidebarProvider({
         setSidebarWidth,
         isResizing,
         setIsResizing,
+        pendingMessage,
+        clearPendingMessage,
+        openWithMessage,
       }}
     >
       {children}
