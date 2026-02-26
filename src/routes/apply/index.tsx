@@ -1,3 +1,4 @@
+import { usePostHog } from '@posthog/react'
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
   AuthLoading,
@@ -113,6 +114,7 @@ function ApplicationForm() {
   const submitApplication = useMutation(api.orgApplications.submit)
   const profile = useQuery(api.profiles.getOrCreateProfile)
   const myEmail = useQuery(api.orgApplications.getMyEmail)
+  const posthog = usePostHog()
 
   const [orgName, setOrgName] = useState('')
   const [description, setDescription] = useState('')
@@ -164,12 +166,19 @@ function ApplicationForm() {
         applicantName: applicantName.trim(),
         applicantEmail: applicantEmail.trim(),
       })
+      posthog.capture('org_application_submitted', {
+        org_name: orgName.trim(),
+        city: city.trim(),
+        country: country.trim(),
+        has_website: !!website.trim(),
+      })
       toast.success('Application submitted!')
       navigate({ to: '/apply/status' })
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : 'Failed to submit application',
       )
+      posthog.captureException(error)
     } finally {
       setIsSubmitting(false)
     }

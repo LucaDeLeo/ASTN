@@ -1,8 +1,9 @@
-import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
-import { convexQuery } from '@convex-dev/react-query'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { useConvexAuth, useMutation, useQuery } from 'convex/react'
 import { useUser } from '@clerk/clerk-react'
+import { usePostHog } from '@posthog/react'
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { convexQuery } from '@convex-dev/react-query'
+import { useConvexAuth, useMutation, useQuery } from 'convex/react'
 import { useState } from 'react'
 import {
   ArrowLeft,
@@ -78,6 +79,7 @@ function ApplyPage() {
   const navigate = useNavigate()
   const { isAuthenticated } = useConvexAuth()
   const { user } = useUser()
+  const posthog = usePostHog()
 
   const { data: org } = useSuspenseQuery(
     convexQuery(api.orgs.directory.getOrgBySlug, { slug }),
@@ -286,6 +288,13 @@ function ApplyPage() {
           responses,
         })
         setSubmitted(true)
+        posthog.capture('opportunity_application_submitted', {
+          opportunity_id: opportunity._id,
+          opportunity_title: opportunity.title,
+          org_slug: slug,
+          org_name: org.name,
+          is_guest: false,
+        })
       } else {
         const email = String(responses.email ?? '')
           .trim()
@@ -298,9 +307,17 @@ function ApplyPage() {
         })
         setSubmitted(true)
         setSubmittedAsGuest(true)
+        posthog.capture('opportunity_application_submitted', {
+          opportunity_id: opportunity._id,
+          opportunity_title: opportunity.title,
+          org_slug: slug,
+          org_name: org.name,
+          is_guest: true,
+        })
       }
     } catch (err) {
       console.error('Failed to submit application:', err)
+      posthog.captureException(err)
     } finally {
       setIsSubmitting(false)
     }

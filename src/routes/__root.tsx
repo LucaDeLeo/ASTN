@@ -1,3 +1,5 @@
+import { useUser } from '@clerk/clerk-react'
+import { PostHogProvider, usePostHog } from '@posthog/react'
 import {
   HeadContent,
   Outlet,
@@ -23,6 +25,26 @@ import { SidebarAwareWrapper } from '~/components/agent-sidebar/SidebarAwareWrap
 import { MobileShell } from '~/components/layout/mobile-shell'
 import { ErrorDisplay } from '~/components/ErrorDisplay'
 import { isTauri } from '~/lib/platform'
+
+// Identifies the Clerk user in PostHog once they are loaded
+function PostHogUserIdentifier() {
+  const { user, isSignedIn } = useUser()
+  const posthog = usePostHog()
+
+  React.useEffect(() => {
+    if (isSignedIn) {
+      posthog.identify(user.id, {
+        email: user.primaryEmailAddress?.emailAddress ?? undefined,
+        name: user.fullName ?? undefined,
+      })
+    } else if (isSignedIn === false) {
+      // Reset on sign-out so the next user starts fresh
+      posthog.reset()
+    }
+  }, [isSignedIn, user, posthog])
+
+  return null
+}
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
@@ -192,11 +214,25 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <ThemeProvider>
-          {children}
-          <Toaster position="top-right" richColors />
-          <FeedbackDialog />
-        </ThemeProvider>
+        <PostHogProvider
+          apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_KEY as string}
+          options={{
+            api_host: '/ingest',
+            ui_host:
+              import.meta.env.VITE_PUBLIC_POSTHOG_HOST ||
+              'https://us.posthog.com',
+            defaults: '2025-05-24',
+            capture_exceptions: true,
+            debug: import.meta.env.DEV,
+          }}
+        >
+          <PostHogUserIdentifier />
+          <ThemeProvider>
+            {children}
+            <Toaster position="top-right" richColors />
+            <FeedbackDialog />
+          </ThemeProvider>
+        </PostHogProvider>
         <Scripts />
       </body>
     </html>

@@ -1,3 +1,4 @@
+import { usePostHog } from '@posthog/react'
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
   AuthLoading,
@@ -162,6 +163,7 @@ function DeadlineBanner({
 
 function MatchDetailContent() {
   const { id } = Route.useParams()
+  const posthog = usePostHog()
 
   // Data is synchronously available - preloaded by route loader
   const { data: match } = useSuspenseQuery(
@@ -176,6 +178,22 @@ function MatchDetailContent() {
   const isApplied = !!match?.appliedAt
   const isSaved = match?.status === 'saved'
 
+  // Track match detail viewed (once match data loads)
+  useEffect(() => {
+    if (match) {
+      posthog.capture('match_detail_viewed', {
+        match_id: match._id,
+        opportunity_title: match.opportunity.title,
+        organization: match.opportunity.organization,
+        tier: match.tier,
+        is_applied: !!match.appliedAt,
+        is_saved: match.status === 'saved',
+      })
+    }
+    // We intentionally only fire this once when a match loads (not on every render)
+    // match?._id is the stable dependency that tells us a new match was loaded
+  }, [match?._id])
+
   const handleToggleApplied = useCallback(async () => {
     if (!match) return
     const wasApplied = !!match.appliedAt
@@ -184,8 +202,14 @@ function MatchDetailContent() {
       toast.success('Nice work! Application tracked.', {
         description: match.opportunity.organization,
       })
+      posthog.capture('match_applied', {
+        match_id: match._id,
+        opportunity_title: match.opportunity.title,
+        organization: match.opportunity.organization,
+        tier: match.tier,
+      })
     }
-  }, [match, markAsApplied])
+  }, [match, markAsApplied, posthog])
 
   if (match === null) {
     return (
@@ -282,6 +306,15 @@ function MatchDetailContent() {
                   href={match.opportunity.sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() =>
+                    posthog.capture('match_external_apply_clicked', {
+                      match_id: match._id,
+                      opportunity_title: match.opportunity.title,
+                      organization: match.opportunity.organization,
+                      tier: match.tier,
+                      source_url: match.opportunity.sourceUrl,
+                    })
+                  }
                 >
                   <ExternalLink className="size-4 mr-2" />
                   Apply
@@ -327,11 +360,17 @@ function MatchDetailContent() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() =>
+              onClick={() => {
                 openWithMessage(
                   `I'd like to discuss this match with ${match.opportunity.organization} for the "${match.opportunity.title}" role. What do you think about my fit?`,
                 )
-              }
+                posthog.capture('match_ai_discuss_clicked', {
+                  match_id: match._id,
+                  opportunity_title: match.opportunity.title,
+                  organization: match.opportunity.organization,
+                  tier: match.tier,
+                })
+              }}
             >
               <MessageSquare className="size-4 mr-1.5" />
               Discuss match

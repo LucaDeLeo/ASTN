@@ -1,3 +1,4 @@
+import { usePostHog } from '@posthog/react'
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
   AuthLoading,
@@ -343,6 +344,7 @@ function MatchesContent() {
   const matchProgress = useQuery(api.matches.getMatchProgress)
   const triggerComputation = useAction(api.matches.triggerMatchComputation)
   const markViewed = useAction(api.matches.markMatchesViewed)
+  const posthog = usePostHog()
   // Brief local state: true between clicking refresh and matchProgress appearing
   const [isTriggering, setIsTriggering] = useState(false)
   const [computeError, setComputeError] = useState<string | null>(null)
@@ -381,6 +383,13 @@ function MatchesContent() {
     setIsTriggering(true)
     setComputeError(null)
     setRetryAfter(null)
+    posthog.capture('match_computation_triggered', {
+      existing_matches: matchesData?.matches
+        ? matchesData.matches.great.length +
+          matchesData.matches.good.length +
+          matchesData.matches.exploring.length
+        : 0,
+    })
     try {
       await triggerComputation()
     } catch (err) {
@@ -737,8 +746,26 @@ function MatchesContent() {
                     return (
                       <SwipeableCard
                         key={match._id}
-                        onSwipeLeft={() => dismissMatch({ matchId: match._id })}
-                        onSwipeRight={() => saveMatch({ matchId: match._id })}
+                        onSwipeLeft={() => {
+                          dismissMatch({ matchId: match._id })
+                          posthog.capture('match_dismissed', {
+                            match_id: match._id,
+                            opportunity_title: match.opportunity.title,
+                            organization: match.opportunity.organization,
+                            tier: match.tier,
+                            source: 'swipe',
+                          })
+                        }}
+                        onSwipeRight={() => {
+                          saveMatch({ matchId: match._id })
+                          posthog.capture('match_saved', {
+                            match_id: match._id,
+                            opportunity_title: match.opportunity.title,
+                            organization: match.opportunity.organization,
+                            tier: match.tier,
+                            source: 'swipe',
+                          })
+                        }}
                       >
                         <AnimatedCard index={index}>
                           <MatchCard
@@ -755,8 +782,26 @@ function MatchesContent() {
                       <MatchCard
                         match={match}
                         isSaved={match.status === 'saved'}
-                        onSave={() => saveMatch({ matchId: match._id })}
-                        onDismiss={() => dismissMatch({ matchId: match._id })}
+                        onSave={() => {
+                          saveMatch({ matchId: match._id })
+                          posthog.capture('match_saved', {
+                            match_id: match._id,
+                            opportunity_title: match.opportunity.title,
+                            organization: match.opportunity.organization,
+                            tier: match.tier,
+                            source: 'button',
+                          })
+                        }}
+                        onDismiss={() => {
+                          dismissMatch({ matchId: match._id })
+                          posthog.capture('match_dismissed', {
+                            match_id: match._id,
+                            opportunity_title: match.opportunity.title,
+                            organization: match.opportunity.organization,
+                            tier: match.tier,
+                            source: 'button',
+                          })
+                        }}
                       />
                     </AnimatedCard>
                   )
