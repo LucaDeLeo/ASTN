@@ -133,14 +133,24 @@ export function AgentChat({
   }, [autoApprove])
 
   // Auto-approve new tool calls when toggle is on (skip manual-approval items)
+  // Ref tracks in-flight mutation IDs to prevent duplicate concurrent calls
+  const processingIdsRef = useRef(new Set<string>())
+
   useEffect(() => {
     if (!autoApprove || !toolCalls) return
     for (const tc of toolCalls) {
       if (tc.requiresManualApproval) continue
+      if (processingIdsRef.current.has(tc._id)) continue
       if (tc.status === 'proposed') {
-        approveProposal({ toolCallId: tc._id })
+        processingIdsRef.current.add(tc._id)
+        approveProposal({ toolCallId: tc._id }).finally(() =>
+          processingIdsRef.current.delete(tc._id),
+        )
       } else if (tc.status === 'pending') {
-        resolveToolChange({ toolCallId: tc._id, action: 'approve' })
+        processingIdsRef.current.add(tc._id)
+        resolveToolChange({ toolCallId: tc._id, action: 'approve' }).finally(
+          () => processingIdsRef.current.delete(tc._id),
+        )
       }
     }
   }, [autoApprove, toolCalls, resolveToolChange, approveProposal])
@@ -224,8 +234,10 @@ export function AgentChat({
     userScrolledUpRef.current = false
     setShowScrollToBottom(false)
 
-    // Batch-approve pending tool calls on send
-    batchApprove({ threadId })
+    // Batch-approve pending tool calls on send (skip when auto-approve handles it)
+    if (!autoApprove) {
+      batchApprove({ threadId })
+    }
 
     await sendMessageMut({
       threadId,

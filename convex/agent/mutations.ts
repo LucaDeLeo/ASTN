@@ -136,6 +136,10 @@ export const resolveToolChange = mutation({
     const toolCall = await ctx.db.get('agentToolCalls', toolCallId)
     if (!toolCall) throw new Error('Tool call not found')
 
+    // Idempotency: skip if already in a terminal state
+    if (toolCall.status === 'approved' || toolCall.status === 'undone')
+      return null
+
     // Verify ownership via profile
     const profile = await ctx.db.get('profiles', toolCall.profileId)
     if (!profile || profile.userId !== userId) {
@@ -190,9 +194,8 @@ export const approveProposal = mutation({
       throw new Error('Not authorized')
     }
 
-    if (toolCall.status !== 'proposed') {
-      throw new Error('Tool call is not in proposed state')
-    }
+    // Idempotency: silently skip if no longer in proposed state
+    if (toolCall.status !== 'proposed') return null
 
     const updatesJson = editedUpdates ?? toolCall.updates
     const updates = JSON.parse(updatesJson) as Record<string, unknown>
