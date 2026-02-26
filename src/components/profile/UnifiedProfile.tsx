@@ -398,14 +398,16 @@ export function UnifiedProfile({ initialSection }: UnifiedProfileProps) {
           {profile.matchPreferences ? (
             <div className="space-y-2">
               <div className="flex flex-wrap gap-1.5">
-                {profile.matchPreferences.remotePreference && (
-                  <Badge variant="secondary" className="text-xs">
-                    {profile.matchPreferences.remotePreference.replace(
-                      /_/g,
-                      ' ',
-                    )}
-                  </Badge>
-                )}
+                {profile.matchPreferences.remotePreference &&
+                  profile.matchPreferences.remotePreference !==
+                    'no_preference' && (
+                    <Badge variant="secondary" className="text-xs">
+                      {profile.matchPreferences.remotePreference.replace(
+                        /_/g,
+                        ' ',
+                      )}
+                    </Badge>
+                  )}
                 {profile.matchPreferences.roleTypes?.map((role) => (
                   <Badge key={role} variant="secondary" className="text-xs">
                     {role}

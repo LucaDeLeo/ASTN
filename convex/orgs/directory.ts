@@ -4,6 +4,7 @@ import { query } from '../_generated/server'
 // Get organization by slug
 export const getOrgBySlug = query({
   args: { slug: v.string() },
+  returns: v.any(),
   handler: async (ctx, { slug }) => {
     const org = await ctx.db
       .query('organizations')
@@ -25,12 +26,14 @@ export const getOrgBySlug = query({
 // Get visible members for an organization's public directory
 export const getVisibleMembers = query({
   args: { orgId: v.id('organizations') },
+  returns: v.any(),
   handler: async (ctx, { orgId }) => {
     // Get all memberships with visible directory visibility
     const memberships = await ctx.db
       .query('orgMemberships')
-      .withIndex('by_org', (q) => q.eq('orgId', orgId))
-      .filter((q) => q.eq(q.field('directoryVisibility'), 'visible'))
+      .withIndex('by_org_and_directoryVisibility', (q) =>
+        q.eq('orgId', orgId).eq('directoryVisibility', 'visible'),
+      )
       .collect()
 
     // Fetch profile data for each member
@@ -50,7 +53,9 @@ export const getVisibleMembers = query({
             ? {
                 name: profile.name || 'Anonymous',
                 headline: profile.headline,
-                skills: profile.skills?.slice(0, 3) || [],
+                skills: [...(profile.skills || [])]
+                  .sort((a, b) => a.localeCompare(b))
+                  .slice(0, 3),
                 location: profile.location,
               }
             : {
@@ -77,6 +82,7 @@ export const getVisibleMembers = query({
 // Validate an invite token
 export const validateInviteToken = query({
   args: { token: v.string() },
+  returns: v.any(),
   handler: async (ctx, { token }) => {
     // Find invite by token
     const invite = await ctx.db
@@ -111,6 +117,7 @@ export const validateInviteToken = query({
 // Get member count for an organization
 export const getMemberCount = query({
   args: { orgId: v.id('organizations') },
+  returns: v.number(),
   handler: async (ctx, { orgId }) => {
     const memberships = await ctx.db
       .query('orgMemberships')

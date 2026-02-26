@@ -343,6 +343,7 @@ export default defineSchema({
     ),
   })
     .index('by_user', ['userId'])
+    .index('by_user_and_status', ['userId', 'status'])
     .index('by_status', ['status']),
 
   // Skills taxonomy
@@ -393,6 +394,7 @@ export default defineSchema({
     .index('by_slug', ['slug'])
     .index('by_country', ['country'])
     .index('by_city_country', ['city', 'country'])
+    .index('by_isGlobal', ['isGlobal'])
     .searchIndex('search_name', {
       searchField: 'name',
     }),
@@ -408,6 +410,7 @@ export default defineSchema({
   })
     .index('by_user', ['userId'])
     .index('by_org', ['orgId'])
+    .index('by_org_and_directoryVisibility', ['orgId', 'directoryVisibility'])
     .index('by_org_role', ['orgId', 'role']),
 
   // Organization invite links

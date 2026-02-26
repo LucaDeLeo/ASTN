@@ -9,8 +9,10 @@ import { Authenticated, useMutation } from 'convex/react'
 import { api } from '../convex/_generated/api'
 import { routeTree } from './routeTree.gen'
 import type { Clerk } from '@clerk/clerk-js'
+import type { ErrorComponentProps } from '@tanstack/react-router'
 import { isTauri } from '~/lib/platform'
 import { Spinner } from '~/components/ui/spinner'
+import { ErrorDisplay } from '~/components/ErrorDisplay'
 
 function UserMigration() {
   const migrateUser = useMutation(api.userMigration.migrateUserIfNeeded)
@@ -60,6 +62,10 @@ function TauriClerkProvider({
   )
 }
 
+function DefaultErrorComponent({ error, reset }: ErrorComponentProps) {
+  return <ErrorDisplay error={error} reset={reset} />
+}
+
 function LoadingSpinner() {
   return (
     <main className="container mx-auto px-4 py-16">
@@ -96,7 +102,7 @@ export function getRouter() {
       scrollRestoration: true,
       defaultPreloadStaleTime: 0, // Let React Query handle all caching
       defaultViewTransition: true, // Enable View Transitions API for smooth page navigation
-      defaultErrorComponent: (err) => <p>{err.error.stack}</p>,
+      defaultErrorComponent: DefaultErrorComponent,
       defaultNotFoundComponent: () => <p>not found</p>,
       Wrap: ({ children }) => {
         if (isTauri()) {

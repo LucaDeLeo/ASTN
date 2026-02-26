@@ -214,6 +214,32 @@ export const getCareerActionsForAgent = internalQuery({
   },
 })
 
+/**
+ * Get recently extracted documents for a user (up to 3).
+ * Used to inject extracted CV/resume content into the agent's system prompt.
+ */
+export const getRecentExtractedDocuments = internalQuery({
+  args: { userId: v.string() },
+  returns: v.any(),
+  handler: async (ctx, { userId }) => {
+    const docs = await ctx.db
+      .query('uploadedDocuments')
+      .withIndex('by_user_and_status', (q) =>
+        q.eq('userId', userId).eq('status', 'extracted'),
+      )
+      .collect()
+    return docs
+      .filter((d) => d.extractedData)
+      .sort((a, b) => b.uploadedAt - a.uploadedAt)
+      .slice(0, 3)
+      .map((d) => ({
+        fileName: d.fileName,
+        uploadedAt: d.uploadedAt,
+        extractedData: d.extractedData,
+      }))
+  },
+})
+
 // ── BAISH CRM lookup ─────────────────────────────────────────────────────────
 
 /**

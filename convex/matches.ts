@@ -307,9 +307,11 @@ export const triggerMatchComputation = action({
       key: userId,
     })
     if (!rl.ok) {
+      const retryMinutes = Math.ceil(rl.retryAfter / 60000)
       throw new ConvexError({
         kind: 'RateLimited' as const,
         retryAfter: rl.retryAfter,
+        message: `Match computation is rate limited. Please try again in ${retryMinutes} minute${retryMinutes === 1 ? '' : 's'}.`,
       })
     }
 
@@ -330,10 +332,9 @@ export const triggerMatchComputation = action({
       totalCount: number
       missingRequired: Array<string>
       sectionsNeeded: number
-    } = await ctx.runQuery(
-      internal.matching.queries.getProfileMatchReadiness,
-      { profileId: profile._id },
-    )
+    } = await ctx.runQuery(internal.matching.queries.getProfileMatchReadiness, {
+      profileId: profile._id,
+    })
     if (!readiness.ready) {
       throw new ConvexError({
         kind: 'ProfileIncomplete' as const,

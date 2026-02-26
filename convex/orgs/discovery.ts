@@ -19,11 +19,12 @@ function parseCity(location: string | undefined): string | null {
  * - Respects locationDiscoverable privacy setting (opt-in)
  * - If location discovery disabled or no location: returns global orgs only
  * - If location enabled: returns local orgs first, fills with global orgs
- * - Includes joined orgs (tagged with isJoined flag)
+ * - Excludes joined orgs from suggestions
  * - Maximum 5 suggestions
  */
 export const getSuggestedOrgs = query({
   args: {},
+  returns: v.any(),
   handler: async (ctx) => {
     const userId = await getUserId(ctx)
     if (!userId) return []
@@ -48,12 +49,16 @@ export const getSuggestedOrgs = query({
     ) {
       const globalOrgs = await ctx.db
         .query('organizations')
-        .filter((q) => q.eq(q.field('isGlobal'), true))
+        .withIndex('by_isGlobal', (q) => q.eq('isGlobal', true))
         .collect()
+
+      const unjoinedGlobal = globalOrgs.filter(
+        (org) => !joinedOrgIds.has(org._id.toString()),
+      )
 
       // Resolve fresh logo URLs from storage (stored URLs expire)
       return Promise.all(
-        globalOrgs.slice(0, 5).map(async (org) => {
+        unjoinedGlobal.slice(0, 5).map(async (org) => {
           let logoUrl = org.logoUrl
           if (org.logoStorageId) {
             const url = await ctx.storage.getUrl(org.logoStorageId)
@@ -62,7 +67,7 @@ export const getSuggestedOrgs = query({
           return {
             ...org,
             logoUrl,
-            isJoined: joinedOrgIds.has(org._id.toString()),
+            isJoined: false,
           }
         }),
       )
@@ -71,28 +76,26 @@ export const getSuggestedOrgs = query({
     // Parse user city
     const userCity = parseCity(profile.location)
 
-    // 1. Get local orgs (same city)
+    // 1. Get local orgs (same city, non-global)
     let localOrgs: Array<Doc<'organizations'>> = []
     if (userCity) {
-      localOrgs = await ctx.db
+      const cityOrgs = await ctx.db
         .query('organizations')
-        .filter((q) =>
-          q.and(
-            q.eq(q.field('city'), userCity),
-            q.neq(q.field('isGlobal'), true),
-          ),
-        )
+        .withIndex('by_city_country', (q) => q.eq('city', userCity))
         .collect()
+      localOrgs = cityOrgs.filter((org) => !org.isGlobal)
     }
 
     // 2. Get global orgs to fill remaining slots
     const globalOrgs = await ctx.db
       .query('organizations')
-      .filter((q) => q.eq(q.field('isGlobal'), true))
+      .withIndex('by_isGlobal', (q) => q.eq('isGlobal', true))
       .collect()
 
-    // 3. Combine and take 5 (joined orgs included, tagged with isJoined)
-    const combined = [...localOrgs, ...globalOrgs]
+    // 3. Combine, exclude joined orgs, and take 5
+    const combined = [...localOrgs, ...globalOrgs].filter(
+      (org) => !joinedOrgIds.has(org._id.toString()),
+    )
 
     // Resolve fresh logo URLs from storage (stored URLs expire)
     return Promise.all(
@@ -105,7 +108,7 @@ export const getSuggestedOrgs = query({
         return {
           ...org,
           logoUrl,
-          isJoined: joinedOrgIds.has(org._id.toString()),
+          isJoined: false,
         }
       }),
     )
@@ -121,6 +124,7 @@ export const getAllOrgs = query({
     country: v.optional(v.string()),
     searchQuery: v.optional(v.string()),
   },
+  returns: v.any(),
   handler: async (ctx, { country, searchQuery }) => {
     let orgs
 
@@ -177,6 +181,7 @@ export const getAllOrgs = query({
  */
 export const getOrgCountries = query({
   args: {},
+  returns: v.any(),
   handler: async (ctx) => {
     const orgs = await ctx.db.query('organizations').collect()
     const countries = [...new Set(orgs.map((o) => o.country).filter(Boolean))]

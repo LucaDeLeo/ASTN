@@ -21,6 +21,7 @@ import { AgentSidebarProvider } from '~/components/agent-sidebar/AgentSidebarPro
 import { AgentSidebar } from '~/components/agent-sidebar/AgentSidebar'
 import { SidebarAwareWrapper } from '~/components/agent-sidebar/SidebarAwareWrapper'
 import { MobileShell } from '~/components/layout/mobile-shell'
+import { ErrorDisplay } from '~/components/ErrorDisplay'
 import { isTauri } from '~/lib/platform'
 
 export const Route = createRootRouteWithContext<{
@@ -149,6 +150,11 @@ export const Route = createRootRouteWithContext<{
     ],
   }),
   notFoundComponent: () => <div>Route not found</div>,
+  errorComponent: ({ error, reset }) => (
+    <RootDocument>
+      <ErrorDisplay error={error} reset={reset} />
+    </RootDocument>
+  ),
   component: RootComponent,
 })
 

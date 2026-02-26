@@ -1,7 +1,29 @@
 import { createTool } from '@convex-dev/agent'
 import { z } from 'zod'
 import { internal } from '../_generated/api'
-import { SKILLS_LIST_STRING } from './prompts'
+import { SKILLS_LIST, SKILLS_LIST_STRING } from './prompts'
+import {
+  convertDateString,
+  educationMatches,
+  normalize,
+  workMatches,
+} from './utils'
+
+const SKILLS_SET = new Set(SKILLS_LIST)
+
+// Fuzzy find: try exact match first, fall back to substring
+function fuzzyFindIndex<T>(
+  items: Array<T>,
+  getText: (item: T) => string,
+  search: string,
+): number {
+  const s = normalize(search)
+  // Exact match first
+  const exact = items.findIndex((item) => normalize(getText(item)) === s)
+  if (exact >= 0) return exact
+  // Substring fallback
+  return items.findIndex((item) => normalize(getText(item)).includes(s))
+}
 
 // Helper: look up the current user's profile from tool context
 async function getProfile(ctx: {
@@ -153,6 +175,25 @@ export const addEducation = createTool({
     const profile = await getProfile(ctx)
     if (!profile) return 'Error: profile not found'
 
+    // Validate years
+    const currentYear = new Date().getFullYear()
+    if (
+      input.startYear !== undefined &&
+      (input.startYear < 1900 || input.startYear > currentYear + 5)
+    )
+      return `Error: startYear ${input.startYear} is out of valid range (1900-${currentYear + 5})`
+    if (
+      input.endYear !== undefined &&
+      (input.endYear < 1900 || input.endYear > currentYear + 5)
+    )
+      return `Error: endYear ${input.endYear} is out of valid range (1900-${currentYear + 5})`
+    if (
+      input.startYear !== undefined &&
+      input.endYear !== undefined &&
+      input.endYear < input.startYear
+    )
+      return `Error: endYear (${input.endYear}) cannot be before startYear (${input.startYear})`
+
     const existing = profile.education ?? []
     const newEntry = {
       institution: input.institution,
@@ -162,9 +203,26 @@ export const addEducation = createTool({
       endYear: input.endYear,
       current: input.current,
     }
-    const updated = [...existing, newEntry]
 
-    const displayText = `Added education: ${input.degree ? `${input.degree} ` : ''}${input.field ? `in ${input.field} ` : ''}at ${input.institution}`
+    // Check for duplicate — merge if found
+    const matchIdx = existing.findIndex((e) => educationMatches(e, newEntry))
+    let updated: typeof existing
+    let verb: string
+    if (matchIdx >= 0) {
+      updated = [...existing]
+      updated[matchIdx] = {
+        ...updated[matchIdx],
+        ...Object.fromEntries(
+          Object.entries(newEntry).filter(([, v]) => v !== undefined),
+        ),
+      }
+      verb = 'Updated'
+    } else {
+      updated = [...existing, newEntry]
+      verb = 'Added'
+    }
+
+    const displayText = `${verb} education: ${input.degree ? `${input.degree} ` : ''}${input.field ? `in ${input.field} ` : ''}at ${input.institution}`
 
     await ctx.runMutation(
       internal.agent.mutations.proposeToolChange as never,
@@ -206,6 +264,26 @@ export const addWorkExperience = createTool({
     const profile = await getProfile(ctx)
     if (!profile) return 'Error: profile not found'
 
+    // Validate date format (YYYY-MM) and year range
+    const dateRegex = /^\d{4}-\d{2}$/
+    if (input.startDate && !dateRegex.test(input.startDate))
+      return `Error: startDate "${input.startDate}" must be in YYYY-MM format`
+    if (input.endDate && !dateRegex.test(input.endDate))
+      return `Error: endDate "${input.endDate}" must be in YYYY-MM format`
+    const currentYear = new Date().getFullYear()
+    if (input.startDate) {
+      const year = parseInt(input.startDate.split('-')[0], 10)
+      if (year < 1900 || year > currentYear + 5)
+        return `Error: startDate year ${year} is out of valid range (1900-${currentYear + 5})`
+    }
+    if (input.endDate) {
+      const year = parseInt(input.endDate.split('-')[0], 10)
+      if (year < 1900 || year > currentYear + 5)
+        return `Error: endDate year ${year} is out of valid range (1900-${currentYear + 5})`
+    }
+    if (input.startDate && input.endDate && input.startDate > input.endDate)
+      return `Error: endDate (${input.endDate}) cannot be before startDate (${input.startDate})`
+
     const existing = profile.workHistory ?? []
     const newEntry = {
       organization: input.organization,
@@ -215,9 +293,26 @@ export const addWorkExperience = createTool({
       current: input.current,
       description: input.description,
     }
-    const updated = [...existing, newEntry]
 
-    const displayText = `Added work experience: ${input.title} at ${input.organization}`
+    // Check for duplicate — merge if found
+    const matchIdx = existing.findIndex((e) => workMatches(e, newEntry))
+    let updated: typeof existing
+    let verb: string
+    if (matchIdx >= 0) {
+      updated = [...existing]
+      updated[matchIdx] = {
+        ...updated[matchIdx],
+        ...Object.fromEntries(
+          Object.entries(newEntry).filter(([, v]) => v !== undefined),
+        ),
+      }
+      verb = 'Updated'
+    } else {
+      updated = [...existing, newEntry]
+      verb = 'Added'
+    }
+
+    const displayText = `${verb} work experience: ${input.title} at ${input.organization}`
 
     await ctx.runMutation(
       internal.agent.mutations.proposeToolChange as never,
@@ -246,8 +341,17 @@ export const setSkills = createTool({
     const profile = await getProfile(ctx)
     if (!profile) return 'Error: profile not found'
 
+    // Validate skills against taxonomy
+    const validSkills = input.skills.filter((s) => SKILLS_SET.has(s))
+    if (validSkills.length === 0)
+      return 'Error: none of the provided skills match the taxonomy. Use exact names from the skills list.'
+
+    const skipped = input.skills.filter((s) => !SKILLS_SET.has(s))
     const existing = profile.skills ?? []
-    const displayText = `Updated skills`
+    const displayText =
+      skipped.length > 0
+        ? `Updated skills (${skipped.length} unrecognized skipped: ${skipped.join(', ')})`
+        : `Updated skills`
 
     await ctx.runMutation(
       internal.agent.mutations.proposeToolChange as never,
@@ -256,7 +360,7 @@ export const setSkills = createTool({
         threadId: ctx.threadId,
         toolName: 'set_skills',
         displayText,
-        updates: JSON.stringify({ skills: input.skills }),
+        updates: JSON.stringify({ skills: validSkills }),
         previousValues: JSON.stringify({ skills: existing }),
       } as never,
     )
@@ -514,16 +618,289 @@ export const setLanguagePreference = createTool({
   },
 })
 
-// Convert YYYY-MM date string to Unix timestamp (first of month)
-function convertDateString(dateStr?: string): number | undefined {
-  if (!dateStr || dateStr.toLowerCase() === 'present') return undefined
-  const parts = dateStr.split('-')
-  if (parts.length < 2) return undefined
-  const year = parseInt(parts[0], 10)
-  const month = parseInt(parts[1], 10)
-  if (isNaN(year) || isNaN(month)) return undefined
-  return Date.UTC(year, month - 1, 1)
-}
+// ── Remove/edit tools ────────────────────────────────────────────────────────
+
+export const removeEducation = createTool({
+  description:
+    "Remove an education entry from the user's profile by institution name.",
+  inputSchema: z.object({
+    institution: z
+      .string()
+      .describe('Name of the institution to remove (fuzzy matched)'),
+    degree: z.string().optional().describe('Degree to narrow the match'),
+    field: z.string().optional().describe('Field to narrow the match'),
+  }),
+  execute: async (ctx, input): Promise<string> => {
+    const profile = await getProfile(ctx)
+    if (!profile) return 'Error: profile not found'
+
+    const existing = profile.education ?? []
+    // Narrow by degree/field first if provided, then fuzzy-find by institution
+    const candidates = existing.filter((e) => {
+      if (
+        input.degree &&
+        !normalize(e.degree ?? '').includes(normalize(input.degree))
+      )
+        return false
+      if (
+        input.field &&
+        !normalize(e.field ?? '').includes(normalize(input.field))
+      )
+        return false
+      return true
+    })
+    const candidateIdx = fuzzyFindIndex(
+      candidates,
+      (e) => e.institution,
+      input.institution,
+    )
+    const idx =
+      candidateIdx >= 0 ? existing.indexOf(candidates[candidateIdx]) : -1
+
+    if (idx === -1)
+      return `Error: no education entry found matching "${input.institution}"`
+
+    const removed = existing[idx]
+    const updated = existing.filter((_, i) => i !== idx)
+    const displayText = `Removed education: ${removed.degree ? `${removed.degree} ` : ''}${removed.field ? `in ${removed.field} ` : ''}at ${removed.institution}`
+
+    await ctx.runMutation(
+      internal.agent.mutations.proposeToolChange as never,
+      {
+        profileId: profile._id,
+        threadId: ctx.threadId,
+        toolName: 'remove_education',
+        displayText,
+        updates: JSON.stringify({ education: updated }),
+        previousValues: JSON.stringify({ education: existing }),
+      } as never,
+    )
+
+    return displayText
+  },
+})
+
+export const removeWorkExperience = createTool({
+  description:
+    "Remove a work experience entry from the user's profile by organization name.",
+  inputSchema: z.object({
+    organization: z
+      .string()
+      .describe('Organization name to remove (fuzzy matched)'),
+    title: z.string().optional().describe('Title to narrow the match'),
+  }),
+  execute: async (ctx, input): Promise<string> => {
+    const profile = await getProfile(ctx)
+    if (!profile) return 'Error: profile not found'
+
+    const existing = profile.workHistory ?? []
+    const candidates = input.title
+      ? existing.filter((e) =>
+          normalize(e.title).includes(normalize(input.title!)),
+        )
+      : existing
+    const candidateIdx = fuzzyFindIndex(
+      candidates,
+      (e) => e.organization,
+      input.organization,
+    )
+    const idx =
+      candidateIdx >= 0 ? existing.indexOf(candidates[candidateIdx]) : -1
+
+    if (idx === -1)
+      return `Error: no work experience found matching "${input.organization}"`
+
+    const removed = existing[idx]
+    const updated = existing.filter((_, i) => i !== idx)
+    const displayText = `Removed work experience: ${removed.title} at ${removed.organization}`
+
+    await ctx.runMutation(
+      internal.agent.mutations.proposeToolChange as never,
+      {
+        profileId: profile._id,
+        threadId: ctx.threadId,
+        toolName: 'remove_work_experience',
+        displayText,
+        updates: JSON.stringify({ workHistory: updated }),
+        previousValues: JSON.stringify({ workHistory: existing }),
+      } as never,
+    )
+
+    return displayText
+  },
+})
+
+export const editEducation = createTool({
+  description:
+    'Edit an existing education entry. Find by institution name, then update provided fields.',
+  inputSchema: z.object({
+    institution: z
+      .string()
+      .describe('Current institution name to find the entry'),
+    newInstitution: z.string().optional().describe('New institution name'),
+    degree: z.string().optional().describe('New degree'),
+    field: z.string().optional().describe('New field of study'),
+    startYear: z.number().optional().describe('New start year'),
+    endYear: z.number().optional().describe('New end year'),
+    current: z.boolean().optional().describe('Whether currently studying here'),
+  }),
+  execute: async (ctx, input): Promise<string> => {
+    const profile = await getProfile(ctx)
+    if (!profile) return 'Error: profile not found'
+
+    // Validate input year ranges
+    const currentYear = new Date().getFullYear()
+    if (
+      input.startYear !== undefined &&
+      (input.startYear < 1900 || input.startYear > currentYear + 5)
+    )
+      return `Error: startYear ${input.startYear} is out of valid range (1900-${currentYear + 5})`
+    if (
+      input.endYear !== undefined &&
+      (input.endYear < 1900 || input.endYear > currentYear + 5)
+    )
+      return `Error: endYear ${input.endYear} is out of valid range (1900-${currentYear + 5})`
+
+    const existing = profile.education ?? []
+    const idx = fuzzyFindIndex(
+      existing,
+      (e) => e.institution,
+      input.institution,
+    )
+
+    if (idx === -1)
+      return `Error: no education entry found matching "${input.institution}"`
+
+    const updated = [...existing]
+    const entry = { ...updated[idx] }
+    if (input.newInstitution !== undefined)
+      entry.institution = input.newInstitution
+    if (input.degree !== undefined) entry.degree = input.degree
+    if (input.field !== undefined) entry.field = input.field
+    if (input.startYear !== undefined) entry.startYear = input.startYear
+    if (input.endYear !== undefined) entry.endYear = input.endYear
+    if (input.current !== undefined) entry.current = input.current
+
+    // Validate resulting entry's year ordering
+    if (entry.startYear && entry.endYear && entry.endYear < entry.startYear)
+      return `Error: endYear (${entry.endYear}) cannot be before startYear (${entry.startYear})`
+
+    updated[idx] = entry
+
+    const displayText = `Edited education at ${entry.institution}`
+
+    await ctx.runMutation(
+      internal.agent.mutations.proposeToolChange as never,
+      {
+        profileId: profile._id,
+        threadId: ctx.threadId,
+        toolName: 'edit_education',
+        displayText,
+        updates: JSON.stringify({ education: updated }),
+        previousValues: JSON.stringify({ education: existing }),
+      } as never,
+    )
+
+    return displayText
+  },
+})
+
+export const editWorkExperience = createTool({
+  description:
+    'Edit an existing work experience entry. Find by organization name, then update provided fields.',
+  inputSchema: z.object({
+    organization: z
+      .string()
+      .describe('Current organization name to find the entry'),
+    title: z.string().optional().describe('Title to narrow the match'),
+    newOrganization: z.string().optional().describe('New organization name'),
+    newTitle: z.string().optional().describe('New job title'),
+    startDate: z
+      .string()
+      .optional()
+      .describe('New start date in YYYY-MM format'),
+    endDate: z.string().optional().describe('New end date in YYYY-MM format'),
+    current: z
+      .boolean()
+      .optional()
+      .describe('Whether this is the current role'),
+    description: z.string().optional().describe('New role description'),
+  }),
+  execute: async (ctx, input): Promise<string> => {
+    const profile = await getProfile(ctx)
+    if (!profile) return 'Error: profile not found'
+
+    // Validate date format (YYYY-MM)
+    const dateRegex = /^\d{4}-\d{2}$/
+    if (input.startDate && !dateRegex.test(input.startDate))
+      return `Error: startDate "${input.startDate}" must be in YYYY-MM format`
+    if (input.endDate && !dateRegex.test(input.endDate))
+      return `Error: endDate "${input.endDate}" must be in YYYY-MM format`
+    // Validate year ranges
+    const currentYear = new Date().getFullYear()
+    if (input.startDate) {
+      const year = parseInt(input.startDate.split('-')[0], 10)
+      if (year < 1900 || year > currentYear + 5)
+        return `Error: startDate year ${year} is out of valid range (1900-${currentYear + 5})`
+    }
+    if (input.endDate) {
+      const year = parseInt(input.endDate.split('-')[0], 10)
+      if (year < 1900 || year > currentYear + 5)
+        return `Error: endDate year ${year} is out of valid range (1900-${currentYear + 5})`
+    }
+
+    const existing = profile.workHistory ?? []
+    const candidates = input.title
+      ? existing.filter((e) =>
+          normalize(e.title).includes(normalize(input.title!)),
+        )
+      : existing
+    const candidateIdx = fuzzyFindIndex(
+      candidates,
+      (e) => e.organization,
+      input.organization,
+    )
+    const idx =
+      candidateIdx >= 0 ? existing.indexOf(candidates[candidateIdx]) : -1
+
+    if (idx === -1)
+      return `Error: no work experience found matching "${input.organization}"`
+
+    const updated = [...existing]
+    const entry = { ...updated[idx] }
+    if (input.newOrganization !== undefined)
+      entry.organization = input.newOrganization
+    if (input.newTitle !== undefined) entry.title = input.newTitle
+    if (input.startDate !== undefined)
+      entry.startDate = convertDateString(input.startDate)
+    if (input.endDate !== undefined)
+      entry.endDate = convertDateString(input.endDate)
+    if (input.current !== undefined) entry.current = input.current
+    if (input.description !== undefined) entry.description = input.description
+
+    // Validate resulting entry's date ordering
+    if (entry.startDate && entry.endDate && entry.endDate < entry.startDate)
+      return 'Error: end date cannot be before start date'
+
+    updated[idx] = entry
+
+    const displayText = `Edited work experience: ${entry.title} at ${entry.organization}`
+
+    await ctx.runMutation(
+      internal.agent.mutations.proposeToolChange as never,
+      {
+        profileId: profile._id,
+        threadId: ctx.threadId,
+        toolName: 'edit_work_experience',
+        displayText,
+        updates: JSON.stringify({ workHistory: updated }),
+        previousValues: JSON.stringify({ workHistory: existing }),
+      } as never,
+    )
+
+    return displayText
+  },
+})
 
 // ── Read-only tools ──────────────────────────────────────────────────────────
 

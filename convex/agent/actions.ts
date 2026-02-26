@@ -9,6 +9,7 @@ import {
   buildAgentSystemPrompt,
   buildBaishContextBlock,
   buildCompletenessBlock,
+  buildExtractedDocumentsBlock,
   buildPageContextBlock,
 } from './prompts'
 import { profileAgent } from './index'
@@ -96,6 +97,35 @@ export const streamResponse = internalAction({
       matchReadiness,
     )
 
+    // Fetch recently extracted documents for agent context
+    // profileRecord has the full DB shape (including userId) since getProfileById returns the raw doc
+    const profileUserId = (profileRecord as { userId?: string } | null)?.userId
+    let extractedDocsBlock = ''
+    if (profileUserId) {
+      const extractedDocs = (await ctx.runQuery(
+        internal.agent.queries.getRecentExtractedDocuments,
+        { userId: profileUserId },
+      )) as Array<{
+        fileName: string
+        uploadedAt: number
+        extractedData: {
+          name?: string
+          education?: Array<{
+            institution: string
+            degree?: string
+            field?: string
+          }>
+          workHistory?: Array<{
+            organization: string
+            title: string
+            description?: string
+          }>
+          skills?: Array<string>
+        }
+      }>
+      extractedDocsBlock = buildExtractedDocumentsBlock(extractedDocs)
+    }
+
     // Check for BAISH CRM data for new profiles
     // Profile from DB has hasEnrichmentConversation but ProfileData type doesn't include it
     const fullProfile = profile as
@@ -123,7 +153,9 @@ export const streamResponse = internalAction({
         pageContextData,
         completenessBlock,
         preferredLanguage,
-      ) + baishContextBlock
+      ) +
+      baishContextBlock +
+      extractedDocsBlock
 
     const { thread } = await profileAgent.continueThread(ctx, { threadId })
     // Type assertion needed: @convex-dev/agent generic resolution for

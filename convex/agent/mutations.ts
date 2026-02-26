@@ -2,6 +2,7 @@ import { v } from 'convex/values'
 import { internalMutation, mutation } from '../_generated/server'
 import { getUserId } from '../lib/auth'
 import { SKILLS_LIST } from './prompts'
+import { convertDateString, educationMatches, workMatches } from './utils'
 import type { Id } from '../_generated/dataModel'
 
 const SKILLS_SET = new Set(SKILLS_LIST)
@@ -292,17 +293,6 @@ export const batchApprovePending = mutation({
   },
 })
 
-// Convert YYYY-MM date string to Unix timestamp (first of month)
-function convertDateString(dateStr?: string): number | undefined {
-  if (!dateStr || dateStr.toLowerCase() === 'present') return undefined
-  const parts = dateStr.split('-')
-  if (parts.length < 2) return undefined
-  const year = parseInt(parts[0], 10)
-  const month = parseInt(parts[1], 10)
-  if (isNaN(year) || isNaN(month)) return undefined
-  return Date.UTC(year, month - 1, 1)
-}
-
 /**
  * Apply extracted data from sidebar smart input (LinkedIn, CV, text paste).
  * Creates tool call records for each category so user can undo individually.
@@ -389,16 +379,18 @@ export const applyExtractionResults = mutation({
       toolCallIds.push(id)
     }
 
-    // Education (append to existing)
+    // Education (append to existing, dedup by institution+degree+field)
     if (extractedData.education && extractedData.education.length > 0) {
       const existing = profile.education ?? []
-      const newEntries = extractedData.education.map((e) => ({
-        institution: e.institution,
-        degree: e.degree,
-        field: e.field,
-        startYear: e.startYear,
-        endYear: e.endYear,
-      }))
+      const newEntries = extractedData.education
+        .map((e) => ({
+          institution: e.institution,
+          degree: e.degree,
+          field: e.field,
+          startYear: e.startYear,
+          endYear: e.endYear,
+        }))
+        .filter((newE) => !existing.some((ex) => educationMatches(ex, newE)))
       const updated = [...existing, ...newEntries]
       allUpdates.education = updated
       affectsMatches = true
@@ -420,20 +412,22 @@ export const applyExtractionResults = mutation({
       toolCallIds.push(id)
     }
 
-    // Work history (append, convert YYYY-MM strings to timestamps)
+    // Work history (append, convert YYYY-MM strings to timestamps, dedup by org+title)
     if (extractedData.workHistory && extractedData.workHistory.length > 0) {
       const existing = profile.workHistory ?? []
-      const newEntries = extractedData.workHistory.map((w) => ({
-        organization: w.organization,
-        title: w.title,
-        startDate: convertDateString(w.startDate),
-        endDate: convertDateString(w.endDate),
-        current:
-          !w.endDate || w.endDate.toLowerCase() === 'present'
-            ? true
-            : undefined,
-        description: w.description,
-      }))
+      const newEntries = extractedData.workHistory
+        .map((w) => ({
+          organization: w.organization,
+          title: w.title,
+          startDate: convertDateString(w.startDate),
+          endDate: convertDateString(w.endDate),
+          current:
+            !w.endDate || w.endDate.toLowerCase() === 'present'
+              ? true
+              : undefined,
+          description: w.description,
+        }))
+        .filter((newW) => !existing.some((ex) => workMatches(ex, newW)))
       const updated = [...existing, ...newEntries]
       allUpdates.workHistory = updated
       affectsMatches = true
@@ -458,12 +452,17 @@ export const applyExtractionResults = mutation({
     // Skills (merge with existing, validate against taxonomy)
     if (extractedData.skills && extractedData.skills.length > 0) {
       const validSkills = extractedData.skills.filter((s) => SKILLS_SET.has(s))
+      const skippedCount = extractedData.skills.length - validSkills.length
       if (validSkills.length > 0) {
         const existing = profile.skills ?? []
         const merged = [...new Set([...existing, ...validSkills])]
         allUpdates.skills = merged
         affectsMatches = true
-        summaryParts.push(`${validSkills.length} skills`)
+        const skillNote =
+          skippedCount > 0
+            ? `${validSkills.length} skills (${skippedCount} unrecognized skipped)`
+            : `${validSkills.length} skills`
+        summaryParts.push(skillNote)
         const id = await ctx.db.insert('agentToolCalls', {
           profileId,
           threadId,
