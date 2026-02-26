@@ -2,7 +2,7 @@ import { v } from 'convex/values'
 import { internalMutation, internalQuery } from '../_generated/server'
 import { log } from '../lib/logging'
 
-export const CURRENT_ENRICHMENT_VERSION = 2
+export const CURRENT_ENRICHMENT_VERSION = 3
 
 export const getUnenrichedOpportunities = internalQuery({
   args: {},
@@ -99,8 +99,11 @@ export const applyEnrichments = internalMutation({
           enrichedFields.push('location')
         }
 
-        // Only apply experienceLevel if currently missing
-        if (enrichment.experienceLevel && !opp.experienceLevel) {
+        // Apply experienceLevel if missing or if LLM disagrees with current value
+        if (
+          enrichment.experienceLevel &&
+          enrichment.experienceLevel !== opp.experienceLevel
+        ) {
           fieldsToUpdate.experienceLevel = enrichment.experienceLevel
           enrichedFields.push('experienceLevel')
         }

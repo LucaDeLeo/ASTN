@@ -22,7 +22,7 @@ export const ENRICHMENT_SYSTEM_PROMPT = `You are a metadata extraction assistant
 For each opportunity, analyze the title, organization, description, and requirements to infer:
 
 1. **location**: A specific city/country if inferrable from the description or organization HQ. Only output if the current value is a placeholder like "Not specified" or "Location not specified".
-2. **experienceLevel**: One of "entry", "mid", "senior", or "lead". Infer from required years of experience, seniority words in the title, or requirement complexity. Only output if currently missing.
+2. **experienceLevel**: One of "entry", "mid", "senior", or "lead". Infer from required years of experience, seniority words in the title, salary range, management scope, or requirement complexity. Always assess this — if the current value looks wrong based on the full listing, output the correct one to override it.
 3. **roleType**: One of "research", "engineering", "operations", "policy", "training", or "other". Only output if the current value is "other" and a more specific type is clearly appropriate.
 4. **isRemote**: true or false. Only output if the description mentions remote work availability that contradicts the current value.
 5. **salaryRange**: Extract salary, compensation, or stipend information as a human-readable string (e.g., "$80,000-$120,000/year", "£45k-£60k", "$2,000/month stipend"). Only output if the current value is missing and the description contains salary/compensation info.
@@ -32,7 +32,7 @@ For each opportunity, analyze the title, organization, description, and requirem
 
 - Only output a field if you are confident in the inference. Omit fields where you're unsure.
 - For location, look for clues like "based in [city]", organization headquarters, "our [city] office", visa/work authorization mentions for specific countries, etc.
-- For experienceLevel: 0-2 years or "junior" = "entry", 3-5 years = "mid", 6-10 years or "senior" in title = "senior", 10+ years or "lead"/"director"/"head" = "lead".
+- For experienceLevel: 0-2 years or "junior" = "entry", 3-5 years = "mid", 6-10 years or "senior" in title = "senior", 10+ years or "lead"/"director"/"head"/"VP" = "lead". Also consider salary ($150k+ suggests senior/lead), team management scope (managing managers = lead), and responsibility level. Source-provided labels are often wrong — trust the full description over the existing tag.
 - For roleType: consider the full description, not just the title. A "Data Science Lead" doing alignment research = "research".
 - For isRemote: look for phrases like "remote-friendly", "work from anywhere", "distributed team", "hybrid", etc.
 - For salaryRange: look for explicit salary mentions, compensation ranges, stipends, or pay rates. Do not guess or infer salary from job level.
@@ -108,7 +108,7 @@ export const enrichOpportunitiesTool: Anthropic.Tool = {
               type: 'string',
               enum: ['entry', 'mid', 'senior', 'lead'],
               description:
-                'Inferred experience level. Only include if currently missing.',
+                'Inferred experience level. Include if currently missing OR if the current value appears incorrect based on the full listing.',
             },
             roleType: {
               type: 'string',

@@ -85,11 +85,7 @@ export const upsertOpportunities = internalMutation({
         }
 
         if (enrichedFields.includes('experienceLevel')) {
-          if (opp.experienceLevel) {
-            patch.experienceLevel = opp.experienceLevel
-            const idx = updatedEnrichedFields.indexOf('experienceLevel')
-            if (idx !== -1) updatedEnrichedFields.splice(idx, 1)
-          }
+          // LLM-corrected experienceLevel — keep it, source labels are unreliable
         } else {
           patch.experienceLevel = opp.experienceLevel
         }
