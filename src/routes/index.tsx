@@ -10,12 +10,17 @@ import { SignIn, SignUp } from '@clerk/clerk-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Bookmark,
+  Building2,
   Calendar,
+  ClipboardList,
   FileText,
+  Globe,
+  LayoutDashboard,
   MapPin,
   Settings,
   Sparkles,
   Target,
+  Users,
 } from 'lucide-react'
 import { api } from '../../convex/_generated/api'
 import { ActionCard } from '~/components/actions/ActionCard'
@@ -285,6 +290,54 @@ function LandingPage() {
     },
   ]
 
+  const communityFeatures = [
+    {
+      icon: Globe,
+      title: 'Discover organizations',
+      description:
+        'Browse AI safety hubs on a world map. Find local communities or connect with global organizations.',
+    },
+    {
+      icon: Calendar,
+      title: 'Attend events',
+      description:
+        'See upcoming meetups, talks, and workshops from your organizations. RSVP and track attendance.',
+    },
+    {
+      icon: Users,
+      title: 'Meet your peers',
+      description:
+        'Join organization directories to connect with other AI safety professionals in your area.',
+    },
+  ]
+
+  const orgLeaderFeatures = [
+    {
+      icon: LayoutDashboard,
+      title: 'Admin dashboard',
+      description:
+        'Track member growth, event attendance, and engagement metrics at a glance with your dedicated org dashboard.',
+    },
+    {
+      icon: ClipboardList,
+      title: 'Member directory',
+      description:
+        'View full profiles of members who join your org. Search, filter, and export your community data.',
+    },
+    {
+      icon: Building2,
+      title: 'Co-working space management',
+      description:
+        'Set up bookable desks, manage operating hours, and track guest visitors at your physical space.',
+    },
+    {
+      icon: Target,
+      title: 'Post opportunities',
+      description:
+        'List roles and programs specific to your org. Review applications and manage your talent pipeline.',
+    },
+  ]
+
   return (
     <>
       <main className="container mx-auto px-4 py-12 md:py-16">
@@ -330,6 +383,64 @@ function LandingPage() {
                   <p className="text-sm text-muted-foreground">
                     {step.description}
                   </p>
+                </Card>
+              </AnimatedCard>
+            ))}
+          </div>
+        </section>
+
+        {/* Join Your Community */}
+        <section className="max-w-4xl mx-auto mb-16 md:mb-20">
+          <h2 className="text-2xl font-display font-semibold text-foreground text-center mb-3">
+            Join your community
+          </h2>
+          <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Connect with AI safety organizations worldwide. Find local hubs,
+            attend events, and collaborate with peers who share your mission.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {communityFeatures.map((feature, index) => (
+              <AnimatedCard key={feature.title} index={index}>
+                <Card className="p-6 text-center h-full">
+                  <div className="size-10 rounded-full bg-coral-100 flex items-center justify-center mx-auto mb-4">
+                    <feature.icon className="size-5 text-coral-600" />
+                  </div>
+                  <h3 className="font-display font-medium text-foreground mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {feature.description}
+                  </p>
+                </Card>
+              </AnimatedCard>
+            ))}
+          </div>
+        </section>
+
+        {/* For Organization Leaders */}
+        <section className="max-w-4xl mx-auto mb-16 md:mb-20">
+          <h2 className="text-2xl font-display font-semibold text-foreground text-center mb-3">
+            For organization leaders
+          </h2>
+          <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Manage your AI safety hub, track your community, and surface talent
+            — all in one place.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {orgLeaderFeatures.map((feature, index) => (
+              <AnimatedCard key={feature.title} index={index}>
+                <Card className="p-6 flex gap-4 h-full">
+                  <div className="size-10 rounded-full bg-cream-100 flex items-center justify-center shrink-0">
+                    <feature.icon className="size-5 text-coral-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-display font-medium text-foreground mb-1">
+                      {feature.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {feature.description}
+                    </p>
+                  </div>
                 </Card>
               </AnimatedCard>
             ))}
