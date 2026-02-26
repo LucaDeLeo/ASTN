@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
+import { usePostHog } from '@posthog/react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery } from 'convex/react'
 import {
   Briefcase,
@@ -51,6 +52,7 @@ interface UnifiedProfileProps {
 }
 
 export function UnifiedProfile({ initialSection }: UnifiedProfileProps) {
+  const posthog = usePostHog()
   const profile = useQuery(api.profiles.getOrCreateProfile)
   const completeness = useQuery(api.profiles.getMyCompleteness)
   const createProfile = useMutation(api.profiles.create)
@@ -58,6 +60,11 @@ export function UnifiedProfile({ initialSection }: UnifiedProfileProps) {
   const [editingSection, setEditingSection] = useState<SectionId | null>(
     isValidSection(initialSection) ? initialSection : null,
   )
+
+  // Refs for tracking completeness transitions
+  const prevSectionStatusRef = useRef<Record<string, boolean>>({})
+  const prevCompletenessRef = useRef<number | null>(null)
+  const matchReadyFiredRef = useRef(false)
 
   // Create profile if it doesn't exist
   useEffect(() => {
@@ -93,9 +100,17 @@ export function UnifiedProfile({ initialSection }: UnifiedProfileProps) {
     }
   }, [profile?._id])
 
-  const handleToggleSection = useCallback((sectionId: SectionId) => {
-    setEditingSection((prev) => (prev === sectionId ? null : sectionId))
-  }, [])
+  const handleToggleSection = useCallback(
+    (sectionId: SectionId) => {
+      setEditingSection((prev) => {
+        if (prev !== sectionId) {
+          posthog.capture('profile_section_opened', { section: sectionId })
+        }
+        return prev === sectionId ? null : sectionId
+      })
+    },
+    [posthog],
+  )
 
   const handleNavSectionClick = useCallback((sectionId: SectionId) => {
     setEditingSection(sectionId)
@@ -107,6 +122,53 @@ export function UnifiedProfile({ initialSection }: UnifiedProfileProps) {
     if (!key) return false // preferences section has no completeness mapping
     return completeness.sections.find((s) => s.id === key)?.isComplete ?? false
   }
+
+  // Track section completeness transitions and overall completeness changes
+  useEffect(() => {
+    if (!completeness) return
+
+    // Track individual section complete transitions (false → true)
+    for (const section of completeness.sections) {
+      const wasComplete = prevSectionStatusRef.current[section.id]
+      if (wasComplete === false && section.isComplete) {
+        posthog.capture('profile_section_completed', {
+          section: section.id,
+          completeness_pct: completeness.percentage,
+        })
+      }
+    }
+    // Update ref with current status
+    const statusMap: Record<string, boolean> = {}
+    for (const section of completeness.sections) {
+      statusMap[section.id] = section.isComplete
+    }
+    prevSectionStatusRef.current = statusMap
+
+    // Track overall completeness % changes
+    if (
+      prevCompletenessRef.current !== null &&
+      prevCompletenessRef.current !== completeness.percentage
+    ) {
+      posthog.capture('profile_completeness_changed', {
+        percentage: completeness.percentage,
+        completed_count: completeness.completedCount,
+        total_count: completeness.totalCount,
+      })
+    }
+    prevCompletenessRef.current = completeness.percentage
+
+    // Track match_ready_unlocked (threshold: 5/7 + careerGoals)
+    const careerGoalsComplete =
+      completeness.sections.find((s) => s.id === 'careerGoals')?.isComplete ??
+      false
+    const isMatchReady = completeness.completedCount >= 5 && careerGoalsComplete
+    if (isMatchReady && !matchReadyFiredRef.current) {
+      matchReadyFiredRef.current = true
+      posthog.capture('match_ready_unlocked', {
+        percentage: completeness.percentage,
+      })
+    }
+  }, [completeness, posthog])
 
   // Loading
   if (profile === undefined || completeness === undefined) {

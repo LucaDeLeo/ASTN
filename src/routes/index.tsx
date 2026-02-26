@@ -1,3 +1,4 @@
+import { usePostHog } from '@posthog/react'
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
   AuthLoading,
@@ -123,6 +124,7 @@ const clerkAppearance = {
 }
 
 function AuthPanel() {
+  const posthog = usePostHog()
   const [mode, setMode] = useState<'sign-in' | 'sign-up'>('sign-in')
   const [fading, setFading] = useState(false)
   const [animated, setAnimated] = useState(false)
@@ -132,6 +134,11 @@ function AuthPanel() {
   const switchMode = useCallback(
     (newMode: 'sign-in' | 'sign-up') => {
       if (newMode === mode) return
+      if (newMode === 'sign-up') {
+        posthog.capture('auth_signup_clicked')
+      } else {
+        posthog.capture('auth_signin_clicked')
+      }
       const container = containerRef.current
       // Lock container to current height so transition has a start value
       if (container) {
@@ -153,7 +160,7 @@ function AuthPanel() {
         })
       }, 150)
     },
-    [mode],
+    [mode, posthog],
   )
 
   // Sync container height as Clerk renders asynchronously
@@ -266,6 +273,14 @@ function PostAuthSetup() {
 }
 
 function LandingPage() {
+  const posthog = usePostHog()
+
+  useEffect(() => {
+    posthog.capture('landing_page_viewed', {
+      referrer: document.referrer || undefined,
+    })
+  }, [posthog])
+
   const steps = [
     {
       icon: FileText,
@@ -482,6 +497,8 @@ function LandingPage() {
 }
 
 function Dashboard() {
+  const posthog = usePostHog()
+  const dashboardTrackedRef = useRef(false)
   const suggestedOrgs = useQuery(api.orgs.discovery.getSuggestedOrgs)
   const locationPrivacy = useQuery(api.profiles.getLocationPrivacy)
   const dashboardEvents = useQuery(api.events.queries.getDashboardEvents)
@@ -507,6 +524,22 @@ function Dashboard() {
 
   // Top 2 active actions for dashboard preview
   const topActions = actionsData?.active.slice(0, 2) ?? []
+
+  // Track dashboard_viewed once data loads
+  useEffect(() => {
+    if (matchesData && !dashboardTrackedRef.current) {
+      dashboardTrackedRef.current = true
+      const allMatches = [
+        ...matchesData.matches.great,
+        ...matchesData.matches.good,
+        ...matchesData.matches.exploring,
+      ]
+      posthog.capture('dashboard_viewed', {
+        match_count: allMatches.length,
+        saved_match_count: matchesData.savedMatches.length,
+      })
+    }
+  }, [matchesData, posthog])
 
   // Group user's org events by org for display
   const eventsByOrg = dashboardEvents?.userOrgEvents.reduce(

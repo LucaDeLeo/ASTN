@@ -1,3 +1,4 @@
+import { usePostHog } from '@posthog/react'
 import { useEffect, useRef } from 'react'
 import { useMutation, useQuery } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
@@ -9,6 +10,7 @@ import { Spinner } from '~/components/ui/spinner'
  * so this no longer redirects to the wizard or enrichment step.
  */
 export function OnboardingGuard({ children }: { children: React.ReactNode }) {
+  const posthog = usePostHog()
   const profile = useQuery(api.profiles.getOrCreateProfile)
   const createProfile = useMutation(api.profiles.create)
   const creating = useRef(false)
@@ -17,13 +19,16 @@ export function OnboardingGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (profile === null && !creating.current) {
       creating.current = true
-      createProfile({
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      }).finally(() => {
-        creating.current = false
-      })
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+      createProfile({ timezone })
+        .then(() => {
+          posthog.capture('profile_created', { timezone })
+        })
+        .finally(() => {
+          creating.current = false
+        })
     }
-  }, [profile, createProfile])
+  }, [profile, createProfile, posthog])
 
   // Loading or creating
   if (!profile) {

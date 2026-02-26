@@ -1,3 +1,4 @@
+import { usePostHog } from '@posthog/react'
 import { Link, createFileRoute } from '@tanstack/react-router'
 import {
   AuthLoading,
@@ -5,6 +6,7 @@ import {
   Unauthenticated,
   useQuery,
 } from 'convex/react'
+import { useEffect, useRef } from 'react'
 import { format } from 'date-fns'
 import { CalendarCheck, ChevronRight } from 'lucide-react'
 import { z } from 'zod'
@@ -41,10 +43,22 @@ export const Route = createFileRoute('/profile/')({
 })
 
 function ProfilePage() {
+  const posthog = usePostHog()
   const isMobile = useIsMobile()
   const currentUser = useQuery(api.profiles.getOrCreateProfile)
+  const completeness = useQuery(api.profiles.getMyCompleteness)
   const user = currentUser ? { name: currentUser.name || 'User' } : null
   const { section } = Route.useSearch()
+
+  const profileViewedRef = useRef(false)
+  useEffect(() => {
+    if (currentUser && completeness && !profileViewedRef.current) {
+      profileViewedRef.current = true
+      posthog.capture('profile_page_viewed', {
+        completeness_pct: completeness.percentage,
+      })
+    }
+  }, [currentUser, completeness, posthog])
 
   const loadingContent = (
     <div className="flex items-center justify-center min-h-[calc(100vh-65px)]">

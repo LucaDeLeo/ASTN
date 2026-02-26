@@ -1,0 +1,102 @@
+[
+  {
+    "event": "match_computation_triggered",
+    "description": "User triggered a match computation (refresh) from the matches page",
+    "file": "src/routes/matches/index.tsx"
+  },
+  {
+    "event": "match_saved",
+    "description": "User saved a match from the matches list",
+    "file": "src/routes/matches/index.tsx"
+  },
+  {
+    "event": "match_dismissed",
+    "description": "User dismissed a match from the matches list",
+    "file": "src/routes/matches/index.tsx"
+  },
+  {
+    "event": "match_applied",
+    "description": "User marked a match as applied on the match detail page",
+    "file": "src/routes/matches/$id.tsx"
+  },
+  {
+    "event": "match_external_apply_clicked",
+    "description": "User clicked the external 'Apply' link on a match detail page",
+    "file": "src/routes/matches/$id.tsx"
+  },
+  {
+    "event": "opportunity_application_submitted",
+    "description": "User submitted an org-specific opportunity application form",
+    "file": "src/routes/org/$slug/apply/$opportunityId.tsx"
+  },
+  {
+    "event": "org_application_submitted",
+    "description": "User submitted an application to join the ASTN platform (org owner)",
+    "file": "src/routes/apply/index.tsx"
+  },
+  {
+    "event": "user_signed_up_viewed",
+    "description": "User viewed the landing page sign-in/sign-up panel (top of conversion funnel)",
+    "file": "src/routes/index.tsx"
+  },
+  {
+    "event": "match_detail_viewed",
+    "description": "User opened a specific match detail page (viewed match)",
+    "file": "src/routes/matches/$id.tsx"
+  },
+  {
+    "event": "match_ai_discuss_clicked",
+    "description": "User clicked 'Discuss match' to open the AI agent sidebar",
+    "file": "src/routes/matches/$id.tsx"
+  },
+  {
+    "event": "landing_page_viewed",
+    "description": "Unauthenticated user viewed the landing page",
+    "file": "src/routes/index.tsx"
+  },
+  {
+    "event": "auth_signup_clicked",
+    "description": "User clicked 'Sign up' toggle in the auth panel",
+    "file": "src/routes/index.tsx"
+  },
+  {
+    "event": "auth_signin_clicked",
+    "description": "User clicked 'Sign in' toggle in the auth panel",
+    "file": "src/routes/index.tsx"
+  },
+  {
+    "event": "profile_created",
+    "description": "New profile was auto-created for an authenticated user",
+    "file": "src/components/auth/onboarding-guard.tsx"
+  },
+  {
+    "event": "profile_section_opened",
+    "description": "User expanded a profile section for editing",
+    "file": "src/components/profile/UnifiedProfile.tsx"
+  },
+  {
+    "event": "profile_section_completed",
+    "description": "A profile section transitioned from incomplete to complete",
+    "file": "src/components/profile/UnifiedProfile.tsx"
+  },
+  {
+    "event": "profile_completeness_changed",
+    "description": "Overall profile completeness percentage changed",
+    "file": "src/components/profile/UnifiedProfile.tsx"
+  },
+  {
+    "event": "match_ready_unlocked",
+    "description": "Profile reached the match-ready threshold (5/7 sections + careerGoals)",
+    "file": "src/components/profile/UnifiedProfile.tsx"
+  },
+  {
+    "event": "dashboard_viewed",
+    "description": "Authenticated user viewed the dashboard with match data loaded",
+    "file": "src/routes/index.tsx"
+  },
+  {
+    "event": "profile_page_viewed",
+    "description": "Authenticated user viewed the profile editing page",
+    "file": "src/routes/profile/index.tsx"
+  }
+]
