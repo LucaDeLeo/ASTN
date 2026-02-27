@@ -732,3 +732,65 @@ export async function renderDeadlineReminder(
 ): Promise<string> {
   return await render(<DeadlineReminderEmail {...props} />)
 }
+
+// ===== Admin Broadcast Email =====
+
+const BODY_PLACEHOLDER = '__BODY_PLACEHOLDER__'
+
+interface AdminBroadcastProps {
+  userName: string
+  bodyHtml: string
+}
+
+function AdminBroadcastEmail({ userName }: { userName: string }) {
+  return (
+    <Html>
+      <Head />
+      <Preview>A message from ASTN</Preview>
+      <Tailwind>
+        <Body className="bg-gray-100 font-sans">
+          <Container className="bg-white mx-auto my-8 p-8 rounded-lg max-w-xl">
+            {/* Header with Logo */}
+            <Section>
+              <Img
+                src="https://safetytalent.org/logo.png"
+                width="120"
+                height="40"
+                alt="ASTN"
+                className="mx-auto mb-4"
+              />
+            </Section>
+
+            {/* Greeting */}
+            <Text className="text-xl font-semibold text-gray-900 mb-2">
+              Hi {userName},
+            </Text>
+
+            {/* Body placeholder — replaced after render */}
+            <Section>{BODY_PLACEHOLDER}</Section>
+
+            <Hr className="my-6 border-gray-200" />
+
+            {/* Footer */}
+            <Text className="text-xs text-gray-400 text-center">
+              AI Safety Talent Network - Connecting talent with AI safety
+              opportunities
+            </Text>
+            <Text className="text-xs text-gray-400 text-center">
+              <a href="https://safetytalent.org" className="text-gray-400">
+                safetytalent.org
+              </a>
+            </Text>
+          </Container>
+        </Body>
+      </Tailwind>
+    </Html>
+  )
+}
+
+export async function renderAdminBroadcast(
+  props: AdminBroadcastProps,
+): Promise<string> {
+  const html = await render(<AdminBroadcastEmail {...props} />)
+  return html.replace(BODY_PLACEHOLDER, props.bodyHtml)
+}

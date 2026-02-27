@@ -42,6 +42,8 @@ import type * as careerActions_validation from "../careerActions/validation.js";
 import type * as consent from "../consent.js";
 import type * as coworkingSpaces from "../coworkingSpaces.js";
 import type * as crons from "../crons.js";
+import type * as emails_adminBroadcast from "../emails/adminBroadcast.js";
+import type * as emails_adminBroadcastAction from "../emails/adminBroadcastAction.js";
 import type * as emails_batchActions from "../emails/batchActions.js";
 import type * as emails_send from "../emails/send.js";
 import type * as emails_templates from "../emails/templates.js";
@@ -163,6 +165,8 @@ declare const fullApi: ApiFromModules<{
   consent: typeof consent;
   coworkingSpaces: typeof coworkingSpaces;
   crons: typeof crons;
+  "emails/adminBroadcast": typeof emails_adminBroadcast;
+  "emails/adminBroadcastAction": typeof emails_adminBroadcastAction;
   "emails/batchActions": typeof emails_batchActions;
   "emails/send": typeof emails_send;
   "emails/templates": typeof emails_templates;

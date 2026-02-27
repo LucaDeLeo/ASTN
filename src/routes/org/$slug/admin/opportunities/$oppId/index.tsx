@@ -1,11 +1,11 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useMutation, useQuery } from 'convex/react'
-import { Building2, FileText, Loader2, Save, Shield } from 'lucide-react'
+import { Building2, FileText, Loader2, Mail, Save, Shield } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { api } from '../../../../../../convex/_generated/api'
-import type { Id } from '../../../../../../convex/_generated/dataModel'
-import type { FormField } from '../../../../../../convex/lib/formFields'
+import { api } from '../../../../../../../convex/_generated/api'
+import type { Id } from '../../../../../../../convex/_generated/dataModel'
+import type { FormField } from '../../../../../../../convex/lib/formFields'
 import { FormFieldsEditor } from '~/components/opportunities/FormFieldsEditor'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { Button } from '~/components/ui/button'
@@ -29,7 +29,7 @@ import {
 import { Spinner } from '~/components/ui/spinner'
 import { Textarea } from '~/components/ui/textarea'
 
-export const Route = createFileRoute('/org/$slug/admin/opportunities/$oppId')({
+export const Route = createFileRoute('/org/$slug/admin/opportunities/$oppId/')({
   component: OpportunityEditPage,
 })
 
@@ -231,9 +231,20 @@ function OpportunityEditPage() {
               <span>/</span>
               <span className="text-slate-700">{opportunity.title}</span>
             </div>
-            <h1 className="text-2xl font-display font-semibold text-foreground">
-              Edit Opportunity
-            </h1>
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-display font-semibold text-foreground">
+                Edit Opportunity
+              </h1>
+              <Button variant="outline" asChild>
+                <Link
+                  to="/org/$slug/admin/opportunities/$oppId/email"
+                  params={{ slug, oppId }}
+                >
+                  <Mail className="size-4 mr-2" />
+                  Email Applicants
+                </Link>
+              </Button>
+            </div>
           </div>
 
           <div className="space-y-6">

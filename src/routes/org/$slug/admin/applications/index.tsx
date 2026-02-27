@@ -8,6 +8,7 @@ import {
   Download,
   FileText,
   Loader2,
+  Mail,
   Shield,
 } from 'lucide-react'
 import { api } from '../../../../../../convex/_generated/api'
@@ -183,6 +184,7 @@ function AdminApplicationsPage() {
 
           {currentOpportunity ? (
             <ApplicationsTable
+              slug={slug}
               opportunityId={currentOpportunity._id}
               opportunityTitle={currentOpportunity.title}
               formFields={
@@ -205,10 +207,12 @@ function AdminApplicationsPage() {
 }
 
 function ApplicationsTable({
+  slug,
   opportunityId,
   opportunityTitle,
   formFields,
 }: {
+  slug: string
   opportunityId: Id<'orgOpportunities'>
   opportunityTitle: string
   formFields: Array<FormField>
@@ -275,14 +279,29 @@ function ApplicationsTable({
           </Select>
         </div>
 
-        <Button variant="outline" onClick={handleExport} disabled={isExporting}>
-          {isExporting ? (
-            <Loader2 className="size-4 mr-2 animate-spin" />
-          ) : (
-            <Download className="size-4 mr-2" />
-          )}
-          Export CSV
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" asChild>
+            <Link
+              to="/org/$slug/admin/opportunities/$oppId/email"
+              params={{ slug, oppId: opportunityId }}
+            >
+              <Mail className="size-4 mr-2" />
+              Email Applicants
+            </Link>
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleExport}
+            disabled={isExporting}
+          >
+            {isExporting ? (
+              <Loader2 className="size-4 mr-2 animate-spin" />
+            ) : (
+              <Download className="size-4 mr-2" />
+            )}
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       {/* Table */}
