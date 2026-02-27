@@ -1230,8 +1230,7 @@ export default defineSchema({
   // Availability responses (individual respondent selections)
   availabilityResponses: defineTable({
     pollId: v.id('availabilityPolls'),
-    userId: v.optional(v.string()),
-    guestEmail: v.optional(v.string()),
+    userId: v.string(),
     respondentName: v.string(),
     // Only available/maybe slots stored. Absent key = unavailable.
     // Key format: "YYYY-MM-DD|minutesFromMidnight"
@@ -1242,8 +1241,7 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index('by_poll', ['pollId'])
-    .index('by_poll_and_user', ['pollId', 'userId'])
-    .index('by_poll_and_guestEmail', ['pollId', 'guestEmail']),
+    .index('by_poll_and_user', ['pollId', 'userId']),
 
   // Push notification tokens for mobile (Tauri) clients
   pushTokens: defineTable({

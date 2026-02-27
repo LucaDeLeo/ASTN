@@ -39,8 +39,7 @@ const responseReturnValidator = v.object({
   _id: v.id('availabilityResponses'),
   _creationTime: v.number(),
   pollId: v.id('availabilityPolls'),
-  userId: v.optional(v.string()),
-  guestEmail: v.optional(v.string()),
+  userId: v.string(),
   respondentName: v.string(),
   slots: v.record(v.string(), slotValueValidator),
   updatedAt: v.number(),
@@ -286,43 +285,6 @@ export const getMyResponse = query({
   },
 })
 
-export const getGuestResponse = query({
-  args: { pollId: v.id('availabilityPolls'), guestEmail: v.string() },
-  returns: v.union(responseReturnValidator, v.null()),
-  handler: async (ctx, { pollId, guestEmail }) => {
-    return await ctx.db
-      .query('availabilityResponses')
-      .withIndex('by_poll_and_guestEmail', (q) =>
-        q.eq('pollId', pollId).eq('guestEmail', guestEmail.toLowerCase()),
-      )
-      .first()
-  },
-})
-
-export const verifyGuestRespondent = query({
-  args: {
-    pollId: v.id('availabilityPolls'),
-    guestEmail: v.string(),
-  },
-  returns: v.object({ valid: v.boolean() }),
-  handler: async (ctx, { pollId, guestEmail }) => {
-    const poll = await ctx.db.get('availabilityPolls', pollId)
-    if (!poll) return { valid: false }
-
-    // Check if guest has applied to this opportunity
-    const application = await ctx.db
-      .query('opportunityApplications')
-      .withIndex('by_guest_email_and_opportunity', (q) =>
-        q
-          .eq('guestEmail', guestEmail.toLowerCase())
-          .eq('opportunityId', poll.opportunityId),
-      )
-      .first()
-
-    return { valid: !!application }
-  },
-})
-
 // ─── Respondent mutation ───
 
 export const submitResponse = mutation({
@@ -331,10 +293,12 @@ export const submitResponse = mutation({
     accessToken: v.string(),
     slots: v.record(v.string(), slotValueValidator),
     respondentName: v.string(),
-    guestEmail: v.optional(v.string()),
   },
   returns: v.id('availabilityResponses'),
-  handler: async (ctx, { pollId, accessToken, slots, respondentName, guestEmail }) => {
+  handler: async (ctx, { pollId, accessToken, slots, respondentName }) => {
+    const userId = await getUserId(ctx)
+    if (!userId) throw new ConvexError('Not authenticated')
+
     const poll = await ctx.db.get('availabilityPolls', pollId)
     if (!poll) throw new ConvexError('Poll not found')
     if (poll.accessToken !== accessToken)
@@ -342,70 +306,27 @@ export const submitResponse = mutation({
     if (poll.status !== 'open')
       throw new ConvexError('Poll is no longer accepting responses')
 
-    const userId = await getUserId(ctx)
-    const email = guestEmail?.toLowerCase()
-
-    // Verify respondent is an applicant
-    if (userId) {
-      const application = await ctx.db
-        .query('opportunityApplications')
-        .withIndex('by_user_and_opportunity', (q) =>
-          q.eq('userId', userId).eq('opportunityId', poll.opportunityId),
-        )
-        .first()
-      if (!application) throw new ConvexError('You must be an applicant to respond')
-    } else if (email) {
-      const application = await ctx.db
-        .query('opportunityApplications')
-        .withIndex('by_guest_email_and_opportunity', (q) =>
-          q.eq('guestEmail', email).eq('opportunityId', poll.opportunityId),
-        )
-        .first()
-      if (!application)
-        throw new ConvexError('No application found for this email')
-    } else {
-      throw new ConvexError('Must be authenticated or provide guest email')
-    }
-
     const now = Date.now()
 
     // Upsert: check for existing response
-    if (userId) {
-      const existing = await ctx.db
-        .query('availabilityResponses')
-        .withIndex('by_poll_and_user', (q) =>
-          q.eq('pollId', pollId).eq('userId', userId),
-        )
-        .first()
-      if (existing) {
-        await ctx.db.patch('availabilityResponses', existing._id, {
-          slots,
-          respondentName,
-          updatedAt: now,
-        })
-        return existing._id
-      }
-    } else if (email) {
-      const existing = await ctx.db
-        .query('availabilityResponses')
-        .withIndex('by_poll_and_guestEmail', (q) =>
-          q.eq('pollId', pollId).eq('guestEmail', email),
-        )
-        .first()
-      if (existing) {
-        await ctx.db.patch('availabilityResponses', existing._id, {
-          slots,
-          respondentName,
-          updatedAt: now,
-        })
-        return existing._id
-      }
+    const existing = await ctx.db
+      .query('availabilityResponses')
+      .withIndex('by_poll_and_user', (q) =>
+        q.eq('pollId', pollId).eq('userId', userId),
+      )
+      .first()
+    if (existing) {
+      await ctx.db.patch('availabilityResponses', existing._id, {
+        slots,
+        respondentName,
+        updatedAt: now,
+      })
+      return existing._id
     }
 
     return await ctx.db.insert('availabilityResponses', {
       pollId,
-      userId: userId ?? undefined,
-      guestEmail: email,
+      userId,
       respondentName,
       slots,
       updatedAt: now,

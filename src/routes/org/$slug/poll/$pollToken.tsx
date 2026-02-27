@@ -1,9 +1,9 @@
 import { useUser } from '@clerk/clerk-react'
 import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useConvexAuth, useMutation, useQuery } from 'convex/react'
-import { CheckCircle2, Clock, Loader2, Lock } from 'lucide-react'
+import { CheckCircle2, Clock, Loader2, Lock, LogIn } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { api } from '../../../../../convex/_generated/api'
@@ -11,8 +11,6 @@ import { AvailabilityGrid } from '~/components/availability/AvailabilityGrid'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { GradientBg } from '~/components/layout/GradientBg'
 import { Button } from '~/components/ui/button'
-import { Input } from '~/components/ui/input'
-import { Label } from '~/components/ui/label'
 
 export const Route = createFileRoute('/org/$slug/poll/$pollToken')({
   loader: async ({ context, params }) => {
@@ -47,6 +45,7 @@ function PollPage() {
   const { pollToken } = Route.useParams()
   const { isAuthenticated } = useConvexAuth()
   const { user } = useUser()
+  const navigate = useNavigate()
 
   const { data: pollData } = useSuspenseQuery(
     convexQuery(api.availabilityPolls.getPollByToken, {
@@ -67,40 +66,12 @@ function PollPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
-  // Guest flow state
-  const [guestEmail, setGuestEmail] = useState('')
-  const [guestVerified, setGuestVerified] = useState(false)
-  const [isVerifying, setIsVerifying] = useState(false)
-  const [guestName, setGuestName] = useState('')
-
-  // Guest existing response
-  const guestResponse = useQuery(
-    api.availabilityPolls.getGuestResponse,
-    !isAuthenticated && guestVerified && pollData
-      ? { pollId: pollData.poll._id, guestEmail }
-      : 'skip',
-  )
-
-  const guestVerification = useQuery(
-    api.availabilityPolls.verifyGuestRespondent,
-    !isAuthenticated && guestEmail && pollData
-      ? { pollId: pollData.poll._id, guestEmail }
-      : 'skip',
-  )
-
   // Pre-populate slots from existing response
   if (!slotsInitialized) {
     if (isAuthenticated && myResponse) {
       setSlots(myResponse.slots as Record<string, SlotStatus>)
       setSlotsInitialized(true)
-    } else if (!isAuthenticated && guestVerified && guestResponse) {
-      setSlots(guestResponse.slots as Record<string, SlotStatus>)
-      setGuestName(guestResponse.respondentName)
-      setSlotsInitialized(true)
-    } else if (
-      (isAuthenticated && myResponse === null) ||
-      (!isAuthenticated && guestVerified && guestResponse === null)
-    ) {
+    } else if (isAuthenticated && myResponse === null) {
       setSlotsInitialized(true)
     }
   }
@@ -223,18 +194,8 @@ function PollPage() {
     )
   }
 
-  // Guest email verification step
-  if (!isAuthenticated && !guestVerified) {
-    const handleVerify = (e: React.FormEvent) => {
-      e.preventDefault()
-      if (!guestEmail.trim()) return
-      setIsVerifying(true)
-      // The guestVerification query is reactive — it updates when guestEmail changes
-      setIsVerifying(false)
-    }
-
-    const verificationResult = guestVerification
-
+  // Login wall for unauthenticated users
+  if (!isAuthenticated) {
     return (
       <GradientBg>
         <AuthHeader />
@@ -250,55 +211,22 @@ function PollPage() {
               </p>
             </div>
 
-            <div className="rounded-lg border bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-semibold mb-4">
-                Enter your email to continue
+            <div className="rounded-lg border bg-white p-6 shadow-sm text-center">
+              <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <LogIn className="size-6 text-primary" />
+              </div>
+              <h2 className="text-lg font-semibold mb-2">
+                Sign in to continue
               </h2>
-              <p className="text-sm text-muted-foreground mb-4">
-                Use the same email you applied with.
+              <p className="text-sm text-muted-foreground mb-6">
+                Sign in or create an account to share your availability.
               </p>
-              <form onSubmit={handleVerify} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="guest-email">Email</Label>
-                  <Input
-                    id="guest-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={guestEmail}
-                    onChange={(e) => setGuestEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                {verificationResult?.valid === false && guestEmail && (
-                  <p className="text-sm text-red-600">
-                    No application found for this email. Please use the email you
-                    applied with.
-                  </p>
-                )}
-                <Button
-                  type="button"
-                  disabled={
-                    !guestEmail.trim() ||
-                    isVerifying ||
-                    verificationResult?.valid === false
-                  }
-                  className="w-full"
-                  onClick={() => {
-                    if (verificationResult?.valid) {
-                      setGuestVerified(true)
-                    }
-                  }}
-                >
-                  {isVerifying ? (
-                    <>
-                      <Loader2 className="size-4 mr-2 animate-spin" />
-                      Verifying...
-                    </>
-                  ) : (
-                    'Continue'
-                  )}
-                </Button>
-              </form>
+              <Button
+                className="w-full"
+                onClick={() => navigate({ to: '/login' })}
+              >
+                Sign In
+              </Button>
             </div>
           </div>
         </main>
@@ -306,10 +234,8 @@ function PollPage() {
     )
   }
 
-  // Main grid view (authenticated or verified guest)
-  const respondentName = isAuthenticated
-    ? user?.fullName ?? user?.firstName ?? 'Anonymous'
-    : guestName
+  // Main grid view (authenticated)
+  const respondentName = user?.fullName ?? user?.firstName ?? 'Anonymous'
 
   const handleSubmit = async () => {
     if (isSubmitting) return
@@ -319,8 +245,7 @@ function PollPage() {
         pollId: poll._id,
         accessToken: pollToken,
         slots,
-        respondentName: respondentName || 'Anonymous',
-        guestEmail: !isAuthenticated ? guestEmail : undefined,
+        respondentName,
       })
       setSubmitted(true)
       toast.success('Availability saved')
@@ -348,19 +273,6 @@ function PollPage() {
               {opportunity.title} · Timezone: {poll.timezone.replace(/_/g, ' ')}
             </p>
           </div>
-
-          {!isAuthenticated && (
-            <div className="mb-4">
-              <Label htmlFor="guest-name">Your Name</Label>
-              <Input
-                id="guest-name"
-                placeholder="Your name"
-                value={guestName}
-                onChange={(e) => setGuestName(e.target.value)}
-                className="mt-1 max-w-xs"
-              />
-            </div>
-          )}
 
           <AvailabilityGrid
             startDate={poll.startDate}
