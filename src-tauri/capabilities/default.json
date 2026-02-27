@@ -1,0 +1,22 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Default capabilities for ASTN mobile app",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "deep-link:default",
+    "os:default",
+    "notification:default",
+    "notification:allow-request-permission",
+    "notification:allow-is-permission-granted",
+    "notification:allow-notify",
+    "opener:default",
+    "store:default",
+    "clerk:default",
+    {
+      "identifier": "http:default",
+      "allow": [{ "url": "https://*" }]
+    }
+  ]
+}
