@@ -10,6 +10,7 @@ import {
   Mail,
   Save,
   Shield,
+  Trash2,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -21,6 +22,17 @@ import { AvailabilityHeatmap } from '~/components/availability/AvailabilityHeatm
 import { PollCreationForm } from '~/components/availability/PollCreationForm'
 import { FormFieldsEditor } from '~/components/opportunities/FormFieldsEditor'
 import { AuthHeader } from '~/components/layout/auth-header'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '~/components/ui/alert-dialog'
 import { Button } from '~/components/ui/button'
 import {
   Card,
@@ -480,6 +492,7 @@ function AvailabilityTab({
 
   const updatePoll = useMutation(api.availabilityPolls.updatePoll)
   const finalizePoll = useMutation(api.availabilityPolls.finalizePoll)
+  const deletePollMutation = useMutation(api.availabilityPolls.deletePoll)
 
   const [selectedSlot, setSelectedSlot] = useState<{
     date: string
@@ -544,6 +557,16 @@ function AvailabilityTab({
       startMinutes,
       endMinutes: startMinutes + poll.slotDurationMinutes,
     })
+  }
+
+  const handleDeletePoll = async () => {
+    try {
+      await deletePollMutation({ pollId: poll._id })
+      toast.success('Poll deleted')
+    } catch (err) {
+      console.error('Failed to delete poll:', err)
+      toast.error('Failed to delete poll')
+    }
   }
 
   // Count total applicants for the denominator
@@ -611,6 +634,28 @@ function AvailabilityTab({
               <Button variant="outline" size="sm" onClick={handleToggleStatus}>
                 {poll.status === 'open' ? 'Close Poll' : 'Reopen Poll'}
               </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                    <Trash2 className="size-4 mr-1" />
+                    Delete Poll
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete this poll?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete the poll and all {totalRespondents} response{totalRespondents !== 1 ? 's' : ''}. This cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeletePoll} className="bg-red-600 hover:bg-red-700">
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
               {selectedSlot && (
                 <Button
                   size="sm"

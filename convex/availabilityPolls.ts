@@ -155,6 +155,40 @@ export const updatePoll = mutation({
   },
 })
 
+export const deletePoll = mutation({
+  args: { pollId: v.id('availabilityPolls') },
+  returns: v.null(),
+  handler: async (ctx, { pollId }) => {
+    const userId = await getUserId(ctx)
+    if (!userId) throw new ConvexError('Not authenticated')
+
+    const poll = await ctx.db.get('availabilityPolls', pollId)
+    if (!poll) throw new ConvexError('Poll not found')
+
+    // Verify admin
+    const membership = await ctx.db
+      .query('orgMemberships')
+      .withIndex('by_org_role', (q) =>
+        q.eq('orgId', poll.orgId).eq('role', 'admin'),
+      )
+      .collect()
+    const isAdmin = membership.some((m) => m.userId === userId)
+    if (!isAdmin) throw new ConvexError('Admin access required')
+
+    // Delete all responses first
+    const responses = await ctx.db
+      .query('availabilityResponses')
+      .withIndex('by_poll', (q) => q.eq('pollId', pollId))
+      .collect()
+    for (const r of responses) {
+      await ctx.db.delete('availabilityResponses', r._id)
+    }
+
+    await ctx.db.delete('availabilityPolls', pollId)
+    return null
+  },
+})
+
 export const finalizePoll = mutation({
   args: {
     pollId: v.id('availabilityPolls'),
