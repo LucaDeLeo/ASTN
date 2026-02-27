@@ -89,8 +89,7 @@ function aggregateCell(
   const respondedNames = new Set<string>()
 
   for (const r of responses) {
-    const status = r.slots[key]
-    if (!( key in r.slots)) continue
+    if (!(key in r.slots)) continue
     if (r.slots[key] === 'available') {
       available.push(r.respondentName)
       respondedNames.add(r.respondentName)
