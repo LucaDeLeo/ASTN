@@ -1195,6 +1195,56 @@ export default defineSchema({
     scheduledFor: v.number(),
   }).index('by_namespace_and_key', ['namespace', 'key']),
 
+  // Availability polls (when2meet replacement for scheduling)
+  availabilityPolls: defineTable({
+    opportunityId: v.id('orgOpportunities'),
+    orgId: v.id('organizations'),
+    createdBy: v.string(),
+    title: v.string(),
+    timezone: v.string(), // IANA, e.g. "America/Argentina/Buenos_Aires"
+    startDate: v.string(), // ISO date "2026-03-01"
+    endDate: v.string(), // ISO date "2026-03-07"
+    startMinutes: v.number(), // minutes from midnight (540 = 9 AM)
+    endMinutes: v.number(), // minutes from midnight (1080 = 6 PM)
+    slotDurationMinutes: v.number(), // 15, 30, or 60
+    accessToken: v.string(), // UUID for shareable link
+    status: v.union(
+      v.literal('open'),
+      v.literal('closed'),
+      v.literal('finalized'),
+    ),
+    finalizedSlot: v.optional(
+      v.object({
+        date: v.string(),
+        startMinutes: v.number(),
+        endMinutes: v.number(),
+      }),
+    ),
+    finalizedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_opportunity', ['opportunityId'])
+    .index('by_accessToken', ['accessToken']),
+
+  // Availability responses (individual respondent selections)
+  availabilityResponses: defineTable({
+    pollId: v.id('availabilityPolls'),
+    userId: v.optional(v.string()),
+    guestEmail: v.optional(v.string()),
+    respondentName: v.string(),
+    // Only available/maybe slots stored. Absent key = unavailable.
+    // Key format: "YYYY-MM-DD|minutesFromMidnight"
+    slots: v.record(
+      v.string(),
+      v.union(v.literal('available'), v.literal('maybe')),
+    ),
+    updatedAt: v.number(),
+  })
+    .index('by_poll', ['pollId'])
+    .index('by_poll_and_user', ['pollId', 'userId'])
+    .index('by_poll_and_guestEmail', ['pollId', 'guestEmail']),
+
   // Push notification tokens for mobile (Tauri) clients
   pushTokens: defineTable({
     userId: v.string(),

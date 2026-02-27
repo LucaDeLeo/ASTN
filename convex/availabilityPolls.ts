@@ -1,0 +1,414 @@
+import { ConvexError, v } from 'convex/values'
+import { mutation, query } from './_generated/server'
+import { getUserId } from './lib/auth'
+
+const slotValueValidator = v.union(v.literal('available'), v.literal('maybe'))
+
+const pollReturnValidator = v.object({
+  _id: v.id('availabilityPolls'),
+  _creationTime: v.number(),
+  opportunityId: v.id('orgOpportunities'),
+  orgId: v.id('organizations'),
+  createdBy: v.string(),
+  title: v.string(),
+  timezone: v.string(),
+  startDate: v.string(),
+  endDate: v.string(),
+  startMinutes: v.number(),
+  endMinutes: v.number(),
+  slotDurationMinutes: v.number(),
+  accessToken: v.string(),
+  status: v.union(
+    v.literal('open'),
+    v.literal('closed'),
+    v.literal('finalized'),
+  ),
+  finalizedSlot: v.optional(
+    v.object({
+      date: v.string(),
+      startMinutes: v.number(),
+      endMinutes: v.number(),
+    }),
+  ),
+  finalizedAt: v.optional(v.number()),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+})
+
+const responseReturnValidator = v.object({
+  _id: v.id('availabilityResponses'),
+  _creationTime: v.number(),
+  pollId: v.id('availabilityPolls'),
+  userId: v.optional(v.string()),
+  guestEmail: v.optional(v.string()),
+  respondentName: v.string(),
+  slots: v.record(v.string(), slotValueValidator),
+  updatedAt: v.number(),
+})
+
+// ─── Admin mutations ───
+
+export const createPoll = mutation({
+  args: {
+    opportunityId: v.id('orgOpportunities'),
+    title: v.string(),
+    timezone: v.string(),
+    startDate: v.string(),
+    endDate: v.string(),
+    startMinutes: v.number(),
+    endMinutes: v.number(),
+    slotDurationMinutes: v.number(),
+  },
+  returns: v.id('availabilityPolls'),
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx)
+    if (!userId) throw new ConvexError('Not authenticated')
+
+    const opportunity = await ctx.db.get('orgOpportunities', args.opportunityId)
+    if (!opportunity) throw new ConvexError('Opportunity not found')
+
+    // Verify admin role
+    const membership = await ctx.db
+      .query('orgMemberships')
+      .withIndex('by_org_role', (q) =>
+        q.eq('orgId', opportunity.orgId).eq('role', 'admin'),
+      )
+      .collect()
+    const isAdmin = membership.some((m) => m.userId === userId)
+    if (!isAdmin) throw new ConvexError('Admin access required')
+
+    // Validate config
+    if (args.endDate < args.startDate)
+      throw new ConvexError('End date must be on or after start date')
+    if (args.endMinutes <= args.startMinutes)
+      throw new ConvexError('End time must be after start time')
+    if (![15, 30, 60].includes(args.slotDurationMinutes))
+      throw new ConvexError('Slot duration must be 15, 30, or 60 minutes')
+
+    // Max 14-day range
+    const start = new Date(args.startDate)
+    const end = new Date(args.endDate)
+    const dayDiff = Math.round(
+      (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
+    )
+    if (dayDiff > 13)
+      throw new ConvexError('Poll cannot span more than 14 days')
+
+    // One active poll per opportunity
+    const existing = await ctx.db
+      .query('availabilityPolls')
+      .withIndex('by_opportunity', (q) =>
+        q.eq('opportunityId', args.opportunityId),
+      )
+      .collect()
+    const hasActive = existing.some(
+      (p) => p.status === 'open' || p.status === 'closed',
+    )
+    if (hasActive)
+      throw new ConvexError(
+        'An active poll already exists for this opportunity',
+      )
+
+    const now = Date.now()
+    return await ctx.db.insert('availabilityPolls', {
+      ...args,
+      orgId: opportunity.orgId,
+      createdBy: userId,
+      accessToken: crypto.randomUUID(),
+      status: 'open',
+      createdAt: now,
+      updatedAt: now,
+    })
+  },
+})
+
+export const updatePoll = mutation({
+  args: {
+    pollId: v.id('availabilityPolls'),
+    title: v.optional(v.string()),
+    status: v.optional(
+      v.union(v.literal('open'), v.literal('closed'), v.literal('finalized')),
+    ),
+  },
+  returns: v.null(),
+  handler: async (ctx, { pollId, ...updates }) => {
+    const userId = await getUserId(ctx)
+    if (!userId) throw new ConvexError('Not authenticated')
+
+    const poll = await ctx.db.get('availabilityPolls', pollId)
+    if (!poll) throw new ConvexError('Poll not found')
+
+    // Verify admin
+    const membership = await ctx.db
+      .query('orgMemberships')
+      .withIndex('by_org_role', (q) =>
+        q.eq('orgId', poll.orgId).eq('role', 'admin'),
+      )
+      .collect()
+    const isAdmin = membership.some((m) => m.userId === userId)
+    if (!isAdmin) throw new ConvexError('Admin access required')
+
+    await ctx.db.patch('availabilityPolls', pollId, {
+      ...updates,
+      updatedAt: Date.now(),
+    })
+    return null
+  },
+})
+
+export const finalizePoll = mutation({
+  args: {
+    pollId: v.id('availabilityPolls'),
+    finalizedSlot: v.object({
+      date: v.string(),
+      startMinutes: v.number(),
+      endMinutes: v.number(),
+    }),
+  },
+  returns: v.null(),
+  handler: async (ctx, { pollId, finalizedSlot }) => {
+    const userId = await getUserId(ctx)
+    if (!userId) throw new ConvexError('Not authenticated')
+
+    const poll = await ctx.db.get('availabilityPolls', pollId)
+    if (!poll) throw new ConvexError('Poll not found')
+
+    // Verify admin
+    const membership = await ctx.db
+      .query('orgMemberships')
+      .withIndex('by_org_role', (q) =>
+        q.eq('orgId', poll.orgId).eq('role', 'admin'),
+      )
+      .collect()
+    const isAdmin = membership.some((m) => m.userId === userId)
+    if (!isAdmin) throw new ConvexError('Admin access required')
+
+    const now = Date.now()
+    await ctx.db.patch('availabilityPolls', pollId, {
+      status: 'finalized',
+      finalizedSlot,
+      finalizedAt: now,
+      updatedAt: now,
+    })
+    return null
+  },
+})
+
+// ─── Admin queries ───
+
+export const getPollByOpportunity = query({
+  args: { opportunityId: v.id('orgOpportunities') },
+  returns: v.union(pollReturnValidator, v.null()),
+  handler: async (ctx, { opportunityId }) => {
+    return await ctx.db
+      .query('availabilityPolls')
+      .withIndex('by_opportunity', (q) =>
+        q.eq('opportunityId', opportunityId),
+      )
+      .order('desc')
+      .first()
+  },
+})
+
+export const getPollResults = query({
+  args: { pollId: v.id('availabilityPolls') },
+  returns: v.object({
+    poll: pollReturnValidator,
+    responses: v.array(responseReturnValidator),
+  }),
+  handler: async (ctx, { pollId }) => {
+    const poll = await ctx.db.get('availabilityPolls', pollId)
+    if (!poll) throw new ConvexError('Poll not found')
+
+    const responses = await ctx.db
+      .query('availabilityResponses')
+      .withIndex('by_poll', (q) => q.eq('pollId', pollId))
+      .collect()
+
+    return { poll, responses }
+  },
+})
+
+// ─── Respondent queries ───
+
+export const getPollByToken = query({
+  args: { accessToken: v.string() },
+  returns: v.union(
+    v.object({
+      poll: pollReturnValidator,
+      opportunity: v.object({
+        _id: v.id('orgOpportunities'),
+        title: v.string(),
+      }),
+      org: v.object({
+        _id: v.id('organizations'),
+        name: v.string(),
+        slug: v.optional(v.string()),
+      }),
+    }),
+    v.null(),
+  ),
+  handler: async (ctx, { accessToken }) => {
+    const poll = await ctx.db
+      .query('availabilityPolls')
+      .withIndex('by_accessToken', (q) => q.eq('accessToken', accessToken))
+      .unique()
+
+    if (!poll) return null
+
+    const opportunity = await ctx.db.get('orgOpportunities', poll.opportunityId)
+    if (!opportunity) return null
+
+    const org = await ctx.db.get('organizations', poll.orgId)
+    if (!org) return null
+
+    return {
+      poll,
+      opportunity: { _id: opportunity._id, title: opportunity.title },
+      org: { _id: org._id, name: org.name, slug: org.slug },
+    }
+  },
+})
+
+export const getMyResponse = query({
+  args: { pollId: v.id('availabilityPolls') },
+  returns: v.union(responseReturnValidator, v.null()),
+  handler: async (ctx, { pollId }) => {
+    const userId = await getUserId(ctx)
+    if (!userId) return null
+
+    return await ctx.db
+      .query('availabilityResponses')
+      .withIndex('by_poll_and_user', (q) =>
+        q.eq('pollId', pollId).eq('userId', userId),
+      )
+      .first()
+  },
+})
+
+export const getGuestResponse = query({
+  args: { pollId: v.id('availabilityPolls'), guestEmail: v.string() },
+  returns: v.union(responseReturnValidator, v.null()),
+  handler: async (ctx, { pollId, guestEmail }) => {
+    return await ctx.db
+      .query('availabilityResponses')
+      .withIndex('by_poll_and_guestEmail', (q) =>
+        q.eq('pollId', pollId).eq('guestEmail', guestEmail.toLowerCase()),
+      )
+      .first()
+  },
+})
+
+export const verifyGuestRespondent = query({
+  args: {
+    pollId: v.id('availabilityPolls'),
+    guestEmail: v.string(),
+  },
+  returns: v.object({ valid: v.boolean() }),
+  handler: async (ctx, { pollId, guestEmail }) => {
+    const poll = await ctx.db.get('availabilityPolls', pollId)
+    if (!poll) return { valid: false }
+
+    // Check if guest has applied to this opportunity
+    const application = await ctx.db
+      .query('opportunityApplications')
+      .withIndex('by_guest_email_and_opportunity', (q) =>
+        q
+          .eq('guestEmail', guestEmail.toLowerCase())
+          .eq('opportunityId', poll.opportunityId),
+      )
+      .first()
+
+    return { valid: !!application }
+  },
+})
+
+// ─── Respondent mutation ───
+
+export const submitResponse = mutation({
+  args: {
+    pollId: v.id('availabilityPolls'),
+    accessToken: v.string(),
+    slots: v.record(v.string(), slotValueValidator),
+    respondentName: v.string(),
+    guestEmail: v.optional(v.string()),
+  },
+  returns: v.id('availabilityResponses'),
+  handler: async (ctx, { pollId, accessToken, slots, respondentName, guestEmail }) => {
+    const poll = await ctx.db.get('availabilityPolls', pollId)
+    if (!poll) throw new ConvexError('Poll not found')
+    if (poll.accessToken !== accessToken)
+      throw new ConvexError('Invalid access token')
+    if (poll.status !== 'open')
+      throw new ConvexError('Poll is no longer accepting responses')
+
+    const userId = await getUserId(ctx)
+    const email = guestEmail?.toLowerCase()
+
+    // Verify respondent is an applicant
+    if (userId) {
+      const application = await ctx.db
+        .query('opportunityApplications')
+        .withIndex('by_user_and_opportunity', (q) =>
+          q.eq('userId', userId).eq('opportunityId', poll.opportunityId),
+        )
+        .first()
+      if (!application) throw new ConvexError('You must be an applicant to respond')
+    } else if (email) {
+      const application = await ctx.db
+        .query('opportunityApplications')
+        .withIndex('by_guest_email_and_opportunity', (q) =>
+          q.eq('guestEmail', email).eq('opportunityId', poll.opportunityId),
+        )
+        .first()
+      if (!application)
+        throw new ConvexError('No application found for this email')
+    } else {
+      throw new ConvexError('Must be authenticated or provide guest email')
+    }
+
+    const now = Date.now()
+
+    // Upsert: check for existing response
+    if (userId) {
+      const existing = await ctx.db
+        .query('availabilityResponses')
+        .withIndex('by_poll_and_user', (q) =>
+          q.eq('pollId', pollId).eq('userId', userId),
+        )
+        .first()
+      if (existing) {
+        await ctx.db.patch('availabilityResponses', existing._id, {
+          slots,
+          respondentName,
+          updatedAt: now,
+        })
+        return existing._id
+      }
+    } else if (email) {
+      const existing = await ctx.db
+        .query('availabilityResponses')
+        .withIndex('by_poll_and_guestEmail', (q) =>
+          q.eq('pollId', pollId).eq('guestEmail', email),
+        )
+        .first()
+      if (existing) {
+        await ctx.db.patch('availabilityResponses', existing._id, {
+          slots,
+          respondentName,
+          updatedAt: now,
+        })
+        return existing._id
+      }
+    }
+
+    return await ctx.db.insert('availabilityResponses', {
+      pollId,
+      userId: userId ?? undefined,
+      guestEmail: email,
+      respondentName,
+      slots,
+      updatedAt: now,
+    })
+  },
+})

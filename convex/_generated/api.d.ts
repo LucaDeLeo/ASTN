@@ -32,6 +32,7 @@ import type * as aggregation_validation from "../aggregation/validation.js";
 import type * as attendance_mutations from "../attendance/mutations.js";
 import type * as attendance_queries from "../attendance/queries.js";
 import type * as attendance_scheduler from "../attendance/scheduler.js";
+import type * as availabilityPolls from "../availabilityPolls.js";
 import type * as baishImport from "../baishImport.js";
 import type * as baishImportMutations from "../baishImportMutations.js";
 import type * as careerActions_compute from "../careerActions/compute.js";
@@ -155,6 +156,7 @@ declare const fullApi: ApiFromModules<{
   "attendance/mutations": typeof attendance_mutations;
   "attendance/queries": typeof attendance_queries;
   "attendance/scheduler": typeof attendance_scheduler;
+  availabilityPolls: typeof availabilityPolls;
   baishImport: typeof baishImport;
   baishImportMutations: typeof baishImportMutations;
   "careerActions/compute": typeof careerActions_compute;

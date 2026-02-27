@@ -1,11 +1,24 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useMutation, useQuery } from 'convex/react'
-import { Building2, FileText, Loader2, Mail, Save, Shield } from 'lucide-react'
+import {
+  Building2,
+  Calendar,
+  Check,
+  ClipboardCopy,
+  FileText,
+  Loader2,
+  Mail,
+  Save,
+  Shield,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { api } from '../../../../../../../convex/_generated/api'
 import type { Id } from '../../../../../../../convex/_generated/dataModel'
 import type { FormField } from '../../../../../../../convex/lib/formFields'
+import type { AvailabilityResponse } from '~/components/availability/AvailabilityHeatmap'
+import { AvailabilityHeatmap } from '~/components/availability/AvailabilityHeatmap'
+import { PollCreationForm } from '~/components/availability/PollCreationForm'
 import { FormFieldsEditor } from '~/components/opportunities/FormFieldsEditor'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { Button } from '~/components/ui/button'
@@ -27,6 +40,7 @@ import {
   SelectValue,
 } from '~/components/ui/select'
 import { Spinner } from '~/components/ui/spinner'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { Textarea } from '~/components/ui/textarea'
 
 export const Route = createFileRoute('/org/$slug/admin/opportunities/$oppId/')({
@@ -247,169 +261,407 @@ function OpportunityEditPage() {
             </div>
           </div>
 
-          <div className="space-y-6">
-            {/* Card 1: Opportunity Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Opportunity Details</CardTitle>
-                <CardDescription>
-                  Basic information about this opportunity
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSaveDetails} className="space-y-4">
-                  <div className="space-y-1">
-                    <Label htmlFor="opp-title">
-                      Title <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="opp-title"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="e.g. Technical AI Safety Course"
-                    />
-                  </div>
+          <Tabs defaultValue="details">
+            <TabsList>
+              <TabsTrigger value="details" className="gap-2">
+                <FileText className="size-4" />
+                Details
+              </TabsTrigger>
+              <TabsTrigger value="availability" className="gap-2">
+                <Calendar className="size-4" />
+                Availability
+              </TabsTrigger>
+            </TabsList>
 
-                  <div className="space-y-1">
-                    <Label htmlFor="opp-desc">
-                      Description <span className="text-red-500">*</span>
-                    </Label>
-                    <Textarea
-                      id="opp-desc"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      rows={3}
-                      placeholder="Brief description shown on the apply page"
-                    />
-                  </div>
+            <TabsContent value="details" className="mt-6">
+              <div className="space-y-6">
+                {/* Card 1: Opportunity Details */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Opportunity Details</CardTitle>
+                    <CardDescription>
+                      Basic information about this opportunity
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleSaveDetails} className="space-y-4">
+                      <div className="space-y-1">
+                        <Label htmlFor="opp-title">
+                          Title <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="opp-title"
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
+                          placeholder="e.g. Technical AI Safety Course"
+                        />
+                      </div>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-1">
-                      <Label>Type</Label>
-                      <Select
-                        value={type}
-                        onValueChange={(v) => setType(v as OpportunityType)}
+                      <div className="space-y-1">
+                        <Label htmlFor="opp-desc">
+                          Description <span className="text-red-500">*</span>
+                        </Label>
+                        <Textarea
+                          id="opp-desc"
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          rows={3}
+                          placeholder="Brief description shown on the apply page"
+                        />
+                      </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-1">
+                          <Label>Type</Label>
+                          <Select
+                            value={type}
+                            onValueChange={(v) =>
+                              setType(v as OpportunityType)
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="course">Course</SelectItem>
+                              <SelectItem value="fellowship">
+                                Fellowship
+                              </SelectItem>
+                              <SelectItem value="job">Job</SelectItem>
+                              <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-1">
+                          <Label>Status</Label>
+                          <Select
+                            value={status}
+                            onValueChange={(v) =>
+                              setStatus(v as OpportunityStatus)
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="draft">Draft</SelectItem>
+                              <SelectItem value="active">Active</SelectItem>
+                              <SelectItem value="closed">Closed</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-1">
+                          <Label htmlFor="opp-deadline">
+                            Deadline (optional)
+                          </Label>
+                          <Input
+                            id="opp-deadline"
+                            type="date"
+                            value={deadlineStr}
+                            onChange={(e) => setDeadlineStr(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="opp-url">
+                            External URL (optional)
+                          </Label>
+                          <Input
+                            id="opp-url"
+                            value={externalUrl}
+                            onChange={(e) => setExternalUrl(e.target.value)}
+                            placeholder="https://..."
+                          />
+                        </div>
+                      </div>
+
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox
+                          checked={featured}
+                          onCheckedChange={(checked) =>
+                            setFeatured(checked === true)
+                          }
+                        />
+                        <span className="text-sm">
+                          Featured opportunity (shown on org landing page)
+                        </span>
+                      </label>
+
+                      <Button
+                        type="submit"
+                        disabled={!canSaveDetails || isSavingDetails}
                       >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="course">Course</SelectItem>
-                          <SelectItem value="fellowship">Fellowship</SelectItem>
-                          <SelectItem value="job">Job</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                        {isSavingDetails ? (
+                          <>
+                            <Loader2 className="size-4 mr-2 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="size-4 mr-2" />
+                            Save Details
+                          </>
+                        )}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
 
-                    <div className="space-y-1">
-                      <Label>Status</Label>
-                      <Select
-                        value={status}
-                        onValueChange={(v) => setStatus(v as OpportunityStatus)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="draft">Draft</SelectItem>
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="closed">Closed</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-1">
-                      <Label htmlFor="opp-deadline">Deadline (optional)</Label>
-                      <Input
-                        id="opp-deadline"
-                        type="date"
-                        value={deadlineStr}
-                        onChange={(e) => setDeadlineStr(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label htmlFor="opp-url">External URL (optional)</Label>
-                      <Input
-                        id="opp-url"
-                        value={externalUrl}
-                        onChange={(e) => setExternalUrl(e.target.value)}
-                        placeholder="https://..."
-                      />
-                    </div>
-                  </div>
-
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <Checkbox
-                      checked={featured}
-                      onCheckedChange={(checked) =>
-                        setFeatured(checked === true)
-                      }
+                {/* Card 2: Application Form Fields */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Application Form Fields</CardTitle>
+                    <CardDescription>
+                      Define the fields applicants will fill out. Leave empty for
+                      no in-app form.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <FormFieldsEditor
+                      fields={formFields}
+                      onChange={setFormFields}
                     />
-                    <span className="text-sm">
-                      Featured opportunity (shown on org landing page)
-                    </span>
-                  </label>
 
-                  <Button
-                    type="submit"
-                    disabled={!canSaveDetails || isSavingDetails}
-                  >
-                    {isSavingDetails ? (
-                      <>
-                        <Loader2 className="size-4 mr-2 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="size-4 mr-2" />
-                        Save Details
-                      </>
-                    )}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+                    <Button
+                      type="button"
+                      onClick={handleSaveFields}
+                      disabled={isSavingFields}
+                    >
+                      {isSavingFields ? (
+                        <>
+                          <Loader2 className="size-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="size-4 mr-2" />
+                          Save Form Fields
+                        </>
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
 
-            {/* Card 2: Application Form Fields */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Application Form Fields</CardTitle>
-                <CardDescription>
-                  Define the fields applicants will fill out. Leave empty for no
-                  in-app form.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <FormFieldsEditor
-                  fields={formFields}
-                  onChange={setFormFields}
-                />
+            <TabsContent value="availability" className="mt-6">
+              <AvailabilityTab
+                opportunityId={opportunity._id}
+                slug={slug}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
+      </main>
+    </div>
+  )
+}
 
+// ─── Availability Tab ───
+
+function AvailabilityTab({
+  opportunityId,
+  slug,
+}: {
+  opportunityId: Id<'orgOpportunities'>
+  slug: string
+}) {
+  const poll = useQuery(api.availabilityPolls.getPollByOpportunity, {
+    opportunityId,
+  })
+
+  const pollResults = useQuery(
+    api.availabilityPolls.getPollResults,
+    poll ? { pollId: poll._id } : 'skip',
+  )
+
+  const updatePoll = useMutation(api.availabilityPolls.updatePoll)
+  const finalizePoll = useMutation(api.availabilityPolls.finalizePoll)
+
+  const [selectedSlot, setSelectedSlot] = useState<{
+    date: string
+    startMinutes: number
+    endMinutes: number
+  } | null>(null)
+  const [isFinalizingPoll, setIsFinalizingPoll] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
+
+  // Loading state
+  if (poll === undefined) {
+    return <Spinner className="size-8 mx-auto" />
+  }
+
+  // No poll yet — show creation form
+  if (!poll) {
+    return <PollCreationForm opportunityId={opportunityId} />
+  }
+
+  const pollLink = `${window.location.origin}/org/${slug}/poll/${poll.accessToken}`
+
+  const handleCopyLink = async () => {
+    await navigator.clipboard.writeText(pollLink)
+    setLinkCopied(true)
+    toast.success('Poll link copied')
+    setTimeout(() => setLinkCopied(false), 2000)
+  }
+
+  const handleToggleStatus = async () => {
+    const newStatus = poll.status === 'open' ? 'closed' : 'open'
+    try {
+      await updatePoll({ pollId: poll._id, status: newStatus })
+      toast.success(`Poll ${newStatus === 'open' ? 'reopened' : 'closed'}`)
+    } catch (err) {
+      console.error('Failed to update poll:', err)
+      toast.error('Failed to update poll')
+    }
+  }
+
+  const handleFinalize = async () => {
+    if (!selectedSlot || isFinalizingPoll) return
+    setIsFinalizingPoll(true)
+    try {
+      await finalizePoll({
+        pollId: poll._id,
+        finalizedSlot: selectedSlot,
+      })
+      toast.success('Time slot finalized')
+      setSelectedSlot(null)
+    } catch (err) {
+      console.error('Failed to finalize poll:', err)
+      toast.error('Failed to finalize')
+    } finally {
+      setIsFinalizingPoll(false)
+    }
+  }
+
+  const handleCellClick = (date: string, startMinutes: number) => {
+    if (poll.status === 'finalized') return
+    setSelectedSlot({
+      date,
+      startMinutes,
+      endMinutes: startMinutes + poll.slotDurationMinutes,
+    })
+  }
+
+  // Count total applicants for the denominator
+  const totalRespondents = pollResults?.responses.length ?? 0
+
+  return (
+    <div className="space-y-6">
+      {/* Poll info card */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>{poll.title}</CardTitle>
+              <CardDescription>
+                {poll.startDate} to {poll.endDate} ·{' '}
+                {poll.timezone.replace(/_/g, ' ')} ·{' '}
+                {poll.slotDurationMinutes} min slots
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                  poll.status === 'open'
+                    ? 'bg-green-100 text-green-800'
+                    : poll.status === 'closed'
+                      ? 'bg-slate-100 text-slate-800'
+                      : 'bg-blue-100 text-blue-800'
+                }`}
+              >
+                {poll.status.charAt(0).toUpperCase() + poll.status.slice(1)}
+              </span>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Share link */}
+          <div className="space-y-2">
+            <Label>Poll Link</Label>
+            <div className="flex gap-2">
+              <Input value={pollLink} readOnly className="font-mono text-sm" />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopyLink}
+                className="shrink-0"
+              >
+                {linkCopied ? (
+                  <>
+                    <Check className="size-4 mr-1" />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <ClipboardCopy className="size-4 mr-1" />
+                    Copy
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Poll controls */}
+          {poll.status !== 'finalized' && (
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleToggleStatus}>
+                {poll.status === 'open' ? 'Close Poll' : 'Reopen Poll'}
+              </Button>
+              {selectedSlot && (
                 <Button
-                  type="button"
-                  onClick={handleSaveFields}
-                  disabled={isSavingFields}
+                  size="sm"
+                  onClick={handleFinalize}
+                  disabled={isFinalizingPoll}
                 >
-                  {isSavingFields ? (
+                  {isFinalizingPoll ? (
                     <>
-                      <Loader2 className="size-4 mr-2 animate-spin" />
-                      Saving...
+                      <Loader2 className="size-4 mr-1 animate-spin" />
+                      Finalizing...
                     </>
                   ) : (
                     <>
-                      <Save className="size-4 mr-2" />
-                      Save Form Fields
+                      <Check className="size-4 mr-1" />
+                      Finalize Selected Slot
                     </>
                   )}
                 </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </main>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Heatmap */}
+      {pollResults && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Responses</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AvailabilityHeatmap
+              startDate={poll.startDate}
+              endDate={poll.endDate}
+              startMinutes={poll.startMinutes}
+              endMinutes={poll.endMinutes}
+              slotDurationMinutes={poll.slotDurationMinutes}
+              timezone={poll.timezone}
+              responses={
+                pollResults.responses as unknown as Array<AvailabilityResponse>
+              }
+              totalRespondents={totalRespondents}
+              onCellClick={
+                poll.status !== 'finalized' ? handleCellClick : undefined
+              }
+              selectedSlot={selectedSlot}
+              finalizedSlot={poll.finalizedSlot ?? null}
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
