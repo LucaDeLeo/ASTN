@@ -1,5 +1,5 @@
 import { v } from 'convex/values'
-import { mutation, internalQuery } from './_generated/server'
+import { internalQuery, mutation } from './_generated/server'
 import { requireAuth } from './lib/auth'
 
 export const registerToken = mutation({
@@ -20,7 +20,7 @@ export const registerToken = mutation({
     if (existing) {
       // Update if ownership changed (e.g., user re-installed app)
       if (existing.userId !== userId) {
-        await ctx.db.patch(existing._id, {
+        await ctx.db.patch('pushTokens', existing._id, {
           userId,
           platform: args.platform,
           createdAt: Date.now(),
@@ -54,7 +54,7 @@ export const unregisterToken = mutation({
       .first()
 
     if (existing && existing.userId === userId) {
-      await ctx.db.delete(existing._id)
+      await ctx.db.delete('pushTokens', existing._id)
     }
 
     return null

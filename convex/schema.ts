@@ -1240,7 +1240,9 @@ export default defineSchema({
   // Availability responses (individual respondent selections)
   availabilityResponses: defineTable({
     pollId: v.id('availabilityPolls'),
-    respondentId: v.id('pollRespondents'),
+    // Legacy field — old responses used userId (string). New responses use respondentId.
+    userId: v.optional(v.string()),
+    respondentId: v.optional(v.id('pollRespondents')),
     respondentName: v.string(),
     // Only available/maybe slots stored. Absent key = unavailable.
     // Key format: "YYYY-MM-DD|minutesFromMidnight"
