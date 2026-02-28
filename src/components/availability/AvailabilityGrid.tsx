@@ -207,6 +207,16 @@ export function AvailabilityGrid({
           >
             Clear
           </Button>
+          {Object.keys(slots).length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="ml-auto text-muted-foreground"
+              onClick={() => onSlotsChange({})}
+            >
+              Clear All
+            </Button>
+          )}
         </div>
       )}
 
