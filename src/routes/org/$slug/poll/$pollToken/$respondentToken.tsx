@@ -1,14 +1,13 @@
 import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useMutation, useQuery } from 'convex/react'
-import { CheckCircle2, Clock, Loader2, Lock } from 'lucide-react'
-import { useState } from 'react'
+import { Check, CheckCircle2, Clock, Loader2, Lock } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { api } from '../../../../../../convex/_generated/api'
 import { AvailabilityGrid } from '~/components/availability/AvailabilityGrid'
 import { GradientBg } from '~/components/layout/GradientBg'
-import { Button } from '~/components/ui/button'
 
 export const Route = createFileRoute(
   '/org/$slug/poll/$pollToken/$respondentToken',
@@ -59,8 +58,13 @@ function RespondentPollPage() {
 
   const [slots, setSlots] = useState<Record<string, SlotStatus>>({})
   const [slotsInitialized, setSlotsInitialized] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>(
+    'idle',
+  )
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null)
+  const slotsRef = useRef(slots)
+  slotsRef.current = slots
+  const userHasEditedRef = useRef(false)
 
   // Pre-populate slots from existing response
   if (!slotsInitialized && existingResponse !== undefined) {
@@ -69,6 +73,46 @@ function RespondentPollPage() {
     }
     setSlotsInitialized(true)
   }
+
+  const handleSlotsChange = useCallback(
+    (newSlots: Record<string, SlotStatus>) => {
+      userHasEditedRef.current = true
+      setSlots(newSlots)
+    },
+    [],
+  )
+
+  const saveSlots = useCallback(
+    async (slotsToSave: Record<string, SlotStatus>) => {
+      if (!data) return
+      setSaveStatus('saving')
+      try {
+        await submitResponse({
+          pollId: data.poll._id,
+          respondentId: data.respondentId,
+          slots: slotsToSave,
+        })
+        setSaveStatus('saved')
+      } catch (err) {
+        console.error('Failed to save availability:', err)
+        toast.error('Failed to save — try again')
+        setSaveStatus('idle')
+      }
+    },
+    [data, submitResponse],
+  )
+
+  // Auto-save with debounce when slots change
+  useEffect(() => {
+    if (!slotsInitialized || !userHasEditedRef.current) return
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      saveSlots(slotsRef.current)
+    }, 800)
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [slots, slotsInitialized, saveSlots])
 
   if (!data) {
     return (
@@ -157,55 +201,6 @@ function RespondentPollPage() {
     )
   }
 
-  // Submitted success
-  if (submitted) {
-    return (
-      <GradientBg>
-        <main className="container mx-auto px-4 py-8">
-          <div className="max-w-lg mx-auto text-center py-12">
-            <div className="size-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 className="size-8 text-green-600" />
-            </div>
-            <h1 className="text-2xl font-display text-foreground mb-4">
-              Availability Saved
-            </h1>
-            <p className="text-muted-foreground mb-6">
-              Your availability for <strong>{poll.title}</strong> has been
-              recorded. You can revisit this link to update your response.
-            </p>
-            <Button asChild variant="outline">
-              <Link to="/org/$slug" params={{ slug: org.slug ?? '' }}>
-                Visit {org.name}
-              </Link>
-            </Button>
-          </div>
-        </main>
-      </GradientBg>
-    )
-  }
-
-  // Main grid view
-  const handleSubmit = async () => {
-    if (isSubmitting) return
-    setIsSubmitting(true)
-    try {
-      await submitResponse({
-        pollId: poll._id,
-        respondentId,
-        slots,
-      })
-      setSubmitted(true)
-      toast.success('Availability saved')
-    } catch (err) {
-      console.error('Failed to save availability:', err)
-      toast.error(
-        err instanceof Error ? err.message : 'Failed to save availability',
-      )
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
   return (
     <GradientBg>
       <main className="container mx-auto px-4 py-8">
@@ -231,24 +226,22 @@ function RespondentPollPage() {
             slotDurationMinutes={poll.slotDurationMinutes}
             timezone={poll.timezone}
             slots={slots}
-            onSlotsChange={setSlots}
+            onSlotsChange={handleSlotsChange}
           />
 
-          <div className="flex items-center justify-end mt-6 pb-8">
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting || Object.keys(slots).length === 0}
-              size="lg"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="size-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                'Save My Availability'
-              )}
-            </Button>
+          <div className="flex items-center justify-end mt-4 text-sm text-muted-foreground">
+            {saveStatus === 'saving' && (
+              <span className="flex items-center gap-1.5">
+                <Loader2 className="size-3.5 animate-spin" />
+                Saving...
+              </span>
+            )}
+            {saveStatus === 'saved' && (
+              <span className="flex items-center gap-1.5 text-green-600">
+                <Check className="size-3.5" />
+                Saved
+              </span>
+            )}
           </div>
         </div>
       </main>
