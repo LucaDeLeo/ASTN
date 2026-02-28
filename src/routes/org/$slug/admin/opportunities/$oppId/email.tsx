@@ -67,6 +67,11 @@ function EmailComposePage() {
     api.opportunityApplications.listByOpportunity,
     opportunity ? { opportunityId: opportunity._id } : 'skip',
   )
+  // Check for active poll (for {{poll_link}} support)
+  const activePoll = useQuery(
+    api.availabilityPolls.getPollByOpportunity,
+    opportunity ? { opportunityId: opportunity._id } : 'skip',
+  )
 
   const [selectedStatuses, setSelectedStatuses] = useState<
     Set<ApplicationStatus>
@@ -117,6 +122,10 @@ function EmailComposePage() {
         statuses: Array.from(selectedStatuses),
         subject: subject.trim(),
         markdownBody: body,
+        pollId: activePoll?._id,
+        pollLinkBase: activePoll
+          ? `${window.location.origin}/org/${slug}/poll/${activePoll.accessToken}`
+          : undefined,
       })
       if (result.failed === 0) {
         toast.success(
@@ -312,6 +321,17 @@ function EmailComposePage() {
                     placeholder="Write your message here... Markdown is supported."
                     disabled={hasSent}
                   />
+                  {activePoll &&
+                    activePoll.status !== 'finalized' && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Use{' '}
+                        <code className="bg-slate-100 px-1 rounded text-[11px]">
+                          {'{{poll_link}}'}
+                        </code>{' '}
+                        to include each applicant&apos;s unique availability
+                        poll link.
+                      </p>
+                    )}
                 </div>
               </CardContent>
             </Card>

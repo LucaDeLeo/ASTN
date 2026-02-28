@@ -26,6 +26,7 @@ export const getRecipientsForEmail = internalQuery({
     v.object({
       email: v.string(),
       name: v.string(),
+      applicationId: v.id('opportunityApplications'),
     }),
   ),
   handler: async (ctx, { opportunityId, statuses }) => {
@@ -41,7 +42,11 @@ export const getRecipientsForEmail = internalQuery({
     }
 
     const seen = new Set<string>()
-    const recipients: Array<{ email: string; name: string }> = []
+    const recipients: Array<{
+      email: string
+      name: string
+      applicationId: typeof allApps[number]['_id']
+    }> = []
 
     for (const app of allApps) {
       let email: string | null = null
@@ -74,7 +79,7 @@ export const getRecipientsForEmail = internalQuery({
 
       if (email && !seen.has(email.toLowerCase())) {
         seen.add(email.toLowerCase())
-        recipients.push({ email, name })
+        recipients.push({ email, name, applicationId: app._id })
       }
     }
 

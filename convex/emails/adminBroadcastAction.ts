@@ -2,7 +2,7 @@
 
 import { v } from 'convex/values'
 import { marked } from 'marked'
-import { internal } from '../_generated/api'
+import { api, internal } from '../_generated/api'
 import { action } from '../_generated/server'
 import { applicationStatusValidator } from './adminBroadcast'
 import { renderAdminBroadcast } from './templates'
@@ -10,6 +10,9 @@ import { renderAdminBroadcast } from './templates'
 /**
  * Send a broadcast email to applicants of an opportunity.
  * Public action called from the admin email compose page.
+ *
+ * If `pollId` and `pollLinkBase` are provided, `{{poll_link}}` in the markdown body
+ * will be replaced with each recipient's unique poll link.
  */
 export const sendBroadcastToApplicants = action({
   args: {
@@ -17,12 +20,17 @@ export const sendBroadcastToApplicants = action({
     statuses: v.array(applicationStatusValidator),
     subject: v.string(),
     markdownBody: v.string(),
+    pollId: v.optional(v.id('availabilityPolls')),
+    pollLinkBase: v.optional(v.string()),
   },
   returns: v.object({
     sent: v.number(),
     failed: v.number(),
   }),
-  handler: async (ctx, { opportunityId, statuses, subject, markdownBody }) => {
+  handler: async (
+    ctx,
+    { opportunityId, statuses, subject, markdownBody, pollId, pollLinkBase },
+  ) => {
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) throw new Error('Not authenticated')
 
@@ -32,26 +40,59 @@ export const sendBroadcastToApplicants = action({
     )
     if (!isAdmin) throw new Error('Admin access required')
 
-    const recipients: Array<{ email: string; name: string }> =
-      await ctx.runQuery(internal.emails.adminBroadcast.getRecipientsForEmail, {
-        opportunityId,
-        statuses,
-      })
+    const recipients: Array<{
+      email: string
+      name: string
+      applicationId: string
+    }> = await ctx.runQuery(
+      internal.emails.adminBroadcast.getRecipientsForEmail,
+      { opportunityId, statuses },
+    )
 
     if (recipients.length === 0) {
       return { sent: 0, failed: 0 }
     }
 
-    const bodyHtml = await marked(markdownBody)
+    // Build applicationId → respondentToken map if poll link substitution is needed
+    let tokenMap: Map<string, string> | null = null
+
+    if (pollId && pollLinkBase && markdownBody.includes('{{poll_link}}')) {
+      const respondents: Array<{
+        respondentToken: string
+        applicationId: string
+      }> = await ctx.runQuery(api.availabilityPolls.getRespondentLinks, {
+        pollId,
+      })
+
+      tokenMap = new Map<string, string>()
+      for (const r of respondents) {
+        tokenMap.set(r.applicationId, r.respondentToken)
+      }
+    }
 
     let sent = 0
     let failed = 0
 
     for (const recipient of recipients) {
       try {
+        // Substitute {{poll_link}} per recipient
+        let recipientMarkdown = markdownBody
+        if (tokenMap && pollLinkBase) {
+          const token = tokenMap.get(recipient.applicationId)
+          const link = token
+            ? `${pollLinkBase}/${token}`
+            : pollLinkBase
+          recipientMarkdown = recipientMarkdown.replaceAll(
+            '{{poll_link}}',
+            link,
+          )
+        }
+
+        const recipientHtml: string = await marked(recipientMarkdown)
+
         const html: string = await renderAdminBroadcast({
           userName: recipient.name,
-          bodyHtml,
+          bodyHtml: recipientHtml,
         })
 
         await ctx.runMutation(internal.emails.adminBroadcast.sendSingleEmail, {

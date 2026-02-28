@@ -55,6 +55,7 @@ import { Route as OrgSlugAdminProgramsIndexRouteImport } from './routes/org/$slu
 import { Route as OrgSlugAdminOpportunitiesIndexRouteImport } from './routes/org/$slug/admin/opportunities/index'
 import { Route as OrgSlugAdminMembersIndexRouteImport } from './routes/org/$slug/admin/members/index'
 import { Route as OrgSlugAdminApplicationsIndexRouteImport } from './routes/org/$slug/admin/applications/index'
+import { Route as OrgSlugPollPollTokenRespondentTokenRouteImport } from './routes/org/$slug/poll/$pollToken/$respondentToken'
 import { Route as OrgSlugAdminProgramsProgramIdRouteImport } from './routes/org/$slug/admin/programs/$programId'
 import { Route as OrgSlugAdminMembersUserIdRouteImport } from './routes/org/$slug/admin/members/$userId'
 import { Route as OrgSlugAdminOpportunitiesOppIdIndexRouteImport } from './routes/org/$slug/admin/opportunities/$oppId/index'
@@ -296,6 +297,12 @@ const OrgSlugAdminApplicationsIndexRoute =
     path: '/org/$slug/admin/applications/',
     getParentRoute: () => rootRouteImport,
   } as any)
+const OrgSlugPollPollTokenRespondentTokenRoute =
+  OrgSlugPollPollTokenRespondentTokenRouteImport.update({
+    id: '/$respondentToken',
+    path: '/$respondentToken',
+    getParentRoute: () => OrgSlugPollPollTokenRoute,
+  } as any)
 const OrgSlugAdminProgramsProgramIdRoute =
   OrgSlugAdminProgramsProgramIdRouteImport.update({
     id: '/org/$slug/admin/programs/$programId',
@@ -360,12 +367,13 @@ export interface FileRoutesByFullPath {
   '/org/$slug/admin/setup': typeof OrgSlugAdminSetupRoute
   '/org/$slug/admin/space': typeof OrgSlugAdminSpaceRoute
   '/org/$slug/apply/$opportunityId': typeof OrgSlugApplyOpportunityIdRoute
-  '/org/$slug/poll/$pollToken': typeof OrgSlugPollPollTokenRoute
+  '/org/$slug/poll/$pollToken': typeof OrgSlugPollPollTokenRouteWithChildren
   '/org/$slug/space/bookings': typeof OrgSlugSpaceBookingsRoute
   '/org/$slug/admin/': typeof OrgSlugAdminIndexRoute
   '/org/$slug/space/': typeof OrgSlugSpaceIndexRoute
   '/org/$slug/admin/members/$userId': typeof OrgSlugAdminMembersUserIdRoute
   '/org/$slug/admin/programs/$programId': typeof OrgSlugAdminProgramsProgramIdRoute
+  '/org/$slug/poll/$pollToken/$respondentToken': typeof OrgSlugPollPollTokenRespondentTokenRoute
   '/org/$slug/admin/applications/': typeof OrgSlugAdminApplicationsIndexRoute
   '/org/$slug/admin/members/': typeof OrgSlugAdminMembersIndexRoute
   '/org/$slug/admin/opportunities/': typeof OrgSlugAdminOpportunitiesIndexRoute
@@ -407,12 +415,13 @@ export interface FileRoutesByTo {
   '/org/$slug/admin/setup': typeof OrgSlugAdminSetupRoute
   '/org/$slug/admin/space': typeof OrgSlugAdminSpaceRoute
   '/org/$slug/apply/$opportunityId': typeof OrgSlugApplyOpportunityIdRoute
-  '/org/$slug/poll/$pollToken': typeof OrgSlugPollPollTokenRoute
+  '/org/$slug/poll/$pollToken': typeof OrgSlugPollPollTokenRouteWithChildren
   '/org/$slug/space/bookings': typeof OrgSlugSpaceBookingsRoute
   '/org/$slug/admin': typeof OrgSlugAdminIndexRoute
   '/org/$slug/space': typeof OrgSlugSpaceIndexRoute
   '/org/$slug/admin/members/$userId': typeof OrgSlugAdminMembersUserIdRoute
   '/org/$slug/admin/programs/$programId': typeof OrgSlugAdminProgramsProgramIdRoute
+  '/org/$slug/poll/$pollToken/$respondentToken': typeof OrgSlugPollPollTokenRespondentTokenRoute
   '/org/$slug/admin/applications': typeof OrgSlugAdminApplicationsIndexRoute
   '/org/$slug/admin/members': typeof OrgSlugAdminMembersIndexRoute
   '/org/$slug/admin/opportunities': typeof OrgSlugAdminOpportunitiesIndexRoute
@@ -460,12 +469,13 @@ export interface FileRoutesById {
   '/org/$slug/admin/setup': typeof OrgSlugAdminSetupRoute
   '/org/$slug/admin/space': typeof OrgSlugAdminSpaceRoute
   '/org/$slug/apply/$opportunityId': typeof OrgSlugApplyOpportunityIdRoute
-  '/org/$slug/poll/$pollToken': typeof OrgSlugPollPollTokenRoute
+  '/org/$slug/poll/$pollToken': typeof OrgSlugPollPollTokenRouteWithChildren
   '/org/$slug/space/bookings': typeof OrgSlugSpaceBookingsRoute
   '/org/$slug/admin/': typeof OrgSlugAdminIndexRoute
   '/org/$slug/space/': typeof OrgSlugSpaceIndexRoute
   '/org/$slug/admin/members/$userId': typeof OrgSlugAdminMembersUserIdRoute
   '/org/$slug/admin/programs/$programId': typeof OrgSlugAdminProgramsProgramIdRoute
+  '/org/$slug/poll/$pollToken/$respondentToken': typeof OrgSlugPollPollTokenRespondentTokenRoute
   '/org/$slug/admin/applications/': typeof OrgSlugAdminApplicationsIndexRoute
   '/org/$slug/admin/members/': typeof OrgSlugAdminMembersIndexRoute
   '/org/$slug/admin/opportunities/': typeof OrgSlugAdminOpportunitiesIndexRoute
@@ -520,6 +530,7 @@ export interface FileRouteTypes {
     | '/org/$slug/space/'
     | '/org/$slug/admin/members/$userId'
     | '/org/$slug/admin/programs/$programId'
+    | '/org/$slug/poll/$pollToken/$respondentToken'
     | '/org/$slug/admin/applications/'
     | '/org/$slug/admin/members/'
     | '/org/$slug/admin/opportunities/'
@@ -567,6 +578,7 @@ export interface FileRouteTypes {
     | '/org/$slug/space'
     | '/org/$slug/admin/members/$userId'
     | '/org/$slug/admin/programs/$programId'
+    | '/org/$slug/poll/$pollToken/$respondentToken'
     | '/org/$slug/admin/applications'
     | '/org/$slug/admin/members'
     | '/org/$slug/admin/opportunities'
@@ -619,6 +631,7 @@ export interface FileRouteTypes {
     | '/org/$slug/space/'
     | '/org/$slug/admin/members/$userId'
     | '/org/$slug/admin/programs/$programId'
+    | '/org/$slug/poll/$pollToken/$respondentToken'
     | '/org/$slug/admin/applications/'
     | '/org/$slug/admin/members/'
     | '/org/$slug/admin/opportunities/'
@@ -654,7 +667,7 @@ export interface RootRouteChildren {
   OrgSlugAdminSetupRoute: typeof OrgSlugAdminSetupRoute
   OrgSlugAdminSpaceRoute: typeof OrgSlugAdminSpaceRoute
   OrgSlugApplyOpportunityIdRoute: typeof OrgSlugApplyOpportunityIdRoute
-  OrgSlugPollPollTokenRoute: typeof OrgSlugPollPollTokenRoute
+  OrgSlugPollPollTokenRoute: typeof OrgSlugPollPollTokenRouteWithChildren
   OrgSlugSpaceBookingsRoute: typeof OrgSlugSpaceBookingsRoute
   OrgSlugAdminIndexRoute: typeof OrgSlugAdminIndexRoute
   OrgSlugSpaceIndexRoute: typeof OrgSlugSpaceIndexRoute
@@ -992,6 +1005,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrgSlugAdminApplicationsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/org/$slug/poll/$pollToken/$respondentToken': {
+      id: '/org/$slug/poll/$pollToken/$respondentToken'
+      path: '/$respondentToken'
+      fullPath: '/org/$slug/poll/$pollToken/$respondentToken'
+      preLoaderRoute: typeof OrgSlugPollPollTokenRespondentTokenRouteImport
+      parentRoute: typeof OrgSlugPollPollTokenRoute
+    }
     '/org/$slug/admin/programs/$programId': {
       id: '/org/$slug/admin/programs/$programId'
       path: '/org/$slug/admin/programs/$programId'
@@ -1099,6 +1119,18 @@ const SettingsRouteRouteWithChildren = SettingsRouteRoute._addFileChildren(
   SettingsRouteRouteChildren,
 )
 
+interface OrgSlugPollPollTokenRouteChildren {
+  OrgSlugPollPollTokenRespondentTokenRoute: typeof OrgSlugPollPollTokenRespondentTokenRoute
+}
+
+const OrgSlugPollPollTokenRouteChildren: OrgSlugPollPollTokenRouteChildren = {
+  OrgSlugPollPollTokenRespondentTokenRoute:
+    OrgSlugPollPollTokenRespondentTokenRoute,
+}
+
+const OrgSlugPollPollTokenRouteWithChildren =
+  OrgSlugPollPollTokenRoute._addFileChildren(OrgSlugPollPollTokenRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
@@ -1126,7 +1158,7 @@ const rootRouteChildren: RootRouteChildren = {
   OrgSlugAdminSetupRoute: OrgSlugAdminSetupRoute,
   OrgSlugAdminSpaceRoute: OrgSlugAdminSpaceRoute,
   OrgSlugApplyOpportunityIdRoute: OrgSlugApplyOpportunityIdRoute,
-  OrgSlugPollPollTokenRoute: OrgSlugPollPollTokenRoute,
+  OrgSlugPollPollTokenRoute: OrgSlugPollPollTokenRouteWithChildren,
   OrgSlugSpaceBookingsRoute: OrgSlugSpaceBookingsRoute,
   OrgSlugAdminIndexRoute: OrgSlugAdminIndexRoute,
   OrgSlugSpaceIndexRoute: OrgSlugSpaceIndexRoute,

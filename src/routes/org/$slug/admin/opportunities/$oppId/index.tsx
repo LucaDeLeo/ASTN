@@ -490,6 +490,11 @@ function AvailabilityTab({
     poll ? { pollId: poll._id } : 'skip',
   )
 
+  const respondentLinks = useQuery(
+    api.availabilityPolls.getRespondentLinks,
+    poll ? { pollId: poll._id } : 'skip',
+  )
+
   const updatePoll = useMutation(api.availabilityPolls.updatePoll)
   const finalizePoll = useMutation(api.availabilityPolls.finalizePoll)
   const deletePollMutation = useMutation(api.availabilityPolls.deletePoll)
@@ -500,7 +505,8 @@ function AvailabilityTab({
     endMinutes: number
   } | null>(null)
   const [isFinalizingPoll, setIsFinalizingPoll] = useState(false)
-  const [linkCopied, setLinkCopied] = useState(false)
+  const [copiedToken, setCopiedToken] = useState<string | null>(null)
+  const [allCopied, setAllCopied] = useState(false)
 
   // Loading state
   if (poll === undefined) {
@@ -512,13 +518,24 @@ function AvailabilityTab({
     return <PollCreationForm opportunityId={opportunityId} />
   }
 
-  const pollLink = `${window.location.origin}/org/${slug}/poll/${poll.accessToken}`
+  const baseUrl = `${window.location.origin}/org/${slug}/poll/${poll.accessToken}`
 
-  const handleCopyLink = async () => {
-    await navigator.clipboard.writeText(pollLink)
-    setLinkCopied(true)
-    toast.success('Poll link copied')
-    setTimeout(() => setLinkCopied(false), 2000)
+  const handleCopyRespondentLink = async (token: string, name: string) => {
+    await navigator.clipboard.writeText(`${baseUrl}/${token}`)
+    setCopiedToken(token)
+    toast.success(`Link copied for ${name}`)
+    setTimeout(() => setCopiedToken(null), 2000)
+  }
+
+  const handleCopyAllLinks = async () => {
+    if (!respondentLinks?.length) return
+    const text = respondentLinks
+      .map((r) => `${r.respondentName}: ${baseUrl}/${r.respondentToken}`)
+      .join('\n')
+    await navigator.clipboard.writeText(text)
+    setAllCopied(true)
+    toast.success('All links copied')
+    setTimeout(() => setAllCopied(false), 2000)
   }
 
   const handleToggleStatus = async () => {
@@ -602,30 +619,72 @@ function AvailabilityTab({
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Share link */}
+          {/* Per-applicant links */}
           <div className="space-y-2">
-            <Label>Poll Link</Label>
-            <div className="flex gap-2">
-              <Input value={pollLink} readOnly className="font-mono text-sm" />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCopyLink}
-                className="shrink-0"
-              >
-                {linkCopied ? (
-                  <>
-                    <Check className="size-4 mr-1" />
-                    Copied
-                  </>
-                ) : (
-                  <>
-                    <ClipboardCopy className="size-4 mr-1" />
-                    Copy
-                  </>
-                )}
-              </Button>
+            <div className="flex items-center justify-between">
+              <Label>
+                Respondent Links
+                {respondentLinks
+                  ? ` (${respondentLinks.length})`
+                  : ''}
+              </Label>
+              {respondentLinks && respondentLinks.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyAllLinks}
+                >
+                  {allCopied ? (
+                    <>
+                      <Check className="size-4 mr-1" />
+                      Copied All
+                    </>
+                  ) : (
+                    <>
+                      <ClipboardCopy className="size-4 mr-1" />
+                      Copy All Links
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
+            {respondentLinks === undefined ? (
+              <Spinner className="size-4" />
+            ) : respondentLinks.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No applicants yet. Links will be generated when the poll is created.
+              </p>
+            ) : (
+              <div className="space-y-1 max-h-48 overflow-y-auto rounded-md border p-2">
+                {respondentLinks.map((r) => (
+                  <div
+                    key={r.respondentToken}
+                    className="flex items-center justify-between gap-2 py-1 px-1 rounded hover:bg-slate-50"
+                  >
+                    <span className="text-sm truncate">
+                      {r.respondentName}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="shrink-0 h-7 px-2"
+                      onClick={() =>
+                        handleCopyRespondentLink(
+                          r.respondentToken,
+                          r.respondentName,
+                        )
+                      }
+                    >
+                      {copiedToken === r.respondentToken ? (
+                        <Check className="size-3.5" />
+                      ) : (
+                        <ClipboardCopy className="size-3.5" />
+                      )}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Poll controls */}

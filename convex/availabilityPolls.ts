@@ -39,7 +39,7 @@ const responseReturnValidator = v.object({
   _id: v.id('availabilityResponses'),
   _creationTime: v.number(),
   pollId: v.id('availabilityPolls'),
-  userId: v.string(),
+  respondentId: v.id('pollRespondents'),
   respondentName: v.string(),
   slots: v.record(v.string(), slotValueValidator),
   updatedAt: v.number(),
@@ -109,7 +109,7 @@ export const createPoll = mutation({
       )
 
     const now = Date.now()
-    return await ctx.db.insert('availabilityPolls', {
+    const pollId = await ctx.db.insert('availabilityPolls', {
       ...args,
       orgId: opportunity.orgId,
       createdBy: userId,
@@ -118,6 +118,49 @@ export const createPoll = mutation({
       createdAt: now,
       updatedAt: now,
     })
+
+    // Generate respondent rows for all applicants
+    const applications = await ctx.db
+      .query('opportunityApplications')
+      .withIndex('by_opportunity_and_status', (q) =>
+        q.eq('opportunityId', args.opportunityId),
+      )
+      .collect()
+
+    for (const app of applications) {
+      let name = 'Applicant'
+
+      if (app.guestEmail) {
+        // Guest: extract name from form responses (first non-empty string value)
+        const responses = app.responses as Record<string, unknown> | undefined
+        if (responses) {
+          const firstTextValue = Object.values(responses).find(
+            (val) => typeof val === 'string' && val.trim(),
+          )
+          if (typeof firstTextValue === 'string') {
+            name = firstTextValue.trim()
+          }
+        }
+      } else if (app.userId) {
+        // Authenticated: get name from profile
+        const profile = await ctx.db
+          .query('profiles')
+          .withIndex('by_user', (q) => q.eq('userId', app.userId!))
+          .first()
+        if (profile?.name) {
+          name = profile.name
+        }
+      }
+
+      await ctx.db.insert('pollRespondents', {
+        pollId,
+        applicationId: app._id,
+        respondentToken: crypto.randomUUID(),
+        respondentName: name,
+      })
+    }
+
+    return pollId
   },
 })
 
@@ -182,6 +225,15 @@ export const deletePoll = mutation({
       .collect()
     for (const r of responses) {
       await ctx.db.delete('availabilityResponses', r._id)
+    }
+
+    // Delete all respondent rows
+    const respondents = await ctx.db
+      .query('pollRespondents')
+      .withIndex('by_poll', (q) => q.eq('pollId', pollId))
+      .collect()
+    for (const r of respondents) {
+      await ctx.db.delete('pollRespondents', r._id)
     }
 
     await ctx.db.delete('availabilityPolls', pollId)
@@ -262,7 +314,30 @@ export const getPollResults = query({
   },
 })
 
-// ─── Respondent queries ───
+export const getRespondentLinks = query({
+  args: { pollId: v.id('availabilityPolls') },
+  returns: v.array(
+    v.object({
+      respondentToken: v.string(),
+      respondentName: v.string(),
+      applicationId: v.id('opportunityApplications'),
+    }),
+  ),
+  handler: async (ctx, { pollId }) => {
+    const respondents = await ctx.db
+      .query('pollRespondents')
+      .withIndex('by_poll', (q) => q.eq('pollId', pollId))
+      .collect()
+
+    return respondents.map((r) => ({
+      respondentToken: r.respondentToken,
+      respondentName: r.respondentName,
+      applicationId: r.applicationId,
+    }))
+  },
+})
+
+// ─── Respondent queries (no auth required) ───
 
 export const getPollByToken = query({
   args: { accessToken: v.string() },
@@ -303,17 +378,65 @@ export const getPollByToken = query({
   },
 })
 
-export const getMyResponse = query({
-  args: { pollId: v.id('availabilityPolls') },
-  returns: v.union(responseReturnValidator, v.null()),
-  handler: async (ctx, { pollId }) => {
-    const userId = await getUserId(ctx)
-    if (!userId) return null
+export const getPollByRespondentToken = query({
+  args: { respondentToken: v.string() },
+  returns: v.union(
+    v.object({
+      poll: pollReturnValidator,
+      opportunity: v.object({
+        _id: v.id('orgOpportunities'),
+        title: v.string(),
+      }),
+      org: v.object({
+        _id: v.id('organizations'),
+        name: v.string(),
+        slug: v.optional(v.string()),
+      }),
+      respondentId: v.id('pollRespondents'),
+      respondentName: v.string(),
+    }),
+    v.null(),
+  ),
+  handler: async (ctx, { respondentToken }) => {
+    const respondent = await ctx.db
+      .query('pollRespondents')
+      .withIndex('by_respondentToken', (q) =>
+        q.eq('respondentToken', respondentToken),
+      )
+      .unique()
 
+    if (!respondent) return null
+
+    const poll = await ctx.db.get('availabilityPolls', respondent.pollId)
+    if (!poll) return null
+
+    const opportunity = await ctx.db.get('orgOpportunities', poll.opportunityId)
+    if (!opportunity) return null
+
+    const org = await ctx.db.get('organizations', poll.orgId)
+    if (!org) return null
+
+    return {
+      poll,
+      opportunity: { _id: opportunity._id, title: opportunity.title },
+      org: { _id: org._id, name: org.name, slug: org.slug },
+      respondentId: respondent._id,
+      respondentName: respondent.respondentName,
+    }
+  },
+})
+
+export const getResponseByRespondent = query({
+  args: {
+    pollId: v.id('availabilityPolls'),
+    respondentId: v.id('pollRespondents'),
+  },
+  returns: v.union(responseReturnValidator, v.null()),
+  handler: async (ctx, { pollId, respondentId }) => {
     return await ctx.db
       .query('availabilityResponses')
-      .withIndex('by_poll_and_user', (q) =>
-        q.eq('pollId', pollId).eq('userId', userId),
+      .withIndex('by_poll_and_respondent', (q) =>
+        q.eq('pollId', pollId).eq('respondentId', respondentId),
       )
       .first()
   },
@@ -324,19 +447,19 @@ export const getMyResponse = query({
 export const submitResponse = mutation({
   args: {
     pollId: v.id('availabilityPolls'),
-    accessToken: v.string(),
+    respondentId: v.id('pollRespondents'),
     slots: v.record(v.string(), slotValueValidator),
-    respondentName: v.string(),
   },
   returns: v.id('availabilityResponses'),
-  handler: async (ctx, { pollId, accessToken, slots, respondentName }) => {
-    const userId = await getUserId(ctx)
-    if (!userId) throw new ConvexError('Not authenticated')
+  handler: async (ctx, { pollId, respondentId, slots }) => {
+    // Validate respondent exists and belongs to this poll
+    const respondent = await ctx.db.get('pollRespondents', respondentId)
+    if (!respondent) throw new ConvexError('Respondent not found')
+    if (respondent.pollId !== pollId)
+      throw new ConvexError('Respondent does not belong to this poll')
 
     const poll = await ctx.db.get('availabilityPolls', pollId)
     if (!poll) throw new ConvexError('Poll not found')
-    if (poll.accessToken !== accessToken)
-      throw new ConvexError('Invalid access token')
     if (poll.status !== 'open')
       throw new ConvexError('Poll is no longer accepting responses')
 
@@ -345,14 +468,13 @@ export const submitResponse = mutation({
     // Upsert: check for existing response
     const existing = await ctx.db
       .query('availabilityResponses')
-      .withIndex('by_poll_and_user', (q) =>
-        q.eq('pollId', pollId).eq('userId', userId),
+      .withIndex('by_poll_and_respondent', (q) =>
+        q.eq('pollId', pollId).eq('respondentId', respondentId),
       )
       .first()
     if (existing) {
       await ctx.db.patch('availabilityResponses', existing._id, {
         slots,
-        respondentName,
         updatedAt: now,
       })
       return existing._id
@@ -360,8 +482,8 @@ export const submitResponse = mutation({
 
     return await ctx.db.insert('availabilityResponses', {
       pollId,
-      userId,
-      respondentName,
+      respondentId,
+      respondentName: respondent.respondentName,
       slots,
       updatedAt: now,
     })
