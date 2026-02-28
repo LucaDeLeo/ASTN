@@ -132,7 +132,7 @@ function RespondentPollPage() {
     )
   }
 
-  const { poll, opportunity, org, respondentId, respondentName } = data
+  const { poll, opportunity, org, respondentName } = data
 
   // Finalized state
   if (poll.status === 'finalized' && poll.finalizedSlot) {
