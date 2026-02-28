@@ -108,6 +108,7 @@ export function AvailabilityGrid({
   const paintModeRef = useRef<PaintMode>(paintMode)
   const isDraggingRef = useRef(false)
   const activePaintModeRef = useRef<PaintMode>('available')
+  const lastPointerTypeRef = useRef<string>('')
 
   const dates = generateDates(startDate, endDate)
   const timeSlots = generateTimeSlots(startMinutes, endMinutes, slotDurationMinutes)
@@ -127,9 +128,21 @@ export function AvailabilityGrid({
   )
 
   const handlePointerDown = useCallback(
+    (key: string, e: React.PointerEvent) => {
+      if (readOnly) return
+      lastPointerTypeRef.current = e.pointerType
+      if (e.pointerType === 'touch') return // touch taps handled by onClick
+      isDraggingRef.current = true
+      activePaintModeRef.current = paintModeRef.current
+      paintCell(key)
+    },
+    [readOnly, paintCell],
+  )
+
+  const handleCellClick = useCallback(
     (key: string) => {
       if (readOnly) return
-      isDraggingRef.current = true
+      if (lastPointerTypeRef.current !== 'touch') return // mouse handled via pointer events
       activePaintModeRef.current = paintModeRef.current
       paintCell(key)
     },
@@ -199,7 +212,6 @@ export function AvailabilityGrid({
 
       <div
         className="select-none overflow-x-auto"
-        style={{ touchAction: 'none' }}
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
@@ -255,8 +267,8 @@ export function AvailabilityGrid({
                       onPointerDown={
                         readOnly
                           ? undefined
-                          : () => {
-                              handlePointerDown(key)
+                          : (e) => {
+                              handlePointerDown(key, e)
                             }
                       }
                       onPointerEnter={
@@ -264,6 +276,13 @@ export function AvailabilityGrid({
                           ? undefined
                           : () => {
                               handlePointerEnter(key)
+                            }
+                      }
+                      onClick={
+                        readOnly
+                          ? undefined
+                          : () => {
+                              handleCellClick(key)
                             }
                       }
                     />
