@@ -165,6 +165,77 @@ export const createPoll = mutation({
   },
 })
 
+export const backfillRespondents = mutation({
+  args: { pollId: v.id('availabilityPolls') },
+  returns: v.number(),
+  handler: async (ctx, { pollId }) => {
+    const userId = await getUserId(ctx)
+    if (!userId) throw new ConvexError('Not authenticated')
+
+    const poll = await ctx.db.get('availabilityPolls', pollId)
+    if (!poll) throw new ConvexError('Poll not found')
+
+    // Verify admin
+    const membership = await ctx.db
+      .query('orgMemberships')
+      .withIndex('by_org_role', (q) =>
+        q.eq('orgId', poll.orgId).eq('role', 'admin'),
+      )
+      .collect()
+    const isAdmin = membership.some((m) => m.userId === userId)
+    if (!isAdmin) throw new ConvexError('Admin access required')
+
+    // Check if respondents already exist
+    const existing = await ctx.db
+      .query('pollRespondents')
+      .withIndex('by_poll', (q) => q.eq('pollId', pollId))
+      .first()
+    if (existing) throw new ConvexError('Respondents already exist for this poll')
+
+    const applications = await ctx.db
+      .query('opportunityApplications')
+      .withIndex('by_opportunity_and_status', (q) =>
+        q.eq('opportunityId', poll.opportunityId),
+      )
+      .collect()
+
+    let count = 0
+    for (const app of applications) {
+      let name = 'Applicant'
+
+      if (app.guestEmail) {
+        const responses = app.responses as Record<string, unknown> | undefined
+        if (responses) {
+          const firstTextValue = Object.values(responses).find(
+            (val) => typeof val === 'string' && val.trim(),
+          )
+          if (typeof firstTextValue === 'string') {
+            name = firstTextValue.trim()
+          }
+        }
+      } else if (app.userId) {
+        const profile = await ctx.db
+          .query('profiles')
+          .withIndex('by_user', (q) => q.eq('userId', app.userId!))
+          .first()
+        if (profile?.name) {
+          name = profile.name
+        }
+      }
+
+      await ctx.db.insert('pollRespondents', {
+        pollId,
+        applicationId: app._id,
+        respondentToken: crypto.randomUUID(),
+        respondentName: name,
+      })
+      count++
+    }
+
+    return count
+  },
+})
+
 export const updatePoll = mutation({
   args: {
     pollId: v.id('availabilityPolls'),

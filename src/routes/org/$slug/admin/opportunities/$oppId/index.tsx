@@ -498,6 +498,9 @@ function AvailabilityTab({
   const updatePoll = useMutation(api.availabilityPolls.updatePoll)
   const finalizePoll = useMutation(api.availabilityPolls.finalizePoll)
   const deletePollMutation = useMutation(api.availabilityPolls.deletePoll)
+  const backfillRespondents = useMutation(
+    api.availabilityPolls.backfillRespondents,
+  )
 
   const [selectedSlot, setSelectedSlot] = useState<{
     date: string
@@ -651,9 +654,30 @@ function AvailabilityTab({
             {respondentLinks === undefined ? (
               <Spinner className="size-4" />
             ) : respondentLinks.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No applicants yet. Links will be generated when the poll is created.
-              </p>
+              <div className="flex items-center gap-3">
+                <p className="text-sm text-muted-foreground">
+                  No respondent links yet.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    try {
+                      const count = await backfillRespondents({
+                        pollId: poll._id,
+                      })
+                      toast.success(
+                        `Generated ${count} respondent link${count !== 1 ? 's' : ''}`,
+                      )
+                    } catch (err) {
+                      console.error('Failed to generate links:', err)
+                      toast.error('Failed to generate links')
+                    }
+                  }}
+                >
+                  Generate Links
+                </Button>
+              </div>
             ) : (
               <div className="space-y-1 max-h-48 overflow-y-auto rounded-md border p-2">
                 {respondentLinks.map((r) => (
