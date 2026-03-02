@@ -1,10 +1,11 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { useMutation, useQuery } from 'convex/react'
+import { useAction, useMutation, useQuery } from 'convex/react'
 import {
   Building2,
   Calendar,
   Check,
   ClipboardCopy,
+  Download,
   FileText,
   Loader2,
   Mail,
@@ -90,6 +91,9 @@ function OpportunityEditPage() {
 
   const [isSavingDetails, setIsSavingDetails] = useState(false)
   const [isSavingFields, setIsSavingFields] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
+
+  const exportCsv = useAction(api.opportunityApplications.exportApplications)
 
   // Populate form when opportunity loads
   useEffect(() => {
@@ -187,6 +191,25 @@ function OpportunityEditPage() {
     )
   }
 
+  const handleExport = async () => {
+    setIsExporting(true)
+    try {
+      const csv = await exportCsv({ opportunityId: opportunity._id })
+      const blob = new Blob([csv], { type: 'text/csv' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `applications-${opportunity.title.toLowerCase().replace(/\s+/g, '-')}.csv`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Export failed:', err)
+      toast.error('Failed to export applications')
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   const canSaveDetails = title.trim() && description.trim()
 
   const handleSaveDetails = async (e: React.FormEvent) => {
@@ -261,15 +284,21 @@ function OpportunityEditPage() {
               <h1 className="text-2xl font-display font-semibold text-foreground">
                 Edit Opportunity
               </h1>
-              <Button variant="outline" asChild>
-                <Link
-                  to="/org/$slug/admin/opportunities/$oppId/email"
-                  params={{ slug, oppId }}
-                >
-                  <Mail className="size-4 mr-2" />
-                  Email Applicants
-                </Link>
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={handleExport} disabled={isExporting}>
+                  {isExporting ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Download className="size-4 mr-2" />}
+                  Export CSV
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link
+                    to="/org/$slug/admin/opportunities/$oppId/email"
+                    params={{ slug, oppId }}
+                  >
+                    <Mail className="size-4 mr-2" />
+                    Email Applicants
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
 
