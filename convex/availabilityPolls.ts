@@ -1,6 +1,10 @@
 import { ConvexError, v } from 'convex/values'
 import { mutation, query } from './_generated/server'
 import { getUserId } from './lib/auth'
+import {
+  resolveApplicantDisplayNameByApplicationId,
+  resolveApplicantDisplayNameFromApplication,
+} from './lib/applicantName'
 
 const slotValueValidator = v.union(v.literal('available'), v.literal('maybe'))
 
@@ -129,29 +133,11 @@ export const createPoll = mutation({
       .collect()
 
     for (const app of applications) {
-      let name = 'Applicant'
-
-      if (app.guestEmail) {
-        // Guest: extract name from form responses (first non-empty string value)
-        const responses = app.responses as Record<string, unknown> | undefined
-        if (responses) {
-          const firstTextValue = Object.values(responses).find(
-            (val) => typeof val === 'string' && val.trim(),
-          )
-          if (typeof firstTextValue === 'string') {
-            name = firstTextValue.trim()
-          }
-        }
-      } else if (app.userId) {
-        // Authenticated: get name from profile
-        const profile = await ctx.db
-          .query('profiles')
-          .withIndex('by_user', (q) => q.eq('userId', app.userId!))
-          .first()
-        if (profile?.name) {
-          name = profile.name
-        }
-      }
+      const name = await resolveApplicantDisplayNameFromApplication(
+        ctx.db,
+        app,
+        'Applicant',
+      )
 
       await ctx.db.insert('pollRespondents', {
         pollId,
@@ -201,27 +187,11 @@ export const backfillRespondents = mutation({
 
     let count = 0
     for (const app of applications) {
-      let name = 'Applicant'
-
-      if (app.guestEmail) {
-        const responses = app.responses as Record<string, unknown> | undefined
-        if (responses) {
-          const firstTextValue = Object.values(responses).find(
-            (val) => typeof val === 'string' && val.trim(),
-          )
-          if (typeof firstTextValue === 'string') {
-            name = firstTextValue.trim()
-          }
-        }
-      } else if (app.userId) {
-        const profile = await ctx.db
-          .query('profiles')
-          .withIndex('by_user', (q) => q.eq('userId', app.userId!))
-          .first()
-        if (profile?.name) {
-          name = profile.name
-        }
-      }
+      const name = await resolveApplicantDisplayNameFromApplication(
+        ctx.db,
+        app,
+        'Applicant',
+      )
 
       await ctx.db.insert('pollRespondents', {
         pollId,
@@ -382,7 +352,31 @@ export const getPollResults = query({
       .withIndex('by_poll', (q) => q.eq('pollId', pollId))
       .collect()
 
-    return { poll, responses }
+    const respondents = await ctx.db
+      .query('pollRespondents')
+      .withIndex('by_poll', (q) => q.eq('pollId', pollId))
+      .collect()
+
+    const respondentNameById = new Map<string, string>()
+    await Promise.all(
+      respondents.map(async (respondent) => {
+        const name = await resolveApplicantDisplayNameByApplicationId(
+          ctx.db,
+          respondent.applicationId,
+          respondent.respondentName,
+        )
+        respondentNameById.set(respondent._id, name)
+      }),
+    )
+
+    const responsesWithResolvedNames = responses.map((response) => {
+      if (!response.respondentId) return response
+      const resolvedName = respondentNameById.get(response.respondentId)
+      if (!resolvedName || resolvedName === response.respondentName) return response
+      return { ...response, respondentName: resolvedName }
+    })
+
+    return { poll, responses: responsesWithResolvedNames }
   },
 })
 
@@ -401,11 +395,17 @@ export const getRespondentLinks = query({
       .withIndex('by_poll', (q) => q.eq('pollId', pollId))
       .collect()
 
-    return respondents.map((r) => ({
-      respondentToken: r.respondentToken,
-      respondentName: r.respondentName,
-      applicationId: r.applicationId,
-    }))
+    return await Promise.all(
+      respondents.map(async (respondent) => ({
+        respondentToken: respondent.respondentToken,
+        respondentName: await resolveApplicantDisplayNameByApplicationId(
+          ctx.db,
+          respondent.applicationId,
+          respondent.respondentName,
+        ),
+        applicationId: respondent.applicationId,
+      })),
+    )
   },
 })
 
@@ -488,12 +488,18 @@ export const getPollByRespondentToken = query({
     const org = await ctx.db.get('organizations', poll.orgId)
     if (!org) return null
 
+    const respondentName = await resolveApplicantDisplayNameByApplicationId(
+      ctx.db,
+      respondent.applicationId,
+      respondent.respondentName,
+    )
+
     return {
       poll,
       opportunity: { _id: opportunity._id, title: opportunity.title },
       org: { _id: org._id, name: org.name, slug: org.slug },
       respondentId: respondent._id,
-      respondentName: respondent.respondentName,
+      respondentName,
     }
   },
 })
@@ -505,12 +511,27 @@ export const getResponseByRespondent = query({
   },
   returns: v.union(responseReturnValidator, v.null()),
   handler: async (ctx, { pollId, respondentId }) => {
-    return await ctx.db
+    const response = await ctx.db
       .query('availabilityResponses')
       .withIndex('by_poll_and_respondent', (q) =>
         q.eq('pollId', pollId).eq('respondentId', respondentId),
       )
       .first()
+
+    if (!response) return null
+
+    const respondent = await ctx.db.get('pollRespondents', respondentId)
+    if (!respondent) return response
+
+    const respondentName = await resolveApplicantDisplayNameByApplicationId(
+      ctx.db,
+      respondent.applicationId,
+      response.respondentName,
+    )
+
+    if (respondentName === response.respondentName) return response
+
+    return { ...response, respondentName }
   },
 })
 
@@ -536,6 +557,11 @@ export const submitResponse = mutation({
       throw new ConvexError('Poll is no longer accepting responses')
 
     const now = Date.now()
+    const respondentName = await resolveApplicantDisplayNameByApplicationId(
+      ctx.db,
+      respondent.applicationId,
+      respondent.respondentName,
+    )
 
     // Upsert: check for existing response
     const existing = await ctx.db
@@ -546,6 +572,7 @@ export const submitResponse = mutation({
       .first()
     if (existing) {
       await ctx.db.patch('availabilityResponses', existing._id, {
+        respondentName,
         slots,
         updatedAt: now,
       })
@@ -555,7 +582,7 @@ export const submitResponse = mutation({
     return await ctx.db.insert('availabilityResponses', {
       pollId,
       respondentId,
-      respondentName: respondent.respondentName,
+      respondentName,
       slots,
       updatedAt: now,
     })

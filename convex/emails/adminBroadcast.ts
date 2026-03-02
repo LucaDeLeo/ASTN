@@ -1,6 +1,7 @@
 import { v } from 'convex/values'
 import { getLegacyUserEmail } from '../lib/auth'
 import { internalMutation, internalQuery } from '../_generated/server'
+import { resolveApplicantDisplayName } from '../lib/applicantName'
 import { resend } from './send'
 
 const FROM_ADDRESS = 'ASTN <notifications@safetytalent.org>'
@@ -54,24 +55,24 @@ export const getRecipientsForEmail = internalQuery({
 
       if (app.guestEmail) {
         email = app.guestEmail
-        const responses = app.responses as Record<string, unknown> | undefined
-        if (responses) {
-          const firstTextValue = Object.values(responses).find(
-            (val) => typeof val === 'string' && val.trim(),
-          )
-          if (typeof firstTextValue === 'string') {
-            name = firstTextValue.trim()
-          }
-        }
+        name = resolveApplicantDisplayName({
+          responses: app.responses,
+          fallback: 'there',
+        })
       } else if (app.userId) {
         const profile = await ctx.db
           .query('profiles')
           .withIndex('by_user', (q) => q.eq('userId', app.userId!))
           .first()
 
+        name = resolveApplicantDisplayName({
+          profileName: profile?.name,
+          responses: app.responses,
+          fallback: 'there',
+        })
+
         if (profile?.email) {
           email = profile.email
-          name = profile.name || 'there'
         } else {
           email = await getLegacyUserEmail(ctx, app.userId)
         }
