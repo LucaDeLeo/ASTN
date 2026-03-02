@@ -101,11 +101,12 @@ export async function resolveApplicantDisplayNameFromApplication(
   fallback: string,
 ): Promise<string> {
   let profileName: string | undefined
+  const userId = application.userId
 
-  if (application.userId) {
+  if (userId) {
     const profile = await db
       .query('profiles')
-      .withIndex('by_user', (q) => q.eq('userId', application.userId))
+      .withIndex('by_user', (q) => q.eq('userId', userId))
       .first()
     profileName = profile?.name
   }
