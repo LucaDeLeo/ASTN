@@ -288,8 +288,16 @@ function OpportunityEditPage() {
                 Edit Opportunity
               </h1>
               <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={handleExport} disabled={isExporting}>
-                  {isExporting ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Download className="size-4 mr-2" />}
+                <Button
+                  variant="outline"
+                  onClick={handleExport}
+                  disabled={isExporting}
+                >
+                  {isExporting ? (
+                    <Loader2 className="size-4 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="size-4 mr-2" />
+                  )}
                   Export CSV
                 </Button>
                 <Button variant="outline" asChild>
@@ -359,9 +367,7 @@ function OpportunityEditPage() {
                           <Label>Type</Label>
                           <Select
                             value={type}
-                            onValueChange={(v) =>
-                              setType(v as OpportunityType)
-                            }
+                            onValueChange={(v) => setType(v as OpportunityType)}
                           >
                             <SelectTrigger>
                               <SelectValue />
@@ -459,8 +465,8 @@ function OpportunityEditPage() {
                   <CardHeader>
                     <CardTitle>Application Form Fields</CardTitle>
                     <CardDescription>
-                      Define the fields applicants will fill out. Leave empty for
-                      no in-app form.
+                      Define the fields applicants will fill out. Leave empty
+                      for no in-app form.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -492,10 +498,7 @@ function OpportunityEditPage() {
             </TabsContent>
 
             <TabsContent value="availability" className="mt-6">
-              <AvailabilityTab
-                opportunityId={opportunity._id}
-                slug={slug}
-              />
+              <AvailabilityTab opportunityId={opportunity._id} slug={slug} />
             </TabsContent>
           </Tabs>
         </div>
@@ -634,8 +637,8 @@ function AvailabilityTab({
               <CardTitle>{poll.title}</CardTitle>
               <CardDescription>
                 {poll.startDate} to {poll.endDate} ·{' '}
-                {poll.timezone.replace(/_/g, ' ')} ·{' '}
-                {poll.slotDurationMinutes} min slots
+                {poll.timezone.replace(/_/g, ' ')} · {poll.slotDurationMinutes}{' '}
+                min slots
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -659,28 +662,51 @@ function AvailabilityTab({
             <div className="flex items-center justify-between">
               <Label>
                 Respondent Links
-                {respondentLinks
-                  ? ` (${respondentLinks.length})`
-                  : ''}
+                {respondentLinks ? ` (${respondentLinks.length})` : ''}
               </Label>
               {respondentLinks && respondentLinks.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCopyAllLinks}
-                >
-                  {allCopied ? (
-                    <>
-                      <Check className="size-4 mr-1" />
-                      Copied All
-                    </>
-                  ) : (
-                    <>
-                      <ClipboardCopy className="size-4 mr-1" />
-                      Copy All Links
-                    </>
-                  )}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        const count = await backfillRespondents({
+                          pollId: poll._id,
+                        })
+                        if (count > 0) {
+                          toast.success(
+                            `Added ${count} new respondent link${count !== 1 ? 's' : ''}`,
+                          )
+                        } else {
+                          toast.info('All applicants already have links')
+                        }
+                      } catch (err) {
+                        console.error('Failed to sync links:', err)
+                        toast.error('Failed to sync links')
+                      }
+                    }}
+                  >
+                    Sync New Applicants
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCopyAllLinks}
+                  >
+                    {allCopied ? (
+                      <>
+                        <Check className="size-4 mr-1" />
+                        Copied All
+                      </>
+                    ) : (
+                      <>
+                        <ClipboardCopy className="size-4 mr-1" />
+                        Copy All Links
+                      </>
+                    )}
+                  </Button>
+                </div>
               )}
             </div>
             {respondentLinks === undefined ? (
@@ -717,9 +743,7 @@ function AvailabilityTab({
                     key={r.respondentToken}
                     className="flex items-center justify-between gap-2 py-1 px-1 rounded hover:bg-slate-50"
                   >
-                    <span className="text-sm truncate">
-                      {r.respondentName}
-                    </span>
+                    <span className="text-sm truncate">{r.respondentName}</span>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -751,7 +775,11 @@ function AvailabilityTab({
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
                     <Trash2 className="size-4 mr-1" />
                     Delete Poll
                   </Button>
@@ -760,12 +788,18 @@ function AvailabilityTab({
                   <AlertDialogHeader>
                     <AlertDialogTitle>Delete this poll?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will permanently delete the poll and all {totalRespondents} response{totalRespondents !== 1 ? 's' : ''}. This cannot be undone.
+                      This will permanently delete the poll and all{' '}
+                      {totalRespondents} response
+                      {totalRespondents !== 1 ? 's' : ''}. This cannot be
+                      undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeletePoll} className="bg-red-600 hover:bg-red-700">
+                    <AlertDialogAction
+                      onClick={handleDeletePoll}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
                       Delete
                     </AlertDialogAction>
                   </AlertDialogFooter>
@@ -878,9 +912,7 @@ function AutoEmailConfigSection({
 
   const toggleTrigger = (value: string) => {
     setTriggers((prev) =>
-      prev.includes(value)
-        ? prev.filter((t) => t !== value)
-        : [...prev, value],
+      prev.includes(value) ? prev.filter((t) => t !== value) : [...prev, value],
     )
   }
 
