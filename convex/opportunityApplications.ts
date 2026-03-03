@@ -1,8 +1,89 @@
 import { ConvexError, v } from 'convex/values'
 import { action, internalQuery, mutation, query } from './_generated/server'
 import { getUserId } from './lib/auth'
+import { resolveApplicantDisplayName } from './lib/applicantName'
 import { rateLimiter } from './lib/rateLimiter'
 import { internal } from './_generated/api'
+import type { MutationCtx } from './_generated/server'
+import type { Id } from './_generated/dataModel'
+
+/**
+ * Auto-add a poll respondent for a new application if an open poll exists.
+ * Fails silently so it never blocks the main operation.
+ */
+async function maybeAddPollRespondent(
+  ctx: MutationCtx,
+  opts: {
+    opportunityId: Id<'orgOpportunities'>
+    applicationId: Id<'opportunityApplications'>
+    profileName?: string
+    responses: unknown
+  },
+) {
+  try {
+    const openPoll = await ctx.db
+      .query('availabilityPolls')
+      .withIndex('by_opportunity', (q) =>
+        q.eq('opportunityId', opts.opportunityId),
+      )
+      .filter((q) => q.eq(q.field('status'), 'open'))
+      .first()
+    if (!openPoll) return
+
+    const existing = await ctx.db
+      .query('pollRespondents')
+      .withIndex('by_poll_and_application', (q) =>
+        q.eq('pollId', openPoll._id).eq('applicationId', opts.applicationId),
+      )
+      .first()
+    if (existing) return
+
+    const name = resolveApplicantDisplayName({
+      profileName: opts.profileName,
+      responses: opts.responses,
+      fallback: 'Applicant',
+    })
+    await ctx.db.insert('pollRespondents', {
+      pollId: openPoll._id,
+      applicationId: opts.applicationId,
+      respondentToken: crypto.randomUUID(),
+      respondentName: name,
+    })
+  } catch (err) {
+    console.error('Failed to auto-add poll respondent:', err)
+  }
+}
+
+/**
+ * Schedule an auto-email if the opportunity has a matching auto-email config.
+ * Fails silently so it never blocks the main operation.
+ */
+async function maybeScheduleAutoEmail(
+  ctx: MutationCtx,
+  opts: {
+    opportunityId: Id<'orgOpportunities'>
+    applicationId: Id<'opportunityApplications'>
+    trigger: string
+  },
+) {
+  try {
+    const config = await ctx.db
+      .query('opportunityAutoEmails')
+      .withIndex('by_opportunity', (q) =>
+        q.eq('opportunityId', opts.opportunityId),
+      )
+      .first()
+    if (config?.enabled && config.triggers.includes(opts.trigger)) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.emails.autoEmail.sendAutoEmail,
+        { applicationId: opts.applicationId, trigger: opts.trigger },
+      )
+    }
+  } catch (err) {
+    console.error('Failed to schedule auto-email:', err)
+  }
+}
 
 // Submit an application (idempotent — returns existing if already applied)
 // Auto-joins the org if the user is not already a member.
@@ -63,7 +144,7 @@ export const submit = mutation({
       .withIndex('by_user', (q) => q.eq('userId', userId))
       .first()
 
-    return await ctx.db.insert('opportunityApplications', {
+    const applicationId = await ctx.db.insert('opportunityApplications', {
       opportunityId,
       orgId: opportunity.orgId,
       userId,
@@ -72,6 +153,20 @@ export const submit = mutation({
       responses,
       submittedAt: Date.now(),
     })
+
+    await maybeAddPollRespondent(ctx, {
+      opportunityId,
+      applicationId,
+      profileName: profile?.name,
+      responses,
+    })
+    await maybeScheduleAutoEmail(ctx, {
+      opportunityId,
+      applicationId,
+      trigger: 'new_application',
+    })
+
+    return applicationId
   },
 })
 
@@ -110,7 +205,7 @@ export const submitGuest = mutation({
 
     if (existing) return existing._id
 
-    return await ctx.db.insert('opportunityApplications', {
+    const applicationId = await ctx.db.insert('opportunityApplications', {
       opportunityId,
       orgId: opportunity.orgId,
       guestEmail: email,
@@ -118,6 +213,19 @@ export const submitGuest = mutation({
       responses,
       submittedAt: Date.now(),
     })
+
+    await maybeAddPollRespondent(ctx, {
+      opportunityId,
+      applicationId,
+      responses,
+    })
+    await maybeScheduleAutoEmail(ctx, {
+      opportunityId,
+      applicationId,
+      trigger: 'new_application',
+    })
+
+    return applicationId
   },
 })
 
@@ -404,6 +512,13 @@ export const updateStatus = mutation({
       reviewedBy: userId,
       ...(reviewNotes !== undefined ? { reviewNotes } : {}),
     })
+
+    await maybeScheduleAutoEmail(ctx, {
+      opportunityId: application.opportunityId,
+      applicationId,
+      trigger: `status:${status}`,
+    })
+
     return null
   },
 })

@@ -300,9 +300,9 @@ const OrgSlugAdminApplicationsIndexRoute =
   } as any)
 const OrgSlugPollPollTokenRespondentTokenRoute =
   OrgSlugPollPollTokenRespondentTokenRouteImport.update({
-    id: '/$respondentToken',
-    path: '/$respondentToken',
-    getParentRoute: () => OrgSlugPollPollTokenRoute,
+    id: '/org/$slug/poll/$pollToken/$respondentToken',
+    path: '/org/$slug/poll/$pollToken/$respondentToken',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const OrgSlugAdminProgramsProgramIdRoute =
   OrgSlugAdminProgramsProgramIdRouteImport.update({
@@ -673,6 +673,7 @@ export interface RootRouteChildren {
   OrgSlugSpaceIndexRoute: typeof OrgSlugSpaceIndexRoute
   OrgSlugAdminMembersUserIdRoute: typeof OrgSlugAdminMembersUserIdRoute
   OrgSlugAdminProgramsProgramIdRoute: typeof OrgSlugAdminProgramsProgramIdRoute
+  OrgSlugPollPollTokenRespondentTokenRoute: typeof OrgSlugPollPollTokenRespondentTokenRoute
   OrgSlugAdminApplicationsIndexRoute: typeof OrgSlugAdminApplicationsIndexRoute
   OrgSlugAdminMembersIndexRoute: typeof OrgSlugAdminMembersIndexRoute
   OrgSlugAdminOpportunitiesIndexRoute: typeof OrgSlugAdminOpportunitiesIndexRoute
@@ -1008,10 +1009,10 @@ declare module '@tanstack/react-router' {
     }
     '/org/$slug/poll/$pollToken/$respondentToken': {
       id: '/org/$slug/poll/$pollToken/$respondentToken'
-      path: '/$respondentToken'
+      path: '/org/$slug/poll/$pollToken/$respondentToken'
       fullPath: '/org/$slug/poll/$pollToken/$respondentToken'
       preLoaderRoute: typeof OrgSlugPollPollTokenRespondentTokenRouteImport
-      parentRoute: typeof OrgSlugPollPollTokenRoute
+      parentRoute: typeof rootRouteImport
     }
     '/org/$slug/admin/programs/$programId': {
       id: '/org/$slug/admin/programs/$programId'
@@ -1152,6 +1153,8 @@ const rootRouteChildren: RootRouteChildren = {
   OrgSlugSpaceIndexRoute: OrgSlugSpaceIndexRoute,
   OrgSlugAdminMembersUserIdRoute: OrgSlugAdminMembersUserIdRoute,
   OrgSlugAdminProgramsProgramIdRoute: OrgSlugAdminProgramsProgramIdRoute,
+  OrgSlugPollPollTokenRespondentTokenRoute:
+    OrgSlugPollPollTokenRespondentTokenRoute,
   OrgSlugAdminApplicationsIndexRoute: OrgSlugAdminApplicationsIndexRoute,
   OrgSlugAdminMembersIndexRoute: OrgSlugAdminMembersIndexRoute,
   OrgSlugAdminOpportunitiesIndexRoute: OrgSlugAdminOpportunitiesIndexRoute,

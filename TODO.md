@@ -78,6 +78,9 @@
 - [ ] Verify Gmail shows native "Unsubscribe" button next to sender name — _headers implemented, needs manual Gmail verification_
 - [ ] Add unsubscribe link to email footer templates (currently just "Manage notification preferences")
 - [ ] Email notifications for org admins (new applications, profile updates, etc.) — _no admin email system exists; current emails are user-facing only (match alerts, weekly digests, event digests). Org admin actions only create in-app notifications via `createNotification()` in `orgApplications.ts`_
+- [ ] Validate auto-email trigger values on save — _`saveConfig` accepts `triggers: v.array(v.string())` with no validation; a proper validator union would enforce correctness at the API boundary_
+- [ ] Add `requireOrgAdminForOpportunity()` helper to `convex/lib/auth.ts` — _the admin auth check (getUserId + get opportunity + check orgMembership) is duplicated across 12+ functions in `autoEmailConfig.ts`, `opportunityApplications.ts`, `orgOpportunities.ts`, etc._
+- [ ] Replace `.filter()` with compound index on `orgMemberships` — _project rules say "Never use `.filter()`" but `by_user` + `.filter(orgId)` is used across many admin checks; add a `by_user_and_org` index on `['userId', 'orgId']`_
 
 ---
 

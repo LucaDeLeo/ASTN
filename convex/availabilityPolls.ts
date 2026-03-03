@@ -171,12 +171,12 @@ export const backfillRespondents = mutation({
     const isAdmin = membership.some((m) => m.userId === userId)
     if (!isAdmin) throw new ConvexError('Admin access required')
 
-    // Check if respondents already exist
-    const existing = await ctx.db
+    // Collect existing applicationIds so we can skip duplicates
+    const existingRespondents = await ctx.db
       .query('pollRespondents')
       .withIndex('by_poll', (q) => q.eq('pollId', pollId))
-      .first()
-    if (existing) throw new ConvexError('Respondents already exist for this poll')
+      .collect()
+    const existingAppIds = new Set(existingRespondents.map((r) => r.applicationId))
 
     const applications = await ctx.db
       .query('opportunityApplications')
@@ -187,6 +187,8 @@ export const backfillRespondents = mutation({
 
     let count = 0
     for (const app of applications) {
+      if (existingAppIds.has(app._id)) continue
+
       const name = await resolveApplicantDisplayNameFromApplication(
         ctx.db,
         app,

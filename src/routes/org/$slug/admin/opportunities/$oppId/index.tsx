@@ -4,6 +4,8 @@ import {
   Building2,
   Calendar,
   Check,
+  ChevronDown,
+  ChevronRight,
   ClipboardCopy,
   Download,
   FileText,
@@ -53,6 +55,7 @@ import {
   SelectValue,
 } from '~/components/ui/select'
 import { Spinner } from '~/components/ui/spinner'
+import { Switch } from '~/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { Textarea } from '~/components/ui/textarea'
 
@@ -819,6 +822,232 @@ function AvailabilityTab({
           </CardContent>
         </Card>
       )}
+
+      {/* Auto-Email Config */}
+      <AutoEmailConfigSection opportunityId={opportunityId} />
     </div>
+  )
+}
+
+// ─── Auto-Email Config Section ───
+
+const TRIGGER_OPTIONS = [
+  { value: 'new_application', label: 'New application' },
+  { value: 'status:accepted', label: 'Status changed to: Accepted' },
+  { value: 'status:under_review', label: 'Status changed to: Under Review' },
+  { value: 'status:rejected', label: 'Status changed to: Rejected' },
+  { value: 'status:waitlisted', label: 'Status changed to: Waitlisted' },
+] as const
+
+function AutoEmailConfigSection({
+  opportunityId,
+}: {
+  opportunityId: Id<'orgOpportunities'>
+}) {
+  const config = useQuery(api.autoEmailConfig.getConfig, { opportunityId })
+  const logEntries = useQuery(api.autoEmailConfig.getLog, { opportunityId })
+  const saveConfig = useMutation(api.autoEmailConfig.saveConfig)
+
+  const [enabled, setEnabled] = useState(false)
+  const [triggers, setTriggers] = useState<Array<string>>(['new_application'])
+  const [subject, setSubject] = useState('')
+  const [markdownBody, setMarkdownBody] = useState('')
+  const [requiresPoll, setRequiresPoll] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [logOpen, setLogOpen] = useState(false)
+  const [initialized, setInitialized] = useState(false)
+
+  // Reset when opportunity changes
+  useEffect(() => {
+    setInitialized(false)
+  }, [opportunityId])
+
+  // Populate form when config loads
+  useEffect(() => {
+    if (config && !initialized) {
+      setEnabled(config.enabled)
+      setTriggers(config.triggers)
+      setSubject(config.subject)
+      setMarkdownBody(config.markdownBody)
+      setRequiresPoll(config.requiresPoll)
+      setInitialized(true)
+    } else if (config === null && !initialized) {
+      setInitialized(true)
+    }
+  }, [config, initialized])
+
+  const toggleTrigger = (value: string) => {
+    setTriggers((prev) =>
+      prev.includes(value)
+        ? prev.filter((t) => t !== value)
+        : [...prev, value],
+    )
+  }
+
+  const handleSave = async () => {
+    setIsSaving(true)
+    try {
+      await saveConfig({
+        opportunityId,
+        enabled,
+        triggers,
+        subject,
+        markdownBody,
+        requiresPoll,
+      })
+      toast.success('Auto-email config saved')
+    } catch (err) {
+      console.error('Failed to save auto-email config:', err)
+      toast.error('Failed to save config')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  if (config === undefined) return null
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Mail className="size-5" />
+              Auto-Email
+            </CardTitle>
+            <CardDescription>
+              Automatically email applicants on new applications or status
+              changes
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <span
+              className={`inline-block size-2 rounded-full ${enabled ? 'bg-green-500' : 'bg-slate-300'}`}
+            />
+            <Switch checked={enabled} onCheckedChange={setEnabled} />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Triggers */}
+        <div className="space-y-2">
+          <Label>Triggers</Label>
+          <div className="space-y-1.5">
+            {TRIGGER_OPTIONS.map((opt) => (
+              <label
+                key={opt.value}
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <Checkbox
+                  checked={triggers.includes(opt.value)}
+                  onCheckedChange={() => toggleTrigger(opt.value)}
+                />
+                <span className="text-sm">{opt.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Require poll */}
+        <label className="flex items-center gap-2 cursor-pointer">
+          <Checkbox
+            checked={requiresPoll}
+            onCheckedChange={(checked) => setRequiresPoll(checked === true)}
+          />
+          <span className="text-sm">
+            Only send when an open availability poll exists
+          </span>
+        </label>
+
+        {/* Subject */}
+        <div className="space-y-1">
+          <Label htmlFor="auto-email-subject">Subject</Label>
+          <Input
+            id="auto-email-subject"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            placeholder="e.g. Your availability poll link"
+          />
+        </div>
+
+        {/* Body */}
+        <div className="space-y-1">
+          <Label htmlFor="auto-email-body">Body (Markdown)</Label>
+          <Textarea
+            id="auto-email-body"
+            value={markdownBody}
+            onChange={(e) => setMarkdownBody(e.target.value)}
+            rows={6}
+            placeholder="Write your email body in markdown..."
+          />
+          <p className="text-xs text-muted-foreground">
+            Available variables: <code>{'{{applicant_name}}'}</code>,{' '}
+            <code>{'{{poll_link}}'}</code>
+          </p>
+        </div>
+
+        {/* Save */}
+        <Button onClick={handleSave} disabled={isSaving || !subject.trim()}>
+          {isSaving ? (
+            <>
+              <Loader2 className="size-4 mr-2 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Save className="size-4 mr-2" />
+              Save Auto-Email Config
+            </>
+          )}
+        </Button>
+
+        {/* Send log */}
+        {logEntries && logEntries.length > 0 && (
+          <div className="pt-2 border-t">
+            <button
+              type="button"
+              className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => setLogOpen(!logOpen)}
+            >
+              {logOpen ? (
+                <ChevronDown className="size-4" />
+              ) : (
+                <ChevronRight className="size-4" />
+              )}
+              Send Log ({logEntries.length})
+            </button>
+            {logOpen && (
+              <div className="mt-2 space-y-1 max-h-48 overflow-y-auto rounded-md border p-2">
+                {logEntries.map((entry) => (
+                  <div
+                    key={entry._id}
+                    className="flex items-center justify-between gap-2 py-1 px-1 text-sm"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span
+                        className={`inline-block size-1.5 rounded-full shrink-0 ${
+                          entry.status === 'sent'
+                            ? 'bg-green-500'
+                            : 'bg-red-500'
+                        }`}
+                      />
+                      <span className="truncate">
+                        {entry.recipientName} ({entry.recipientEmail})
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground shrink-0">
+                      <span className="text-xs">{entry.trigger}</span>
+                      <span className="text-xs">
+                        {new Date(entry.sentAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }

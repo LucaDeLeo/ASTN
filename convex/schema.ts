@@ -1236,7 +1236,8 @@ export default defineSchema({
     respondentName: v.string(),
   })
     .index('by_poll', ['pollId'])
-    .index('by_respondentToken', ['respondentToken']),
+    .index('by_respondentToken', ['respondentToken'])
+    .index('by_poll_and_application', ['pollId', 'applicationId']),
 
   // Availability responses (individual respondent selections)
   availabilityResponses: defineTable({
@@ -1255,6 +1256,32 @@ export default defineSchema({
   })
     .index('by_poll', ['pollId'])
     .index('by_poll_and_respondent', ['pollId', 'respondentId']),
+
+  // Per-opportunity auto-email config
+  opportunityAutoEmails: defineTable({
+    opportunityId: v.id('orgOpportunities'),
+    orgId: v.id('organizations'),
+    enabled: v.boolean(),
+    triggers: v.array(v.string()),
+    subject: v.string(),
+    markdownBody: v.string(),
+    requiresPoll: v.boolean(),
+    createdBy: v.string(),
+    updatedAt: v.number(),
+  }).index('by_opportunity', ['opportunityId']),
+
+  // Auto-email audit log
+  autoEmailLog: defineTable({
+    opportunityId: v.id('orgOpportunities'),
+    applicationId: v.id('opportunityApplications'),
+    recipientEmail: v.string(),
+    recipientName: v.string(),
+    trigger: v.string(),
+    subject: v.string(),
+    sentAt: v.number(),
+    status: v.union(v.literal('sent'), v.literal('failed')),
+    error: v.optional(v.string()),
+  }).index('by_opportunity', ['opportunityId']),
 
   // Push notification tokens for mobile (Tauri) clients
   pushTokens: defineTable({
