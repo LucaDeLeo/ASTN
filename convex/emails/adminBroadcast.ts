@@ -2,6 +2,7 @@ import { v } from 'convex/values'
 import { getLegacyUserEmail } from '../lib/auth'
 import { internalMutation, internalQuery } from '../_generated/server'
 import { resolveApplicantDisplayName } from '../lib/applicantName'
+import { rateLimiter } from '../lib/rateLimiter'
 import { resend } from './send'
 
 const FROM_ADDRESS = 'ASTN <notifications@safetytalent.org>'
@@ -108,6 +109,22 @@ export const verifyOrgAdmin = internalQuery({
       .first()
 
     return membership?.role === 'admin'
+  },
+})
+
+/**
+ * Check rate limit for broadcast emails.
+ * Called from action via ctx.runMutation since actions can't use rateLimiter directly.
+ */
+export const checkBroadcastRateLimit = internalMutation({
+  args: { userId: v.string() },
+  returns: v.null(),
+  handler: async (ctx, { userId }) => {
+    await rateLimiter.limit(ctx, 'adminBroadcast', {
+      key: userId,
+      throws: true,
+    })
+    return null
   },
 })
 

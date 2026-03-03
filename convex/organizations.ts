@@ -57,9 +57,9 @@ export const createInviteLinkInternal = internalMutation({
     }
 
     const token = crypto.randomUUID()
-    const expiresAt = expiresInDays
-      ? Date.now() + expiresInDays * 24 * 60 * 60 * 1000
-      : undefined
+    const DEFAULT_INVITE_EXPIRY_DAYS = 30
+    const expiresAt =
+      Date.now() + (expiresInDays ?? DEFAULT_INVITE_EXPIRY_DAYS) * 24 * 60 * 60 * 1000
 
     await ctx.db.insert('orgInviteLinks', {
       orgId: org._id,

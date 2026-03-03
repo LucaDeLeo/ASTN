@@ -14,10 +14,14 @@ export const submit = mutation({
     if (!args.featureRequests?.trim() && !args.bugReports?.trim()) {
       throw new Error('Please fill in at least one field')
     }
+
+    const identity = await ctx.auth.getUserIdentity()
+
     return ctx.db.insert('feedback', {
       featureRequests: args.featureRequests?.trim() || undefined,
       bugReports: args.bugReports?.trim() || undefined,
       page: args.page,
+      userId: identity?.subject,
       createdAt: Date.now(),
     })
   },

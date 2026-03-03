@@ -453,7 +453,12 @@ export const exportApplications = action({
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) throw new ConvexError('Not authenticated')
 
-    const [applications, opportunity] = await Promise.all([
+    // Verify admin + fetch data in parallel
+    const [isAdmin, applications, opportunity] = await Promise.all([
+      ctx.runQuery(internal.emails.adminBroadcast.verifyOrgAdmin, {
+        userId: identity.subject,
+        opportunityId,
+      }),
       ctx.runQuery(internal.opportunityApplications.listForExport, {
         opportunityId,
       }) as Promise<
@@ -471,6 +476,7 @@ export const exportApplications = action({
         formFields?: Array<{ key: string; kind: string; label: string }>
       } | null>,
     ])
+    if (!isAdmin) throw new ConvexError('Admin access required')
 
     const escapeCSV = (val: string): string => {
       if (val.includes(',') || val.includes('"') || val.includes('\n')) {

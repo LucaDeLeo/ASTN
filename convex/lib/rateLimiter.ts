@@ -26,6 +26,9 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
   feedbackSubmit: { kind: 'fixed window', rate: 10, period: HOUR },
   guestApplication: { kind: 'fixed window', rate: 5, period: HOUR },
 
+  // --- MEDIUM: Admin actions ---
+  adminBroadcast: { kind: 'fixed window', rate: 5, period: HOUR },
+
   // --- HIGH: Authenticated write endpoints ---
   orgApplicationSubmit: { kind: 'fixed window', rate: 5, period: HOUR },
   opportunityApplication: { kind: 'fixed window', rate: 30, period: HOUR },

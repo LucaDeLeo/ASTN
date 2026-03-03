@@ -156,10 +156,10 @@ export const createInviteLink = mutation({
     // Generate a unique token
     const token = crypto.randomUUID()
 
-    // Calculate expiration if provided
-    const expiresAt = expiresInDays
-      ? Date.now() + expiresInDays * 24 * 60 * 60 * 1000
-      : undefined
+    // Default to 30-day expiration if not specified
+    const DEFAULT_INVITE_EXPIRY_DAYS = 30
+    const expiresAt =
+      Date.now() + (expiresInDays ?? DEFAULT_INVITE_EXPIRY_DAYS) * 24 * 60 * 60 * 1000
 
     // Insert invite link
     await ctx.db.insert('orgInviteLinks', {

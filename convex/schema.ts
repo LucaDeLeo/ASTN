@@ -1169,6 +1169,7 @@ export default defineSchema({
     featureRequests: v.optional(v.string()),
     bugReports: v.optional(v.string()),
     page: v.string(),
+    userId: v.optional(v.string()),
     createdAt: v.number(),
   }).index('by_created', ['createdAt']),
 

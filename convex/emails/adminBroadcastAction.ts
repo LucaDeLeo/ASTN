@@ -40,6 +40,12 @@ export const sendBroadcastToApplicants = action({
     )
     if (!isAdmin) throw new Error('Admin access required')
 
+    // Rate limit broadcast emails per admin
+    await ctx.runMutation(
+      internal.emails.adminBroadcast.checkBroadcastRateLimit,
+      { userId: identity.subject },
+    )
+
     const recipients: Array<{
       email: string
       name: string

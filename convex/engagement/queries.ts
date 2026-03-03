@@ -226,7 +226,13 @@ export const getMemberEngagementForAdmin = query({
       .take(5)
 
     return {
-      ...engagement,
+      _id: engagement._id,
+      userId: engagement.userId,
+      orgId: engagement.orgId,
+      level: engagement.level,
+      adminExplanation: engagement.adminExplanation,
+      override: engagement.override,
+      computedAt: engagement.computedAt,
       effectiveLevel: getEffectiveLevel(engagement),
       overrideHistory,
     }

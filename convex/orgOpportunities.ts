@@ -28,7 +28,24 @@ export const get = query({
   args: { id: v.id('orgOpportunities') },
   returns: v.union(opportunityReturnValidator, v.null()),
   handler: async (ctx, { id }) => {
-    return await ctx.db.get('orgOpportunities', id)
+    const opp = await ctx.db.get('orgOpportunities', id)
+    if (!opp) return null
+
+    // Active opportunities are public
+    if (opp.status === 'active') return opp
+
+    // Draft/closed require org admin
+    const userId = await getUserId(ctx)
+    if (!userId) return null
+
+    const membership = await ctx.db
+      .query('orgMemberships')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .filter((q) => q.eq(q.field('orgId'), opp.orgId))
+      .first()
+
+    if (!membership || membership.role !== 'admin') return null
+    return opp
   },
 })
 
