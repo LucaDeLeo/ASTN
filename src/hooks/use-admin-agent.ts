@@ -163,8 +163,8 @@ export function useAdminAgent(orgSlug: string) {
             setIsStreaming(true)
             const parts = partsRef.current
             const last = parts[parts.length - 1]
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- last.type can be 'text' or 'tool_call'
             if (last && last.type === 'text') {
-              // eslint-disable-line @typescript-eslint/no-unnecessary-condition -- runtime type guard
               const updated = [...parts]
               updated[updated.length - 1] = {
                 type: 'text',
