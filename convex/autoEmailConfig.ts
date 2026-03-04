@@ -1,9 +1,18 @@
 import { ConvexError, v } from 'convex/values'
 import { mutation, query } from './_generated/server'
 import { getUserId } from './lib/auth'
+import { resolveTemplates } from './emails/autoEmailHelpers'
+
+const templateValidator = v.object({
+  trigger: v.string(),
+  subject: v.string(),
+  markdownBody: v.string(),
+  requiresPoll: v.boolean(),
+})
 
 /**
  * Get auto-email config for an opportunity.
+ * Returns templates array (normalized from legacy format if needed).
  */
 export const getConfig = query({
   args: { opportunityId: v.id('orgOpportunities') },
@@ -13,10 +22,7 @@ export const getConfig = query({
       opportunityId: v.id('orgOpportunities'),
       orgId: v.id('organizations'),
       enabled: v.boolean(),
-      triggers: v.array(v.string()),
-      subject: v.string(),
-      markdownBody: v.string(),
-      requiresPoll: v.boolean(),
+      templates: v.array(templateValidator),
       createdBy: v.string(),
       updatedAt: v.number(),
     }),
@@ -41,9 +47,7 @@ export const getConfig = query({
 
     const config = await ctx.db
       .query('opportunityAutoEmails')
-      .withIndex('by_opportunity', (q) =>
-        q.eq('opportunityId', opportunityId),
-      )
+      .withIndex('by_opportunity', (q) => q.eq('opportunityId', opportunityId))
       .first()
 
     if (!config) return null
@@ -53,10 +57,7 @@ export const getConfig = query({
       opportunityId: config.opportunityId,
       orgId: config.orgId,
       enabled: config.enabled,
-      triggers: config.triggers,
-      subject: config.subject,
-      markdownBody: config.markdownBody,
-      requiresPoll: config.requiresPoll,
+      templates: resolveTemplates(config),
       createdBy: config.createdBy,
       updatedAt: config.updatedAt,
     }
@@ -65,15 +66,13 @@ export const getConfig = query({
 
 /**
  * Upsert auto-email config for an opportunity.
+ * Accepts templates array; clears legacy flat fields.
  */
 export const saveConfig = mutation({
   args: {
     opportunityId: v.id('orgOpportunities'),
     enabled: v.boolean(),
-    triggers: v.array(v.string()),
-    subject: v.string(),
-    markdownBody: v.string(),
-    requiresPoll: v.boolean(),
+    templates: v.array(templateValidator),
   },
   returns: v.id('opportunityAutoEmails'),
   handler: async (ctx, args) => {
@@ -103,10 +102,12 @@ export const saveConfig = mutation({
     if (existing) {
       await ctx.db.patch('opportunityAutoEmails', existing._id, {
         enabled: args.enabled,
-        triggers: args.triggers,
-        subject: args.subject,
-        markdownBody: args.markdownBody,
-        requiresPoll: args.requiresPoll,
+        templates: args.templates,
+        // Clear legacy flat fields
+        triggers: undefined,
+        subject: undefined,
+        markdownBody: undefined,
+        requiresPoll: undefined,
         updatedAt: Date.now(),
       })
       return existing._id
@@ -116,10 +117,7 @@ export const saveConfig = mutation({
       opportunityId: args.opportunityId,
       orgId: opportunity.orgId,
       enabled: args.enabled,
-      triggers: args.triggers,
-      subject: args.subject,
-      markdownBody: args.markdownBody,
-      requiresPoll: args.requiresPoll,
+      templates: args.templates,
       createdBy: userId,
       updatedAt: Date.now(),
     })
@@ -163,9 +161,7 @@ export const getLog = query({
 
     const logs = await ctx.db
       .query('autoEmailLog')
-      .withIndex('by_opportunity', (q) =>
-        q.eq('opportunityId', opportunityId),
-      )
+      .withIndex('by_opportunity', (q) => q.eq('opportunityId', opportunityId))
       .order('desc')
       .take(50)
 

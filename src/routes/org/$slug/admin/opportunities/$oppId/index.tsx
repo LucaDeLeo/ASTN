@@ -867,11 +867,23 @@ function AvailabilityTab({
 
 const TRIGGER_OPTIONS = [
   { value: 'new_application', label: 'New application' },
-  { value: 'status:accepted', label: 'Status changed to: Accepted' },
-  { value: 'status:under_review', label: 'Status changed to: Under Review' },
-  { value: 'status:rejected', label: 'Status changed to: Rejected' },
-  { value: 'status:waitlisted', label: 'Status changed to: Waitlisted' },
+  { value: 'status:accepted', label: 'Accepted' },
+  { value: 'status:under_review', label: 'Under Review' },
+  { value: 'status:rejected', label: 'Rejected' },
+  { value: 'status:waitlisted', label: 'Waitlisted' },
 ] as const
+
+type TemplateState = {
+  subject: string
+  markdownBody: string
+  requiresPoll: boolean
+}
+
+const emptyTemplate: TemplateState = {
+  subject: '',
+  markdownBody: '',
+  requiresPoll: false,
+}
 
 function AutoEmailConfigSection({
   opportunityId,
@@ -883,10 +895,9 @@ function AutoEmailConfigSection({
   const saveConfig = useMutation(api.autoEmailConfig.saveConfig)
 
   const [enabled, setEnabled] = useState(false)
-  const [triggers, setTriggers] = useState<Array<string>>(['new_application'])
-  const [subject, setSubject] = useState('')
-  const [markdownBody, setMarkdownBody] = useState('')
-  const [requiresPoll, setRequiresPoll] = useState(false)
+  const [templates, setTemplates] = useState<
+    Partial<Record<string, TemplateState>>
+  >({})
   const [isSaving, setIsSaving] = useState(false)
   const [logOpen, setLogOpen] = useState(false)
   const [initialized, setInitialized] = useState(false)
@@ -900,32 +911,59 @@ function AutoEmailConfigSection({
   useEffect(() => {
     if (config && !initialized) {
       setEnabled(config.enabled)
-      setTriggers(config.triggers)
-      setSubject(config.subject)
-      setMarkdownBody(config.markdownBody)
-      setRequiresPoll(config.requiresPoll)
+      const tplMap: Record<string, TemplateState> = {}
+      for (const t of config.templates) {
+        tplMap[t.trigger] = {
+          subject: t.subject,
+          markdownBody: t.markdownBody,
+          requiresPoll: t.requiresPoll,
+        }
+      }
+      setTemplates(tplMap)
       setInitialized(true)
     } else if (config === null && !initialized) {
       setInitialized(true)
     }
   }, [config, initialized])
 
-  const toggleTrigger = (value: string) => {
-    setTriggers((prev) =>
-      prev.includes(value) ? prev.filter((t) => t !== value) : [...prev, value],
-    )
+  const updateTemplate = (
+    trigger: string,
+    field: keyof TemplateState,
+    value: string | boolean,
+  ) => {
+    setTemplates((prev) => ({
+      ...prev,
+      [trigger]: {
+        ...(prev[trigger] ?? emptyTemplate),
+        [field]: value,
+      },
+    }))
   }
+
+  const configuredCount = Object.values(templates).filter((t) =>
+    t?.subject.trim(),
+  ).length
 
   const handleSave = async () => {
     setIsSaving(true)
     try {
+      // Only include templates with a non-empty subject
+      const templatesToSave = TRIGGER_OPTIONS.flatMap((opt) => {
+        const tpl = templates[opt.value]
+        if (!tpl?.subject.trim()) return []
+        return [
+          {
+            trigger: opt.value,
+            subject: tpl.subject,
+            markdownBody: tpl.markdownBody,
+            requiresPoll: tpl.requiresPoll,
+          },
+        ]
+      })
       await saveConfig({
         opportunityId,
         enabled,
-        triggers,
-        subject,
-        markdownBody,
-        requiresPoll,
+        templates: templatesToSave,
       })
       toast.success('Auto-email config saved')
     } catch (err) {
@@ -948,8 +986,7 @@ function AutoEmailConfigSection({
               Auto-Email
             </CardTitle>
             <CardDescription>
-              Automatically email applicants on new applications or status
-              changes
+              Configure a different email template for each trigger
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
@@ -960,66 +997,70 @@ function AutoEmailConfigSection({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Triggers */}
-        <div className="space-y-2">
-          <Label>Triggers</Label>
-          <div className="space-y-1.5">
-            {TRIGGER_OPTIONS.map((opt) => (
-              <label
-                key={opt.value}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <Checkbox
-                  checked={triggers.includes(opt.value)}
-                  onCheckedChange={() => toggleTrigger(opt.value)}
+      <CardContent className="space-y-5">
+        <p className="text-xs text-muted-foreground">
+          Variables: <code>{'{{applicant_name}}'}</code>,{' '}
+          <code>{'{{poll_link}}'}</code>
+        </p>
+
+        {/* Per-trigger template sections */}
+        {TRIGGER_OPTIONS.map((opt) => {
+          const tpl = templates[opt.value] ?? emptyTemplate
+          const isConfigured = tpl.subject.trim().length > 0
+          return (
+            <div key={opt.value} className="space-y-2 rounded-md border p-3">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`inline-block size-2 rounded-full ${isConfigured ? 'bg-green-500' : 'bg-slate-300'}`}
                 />
-                <span className="text-sm">{opt.label}</span>
+                <span className="text-sm font-medium">{opt.label}</span>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor={`subject-${opt.value}`}>Subject</Label>
+                <Input
+                  id={`subject-${opt.value}`}
+                  value={tpl.subject}
+                  onChange={(e) =>
+                    updateTemplate(opt.value, 'subject', e.target.value)
+                  }
+                  placeholder="Leave empty to skip this trigger"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor={`body-${opt.value}`}>Body (Markdown)</Label>
+                <Textarea
+                  id={`body-${opt.value}`}
+                  value={tpl.markdownBody}
+                  onChange={(e) =>
+                    updateTemplate(opt.value, 'markdownBody', e.target.value)
+                  }
+                  rows={4}
+                  placeholder="Write your email body in markdown..."
+                />
+              </div>
+
+              <label className="flex items-center gap-2 cursor-pointer">
+                <Checkbox
+                  checked={tpl.requiresPoll}
+                  onCheckedChange={(checked) =>
+                    updateTemplate(opt.value, 'requiresPoll', checked === true)
+                  }
+                />
+                <span className="text-xs text-muted-foreground">
+                  Only send when an open availability poll exists
+                </span>
               </label>
-            ))}
-          </div>
-        </div>
-
-        {/* Require poll */}
-        <label className="flex items-center gap-2 cursor-pointer">
-          <Checkbox
-            checked={requiresPoll}
-            onCheckedChange={(checked) => setRequiresPoll(checked === true)}
-          />
-          <span className="text-sm">
-            Only send when an open availability poll exists
-          </span>
-        </label>
-
-        {/* Subject */}
-        <div className="space-y-1">
-          <Label htmlFor="auto-email-subject">Subject</Label>
-          <Input
-            id="auto-email-subject"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            placeholder="e.g. Your availability poll link"
-          />
-        </div>
-
-        {/* Body */}
-        <div className="space-y-1">
-          <Label htmlFor="auto-email-body">Body (Markdown)</Label>
-          <Textarea
-            id="auto-email-body"
-            value={markdownBody}
-            onChange={(e) => setMarkdownBody(e.target.value)}
-            rows={6}
-            placeholder="Write your email body in markdown..."
-          />
-          <p className="text-xs text-muted-foreground">
-            Available variables: <code>{'{{applicant_name}}'}</code>,{' '}
-            <code>{'{{poll_link}}'}</code>
-          </p>
-        </div>
+            </div>
+          )
+        })}
 
         {/* Save */}
-        <Button onClick={handleSave} disabled={isSaving || !subject.trim()}>
+        <Button
+          onClick={handleSave}
+          disabled={isSaving || configuredCount === 0}
+        >
           {isSaving ? (
             <>
               <Loader2 className="size-4 mr-2 animate-spin" />
@@ -1029,6 +1070,12 @@ function AutoEmailConfigSection({
             <>
               <Save className="size-4 mr-2" />
               Save Auto-Email Config
+              {configuredCount > 0 && (
+                <span className="ml-1 text-xs opacity-70">
+                  ({configuredCount} trigger
+                  {configuredCount !== 1 ? 's' : ''})
+                </span>
+              )}
             </>
           )}
         </Button>
