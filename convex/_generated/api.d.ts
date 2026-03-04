@@ -10,6 +10,7 @@
 
 import type * as accountDeletion from "../accountDeletion.js";
 import type * as admin from "../admin.js";
+import type * as adminAgentChat from "../adminAgentChat.js";
 import type * as agent_actions from "../agent/actions.js";
 import type * as agent_index from "../agent/index.js";
 import type * as agent_mutations from "../agent/mutations.js";
@@ -139,6 +140,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   accountDeletion: typeof accountDeletion;
   admin: typeof admin;
+  adminAgentChat: typeof adminAgentChat;
   "agent/actions": typeof agent_actions;
   "agent/index": typeof agent_index;
   "agent/mutations": typeof agent_mutations;

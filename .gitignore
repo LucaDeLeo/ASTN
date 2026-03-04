@@ -34,5 +34,8 @@ src-tauri/target/
 src-tauri/gen/
 src-tauri/Cargo.lock
 
+# Agent CLI
+agent/node_modules/
+
 # Claude Code
 .claude/worktrees/

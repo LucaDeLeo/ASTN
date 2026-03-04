@@ -7,6 +7,7 @@ export default defineConfig([
   ...convexPlugin.configs.recommended,
   globalIgnores([
     'convex/_generated',
+    'agent/**',
     '.vercel/**',
     '.claude/**',
     'node_modules/**',

@@ -1283,6 +1283,34 @@ export default defineSchema({
     error: v.optional(v.string()),
   }).index('by_opportunity', ['opportunityId']),
 
+  // Admin agent chat history (per admin per org)
+  adminAgentChats: defineTable({
+    orgId: v.id('organizations'),
+    userId: v.string(),
+    messages: v.array(
+      v.object({
+        role: v.union(v.literal('user'), v.literal('assistant')),
+        // User messages: plain text content
+        content: v.optional(v.string()),
+        // Assistant messages: ordered content parts
+        parts: v.optional(
+          v.array(
+            v.union(
+              v.object({ type: v.literal('text'), content: v.string() }),
+              v.object({
+                type: v.literal('tool_call'),
+                name: v.string(),
+                input: v.any(),
+                output: v.optional(v.string()),
+              }),
+            ),
+          ),
+        ),
+      }),
+    ),
+    updatedAt: v.number(),
+  }).index('by_userId_orgId', ['userId', 'orgId']),
+
   // Push notification tokens for mobile (Tauri) clients
   pushTokens: defineTable({
     userId: v.string(),
