@@ -536,6 +536,7 @@ function AvailabilityTab({
   const backfillRespondents = useMutation(
     api.availabilityPolls.backfillRespondents,
   )
+  const exportAvailability = useAction(api.availabilityPolls.exportAvailability)
 
   const [selectedSlot, setSelectedSlot] = useState<{
     date: string
@@ -543,6 +544,7 @@ function AvailabilityTab({
     endMinutes: number
   } | null>(null)
   const [isFinalizingPoll, setIsFinalizingPoll] = useState(false)
+  const [isExportingAvailability, setIsExportingAvailability] = useState(false)
   const [copiedToken, setCopiedToken] = useState<string | null>(null)
   const [allCopied, setAllCopied] = useState(false)
 
@@ -621,6 +623,25 @@ function AvailabilityTab({
     } catch (err) {
       console.error('Failed to delete poll:', err)
       toast.error('Failed to delete poll')
+    }
+  }
+
+  const handleExportAvailability = async () => {
+    setIsExportingAvailability(true)
+    try {
+      const csv = await exportAvailability({ pollId: poll._id })
+      const blob = new Blob([csv], { type: 'text/csv' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `availability-${poll.title.toLowerCase().replace(/\s+/g, '-')}.csv`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Export failed:', err)
+      toast.error('Failed to export availability data')
+    } finally {
+      setIsExportingAvailability(false)
     }
   }
 
@@ -768,64 +789,83 @@ function AvailabilityTab({
           </div>
 
           {/* Poll controls */}
-          {poll.status !== 'finalized' && (
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handleToggleStatus}>
-                {poll.status === 'open' ? 'Close Poll' : 'Reopen Poll'}
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash2 className="size-4 mr-1" />
-                    Delete Poll
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete this poll?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will permanently delete the poll and all{' '}
-                      {totalRespondents} response
-                      {totalRespondents !== 1 ? 's' : ''}. This cannot be
-                      undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDeletePoll}
-                      className="bg-red-600 hover:bg-red-700"
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              {selectedSlot && (
-                <Button
-                  size="sm"
-                  onClick={handleFinalize}
-                  disabled={isFinalizingPoll}
-                >
-                  {isFinalizingPoll ? (
-                    <>
-                      <Loader2 className="size-4 mr-1 animate-spin" />
-                      Finalizing...
-                    </>
-                  ) : (
-                    <>
-                      <Check className="size-4 mr-1" />
-                      Finalize Selected Slot
-                    </>
-                  )}
-                </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportAvailability}
+              disabled={isExportingAvailability}
+            >
+              {isExportingAvailability ? (
+                <Loader2 className="size-4 mr-1 animate-spin" />
+              ) : (
+                <Download className="size-4 mr-1" />
               )}
-            </div>
-          )}
+              Export CSV
+            </Button>
+            {poll.status !== 'finalized' && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleToggleStatus}
+                >
+                  {poll.status === 'open' ? 'Close Poll' : 'Reopen Poll'}
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="size-4 mr-1" />
+                      Delete Poll
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this poll?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete the poll and all{' '}
+                        {totalRespondents} response
+                        {totalRespondents !== 1 ? 's' : ''}. This cannot be
+                        undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDeletePoll}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                {selectedSlot && (
+                  <Button
+                    size="sm"
+                    onClick={handleFinalize}
+                    disabled={isFinalizingPoll}
+                  >
+                    {isFinalizingPoll ? (
+                      <>
+                        <Loader2 className="size-4 mr-1 animate-spin" />
+                        Finalizing...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="size-4 mr-1" />
+                        Finalize Selected Slot
+                      </>
+                    )}
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
         </CardContent>
       </Card>
 

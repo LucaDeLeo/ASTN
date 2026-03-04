@@ -1,5 +1,6 @@
 import { ConvexError, v } from 'convex/values'
-import { mutation, query } from './_generated/server'
+import { action, internalQuery, mutation, query } from './_generated/server'
+import { internal } from './_generated/api'
 import { getUserId } from './lib/auth'
 import {
   resolveApplicantDisplayNameByApplicationId,
@@ -176,7 +177,9 @@ export const backfillRespondents = mutation({
       .query('pollRespondents')
       .withIndex('by_poll', (q) => q.eq('pollId', pollId))
       .collect()
-    const existingAppIds = new Set(existingRespondents.map((r) => r.applicationId))
+    const existingAppIds = new Set(
+      existingRespondents.map((r) => r.applicationId),
+    )
 
     const applications = await ctx.db
       .query('opportunityApplications')
@@ -331,9 +334,7 @@ export const getPollByOpportunity = query({
   handler: async (ctx, { opportunityId }) => {
     return await ctx.db
       .query('availabilityPolls')
-      .withIndex('by_opportunity', (q) =>
-        q.eq('opportunityId', opportunityId),
-      )
+      .withIndex('by_opportunity', (q) => q.eq('opportunityId', opportunityId))
       .order('desc')
       .first()
   },
@@ -374,11 +375,200 @@ export const getPollResults = query({
     const responsesWithResolvedNames = responses.map((response) => {
       if (!response.respondentId) return response
       const resolvedName = respondentNameById.get(response.respondentId)
-      if (!resolvedName || resolvedName === response.respondentName) return response
+      if (!resolvedName || resolvedName === response.respondentName)
+        return response
       return { ...response, respondentName: resolvedName }
     })
 
     return { poll, responses: responsesWithResolvedNames }
+  },
+})
+
+export const getExportData = internalQuery({
+  args: {
+    pollId: v.id('availabilityPolls'),
+    userId: v.string(),
+  },
+  returns: v.object({
+    poll: pollReturnValidator,
+    responses: v.array(responseReturnValidator),
+  }),
+  handler: async (ctx, { pollId, userId }) => {
+    const poll = await ctx.db.get('availabilityPolls', pollId)
+    if (!poll) throw new ConvexError('Poll not found')
+
+    const membership = await ctx.db
+      .query('orgMemberships')
+      .withIndex('by_org_role', (q) =>
+        q.eq('orgId', poll.orgId).eq('role', 'admin'),
+      )
+      .collect()
+    const isAdmin = membership.some((m) => m.userId === userId)
+    if (!isAdmin) throw new ConvexError('Admin access required')
+
+    const responses = await ctx.db
+      .query('availabilityResponses')
+      .withIndex('by_poll', (q) => q.eq('pollId', pollId))
+      .collect()
+
+    const respondents = await ctx.db
+      .query('pollRespondents')
+      .withIndex('by_poll', (q) => q.eq('pollId', pollId))
+      .collect()
+
+    const respondentNameById = new Map<string, string>()
+    await Promise.all(
+      respondents.map(async (respondent) => {
+        const name = await resolveApplicantDisplayNameByApplicationId(
+          ctx.db,
+          respondent.applicationId,
+          respondent.respondentName,
+        )
+        respondentNameById.set(respondent._id, name)
+      }),
+    )
+
+    const responsesWithResolvedNames = responses.map((response) => {
+      if (!response.respondentId) return response
+      const resolvedName = respondentNameById.get(response.respondentId)
+      if (!resolvedName || resolvedName === response.respondentName)
+        return response
+      return { ...response, respondentName: resolvedName }
+    })
+
+    return { poll, responses: responsesWithResolvedNames }
+  },
+})
+
+export const exportAvailability = action({
+  args: { pollId: v.id('availabilityPolls') },
+  returns: v.string(),
+  handler: async (ctx, { pollId }): Promise<string> => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new ConvexError('Not authenticated')
+
+    const data: {
+      poll: {
+        startDate: string
+        endDate: string
+        startMinutes: number
+        endMinutes: number
+        slotDurationMinutes: number
+      }
+      responses: Array<{
+        respondentName: string
+        slots: Record<string, string>
+      }>
+    } = await ctx.runQuery(internal.availabilityPolls.getExportData, {
+      pollId,
+      userId: identity.subject,
+    })
+
+    const { poll, responses } = data
+
+    // Build dates
+    const dates: Array<string> = []
+    const current = new Date(poll.startDate + 'T00:00:00')
+    const end = new Date(poll.endDate + 'T00:00:00')
+    while (current <= end) {
+      dates.push(current.toISOString().split('T')[0])
+      current.setDate(current.getDate() + 1)
+    }
+
+    // Build time slots
+    const timeSlots: Array<number> = []
+    for (
+      let m = poll.startMinutes;
+      m < poll.endMinutes;
+      m += poll.slotDurationMinutes
+    ) {
+      timeSlots.push(m)
+    }
+
+    // All slot keys in column order
+    const slotKeys: Array<string> = []
+    for (const date of dates) {
+      for (const minutes of timeSlots) {
+        slotKeys.push(`${date}|${minutes}`)
+      }
+    }
+
+    // Helpers
+    const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    const MONTH_NAMES = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ]
+
+    const formatHeader = (dateStr: string, minutes: number): string => {
+      const d = new Date(dateStr + 'T00:00:00')
+      const hours = Math.floor(minutes / 60)
+      const mins = minutes % 60
+      const period = hours >= 12 ? 'PM' : 'AM'
+      const displayHour = hours % 12 || 12
+      return `${DAY_NAMES[d.getDay()]} ${MONTH_NAMES[d.getMonth()]} ${d.getDate()} ${displayHour}:${mins.toString().padStart(2, '0')} ${period}`
+    }
+
+    const escapeCSV = (val: string): string => {
+      if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+        return `"${val.replace(/"/g, '""')}"`
+      }
+      return val
+    }
+
+    // Row 1: Headers
+    const headers = [
+      'Respondent',
+      ...slotKeys.map((key) => {
+        const [date, mins] = key.split('|')
+        return formatHeader(date, parseInt(mins, 10))
+      }),
+    ]
+
+    // Row 2: Availability scores
+    const totalRespondents = responses.length
+    const scores = slotKeys.map((key) => {
+      if (totalRespondents === 0) return '0%'
+      let available = 0
+      let maybe = 0
+      for (const r of responses) {
+        const val = r.slots[key]
+        if (val === 'available') available++
+        else if (val === 'maybe') maybe++
+      }
+      const score = (available + maybe * 0.5) / totalRespondents
+      return `${Math.round(score * 100)}%`
+    })
+    const scoreRow = ['Availability Score', ...scores]
+
+    // Rows 3+: One per respondent
+    const respondentRows = responses.map((r) => {
+      const cells = slotKeys.map((key) => {
+        const val = r.slots[key]
+        if (val === 'available') return 'Available'
+        if (val === 'maybe') return 'Maybe'
+        return ''
+      })
+      return [r.respondentName, ...cells]
+    })
+
+    return [
+      headers.map((h) => escapeCSV(h)).join(','),
+      scoreRow.map((s) => escapeCSV(s)).join(','),
+      ...respondentRows.map((row) =>
+        row.map((cell) => escapeCSV(cell)).join(','),
+      ),
+    ].join('\n')
   },
 })
 
