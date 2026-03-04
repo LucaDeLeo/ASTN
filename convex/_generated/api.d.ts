@@ -89,6 +89,7 @@ import type * as lib_llmUsage from "../lib/llmUsage.js";
 import type * as lib_logging from "../lib/logging.js";
 import type * as lib_models from "../lib/models.js";
 import type * as lib_rateLimiter from "../lib/rateLimiter.js";
+import type * as lib_seed from "../lib/seed.js";
 import type * as lib_seedPlatformAdmin from "../lib/seedPlatformAdmin.js";
 import type * as lib_slug from "../lib/slug.js";
 import type * as matches from "../matches.js";
@@ -217,6 +218,7 @@ declare const fullApi: ApiFromModules<{
   "lib/logging": typeof lib_logging;
   "lib/models": typeof lib_models;
   "lib/rateLimiter": typeof lib_rateLimiter;
+  "lib/seed": typeof lib_seed;
   "lib/seedPlatformAdmin": typeof lib_seedPlatformAdmin;
   "lib/slug": typeof lib_slug;
   matches: typeof matches;
