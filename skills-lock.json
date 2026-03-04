@@ -20,6 +20,11 @@
       "source": "clerk/skills",
       "sourceType": "github",
       "computedHash": "433b71e22d840af4995a17861f9467460979d61c27f4c5417ee657f85dc83186"
+    },
+    "dogfood": {
+      "source": "vercel-labs/agent-browser",
+      "sourceType": "github",
+      "computedHash": "17a3fc2c1a49df9debce572c7b47521caa96f793597d944c4e648b3aa90738cf"
     }
   }
 }
