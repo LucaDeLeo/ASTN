@@ -545,6 +545,7 @@ function AvailabilityTab({
   } | null>(null)
   const [isFinalizingPoll, setIsFinalizingPoll] = useState(false)
   const [isExportingAvailability, setIsExportingAvailability] = useState(false)
+  const [sessionHours, setSessionHours] = useState('')
   const [copiedToken, setCopiedToken] = useState<string | null>(null)
   const [allCopied, setAllCopied] = useState(false)
 
@@ -629,7 +630,13 @@ function AvailabilityTab({
   const handleExportAvailability = async () => {
     setIsExportingAvailability(true)
     try {
-      const csv = await exportAvailability({ pollId: poll._id })
+      const blockMinutes = sessionHours
+        ? parseFloat(sessionHours) * 60
+        : undefined
+      const csv = await exportAvailability({
+        pollId: poll._id,
+        blockDurationMinutes: blockMinutes,
+      })
       const blob = new Blob([csv], { type: 'text/csv' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -789,20 +796,31 @@ function AvailabilityTab({
           </div>
 
           {/* Poll controls */}
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportAvailability}
-              disabled={isExportingAvailability}
-            >
-              {isExportingAvailability ? (
-                <Loader2 className="size-4 mr-1 animate-spin" />
-              ) : (
-                <Download className="size-4 mr-1" />
-              )}
-              Export CSV
-            </Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <Input
+                type="number"
+                step="0.5"
+                min="0.5"
+                placeholder="Session hrs"
+                value={sessionHours}
+                onChange={(e) => setSessionHours(e.target.value)}
+                className="w-28 h-8 text-sm"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportAvailability}
+                disabled={isExportingAvailability}
+              >
+                {isExportingAvailability ? (
+                  <Loader2 className="size-4 mr-1 animate-spin" />
+                ) : (
+                  <Download className="size-4 mr-1" />
+                )}
+                Export CSV
+              </Button>
+            </div>
             {poll.status !== 'finalized' && (
               <>
                 <Button

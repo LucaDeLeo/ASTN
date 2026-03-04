@@ -441,9 +441,12 @@ export const getExportData = internalQuery({
 })
 
 export const exportAvailability = action({
-  args: { pollId: v.id('availabilityPolls') },
+  args: {
+    pollId: v.id('availabilityPolls'),
+    blockDurationMinutes: v.optional(v.number()),
+  },
   returns: v.string(),
-  handler: async (ctx, { pollId }): Promise<string> => {
+  handler: async (ctx, { pollId, blockDurationMinutes }): Promise<string> => {
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) throw new ConvexError('Not authenticated')
 
@@ -475,7 +478,119 @@ export const exportAvailability = action({
       current.setDate(current.getDate() + 1)
     }
 
-    // Build time slots
+    const totalDays = dates.length
+
+    // Helpers
+    const formatTime = (minutes: number): string => {
+      const hours = Math.floor(minutes / 60)
+      const mins = minutes % 60
+      const period = hours >= 12 ? 'PM' : 'AM'
+      const displayHour = hours % 12 || 12
+      return `${displayHour}:${mins.toString().padStart(2, '0')} ${period}`
+    }
+
+    const escapeCSV = (val: string): string => {
+      if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+        return `"${val.replace(/"/g, '""')}"`
+      }
+      return val
+    }
+
+    // ── Block-based export ──
+    if (blockDurationMinutes && blockDurationMinutes > 0) {
+      const blockSlotsCount = Math.ceil(
+        blockDurationMinutes / poll.slotDurationMinutes,
+      )
+
+      // Possible start times where the full block fits
+      const possibleStarts: Array<number> = []
+      for (
+        let m = poll.startMinutes;
+        m + blockDurationMinutes <= poll.endMinutes;
+        m += poll.slotDurationMinutes
+      ) {
+        possibleStarts.push(m)
+      }
+
+      // For each (respondent, startTime): count days where ALL slots in block are filled
+      const respondentBlockData = responses.map((r) => {
+        const counts = possibleStarts.map((start) => {
+          let daysAvailable = 0
+          for (const date of dates) {
+            let blockOk = true
+            for (let i = 0; i < blockSlotsCount; i++) {
+              const key = `${date}|${start + i * poll.slotDurationMinutes}`
+              const val = r.slots[key]
+              if (val !== 'available' && val !== 'maybe') {
+                blockOk = false
+                break
+              }
+            }
+            if (blockOk) daysAvailable++
+          }
+          return daysAvailable
+        })
+        return { name: r.respondentName, counts }
+      })
+
+      // Headers: "Time Block", then each possible start as "8:00 AM – 10:30 AM"
+      const headers = [
+        'Respondent',
+        ...possibleStarts.map(
+          (s) => `${formatTime(s)} – ${formatTime(s + blockDurationMinutes)}`,
+        ),
+      ]
+
+      // Summary: count of people available all days
+      const totalRespondents = responses.length
+      const allDaysRow = [
+        `Available all ${totalDays} days`,
+        ...possibleStarts.map((_, i) =>
+          String(
+            respondentBlockData.filter((r) => r.counts[i] === totalDays).length,
+          ),
+        ),
+      ]
+      const mostDaysRow = [
+        `Available ${totalDays - 1}+ days`,
+        ...possibleStarts.map((_, i) =>
+          String(
+            respondentBlockData.filter((r) => r.counts[i] >= totalDays - 1)
+              .length,
+          ),
+        ),
+      ]
+      const avgRow = [
+        'Avg availability',
+        ...possibleStarts.map((_, i) => {
+          if (totalRespondents === 0) return '0%'
+          const avg =
+            respondentBlockData.reduce((sum, r) => sum + r.counts[i], 0) /
+            (totalRespondents * totalDays)
+          return `${Math.round(avg * 100)}%`
+        }),
+      ]
+
+      // Per-respondent rows: "X/6"
+      const personRows = respondentBlockData.map((r) => [
+        r.name,
+        ...r.counts.map((c) => `${c}/${totalDays}`),
+      ])
+
+      return [
+        headers,
+        allDaysRow,
+        mostDaysRow,
+        avgRow,
+        [''], // blank separator
+        ['Respondent', ...possibleStarts.map((s) => formatTime(s))],
+        ...personRows,
+      ]
+        .map((row) => row.map((cell) => escapeCSV(cell)).join(','))
+        .join('\n')
+    }
+
+    // ── Per-slot export (fallback) ──
     const timeSlots: Array<number> = []
     for (
       let m = poll.startMinutes;
@@ -485,15 +600,6 @@ export const exportAvailability = action({
       timeSlots.push(m)
     }
 
-    // All slot keys in column order
-    const slotKeys: Array<string> = []
-    for (const date of dates) {
-      for (const minutes of timeSlots) {
-        slotKeys.push(`${date}|${minutes}`)
-      }
-    }
-
-    // Helpers
     const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
     const MONTH_NAMES = [
       'Jan',
@@ -510,32 +616,26 @@ export const exportAvailability = action({
       'Dec',
     ]
 
-    const formatHeader = (dateStr: string, minutes: number): string => {
-      const d = new Date(dateStr + 'T00:00:00')
-      const hours = Math.floor(minutes / 60)
-      const mins = minutes % 60
-      const period = hours >= 12 ? 'PM' : 'AM'
-      const displayHour = hours % 12 || 12
-      return `${DAY_NAMES[d.getDay()]} ${MONTH_NAMES[d.getMonth()]} ${d.getDate()} ${displayHour}:${mins.toString().padStart(2, '0')} ${period}`
-    }
-
-    const escapeCSV = (val: string): string => {
-      if (val.includes(',') || val.includes('"') || val.includes('\n')) {
-        return `"${val.replace(/"/g, '""')}"`
+    const slotKeys: Array<string> = []
+    for (const date of dates) {
+      for (const minutes of timeSlots) {
+        slotKeys.push(`${date}|${minutes}`)
       }
-      return val
     }
 
-    // Row 1: Headers
+    const formatSlotHeader = (dateStr: string, minutes: number): string => {
+      const d = new Date(dateStr + 'T00:00:00')
+      return `${DAY_NAMES[d.getDay()]} ${MONTH_NAMES[d.getMonth()]} ${d.getDate()} ${formatTime(minutes)}`
+    }
+
     const headers = [
       'Respondent',
       ...slotKeys.map((key) => {
         const [date, mins] = key.split('|')
-        return formatHeader(date, parseInt(mins, 10))
+        return formatSlotHeader(date, parseInt(mins, 10))
       }),
     ]
 
-    // Row 2: Availability scores
     const totalRespondents = responses.length
     const scores = slotKeys.map((key) => {
       if (totalRespondents === 0) return '0%'
@@ -551,7 +651,6 @@ export const exportAvailability = action({
     })
     const scoreRow = ['Availability Score', ...scores]
 
-    // Rows 3+: One per respondent
     const respondentRows = responses.map((r) => {
       const cells = slotKeys.map((key) => {
         const val = r.slots[key]
@@ -562,13 +661,9 @@ export const exportAvailability = action({
       return [r.respondentName, ...cells]
     })
 
-    return [
-      headers.map((h) => escapeCSV(h)).join(','),
-      scoreRow.map((s) => escapeCSV(s)).join(','),
-      ...respondentRows.map((row) =>
-        row.map((cell) => escapeCSV(cell)).join(','),
-      ),
-    ].join('\n')
+    return [headers, scoreRow, ...respondentRows]
+      .map((row) => row.map((cell) => escapeCSV(cell)).join(','))
+      .join('\n')
   },
 })
 
