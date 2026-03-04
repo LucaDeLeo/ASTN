@@ -1,7 +1,11 @@
 import { query, createSdkMcpServer } from '@anthropic-ai/claude-agent-sdk'
 import type { ConvexClient } from 'convex/browser'
 import type { Id } from '../convex/_generated/dataModel'
-import type { AdminAgentEvent } from '../shared/admin-agent/types'
+import type {
+  AdminAgentEvent,
+  AgentModel,
+  ThinkingLevel,
+} from '../shared/admin-agent/types'
 import { mapSdkMessage } from './sdk-mapper'
 import { createMemberTools } from './tools/members'
 import { createOpportunityTools } from './tools/opportunities'
@@ -55,13 +59,37 @@ export function createAdminAgent(
     '- Keep responses short. The admin is busy.',
   ].join('\n')
 
+  function buildThinkingConfig(level: ThinkingLevel) {
+    switch (level) {
+      case 'off':
+        return { type: 'disabled' as const }
+      case 'adaptive':
+        return { type: 'adaptive' as const }
+      case 'high':
+        return { type: 'enabled' as const, budgetTokens: 10000 }
+      case 'max':
+        return { type: 'enabled' as const, budgetTokens: 32000 }
+    }
+  }
+
   return {
-    async *chat(message: string): AsyncGenerator<AdminAgentEvent> {
+    async *chat(
+      message: string,
+      model?: AgentModel,
+      thinking?: ThinkingLevel,
+    ): AsyncGenerator<AdminAgentEvent> {
+      const selectedModel = model ?? 'claude-opus-4-6'
+      const thinkingConfig = buildThinkingConfig(thinking ?? 'adaptive')
+      console.log(
+        `[agent] model=${selectedModel} thinking=${thinking ?? 'adaptive'}`,
+      )
+
       const q = query({
         prompt: message,
         options: {
           systemPrompt,
-          model: 'claude-sonnet-4-6',
+          model: selectedModel,
+          thinking: thinkingConfig,
           tools: [],
           mcpServers: { 'astn-admin': mcpServer },
           allowedTools,

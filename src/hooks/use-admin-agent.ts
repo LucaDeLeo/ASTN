@@ -8,7 +8,9 @@ import type {
   AdminAgentEvent,
   AdminAgentMessage,
   AdminClientMessage,
+  AgentModel,
   ContentPart,
+  ThinkingLevel,
 } from '../../shared/admin-agent/types'
 
 const SESSION_STORAGE_KEY = 'admin-agent-token'
@@ -290,7 +292,11 @@ export function useAdminAgent(orgSlug: string) {
     }
   }, [orgSlug, getToken])
 
-  const sendMessage = (text: string) => {
+  const sendMessage = (
+    text: string,
+    model?: AgentModel,
+    thinking?: ThinkingLevel,
+  ) => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return
 
     const userMsg: AdminAgentMessage = { role: 'user', content: text }
@@ -300,7 +306,7 @@ export function useAdminAgent(orgSlug: string) {
       return updated
     })
 
-    const msg: AdminClientMessage = { type: 'chat', text }
+    const msg: AdminClientMessage = { type: 'chat', text, model, thinking }
     wsRef.current.send(JSON.stringify(msg))
   }
 

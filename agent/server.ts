@@ -118,7 +118,11 @@ Bun.serve({
       switch (msg.type) {
         case 'chat': {
           try {
-            for await (const event of state.agent.chat(msg.text)) {
+            for await (const event of state.agent.chat(
+              msg.text,
+              msg.model,
+              msg.thinking,
+            )) {
               ws.send(JSON.stringify(event))
             }
           } catch (e: any) {

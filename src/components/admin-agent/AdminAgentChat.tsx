@@ -5,7 +5,9 @@ import DOMPurify from 'dompurify'
 
 import type {
   AdminAgentMessage,
+  AgentModel,
   ContentPart,
+  ThinkingLevel,
 } from '../../../shared/admin-agent/types'
 import type { UseAdminAgentReturn } from '~/hooks/use-admin-agent'
 import { Button } from '~/components/ui/button'
@@ -187,6 +189,8 @@ export function AdminAgentChat({
   const { status, messages, streamParts, sendMessage, isStreaming } = agent
 
   const [input, setInput] = useState('')
+  const [model, setModel] = useState<AgentModel>('claude-opus-4-6')
+  const [thinking, setThinking] = useState<ThinkingLevel>('adaptive')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -206,7 +210,7 @@ export function AdminAgentChat({
   const handleSend = () => {
     const trimmed = input.trim()
     if (!trimmed || isStreaming) return
-    sendMessage(trimmed)
+    sendMessage(trimmed, model, thinking)
     setInput('')
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
@@ -230,10 +234,28 @@ export function AdminAgentChat({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b shrink-0">
-        <div className="size-2 rounded-full bg-green-500" />
-        <h2 className="text-sm font-semibold text-foreground">Admin Agent</h2>
+      {/* Header with model/thinking controls */}
+      <div className="flex items-center gap-2 px-3 py-2 border-b shrink-0">
+        <div className="size-2 rounded-full bg-green-500 shrink-0" />
+        <select
+          value={model}
+          onChange={(e) => setModel(e.target.value as AgentModel)}
+          className="text-xs bg-muted rounded px-1.5 py-1 border-none outline-none cursor-pointer"
+        >
+          <option value="claude-opus-4-6">Opus</option>
+          <option value="claude-sonnet-4-6">Sonnet</option>
+          <option value="claude-haiku-4-5-20251001">Haiku</option>
+        </select>
+        <select
+          value={thinking}
+          onChange={(e) => setThinking(e.target.value as ThinkingLevel)}
+          className="text-xs bg-muted rounded px-1.5 py-1 border-none outline-none cursor-pointer"
+        >
+          <option value="off">No thinking</option>
+          <option value="adaptive">Adaptive</option>
+          <option value="high">High</option>
+          <option value="max">Max</option>
+        </select>
       </div>
 
       {/* Messages */}
