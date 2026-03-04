@@ -4,6 +4,7 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
+    "agent": "bun agent/cli.ts",
     "dev": "bunx convex dev --once && concurrently -r bun:dev:web bun:dev:convex",
     "dev:web": "vite dev",
     "dev:ts": "tsc -b -w",

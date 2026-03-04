@@ -36,7 +36,7 @@ console.log(`WebSocket: ws://localhost:3002`)
 console.log()
 
 // Open browser with token in hash (never sent to server)
-const appUrl = process.env.APP_URL ?? 'http://localhost:3000'
+const appUrl = process.env.APP_URL ?? 'https://safetytalent.org'
 const targetUrl = `${appUrl}/org/${orgSlug}/admin#agent=${token}`
 
 console.log(`Opening ${targetUrl}`)
