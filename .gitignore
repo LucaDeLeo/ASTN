@@ -36,6 +36,10 @@ src-tauri/Cargo.lock
 
 # Agent CLI
 agent/node_modules/
+agent/astn-agent
+
+# Bun build artifacts
+*.bun-build
 
 # Claude Code
 .claude/worktrees/
