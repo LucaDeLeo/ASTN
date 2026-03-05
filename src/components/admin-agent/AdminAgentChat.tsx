@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState } from 'react'
-import { Check, Copy, Send, Terminal } from 'lucide-react'
+import { Check, Copy, Send, Terminal, Trash2 } from 'lucide-react'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 
@@ -186,7 +186,8 @@ export function AdminAgentChat({
   agent: UseAdminAgentReturn
   orgSlug: string
 }) {
-  const { status, messages, streamParts, sendMessage, isStreaming } = agent
+  const { status, messages, streamParts, sendMessage, clearChat, isStreaming } =
+    agent
 
   const [input, setInput] = useState('')
   const [model, setModel] = useState<AgentModel>('claude-opus-4-6')
@@ -256,6 +257,18 @@ export function AdminAgentChat({
           <option value="high">High</option>
           <option value="max">Max</option>
         </select>
+        {messages.length > 0 && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="ml-auto size-7 text-muted-foreground hover:text-destructive"
+            onClick={clearChat}
+            disabled={isStreaming}
+            title="Clear chat"
+          >
+            <Trash2 className="size-3.5" />
+          </Button>
+        )}
       </div>
 
       {/* Messages */}

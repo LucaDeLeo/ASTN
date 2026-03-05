@@ -38,6 +38,7 @@ export function useAdminAgent(orgSlug: string) {
     orgId ? { orgId } : 'skip',
   )
   const saveMessagesMutation = useMutation(api.adminAgentChat.saveMessages)
+  const clearMessagesMutation = useMutation(api.adminAgentChat.clearMessages)
 
   // Sync persisted messages into local state on first load
   const initializedRef = useRef(false)
@@ -311,11 +312,19 @@ export function useAdminAgent(orgSlug: string) {
     wsRef.current.send(JSON.stringify(msg))
   }
 
+  const clearChat = () => {
+    setMessages([])
+    if (orgId) {
+      clearMessagesMutation({ orgId }).catch(() => {})
+    }
+  }
+
   return {
     status,
     messages,
     streamParts,
     sendMessage,
+    clearChat,
     isStreaming,
   }
 }
