@@ -73,7 +73,11 @@ async function maybeScheduleAutoEmail(
         q.eq('opportunityId', opts.opportunityId),
       )
       .first()
-    if (config?.enabled && config.triggers.includes(opts.trigger)) {
+    const hasMatchingTrigger =
+      config?.templates?.some((t) => t.trigger === opts.trigger) ??
+      config?.triggers?.includes(opts.trigger) ??
+      false
+    if (config?.enabled && hasMatchingTrigger) {
       await ctx.scheduler.runAfter(0, internal.emails.autoEmail.sendAutoEmail, {
         applicationId: opts.applicationId,
         trigger: opts.trigger,

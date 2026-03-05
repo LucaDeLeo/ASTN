@@ -102,6 +102,7 @@ import type * as matching_queries from "../matching/queries.js";
 import type * as matching_validation from "../matching/validation.js";
 import type * as migrations_backfillBaishFormFields from "../migrations/backfillBaishFormFields.js";
 import type * as migrations_backfillProfileEmails from "../migrations/backfillProfileEmails.js";
+import type * as migrations_migrateAutoEmailTemplates from "../migrations/migrateAutoEmailTemplates.js";
 import type * as notifications_mutations from "../notifications/mutations.js";
 import type * as notifications_queries from "../notifications/queries.js";
 import type * as notifications_realtime from "../notifications/realtime.js";
@@ -232,6 +233,7 @@ declare const fullApi: ApiFromModules<{
   "matching/validation": typeof matching_validation;
   "migrations/backfillBaishFormFields": typeof migrations_backfillBaishFormFields;
   "migrations/backfillProfileEmails": typeof migrations_backfillProfileEmails;
+  "migrations/migrateAutoEmailTemplates": typeof migrations_migrateAutoEmailTemplates;
   "notifications/mutations": typeof notifications_mutations;
   "notifications/queries": typeof notifications_queries;
   "notifications/realtime": typeof notifications_realtime;

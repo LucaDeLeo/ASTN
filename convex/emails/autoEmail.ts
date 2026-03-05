@@ -27,10 +27,12 @@ export const sendAutoEmail = internalAction({
       }
       config: {
         enabled: boolean
-        triggers: Array<string>
-        subject: string
-        markdownBody: string
-        requiresPoll: boolean
+        templates: Array<{
+          trigger: string
+          subject: string
+          markdownBody: string
+          requiresPoll: boolean
+        }>
       } | null
     } | null = await ctx.runQuery(
       internal.emails.autoEmailHelpers.getApplicationAndConfig,
@@ -38,7 +40,8 @@ export const sendAutoEmail = internalAction({
     )
 
     if (!data?.config?.enabled) return null
-    if (!data.config.triggers.includes(trigger)) return null
+    const template = data.config.templates.find((t) => t.trigger === trigger)
+    if (!template) return null
 
     // Single query: recipient + poll token
     const recipientData: {
@@ -59,17 +62,16 @@ export const sendAutoEmail = internalAction({
     let pollLink: string | null = null
     if (recipientData.pollToken) {
       const baseUrl = process.env.SITE_URL ?? 'https://safetytalent.org'
-      const { orgSlug, accessToken, respondentToken } =
-        recipientData.pollToken
+      const { orgSlug, accessToken, respondentToken } = recipientData.pollToken
       pollLink = `${baseUrl}/org/${orgSlug}/poll/${accessToken}/${respondentToken}`
     }
 
     // If requiresPoll and no poll link, skip
-    if (data.config.requiresPoll && !pollLink) return null
+    if (template.requiresPoll && !pollLink) return null
 
     // Substitute template variables
-    let body = data.config.markdownBody
-    let subject = data.config.subject
+    let body = template.markdownBody
+    let subject = template.subject
     body = body.replaceAll('{{applicant_name}}', recipientData.name)
     subject = subject.replaceAll('{{applicant_name}}', recipientData.name)
     if (pollLink) {
@@ -84,8 +86,8 @@ export const sendAutoEmail = internalAction({
       bodyHtml,
     })
 
-    const opportunityId =
-      data.application.opportunityId as Id<'orgOpportunities'>
+    const opportunityId = data.application
+      .opportunityId as Id<'orgOpportunities'>
 
     // Send email + log
     try {
@@ -105,8 +107,7 @@ export const sendAutoEmail = internalAction({
         status: 'sent',
       })
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Unknown error'
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error'
       await ctx.runMutation(internal.emails.autoEmailHelpers.logAutoEmail, {
         opportunityId,
         applicationId,
