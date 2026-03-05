@@ -60,7 +60,11 @@ export function createMemberTools(
       'get_member_profile',
       'Get detailed profile information for a specific member, including skills, experience, and interests.',
       {
-        userId: z.string().describe('The user ID of the member'),
+        userId: z
+          .string()
+          .describe(
+            'The Clerk user ID from list_members (looks like "user_39zX...")',
+          ),
       },
       async (args) => {
         console.log('[tool] get_member_profile', args.userId)
@@ -158,7 +162,11 @@ export function createMemberTools(
       'get_member_attendance',
       'Get event attendance history for a specific member.',
       {
-        userId: z.string().describe('The user ID of the member'),
+        userId: z
+          .string()
+          .describe(
+            'The Clerk user ID from list_members (looks like "user_39zX...")',
+          ),
       },
       async (args) => {
         console.log('[tool] get_member_attendance', args.userId)
@@ -214,7 +222,11 @@ export function createMemberTools(
       'get_member_engagement',
       'Get engagement level and history for a specific member.',
       {
-        userId: z.string().describe('The user ID of the member'),
+        userId: z
+          .string()
+          .describe(
+            'The Clerk user ID from list_members (looks like "user_39zX...")',
+          ),
       },
       async (args) => {
         console.log('[tool] get_member_engagement', args.userId)

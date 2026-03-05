@@ -57,11 +57,13 @@ export function createOpportunityTools(
 
     tool(
       'get_opportunity',
-      'Get detailed information about a specific opportunity.',
+      'Get detailed information about a specific opportunity. IMPORTANT: You must use a real Convex document ID from list_opportunities (looks like "ps76ne8..."), never guess or abbreviate IDs.',
       {
         opportunityId: z
           .string()
-          .describe('The ID of the opportunity to retrieve'),
+          .describe(
+            'The Convex document ID from list_opportunities (e.g. "ps76ne896dw9wzxj2bwpgfzdm981jn45")',
+          ),
       },
       async (args) => {
         console.log('[tool] get_opportunity', args.opportunityId)
@@ -95,9 +97,13 @@ export function createOpportunityTools(
 
     tool(
       'list_applications',
-      'List applications for a specific opportunity, optionally filtered by status.',
+      'List applications for a specific opportunity. IMPORTANT: Call list_opportunities first to get the real Convex document ID.',
       {
-        opportunityId: z.string().describe('The ID of the opportunity'),
+        opportunityId: z
+          .string()
+          .describe(
+            'The Convex document ID from list_opportunities (e.g. "ps76ne896dw9wzxj2bwpgfzdm981jn45")',
+          ),
         statusFilter: z
           .enum([
             'submitted',
