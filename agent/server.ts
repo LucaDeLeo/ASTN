@@ -17,6 +17,7 @@ type ConnectionState = {
   agent: ReturnType<typeof createAdminAgent>
   orgName: string
   clerkToken: string
+  tokenHolder: { current: string }
 }
 
 const connections = new Map<object, ConnectionState>()
@@ -59,14 +60,44 @@ Bun.serve({
         // Create a dedicated ConvexClient for this connection
         const convex = new ConvexClient(convexUrl)
 
-        // Mutable token ref so refresh_token can update it
-        let currentClerkToken = clerkToken
+        // Mutable token holder — the setAuth callback reads from this
+        const tokenHolder = { current: clerkToken }
 
-        // Authenticate with Clerk JWT
-        convex.setAuth(async () => currentClerkToken)
+        // Set auth once — callback always returns latest token
+        convex.setAuth(async () => tokenHolder.current)
 
-        // Wait a tick for auth to propagate
-        await new Promise((r) => setTimeout(r, 100))
+        // Wait for auth to actually propagate to the Convex backend
+        // by polling until getUserIdentity would succeed
+        let authed = false
+        for (let i = 0; i < 20; i++) {
+          await new Promise((r) => setTimeout(r, 200))
+          try {
+            // Try an authenticated query to verify auth is working
+            const profile = await convex.query(
+              api.profiles.getOrCreateProfile,
+              {},
+            )
+            if (profile !== null) {
+              authed = true
+              break
+            }
+          } catch {
+            // Auth not ready yet, retry
+          }
+        }
+
+        if (!authed) {
+          ws.send(
+            JSON.stringify({
+              type: 'error',
+              message:
+                'Authentication failed — could not verify Clerk token with Convex',
+            }),
+          )
+          ws.close()
+          convex.close()
+          return
+        }
 
         // Resolve org by slug
         const org = await convex.query(api.orgs.directory.getOrgBySlug, {
@@ -90,7 +121,8 @@ Bun.serve({
           convex,
           agent,
           orgName: org.name,
-          clerkToken: currentClerkToken,
+          clerkToken: tokenHolder.current,
+          tokenHolder,
         }
 
         // Store the state with a reference that lets refresh_token update the closure
@@ -138,12 +170,10 @@ Bun.serve({
         }
 
         case 'refresh_token': {
-          // Update the stored clerk token — the setAuth callback
-          // captures the mutable variable via the closure, so we
-          // need to update it through the connection state and
-          // re-set auth on the client.
+          // Update the mutable token ref — the setAuth callback reads from this
+          // Don't call setAuth() again as it triggers a re-auth cycle
           state.clerkToken = msg.clerkToken
-          state.convex.setAuth(async () => state.clerkToken)
+          state.tokenHolder.current = msg.clerkToken
           console.log('Clerk token refreshed')
           break
         }
