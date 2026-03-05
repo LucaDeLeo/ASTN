@@ -410,31 +410,7 @@ export const listByOpportunity = query({
 // Admin: get a single application by ID (includes full responses)
 export const getById = query({
   args: { applicationId: v.id('opportunityApplications') },
-  returns: v.union(
-    v.object({
-      _id: v.id('opportunityApplications'),
-      _creationTime: v.number(),
-      opportunityId: v.id('orgOpportunities'),
-      orgId: v.id('organizations'),
-      userId: v.optional(v.string()),
-      guestEmail: v.optional(v.string()),
-      profileId: v.optional(v.id('profiles')),
-      status: v.union(
-        v.literal('submitted'),
-        v.literal('under_review'),
-        v.literal('accepted'),
-        v.literal('rejected'),
-        v.literal('waitlisted'),
-      ),
-      responses: v.any(),
-      submittedAt: v.number(),
-      reviewedAt: v.optional(v.number()),
-      reviewedBy: v.optional(v.string()),
-      reviewNotes: v.optional(v.string()),
-      qualityScore: v.optional(v.number()),
-    }),
-    v.null(),
-  ),
+  returns: v.any(),
   handler: async (ctx, { applicationId }) => {
     const userId = await getUserId(ctx)
     if (!userId) throw new ConvexError('Not authenticated')
