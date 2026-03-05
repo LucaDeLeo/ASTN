@@ -97,7 +97,7 @@ export function createOpportunityTools(
 
     tool(
       'set_quality_score',
-      "Set a quality score (0–100) on an application. Higher scores increase the applicant's weight in schedule optimization. IMPORTANT: Call list_applications first to get the real application ID.",
+      "Set a quality score (0–100) on an application with reasoning. Higher scores increase the applicant's weight in schedule optimization. IMPORTANT: Call list_applications first to get the real application ID. Always include a reason explaining the score.",
       {
         applicationId: z
           .string()
@@ -109,6 +109,12 @@ export function createOpportunityTools(
           .min(0)
           .max(100)
           .describe('Quality score from 0 to 100'),
+        reason: z
+          .string()
+          .optional()
+          .describe(
+            'Brief explanation of why this score was given (e.g. "Strong ML background, relevant AI safety research experience")',
+          ),
       },
       async (args) => {
         console.log(
@@ -120,12 +126,13 @@ export function createOpportunityTools(
           await convex.mutation(api.opportunityApplications.setQualityScore, {
             applicationId: args.applicationId as Id<'opportunityApplications'>,
             qualityScore: args.qualityScore,
+            reason: args.reason,
           })
           return {
             content: [
               {
                 type: 'text' as const,
-                text: `Quality score set to ${args.qualityScore} for application ${args.applicationId}.`,
+                text: `Quality score set to ${args.qualityScore} for application ${args.applicationId}.${args.reason ? ` Reason: ${args.reason}` : ''}`,
               },
             ],
           }
@@ -282,6 +289,93 @@ export function createOpportunityTools(
           }
         } catch (e: any) {
           console.error('[tool] list_applications ERROR:', e)
+          return {
+            content: [{ type: 'text' as const, text: `Error: ${e.message}` }],
+            isError: true,
+          }
+        }
+      },
+    ),
+
+    tool(
+      'fetch_linkedin',
+      "Fetch and parse a LinkedIn profile URL using the Exa API. Returns structured data: name, location, education, work history, and skills. Use this when an application includes a LinkedIn URL and you want to evaluate the applicant's background.",
+      {
+        linkedinUrl: z
+          .string()
+          .describe(
+            'The LinkedIn profile URL (e.g. "https://linkedin.com/in/username")',
+          ),
+      },
+      async (args) => {
+        console.log('[tool] fetch_linkedin', args.linkedinUrl)
+        try {
+          const result = await convex.action(
+            api.extraction.linkedin.extractFromLinkedIn,
+            { linkedinUrl: args.linkedinUrl },
+          )
+
+          const data = (result as any).extractedData
+          if (!data) {
+            return {
+              content: [
+                {
+                  type: 'text' as const,
+                  text: 'No data extracted from profile.',
+                },
+              ],
+            }
+          }
+
+          const lines: string[] = []
+
+          if (data.name) lines.push(`**Name:** ${data.name}`)
+          if (data.location) lines.push(`**Location:** ${data.location}`)
+
+          if (data.education?.length) {
+            lines.push('\n## Education')
+            for (const edu of data.education) {
+              const years = [edu.startYear, edu.endYear]
+                .filter(Boolean)
+                .join('–')
+              lines.push(
+                `- **${edu.institution}** ${edu.degree || ''} ${edu.field || ''} ${years ? `(${years})` : ''}`.trim(),
+              )
+            }
+          }
+
+          if (data.workHistory?.length) {
+            lines.push('\n## Work Experience')
+            for (const job of data.workHistory) {
+              const dates = [job.startDate, job.endDate]
+                .filter(Boolean)
+                .join(' – ')
+              lines.push(
+                `- **${job.title}** at ${job.organization} ${dates ? `(${dates})` : ''}`,
+              )
+              if (job.description) lines.push(`  ${job.description}`)
+            }
+          }
+
+          if (data.skills?.length) {
+            lines.push(`\n**Skills:** ${data.skills.join(', ')}`)
+          }
+
+          if (data.rawSkills?.length) {
+            lines.push(`**Raw Skills:** ${data.rawSkills.join(', ')}`)
+          }
+
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text:
+                  lines.join('\n') || 'No data extracted from this profile.',
+              },
+            ],
+          }
+        } catch (e: any) {
+          console.error('[tool] fetch_linkedin ERROR:', e)
           return {
             content: [{ type: 'text' as const, text: `Error: ${e.message}` }],
             isError: true,

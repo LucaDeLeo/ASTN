@@ -391,6 +391,7 @@ function ApplicationsTable({
                       status={app.status as ApplicationStatus}
                       applicationId={app._id}
                       qualityScore={app.qualityScore}
+                      qualityScoreReason={app.qualityScoreReason}
                       onStatusChange={handleStatusChange}
                     />
                   </div>
@@ -417,6 +418,7 @@ function ApplicationDetail({
   status,
   applicationId,
   qualityScore,
+  qualityScoreReason,
   onStatusChange,
 }: {
   responses: Record<string, unknown>
@@ -424,6 +426,7 @@ function ApplicationDetail({
   status: ApplicationStatus
   applicationId: Id<'opportunityApplications'>
   qualityScore: number | undefined
+  qualityScoreReason: string | undefined
   onStatusChange: (
     id: Id<'opportunityApplications'>,
     s: ApplicationStatus,
@@ -492,6 +495,11 @@ function ApplicationDetail({
           />
         </div>
       </div>
+      {qualityScoreReason && (
+        <p className="text-sm text-muted-foreground italic">
+          {qualityScoreReason}
+        </p>
+      )}
     </div>
   )
 }
