@@ -8,6 +8,7 @@ import type {
   ThinkingLevel,
 } from '../shared/admin-agent/types'
 import { mapSdkMessage } from './sdk-mapper'
+import { createAvailabilityTools } from './tools/availability'
 import { createMemberTools } from './tools/members'
 import { createOpportunityTools } from './tools/opportunities'
 import { createProgramTools } from './tools/programs'
@@ -27,6 +28,7 @@ export function createAdminAgent(
     ...createOpportunityTools(convex, orgId),
     ...createProgramTools(convex, orgId),
     ...createStatsTools(convex, orgId),
+    ...createAvailabilityTools(convex, orgId),
   ]
 
   const mcpServer = createSdkMcpServer({
@@ -54,6 +56,10 @@ export function createAdminAgent(
     '- list_programs: List programs with participant counts',
     '- get_org_stats(timeRange?): Member counts, skills distribution, engagement breakdown, event metrics',
     '- get_engagement_overview: Engagement levels for all members at a glance',
+    '- get_availability_poll(opportunityId): Get the availability poll config for an opportunity',
+    '- get_poll_results(pollId): Get all availability responses — who is available when, slot popularity',
+    '- get_respondent_application_map(pollId): Map poll respondents to their application IDs (for cross-referencing quality)',
+    '- analyze_fixed_schedule(pollId, blockDurationMinutes): Find the best fixed daily time block — ranks all possible start times by attendance across all days, shows per-day breakdown with who can/cannot make it',
     '',
     'Guidelines:',
     "- ALWAYS call tools first, talk second. Never say 'would you like me to...' — just do it.",
