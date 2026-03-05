@@ -2,8 +2,13 @@ import { ConvexClient } from 'convex/browser'
 import { api } from '../convex/_generated/api'
 import { createAdminAgent } from './agent'
 import { ADMIN_AGENT_WS_PORT } from '../shared/admin-agent/constants'
-import type { AdminClientMessage } from '../shared/admin-agent/types'
+import type {
+  AdminAgentEvent,
+  AdminClientMessage,
+} from '../shared/admin-agent/types'
 import type { Id } from '../convex/_generated/dataModel'
+
+const CONFIRMATION_TIMEOUT_MS = 2 * 60 * 1000 // 2 minutes
 
 const token = process.env.AGENT_TOKEN!
 // Fallback Convex URL from env — browser can override per-connection
@@ -15,12 +20,20 @@ if (!fallbackConvexUrl) {
 }
 
 // Track per-connection state
+type PendingConfirmation = {
+  resolve: (approved: boolean) => void
+  timeout: ReturnType<typeof setTimeout>
+}
+
 type ConnectionState = {
   convex: ConvexClient
   agent: ReturnType<typeof createAdminAgent>
   orgName: string
   clerkToken: string
   tokenHolder: { current: string }
+  pendingConfirmations: Map<string, PendingConfirmation>
+  /** Send an event to the browser outside the normal stream flow */
+  emit: (event: AdminAgentEvent) => void
 }
 
 const connections = new Map<object, ConnectionState>()
@@ -125,6 +138,13 @@ Bun.serve({
           return
         }
 
+        // Get the authenticated user's ID for audit logging
+        const profile = await convex.query(
+          api.profiles.getOrCreateProfile,
+          {},
+        )
+        const userId = profile?.userId ?? 'agent'
+
         // Resolve org by slug
         const org = await convex.query(api.orgs.directory.getOrgBySlug, {
           slug: orgSlug,
@@ -141,7 +161,35 @@ Bun.serve({
           return
         }
 
-        const agent = createAdminAgent(convex, org._id, org.name)
+        const pendingConfirmations = new Map<string, PendingConfirmation>()
+
+        // Emit helper — sends an event directly to the browser WS
+        const emit = (event: AdminAgentEvent) => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify(event))
+          }
+        }
+
+        // requestConfirmation — called by confirmable tools to pause and wait for user
+        const requestConfirmation = (confirmId: string): Promise<boolean> => {
+          return new Promise<boolean>((resolve) => {
+            const timeout = setTimeout(() => {
+              pendingConfirmations.delete(confirmId)
+              resolve(false) // Timeout = reject
+            }, CONFIRMATION_TIMEOUT_MS)
+
+            pendingConfirmations.set(confirmId, { resolve, timeout })
+          })
+        }
+
+        const agent = createAdminAgent(
+          convex,
+          org._id,
+          org.name,
+          userId,
+          emit,
+          requestConfirmation,
+        )
 
         const state: ConnectionState = {
           convex,
@@ -149,6 +197,8 @@ Bun.serve({
           orgName: org.name,
           clerkToken: tokenHolder.current,
           tokenHolder,
+          pendingConfirmations,
+          emit,
         }
 
         // Store the state with a reference that lets refresh_token update the closure
@@ -205,12 +255,37 @@ Bun.serve({
           console.log('Clerk token refreshed')
           break
         }
+
+        case 'confirm_response': {
+          const pending = state.pendingConfirmations.get(msg.confirmId)
+          if (pending) {
+            clearTimeout(pending.timeout)
+            state.pendingConfirmations.delete(msg.confirmId)
+            pending.resolve(msg.approved)
+            console.log(
+              `[confirm] ${msg.confirmId} → ${msg.approved ? 'approved' : 'rejected'}`,
+            )
+          } else {
+            console.log(
+              `[confirm] ${msg.confirmId} — no pending confirmation found`,
+            )
+          }
+          break
+        }
       }
     },
 
     close(ws) {
       const state = connections.get(ws)
       if (state) {
+        // Reject all pending confirmations on disconnect
+        for (const [id, pending] of state.pendingConfirmations) {
+          clearTimeout(pending.timeout)
+          pending.resolve(false)
+          console.log(`[confirm] ${id} — rejected (disconnect)`)
+        }
+        state.pendingConfirmations.clear()
+
         state.convex.close()
         connections.delete(ws)
         console.log(`Disconnected: org="${state.orgName}"`)

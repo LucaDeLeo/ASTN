@@ -7,6 +7,7 @@ import { api } from '../../convex/_generated/api'
 export function createProgramTools(
   convex: ConvexClient,
   orgId: Id<'organizations'>,
+  userId: string,
 ) {
   return [
     tool(
@@ -59,6 +60,111 @@ export function createProgramTools(
           }
         } catch (e: any) {
           console.error('[tool] list_programs ERROR:', e)
+          return {
+            content: [{ type: 'text' as const, text: `Error: ${e.message}` }],
+            isError: true,
+          }
+        }
+      },
+    ),
+
+    tool(
+      'enroll_participant',
+      'Enroll a member in a program. Call list_programs first to get the programId and list_members to get the userId.',
+      {
+        programId: z
+          .string()
+          .describe('The Convex document ID of the program from list_programs'),
+        userId: z
+          .string()
+          .describe('The Clerk user ID from list_members'),
+        adminNotes: z
+          .string()
+          .optional()
+          .describe('Optional notes about why this member is being enrolled'),
+      },
+      async (args) => {
+        console.log('[tool] enroll_participant', args.programId, args.userId)
+        try {
+          const result = await convex.mutation(api.programs.enrollMember, {
+            programId: args.programId as Id<'programs'>,
+            userId: args.userId,
+            adminNotes: args.adminNotes,
+          })
+
+          await convex.mutation(api.agentActionLog.logAgentAction, {
+            userId,
+            orgId,
+            toolName: 'enroll_participant',
+            params: JSON.stringify({
+              programId: args.programId,
+              userId: args.userId,
+              adminNotes: args.adminNotes,
+            }),
+            result: JSON.stringify({ participationId: result.participationId }),
+            approvalStatus: 'auto' as const,
+          })
+
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: `User ${args.userId} enrolled in program ${args.programId}. Participation ID: ${result.participationId}`,
+              },
+            ],
+          }
+        } catch (e: any) {
+          console.error('[tool] enroll_participant ERROR:', e)
+          return {
+            content: [{ type: 'text' as const, text: `Error: ${e.message}` }],
+            isError: true,
+          }
+        }
+      },
+    ),
+
+    tool(
+      'remove_participant',
+      'Remove a participant from a program. You need the participationId — use list_programs and get the program participants to find it.',
+      {
+        participationId: z
+          .string()
+          .describe('The Convex document ID of the program participation record'),
+        reason: z
+          .string()
+          .optional()
+          .describe('Optional reason for removing the participant'),
+      },
+      async (args) => {
+        console.log('[tool] remove_participant', args.participationId)
+        try {
+          await convex.mutation(api.programs.unenrollMember, {
+            participationId: args.participationId as Id<'programParticipation'>,
+            reason: args.reason,
+          })
+
+          await convex.mutation(api.agentActionLog.logAgentAction, {
+            userId,
+            orgId,
+            toolName: 'remove_participant',
+            params: JSON.stringify({
+              participationId: args.participationId,
+              reason: args.reason,
+            }),
+            result: 'success',
+            approvalStatus: 'auto' as const,
+          })
+
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: `Participant ${args.participationId} removed from program.${args.reason ? ` Reason: ${args.reason}` : ''}`,
+              },
+            ],
+          }
+        } catch (e: any) {
+          console.error('[tool] remove_participant ERROR:', e)
           return {
             content: [{ type: 'text' as const, text: `Error: ${e.message}` }],
             isError: true,
