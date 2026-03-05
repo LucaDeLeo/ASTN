@@ -1,5 +1,6 @@
 import { query, createSdkMcpServer } from '@anthropic-ai/claude-agent-sdk'
 import type { ConvexClient } from 'convex/browser'
+import { api } from '../convex/_generated/api'
 import type { Id } from '../convex/_generated/dataModel'
 import type {
   AdminAgentEvent,
@@ -11,6 +12,9 @@ import { createMemberTools } from './tools/members'
 import { createOpportunityTools } from './tools/opportunities'
 import { createProgramTools } from './tools/programs'
 import { createStatsTools } from './tools/stats'
+
+// Max conversation history entries to pass as context
+const MAX_HISTORY = 20
 
 export function createAdminAgent(
   convex: ConvexClient,
@@ -72,6 +76,37 @@ export function createAdminAgent(
     }
   }
 
+  /** Fetch persisted conversation from Convex and format as context */
+  async function buildPromptWithHistory(message: string): Promise<string> {
+    try {
+      const messages = await convex.query(api.adminAgentChat.getMessages, {
+        orgId,
+      })
+      if (!messages || messages.length === 0) return message
+
+      const recent = messages.slice(-MAX_HISTORY)
+      const historyText = recent
+        .map((m) => {
+          if (m.role === 'user') {
+            return `Admin: ${m.content ?? ''}`
+          }
+          // Assistant messages — extract text from parts
+          const text =
+            m.parts
+              ?.filter((p) => p.type === 'text')
+              .map((p) => ('content' in p ? p.content : ''))
+              .join('') ?? ''
+          return `You (assistant): ${text}`
+        })
+        .join('\n\n---\n\n')
+
+      return `<conversation_history>\n${historyText}\n</conversation_history>\n\nAdmin's new message:\n${message}`
+    } catch (e: any) {
+      console.log(`[agent] Could not fetch history: ${e?.message}`)
+      return message
+    }
+  }
+
   return {
     async *chat(
       message: string,
@@ -80,12 +115,17 @@ export function createAdminAgent(
     ): AsyncGenerator<AdminAgentEvent> {
       const selectedModel = model ?? 'claude-opus-4-6'
       const thinkingConfig = buildThinkingConfig(thinking ?? 'adaptive')
+
+      const prompt = await buildPromptWithHistory(message)
+      const historyCount = prompt.includes('<conversation_history>')
+        ? 'with history'
+        : 'no history'
       console.log(
-        `[agent] model=${selectedModel} thinking=${thinking ?? 'adaptive'}`,
+        `[agent] model=${selectedModel} thinking=${thinking ?? 'adaptive'} ${historyCount}`,
       )
 
       const q = query({
-        prompt: message,
+        prompt,
         options: {
           systemPrompt,
           model: selectedModel,
