@@ -23,6 +23,7 @@ import type { FormField } from '../../../../../../../convex/lib/formFields'
 import type { AvailabilityResponse } from '~/components/availability/AvailabilityHeatmap'
 import { AvailabilityHeatmap } from '~/components/availability/AvailabilityHeatmap'
 import { PollCreationForm } from '~/components/availability/PollCreationForm'
+import { ScheduleAnalysis } from '~/components/availability/ScheduleAnalysis'
 import { FormFieldsEditor } from '~/components/opportunities/FormFieldsEditor'
 import { AuthHeader } from '~/components/layout/auth-header'
 import {
@@ -913,6 +914,21 @@ function AvailabilityTab({
             />
           </CardContent>
         </Card>
+      )}
+
+      {/* Schedule Analysis */}
+      {pollResults && pollResults.responses.length > 0 && (
+        <ScheduleAnalysis
+          startDate={poll.startDate}
+          endDate={poll.endDate}
+          startMinutes={poll.startMinutes}
+          endMinutes={poll.endMinutes}
+          slotDurationMinutes={poll.slotDurationMinutes}
+          responses={
+            pollResults.responses as unknown as Array<AvailabilityResponse>
+          }
+          totalRespondents={totalRespondents}
+        />
       )}
 
       {/* Auto-Email Config */}
