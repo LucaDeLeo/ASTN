@@ -25,29 +25,35 @@ import { saveGuestApplicationEmail } from '~/lib/pendingGuestApplication'
 
 export const Route = createFileRoute('/org/$slug/apply/$opportunityId')({
   loader: async ({ context, params }) => {
-    const [org, opportunity] = await Promise.all([
+    const [org, result] = await Promise.all([
       context.queryClient.ensureQueryData(
         convexQuery(api.orgs.directory.getOrgBySlug, { slug: params.slug }),
       ),
       context.queryClient.ensureQueryData(
-        convexQuery(api.orgOpportunities.get, {
+        convexQuery(api.orgOpportunities.getWithRedirect, {
           id: params.opportunityId as Id<'orgOpportunities'>,
         }),
       ),
     ])
-    return { org, opportunity }
+    return { org, result }
   },
   head: ({ loaderData, params }) => {
     const org = loaderData?.org
-    const opportunity = loaderData?.opportunity
+    const result = loaderData?.result
+    const opportunity = result?.opportunity
     const orgName = org?.name ?? 'Organization'
+    const isRedirect = result?.kind === 'redirect'
     const title = opportunity
-      ? `${opportunity.title} — Apply at ${orgName}`
+      ? isRedirect
+        ? `Express Interest — ${opportunity.title} at ${orgName}`
+        : `${opportunity.title} — Apply at ${orgName}`
       : `Apply — ${orgName}`
     const rawDesc = opportunity?.description ?? ''
     const description =
       rawDesc.length > 155 ? rawDesc.slice(0, 152) + '...' : rawDesc
-    const fallback = `Apply for this opportunity at ${orgName} on AI Safety Talent Network.`
+    const fallback = isRedirect
+      ? `Express interest in future cohorts at ${orgName} on AI Safety Talent Network.`
+      : `Apply for this opportunity at ${orgName} on AI Safety Talent Network.`
     const url = `https://safetytalent.org/org/${params.slug}/apply/${params.opportunityId}`
 
     return {
@@ -84,11 +90,14 @@ function ApplyPage() {
   const { data: org } = useSuspenseQuery(
     convexQuery(api.orgs.directory.getOrgBySlug, { slug }),
   )
-  const { data: opportunity } = useSuspenseQuery(
-    convexQuery(api.orgOpportunities.get, {
+  const { data: result } = useSuspenseQuery(
+    convexQuery(api.orgOpportunities.getWithRedirect, {
       id: opportunityId as Id<'orgOpportunities'>,
     }),
   )
+  const isRedirect = result?.kind === 'redirect'
+  const opportunity = result?.opportunity ?? null
+  const originalTitle = isRedirect ? result.originalTitle : null
   const existingApplication = useQuery(
     api.opportunityApplications.getMyApplication,
     isAuthenticated && opportunity
@@ -165,6 +174,22 @@ function ApplyPage() {
     )
   }
 
+  const successHeading = isRedirect
+    ? 'Expression of Interest Submitted'
+    : 'Application Submitted'
+  const successBody = isRedirect ? (
+    <>
+      You&apos;ve expressed interest in future cohorts of{' '}
+      <strong>{originalTitle}</strong>. You&apos;ll be notified when the next
+      cohort opens.
+    </>
+  ) : (
+    <>
+      Your application for <strong>{opportunity.title}</strong> has been
+      submitted. You&apos;ll hear back from the organizers soon.
+    </>
+  )
+
   // Already applied (authenticated user) or just submitted
   if (existingApplication || (submitted && !submittedAsGuest)) {
     return (
@@ -176,12 +201,9 @@ function ApplyPage() {
               <CheckCircle2 className="size-8 text-green-600" />
             </div>
             <h1 className="text-2xl font-display text-foreground mb-4">
-              Application Submitted
+              {successHeading}
             </h1>
-            <p className="text-slate-600 mb-6">
-              Your application for <strong>{opportunity.title}</strong> has been
-              submitted. You&apos;ll hear back from the organizers soon.
-            </p>
+            <p className="text-slate-600 mb-6">{successBody}</p>
             <Button asChild>
               <Link to="/org/$slug" params={{ slug }}>
                 Back to {org.name}
@@ -205,12 +227,9 @@ function ApplyPage() {
               <CheckCircle2 className="size-8 text-green-600" />
             </div>
             <h1 className="text-2xl font-display text-foreground mb-4">
-              Application Submitted
+              {successHeading}
             </h1>
-            <p className="text-slate-600 mb-6">
-              Your application for <strong>{opportunity.title}</strong> has been
-              submitted. You&apos;ll hear back from the organizers soon.
-            </p>
+            <p className="text-slate-600 mb-6">{successBody}</p>
             {guestEmail && (
               <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 mb-6 text-sm text-blue-800">
                 <p className="font-medium mb-1">
@@ -282,19 +301,13 @@ function ApplyPage() {
     if (!isValid || isSubmitting) return
     setIsSubmitting(true)
     try {
+      let isGuest = false
       if (isAuthenticated) {
         await submitApplication({
           opportunityId: opportunity._id,
           responses,
         })
         setSubmitted(true)
-        posthog.capture('opportunity_application_submitted', {
-          opportunity_id: opportunity._id,
-          opportunity_title: opportunity.title,
-          org_slug: slug,
-          org_name: org.name,
-          is_guest: false,
-        })
       } else {
         const email = String(responses.email ?? '')
           .trim()
@@ -307,14 +320,17 @@ function ApplyPage() {
         })
         setSubmitted(true)
         setSubmittedAsGuest(true)
-        posthog.capture('opportunity_application_submitted', {
-          opportunity_id: opportunity._id,
-          opportunity_title: opportunity.title,
-          org_slug: slug,
-          org_name: org.name,
-          is_guest: true,
-        })
+        isGuest = true
       }
+      posthog.capture('opportunity_application_submitted', {
+        opportunity_id: opportunity._id,
+        opportunity_title: opportunity.title,
+        org_slug: slug,
+        org_name: org.name,
+        is_guest: isGuest,
+        is_redirect: isRedirect,
+        ...(isRedirect && { original_opportunity_id: opportunityId }),
+      })
     } catch (err) {
       console.error('Failed to submit application:', err)
       posthog.captureException(err)
@@ -364,6 +380,18 @@ function ApplyPage() {
             )}
           </div>
 
+          {/* Redirect / EOI banner */}
+          {isRedirect && (
+            <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 mb-6">
+              <h3 className="font-medium text-amber-900">
+                Applications for {originalTitle} have closed
+              </h3>
+              <p className="text-sm text-amber-800 mt-1">
+                Submit your interest below to be notified about future cohorts.
+              </p>
+            </div>
+          )}
+
           {/* Pre-fill banner */}
           {hasPreFilledData && (
             <div className="flex items-start gap-2 rounded-lg bg-blue-50 border border-blue-200 p-3 mb-6 text-sm text-blue-800">
@@ -399,6 +427,8 @@ function ApplyPage() {
                   <Loader2 className="size-4 mr-2 animate-spin" />
                   Submitting...
                 </>
+              ) : isRedirect ? (
+                'Submit Expression of Interest'
               ) : (
                 'Submit Application'
               )}

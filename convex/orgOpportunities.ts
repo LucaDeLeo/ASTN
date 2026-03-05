@@ -19,6 +19,7 @@ const opportunityReturnValidator = v.object({
   externalUrl: v.optional(v.string()),
   featured: v.boolean(),
   formFields: v.optional(v.any()),
+  redirectOpportunityId: v.optional(v.id('orgOpportunities')),
   createdAt: v.number(),
   updatedAt: v.number(),
 })
@@ -46,6 +47,62 @@ export const get = query({
 
     if (!membership || membership.role !== 'admin') return null
     return opp
+  },
+})
+
+// Get opportunity with redirect resolution (used by the public apply page)
+export const getWithRedirect = query({
+  args: { id: v.id('orgOpportunities') },
+  returns: v.union(
+    v.object({
+      kind: v.literal('direct'),
+      opportunity: opportunityReturnValidator,
+    }),
+    v.object({
+      kind: v.literal('redirect'),
+      originalTitle: v.string(),
+      originalDescription: v.string(),
+      opportunity: opportunityReturnValidator,
+    }),
+    v.null(),
+  ),
+  handler: async (ctx, { id }) => {
+    const opp = await ctx.db.get('orgOpportunities', id)
+    if (!opp) return null
+
+    // Active opportunities are served directly
+    if (opp.status === 'active') {
+      return { kind: 'direct' as const, opportunity: opp }
+    }
+
+    // Closed/draft with redirect — resolve one level
+    if (opp.redirectOpportunityId) {
+      const target = await ctx.db.get(
+        'orgOpportunities',
+        opp.redirectOpportunityId,
+      )
+      if (target && target.status === 'active' && target.orgId === opp.orgId) {
+        return {
+          kind: 'redirect' as const,
+          originalTitle: opp.title,
+          originalDescription: opp.description,
+          opportunity: target,
+        }
+      }
+    }
+
+    // Fall through: admin-only access
+    const userId = await getUserId(ctx)
+    if (!userId) return null
+
+    const membership = await ctx.db
+      .query('orgMemberships')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .filter((q) => q.eq(q.field('orgId'), opp.orgId))
+      .first()
+
+    if (!membership || membership.role !== 'admin') return null
+    return { kind: 'direct' as const, opportunity: opp }
   },
 })
 
@@ -196,9 +253,12 @@ export const update = mutation({
     externalUrl: v.optional(v.string()),
     featured: v.optional(v.boolean()),
     formFields: v.optional(v.any()),
+    redirectOpportunityId: v.optional(
+      v.union(v.id('orgOpportunities'), v.null()),
+    ),
   },
   returns: v.null(),
-  handler: async (ctx, { id, ...updates }) => {
+  handler: async (ctx, { id, redirectOpportunityId, ...updates }) => {
     const userId = await getUserId(ctx)
     if (!userId) throw new ConvexError('Not authenticated')
 
@@ -216,10 +276,31 @@ export const update = mutation({
       throw new ConvexError('Admin access required')
     }
 
-    await ctx.db.patch('orgOpportunities', id, {
-      ...updates,
-      updatedAt: Date.now(),
-    })
+    const baseUpdate = { ...updates, updatedAt: Date.now() }
+
+    if (redirectOpportunityId === null) {
+      await ctx.db.patch('orgOpportunities', id, {
+        ...baseUpdate,
+        redirectOpportunityId: undefined,
+      })
+    } else if (redirectOpportunityId !== undefined) {
+      if (redirectOpportunityId === id) {
+        throw new ConvexError('Cannot redirect an opportunity to itself')
+      }
+      const target = await ctx.db.get('orgOpportunities', redirectOpportunityId)
+      if (!target) throw new ConvexError('Redirect target not found')
+      if (target.orgId !== opportunity.orgId) {
+        throw new ConvexError(
+          'Redirect target must be in the same organization',
+        )
+      }
+      await ctx.db.patch('orgOpportunities', id, {
+        ...baseUpdate,
+        redirectOpportunityId,
+      })
+    } else {
+      await ctx.db.patch('orgOpportunities', id, baseUpdate)
+    }
     return null
   },
 })

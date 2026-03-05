@@ -89,6 +89,18 @@ function OpportunityEditPage() {
   const [deadlineStr, setDeadlineStr] = useState('')
   const [externalUrl, setExternalUrl] = useState('')
   const [featured, setFeatured] = useState(false)
+  const [redirectOpportunityId, setRedirectOpportunityId] = useState<
+    string | null
+  >(null)
+
+  // Redirect target options: active opportunities in this org (excluding current)
+  const activeOpportunities = useQuery(
+    api.orgOpportunities.listByOrg,
+    org ? { orgId: org._id } : 'skip',
+  )
+  const redirectTargets = (activeOpportunities ?? []).filter(
+    (o) => o._id !== oppId,
+  )
 
   // Form state — form fields
   const [formFields, setFormFields] = useState<Array<FormField>>([])
@@ -113,6 +125,7 @@ function OpportunityEditPage() {
       )
       setExternalUrl(opportunity.externalUrl ?? '')
       setFeatured(opportunity.featured)
+      setRedirectOpportunityId(opportunity.redirectOpportunityId ?? null)
       setFormFields(
         (opportunity.formFields as Array<FormField> | undefined) ?? [],
       )
@@ -231,6 +244,8 @@ function OpportunityEditPage() {
         deadline,
         externalUrl: externalUrl.trim() || undefined,
         featured,
+        redirectOpportunityId:
+          redirectOpportunityId as Id<'orgOpportunities'> | null,
       })
       toast.success('Opportunity details saved')
     } catch (err) {
@@ -440,6 +455,35 @@ function OpportunityEditPage() {
                           Featured opportunity (shown on org landing page)
                         </span>
                       </label>
+
+                      {status === 'closed' && (
+                        <div className="space-y-1">
+                          <Label>Redirect to (Expression of Interest)</Label>
+                          <Select
+                            value={redirectOpportunityId ?? 'none'}
+                            onValueChange={(v) =>
+                              setRedirectOpportunityId(v === 'none' ? null : v)
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="No redirect" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">No redirect</SelectItem>
+                              {redirectTargets.map((t) => (
+                                <SelectItem key={t._id} value={t._id}>
+                                  {t.title}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <p className="text-xs text-muted-foreground">
+                            When set, visitors to this opportunity&apos;s apply
+                            page will see the target&apos;s form as an
+                            Expression of Interest.
+                          </p>
+                        </div>
+                      )}
 
                       <Button
                         type="submit"

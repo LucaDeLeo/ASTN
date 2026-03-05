@@ -1104,6 +1104,7 @@ export default defineSchema({
     externalUrl: v.optional(v.string()),
     featured: v.boolean(),
     formFields: v.optional(v.any()), // Array<FormField> — see convex/lib/formFields.ts
+    redirectOpportunityId: v.optional(v.id('orgOpportunities')),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
