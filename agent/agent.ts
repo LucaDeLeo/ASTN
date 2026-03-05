@@ -53,6 +53,7 @@ export function createAdminAgent(
     '- list_opportunities: List all opportunities (active, closed, draft)',
     '- get_opportunity(opportunityId): Get full details of a specific opportunity',
     '- list_applications(opportunityId): List applications for an opportunity (includes quality score if set)',
+    '- get_application(applicationId): Get full application details including all essay/form responses — use this to read what applicants actually wrote',
     '- set_quality_score(applicationId, qualityScore): Set a quality score (0–100) on an application — call list_applications first to get IDs',
     '- list_programs: List programs with participant counts',
     '- get_org_stats(timeRange?): Member counts, skills distribution, engagement breakdown, event metrics',

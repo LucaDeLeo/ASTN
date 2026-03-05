@@ -140,6 +140,79 @@ export function createOpportunityTools(
     ),
 
     tool(
+      'get_application',
+      'Get full details of a single application including all essay/form responses. Use this to read what an applicant actually wrote. Call list_applications first to get the applicationId.',
+      {
+        applicationId: z
+          .string()
+          .describe(
+            'The Convex document ID of the application from list_applications',
+          ),
+      },
+      async (args) => {
+        console.log('[tool] get_application', args.applicationId)
+        try {
+          const app = await convex.query(api.opportunityApplications.getById, {
+            applicationId: args.applicationId as Id<'opportunityApplications'>,
+          })
+
+          if (!app) {
+            return {
+              content: [
+                {
+                  type: 'text' as const,
+                  text: `Application not found: ${args.applicationId}`,
+                },
+              ],
+            }
+          }
+
+          const lines: string[] = [
+            `## Application: ${args.applicationId}`,
+            `**Status:** ${app.status}`,
+            `**Submitted:** ${new Date(app.submittedAt).toLocaleDateString()}`,
+            app.qualityScore !== undefined
+              ? `**Quality Score:** ${app.qualityScore}`
+              : '',
+            '',
+            '## Responses',
+          ]
+
+          if (
+            app.responses &&
+            typeof app.responses === 'object' &&
+            !Array.isArray(app.responses)
+          ) {
+            for (const [key, value] of Object.entries(
+              app.responses as Record<string, unknown>,
+            )) {
+              if (value === undefined || value === null || value === '')
+                continue
+              const displayValue = Array.isArray(value)
+                ? value.join(', ')
+                : String(value)
+              lines.push(`**${key}:** ${displayValue}`)
+            }
+          } else {
+            lines.push(String(app.responses))
+          }
+
+          return {
+            content: [
+              { type: 'text' as const, text: lines.filter(Boolean).join('\n') },
+            ],
+          }
+        } catch (e: any) {
+          console.error('[tool] get_application ERROR:', e)
+          return {
+            content: [{ type: 'text' as const, text: `Error: ${e.message}` }],
+            isError: true,
+          }
+        }
+      },
+    ),
+
+    tool(
       'list_applications',
       'List applications for a specific opportunity. IMPORTANT: Call list_opportunities first to get the real Convex document ID.',
       {
