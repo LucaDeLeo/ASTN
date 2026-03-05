@@ -52,6 +52,9 @@ export function createAdminAgent(
     '- get_member_engagement(userId): Get engagement level, history, and override status',
     '- list_opportunities: List all opportunities (active, closed, draft)',
     '- get_opportunity(opportunityId): Get full details of a specific opportunity',
+    '- create_opportunity(...): Create a new opportunity with title, description, type, status, deadline, formFields, etc.',
+    '- update_opportunity(opportunityId, ...): Update fields on an existing opportunity — change status, deadline, set redirect, etc.',
+    '- duplicate_opportunity(sourceOpportunityId, overrides?, redirectOldToNew?): Duplicate an existing opportunity. Copies all fields including form config. Great for creating an EOI or new iteration. Set redirectOldToNew=true to close the old one and redirect visitors to the new one.',
     '- list_applications(opportunityId): List applications for an opportunity (includes quality score if set)',
     '- get_application(applicationId): Get full application details including all essay/form responses — use this to read what applicants actually wrote',
     '- set_quality_score(applicationId, qualityScore, reason): Set a quality score (0–100) with reasoning on an application — always include a reason explaining the score. Call list_applications first to get IDs.',
@@ -70,6 +73,11 @@ export function createAdminAgent(
     '- Format data as readable markdown — use bold, tables, and lists.',
     '- For broad questions, call multiple tools in parallel to gather context.',
     '- Keep responses short. The admin is busy.',
+    '',
+    'IMPORTANT — Scoring workflow:',
+    '- When scoring applications, process them ONE AT A TIME. For each applicant: get_application → (optionally fetch_linkedin) → set_quality_score with reasoning → then share your assessment with the admin BEFORE moving to the next one.',
+    '- Do NOT batch-read all applications upfront. Read one, score it, report it, then move to the next.',
+    '- This lets the admin follow along and intervene if they disagree with a score.',
   ].join('\n')
 
   function buildThinkingConfig(level: ThinkingLevel) {
@@ -145,7 +153,7 @@ export function createAdminAgent(
           permissionMode: 'bypassPermissions',
           allowDangerouslySkipPermissions: true,
           includePartialMessages: true,
-          maxTurns: 30,
+          maxTurns: 200,
           persistSession: false,
           env: { ...process.env, CLAUDECODE: undefined },
           stderr: (data: string) => console.error('[sdk stderr]', data),
