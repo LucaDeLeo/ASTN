@@ -144,7 +144,7 @@ export function createAdminAgent(
           permissionMode: 'bypassPermissions',
           allowDangerouslySkipPermissions: true,
           includePartialMessages: true,
-          maxTurns: 10,
+          maxTurns: 30,
           persistSession: false,
           env: { ...process.env, CLAUDECODE: undefined },
           stderr: (data: string) => console.error('[sdk stderr]', data),

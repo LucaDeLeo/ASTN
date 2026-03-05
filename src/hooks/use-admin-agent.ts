@@ -234,9 +234,18 @@ export function useAdminAgent(orgSlug: string) {
           case 'error':
             setIsStreaming(false)
             {
+              // Preserve any accumulated streaming content before adding error
+              const accumulated = partsRef.current
+              const errorPart: ContentPart = {
+                type: 'text',
+                content: `\n\nError: ${data.message}`,
+              }
               const errorMsg: AdminAgentMessage = {
                 role: 'assistant',
-                parts: [{ type: 'text', content: `Error: ${data.message}` }],
+                parts:
+                  accumulated.length > 0
+                    ? [...accumulated, errorPart]
+                    : [{ type: 'text', content: `Error: ${data.message}` }],
               }
               setMessages((prev) => {
                 const updated = [...prev, errorMsg]
@@ -252,6 +261,22 @@ export function useAdminAgent(orgSlug: string) {
 
       ws.onclose = () => {
         if (unmounted) return
+
+        // Save any in-flight streaming content before clearing
+        const parts = partsRef.current
+        if (parts.length > 0) {
+          const msg: AdminAgentMessage = {
+            role: 'assistant',
+            parts,
+          }
+          setMessages((prev) => {
+            const updated = [...prev, msg]
+            persistToConvex(updated)
+            return updated
+          })
+          partsRef.current = []
+          setStreamParts([])
+        }
 
         setStatus('disconnected')
         setIsStreaming(false)
