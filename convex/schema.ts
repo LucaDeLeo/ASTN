@@ -1129,6 +1129,7 @@ export default defineSchema({
     reviewedAt: v.optional(v.number()),
     reviewedBy: v.optional(v.string()),
     reviewNotes: v.optional(v.string()),
+    qualityScore: v.optional(v.number()),
   })
     .index('by_opportunity_and_status', ['opportunityId', 'status'])
     .index('by_user_and_opportunity', ['userId', 'opportunityId'])

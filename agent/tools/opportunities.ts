@@ -96,6 +96,50 @@ export function createOpportunityTools(
     ),
 
     tool(
+      'set_quality_score',
+      "Set a quality score (0–100) on an application. Higher scores increase the applicant's weight in schedule optimization. IMPORTANT: Call list_applications first to get the real application ID.",
+      {
+        applicationId: z
+          .string()
+          .describe(
+            'The Convex document ID of the application from list_applications',
+          ),
+        qualityScore: z
+          .number()
+          .min(0)
+          .max(100)
+          .describe('Quality score from 0 to 100'),
+      },
+      async (args) => {
+        console.log(
+          '[tool] set_quality_score',
+          args.applicationId,
+          args.qualityScore,
+        )
+        try {
+          await convex.mutation(api.opportunityApplications.setQualityScore, {
+            applicationId: args.applicationId as Id<'opportunityApplications'>,
+            qualityScore: args.qualityScore,
+          })
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: `Quality score set to ${args.qualityScore} for application ${args.applicationId}.`,
+              },
+            ],
+          }
+        } catch (e: any) {
+          console.error('[tool] set_quality_score ERROR:', e)
+          return {
+            content: [{ type: 'text' as const, text: `Error: ${e.message}` }],
+            isError: true,
+          }
+        }
+      },
+    ),
+
+    tool(
       'list_applications',
       'List applications for a specific opportunity. IMPORTANT: Call list_opportunities first to get the real Convex document ID.',
       {
@@ -141,14 +185,18 @@ export function createOpportunityTools(
             }
           }
 
-          // Return shape: { _id, userId, guestEmail, status, submittedAt, responses, ... }
+          // Return shape: { _id, userId, guestEmail, status, submittedAt, responses, qualityScore, ... }
           const lines = applications.map((app: any) => {
             const applicant = app.userId || app.guestEmail || 'Unknown'
             const status = app.status || 'submitted'
             const date = app.submittedAt
               ? new Date(app.submittedAt).toLocaleDateString()
               : 'N/A'
-            return `- **${applicant}** | Status: ${status} | Applied: ${date} | ID: ${app._id}`
+            const score =
+              app.qualityScore !== undefined
+                ? ` | Score: ${app.qualityScore}`
+                : ''
+            return `- **${applicant}** | Status: ${status} | Applied: ${date}${score} | ID: ${app._id}`
           })
 
           return {

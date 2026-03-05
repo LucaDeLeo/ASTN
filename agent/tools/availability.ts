@@ -250,10 +250,23 @@ export function createAvailabilityTools(
           args.blockDurationMinutes,
         )
         try {
-          const { poll, responses } = await convex.query(
-            api.availabilityPolls.getPollResults,
-            { pollId: args.pollId as Id<'availabilityPolls'> },
-          )
+          const [{ poll, responses }, respondentLinks] = await Promise.all([
+            convex.query(api.availabilityPolls.getPollResults, {
+              pollId: args.pollId as Id<'availabilityPolls'>,
+            }),
+            convex.query(api.availabilityPolls.getRespondentLinks, {
+              pollId: args.pollId as Id<'availabilityPolls'>,
+            }),
+          ])
+
+          // Build name → quality weight map (unscored respondents default to 50)
+          const qualityWeights = new Map<string, number>()
+          for (const link of respondentLinks) {
+            qualityWeights.set(
+              link.respondentName,
+              (link.qualityScore ?? 50) / 100,
+            )
+          }
 
           if (responses.length === 0) {
             return {
@@ -323,6 +336,7 @@ export function createAvailabilityTools(
               }
 
               for (const resp of responses) {
+                const weight = qualityWeights.get(resp.respondentName) ?? 0.5
                 // Check if respondent is available for ALL slots in the block on this day
                 const slotStatuses = blockSlotMinutes.map(
                   (mins) => resp.slots[`${date}|${mins}`],
@@ -336,10 +350,10 @@ export function createAvailabilityTools(
 
                 if (allAvailable) {
                   dayResult.available.push(resp.respondentName)
-                  totalAvailable++
+                  totalAvailable += weight
                 } else if (allAvailableOrMaybe) {
                   dayResult.maybe.push(resp.respondentName)
-                  totalMaybe++
+                  totalMaybe += weight
                 } else {
                   dayResult.unavailable.push(resp.respondentName)
                 }
@@ -372,12 +386,16 @@ export function createAvailabilityTools(
           })
 
           // Format output
+          const scoredCount = respondentLinks.filter(
+            (l) => l.qualityScore !== undefined,
+          ).length
           const lines: string[] = [
-            `## Fixed Schedule Analysis`,
+            `## Fixed Schedule Analysis (Quality-Weighted)`,
             `**Block duration:** ${args.blockDurationMinutes} minutes (${(args.blockDurationMinutes / 60).toFixed(1)} hours)`,
             `**Days:** ${dates.length} (${dates[0]} to ${dates[dates.length - 1]})`,
-            `**Respondents:** ${responses.length}`,
+            `**Respondents:** ${responses.length} (${scoredCount} with quality scores, ${responses.length - scoredCount} defaulting to 50)`,
             `**Timezone:** ${poll.timezone}`,
+            `**Note:** Scores are weighted by applicant quality (0–100 → 0–1.0 multiplier)`,
             '',
           ]
 

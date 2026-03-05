@@ -674,6 +674,7 @@ export const getRespondentLinks = query({
       respondentToken: v.string(),
       respondentName: v.string(),
       applicationId: v.id('opportunityApplications'),
+      qualityScore: v.optional(v.number()),
     }),
   ),
   handler: async (ctx, { pollId }) => {
@@ -683,15 +684,25 @@ export const getRespondentLinks = query({
       .collect()
 
     return await Promise.all(
-      respondents.map(async (respondent) => ({
-        respondentToken: respondent.respondentToken,
-        respondentName: await resolveApplicantDisplayNameByApplicationId(
-          ctx.db,
+      respondents.map(async (respondent) => {
+        const application = await ctx.db.get(
+          'opportunityApplications',
           respondent.applicationId,
-          respondent.respondentName,
-        ),
-        applicationId: respondent.applicationId,
-      })),
+        )
+        const respondentName = application
+          ? await resolveApplicantDisplayNameFromApplication(
+              ctx.db,
+              application,
+              respondent.respondentName,
+            )
+          : respondent.respondentName
+        return {
+          respondentToken: respondent.respondentToken,
+          respondentName,
+          applicationId: respondent.applicationId,
+          qualityScore: application?.qualityScore,
+        }
+      }),
     )
   },
 })

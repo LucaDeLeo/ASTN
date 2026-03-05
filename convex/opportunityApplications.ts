@@ -74,11 +74,10 @@ async function maybeScheduleAutoEmail(
       )
       .first()
     if (config?.enabled && config.triggers.includes(opts.trigger)) {
-      await ctx.scheduler.runAfter(
-        0,
-        internal.emails.autoEmail.sendAutoEmail,
-        { applicationId: opts.applicationId, trigger: opts.trigger },
-      )
+      await ctx.scheduler.runAfter(0, internal.emails.autoEmail.sendAutoEmail, {
+        applicationId: opts.applicationId,
+        trigger: opts.trigger,
+      })
     }
   } catch (err) {
     console.error('Failed to schedule auto-email:', err)
@@ -368,6 +367,7 @@ export const listByOpportunity = query({
       reviewedAt: v.optional(v.number()),
       reviewedBy: v.optional(v.string()),
       reviewNotes: v.optional(v.string()),
+      qualityScore: v.optional(v.number()),
     }),
   ),
   handler: async (ctx, { opportunityId, statusFilter }) => {
@@ -517,6 +517,41 @@ export const updateStatus = mutation({
       opportunityId: application.opportunityId,
       applicationId,
       trigger: `status:${status}`,
+    })
+
+    return null
+  },
+})
+
+// Admin: set quality score for an application (0–100)
+export const setQualityScore = mutation({
+  args: {
+    applicationId: v.id('opportunityApplications'),
+    qualityScore: v.number(),
+  },
+  returns: v.null(),
+  handler: async (ctx, { applicationId, qualityScore }) => {
+    const userId = await getUserId(ctx)
+    if (!userId) throw new ConvexError('Not authenticated')
+
+    const application = await ctx.db.get(
+      'opportunityApplications',
+      applicationId,
+    )
+    if (!application) throw new ConvexError('Application not found')
+
+    const membership = await ctx.db
+      .query('orgMemberships')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .filter((q) => q.eq(q.field('orgId'), application.orgId))
+      .first()
+
+    if (!membership || membership.role !== 'admin') {
+      throw new ConvexError('Admin access required')
+    }
+
+    await ctx.db.patch('opportunityApplications', applicationId, {
+      qualityScore,
     })
 
     return null

@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useAction, useMutation, useQuery } from 'convex/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Building2,
   ChevronDown,
@@ -18,6 +18,7 @@ import { AuthHeader } from '~/components/layout/auth-header'
 import { DynamicResponseViewer } from '~/components/opportunities/DynamicResponseViewer'
 import { Card } from '~/components/ui/card'
 import { Button } from '~/components/ui/button'
+import { Input } from '~/components/ui/input'
 import { Badge } from '~/components/ui/badge'
 import { Spinner } from '~/components/ui/spinner'
 import {
@@ -389,6 +390,7 @@ function ApplicationsTable({
                       formFields={formFields}
                       status={app.status as ApplicationStatus}
                       applicationId={app._id}
+                      qualityScore={app.qualityScore}
                       onStatusChange={handleStatusChange}
                     />
                   </div>
@@ -414,17 +416,37 @@ function ApplicationDetail({
   formFields,
   status,
   applicationId,
+  qualityScore,
   onStatusChange,
 }: {
   responses: Record<string, unknown>
   formFields: Array<FormField>
   status: ApplicationStatus
   applicationId: Id<'opportunityApplications'>
+  qualityScore: number | undefined
   onStatusChange: (
     id: Id<'opportunityApplications'>,
     s: ApplicationStatus,
   ) => void
 }) {
+  const setQualityScore = useMutation(
+    api.opportunityApplications.setQualityScore,
+  )
+  const [scoreInput, setScoreInput] = useState(
+    qualityScore !== undefined ? String(qualityScore) : '',
+  )
+
+  useEffect(() => {
+    setScoreInput(qualityScore !== undefined ? String(qualityScore) : '')
+  }, [qualityScore])
+
+  function handleScoreBlur() {
+    const parsed = parseFloat(scoreInput)
+    if (!isNaN(parsed) && parsed >= 0 && parsed <= 100) {
+      setQualityScore({ applicationId, qualityScore: parsed })
+    }
+  }
+
   return (
     <div className="space-y-6">
       {formFields.length > 0 ? (
@@ -433,26 +455,42 @@ function ApplicationDetail({
         <FallbackResponseViewer responses={responses} />
       )}
 
-      {/* Status update */}
-      <div className="flex items-center gap-3 pt-4 border-t">
-        <span className="text-sm font-medium">Update status:</span>
-        <Select
-          value={status}
-          onValueChange={(val) =>
-            onStatusChange(applicationId, val as ApplicationStatus)
-          }
-        >
-          <SelectTrigger className="w-[160px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="submitted">Submitted</SelectItem>
-            <SelectItem value="under_review">Under Review</SelectItem>
-            <SelectItem value="accepted">Accepted</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
-            <SelectItem value="waitlisted">Waitlisted</SelectItem>
-          </SelectContent>
-        </Select>
+      {/* Status update + quality score */}
+      <div className="flex items-center gap-4 pt-4 border-t flex-wrap">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium">Update status:</span>
+          <Select
+            value={status}
+            onValueChange={(val) =>
+              onStatusChange(applicationId, val as ApplicationStatus)
+            }
+          >
+            <SelectTrigger className="w-[160px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="submitted">Submitted</SelectItem>
+              <SelectItem value="under_review">Under Review</SelectItem>
+              <SelectItem value="accepted">Accepted</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectItem value="waitlisted">Waitlisted</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">Quality score:</span>
+          <Input
+            type="number"
+            min={0}
+            max={100}
+            step={1}
+            placeholder="0–100"
+            value={scoreInput}
+            onChange={(e) => setScoreInput(e.target.value)}
+            onBlur={handleScoreBlur}
+            className="w-20"
+          />
+        </div>
       </div>
     </div>
   )
