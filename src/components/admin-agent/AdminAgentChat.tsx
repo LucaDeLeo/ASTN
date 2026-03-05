@@ -143,7 +143,7 @@ function MessageBubble({ message }: { message: AdminAgentMessage }) {
 }
 
 function DisconnectedView({ orgSlug }: { orgSlug: string }) {
-  const command = `bunx @astn/agent --org=${orgSlug}`
+  const command = `bun agent/cli.ts --org=${orgSlug}`
 
   return (
     <div className="flex flex-col items-center justify-center h-full px-6">
