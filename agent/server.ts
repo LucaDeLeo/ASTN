@@ -6,9 +6,12 @@ import type { AdminClientMessage } from '../shared/admin-agent/types'
 import type { Id } from '../convex/_generated/dataModel'
 
 const token = process.env.AGENT_TOKEN!
-const convexUrl = process.env.VITE_CONVEX_URL ?? process.env.CONVEX_URL
-if (!convexUrl) {
-  throw new Error('Missing VITE_CONVEX_URL or CONVEX_URL in environment')
+// Fallback Convex URL from env — browser can override per-connection
+const fallbackConvexUrl = process.env.VITE_CONVEX_URL ?? process.env.CONVEX_URL
+if (!fallbackConvexUrl) {
+  console.warn(
+    'No VITE_CONVEX_URL or CONVEX_URL in environment — will require browser to provide convexUrl',
+  )
 }
 
 // Track per-connection state
@@ -42,18 +45,31 @@ Bun.serve({
 
     const orgSlug = url.searchParams.get('orgSlug')
     const clerkToken = url.searchParams.get('clerkToken')
+    // Browser provides its Convex URL to ensure agent connects to same deployment
+    const clientConvexUrl = url.searchParams.get('convexUrl')
 
     if (!orgSlug || !clerkToken) {
       return new Response('Missing orgSlug or clerkToken', { status: 400 })
     }
 
-    server.upgrade(req, { data: { orgSlug, clerkToken } as any })
+    const convexUrl = clientConvexUrl || fallbackConvexUrl
+    if (!convexUrl) {
+      return new Response(
+        'No Convex URL — provide convexUrl param or set VITE_CONVEX_URL env',
+        { status: 400 },
+      )
+    }
+
+    server.upgrade(req, {
+      data: { orgSlug, clerkToken, convexUrl } as any,
+    })
   },
   websocket: {
     async open(ws) {
-      const { orgSlug, clerkToken } = ws.data as unknown as {
+      const { orgSlug, clerkToken, convexUrl } = ws.data as unknown as {
         orgSlug: string
         clerkToken: string
+        convexUrl: string
       }
 
       try {
@@ -66,23 +82,33 @@ Bun.serve({
         // Set auth once — callback always returns latest token
         convex.setAuth(async () => tokenHolder.current)
 
-        // Wait for auth to actually propagate to the Convex backend
-        // by polling until getUserIdentity would succeed
+        // Wait for auth to propagate to the Convex backend
+        console.log(
+          `[auth] Verifying Clerk token for org="${orgSlug}" against ${convexUrl}`,
+        )
         let authed = false
         for (let i = 0; i < 20; i++) {
-          await new Promise((r) => setTimeout(r, 200))
+          await new Promise((r) => setTimeout(r, 250))
           try {
-            // Try an authenticated query to verify auth is working
             const profile = await convex.query(
               api.profiles.getOrCreateProfile,
               {},
             )
             if (profile !== null) {
               authed = true
+              console.log(`[auth] Verified on attempt ${i + 1}`)
               break
             }
-          } catch {
-            // Auth not ready yet, retry
+            // profile === null could mean auth works but no profile, or auth isn't ready
+            if (i > 5) {
+              console.log(
+                `[auth] Attempt ${i + 1}: getOrCreateProfile returned null`,
+              )
+            }
+          } catch (e: any) {
+            console.log(
+              `[auth] Attempt ${i + 1}: ${e?.message ?? 'unknown error'}`,
+            )
           }
         }
 
@@ -128,7 +154,9 @@ Bun.serve({
         // Store the state with a reference that lets refresh_token update the closure
         connections.set(ws, state)
 
-        console.log(`Connected: org="${org.name}" (${org._id})`)
+        console.log(
+          `Connected: org="${org.name}" (${org._id}) convex=${convexUrl}`,
+        )
       } catch (e: any) {
         console.error('Connection setup failed:', e)
         ws.send(

@@ -123,7 +123,8 @@ export function useAdminAgent(orgSlug: string) {
         return
       }
 
-      const wsUrl = `ws://localhost:${ADMIN_AGENT_WS_PORT}?token=${encodeURIComponent(agentToken)}&orgSlug=${encodeURIComponent(orgSlug)}&clerkToken=${encodeURIComponent(clerkToken)}`
+      const convexUrl = import.meta.env.VITE_CONVEX_URL as string
+      const wsUrl = `ws://localhost:${ADMIN_AGENT_WS_PORT}?token=${encodeURIComponent(agentToken)}&orgSlug=${encodeURIComponent(orgSlug)}&clerkToken=${encodeURIComponent(clerkToken)}&convexUrl=${encodeURIComponent(convexUrl)}`
       const ws = new WebSocket(wsUrl)
       wsRef.current = ws
 
