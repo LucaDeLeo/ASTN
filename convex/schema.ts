@@ -1265,10 +1265,22 @@ export default defineSchema({
     opportunityId: v.id('orgOpportunities'),
     orgId: v.id('organizations'),
     enabled: v.boolean(),
-    triggers: v.array(v.string()),
-    subject: v.string(),
-    markdownBody: v.string(),
-    requiresPoll: v.boolean(),
+    // Per-trigger templates (new format)
+    templates: v.optional(
+      v.array(
+        v.object({
+          trigger: v.string(),
+          subject: v.string(),
+          markdownBody: v.string(),
+          requiresPoll: v.boolean(),
+        }),
+      ),
+    ),
+    // Legacy flat fields (kept optional for backward compat)
+    triggers: v.optional(v.array(v.string())),
+    subject: v.optional(v.string()),
+    markdownBody: v.optional(v.string()),
+    requiresPoll: v.optional(v.boolean()),
     createdBy: v.string(),
     updatedAt: v.number(),
   }).index('by_opportunity', ['opportunityId']),

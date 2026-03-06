@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/tanstackstart-react'
 import { createRouter } from '@tanstack/react-router'
 import { QueryClient } from '@tanstack/react-query'
 import { routerWithQueryClient } from '@tanstack/react-router-with-query'
@@ -81,6 +82,7 @@ export function getRouter() {
   if (!CONVEX_URL) {
     console.error('missing envar CONVEX_URL')
   }
+
   const convexQueryClient = new ConvexQueryClient(CONVEX_URL)
 
   const queryClient: QueryClient = new QueryClient({
@@ -133,6 +135,22 @@ export function getRouter() {
     }),
     queryClient,
   )
+
+  if (!router.isServer) {
+    Sentry.init({
+      dsn: 'https://f7612c740401feef0039be0728f64cc4@o4510997439053824.ingest.de.sentry.io/4510997440692304',
+      sendDefaultPii: true,
+      tunnel: '/tunnel',
+      integrations: [
+        Sentry.tanstackRouterBrowserTracingIntegration(router),
+        Sentry.replayIntegration(),
+      ],
+      tracesSampleRate: 1.0,
+      replaysSessionSampleRate: 0.1,
+      replaysOnErrorSampleRate: 1.0,
+      enableLogs: true,
+    })
+  }
 
   return router
 }

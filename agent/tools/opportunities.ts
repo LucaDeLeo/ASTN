@@ -623,17 +623,25 @@ export function createOpportunityTools(
           .default('draft')
           .describe('Initial status (default: draft)'),
         deadline: z
-          .number()
+          .string()
           .optional()
-          .describe('Application deadline as Unix timestamp in ms'),
+          .describe(
+            'Deadline as ISO date string (e.g. "2026-04-01"). Omit for no deadline.',
+          ),
         externalUrl: z
           .string()
           .optional()
           .describe('External URL for more information'),
         featured: z
           .boolean()
-          .default(false)
-          .describe('Whether to feature this opportunity'),
+          .optional()
+          .describe('Whether to feature this opportunity (default false)'),
+        formFields: z
+          .any()
+          .optional()
+          .describe(
+            'Form field configuration (JSON). Copy from an existing opportunity via get_opportunity to reuse its form.',
+          ),
       },
       async (args) => {
         console.log('[tool] create_opportunity', args.title)
@@ -653,7 +661,7 @@ export function createOpportunityTools(
                 ? { deadline: new Date(args.deadline).toLocaleDateString() }
                 : {}),
               ...(args.externalUrl ? { externalUrl: args.externalUrl } : {}),
-              featured: args.featured,
+              featured: args.featured ?? false,
             },
           })
 
@@ -680,9 +688,12 @@ export function createOpportunityTools(
             description: args.description,
             type: args.type,
             status: args.status,
-            deadline: args.deadline,
+            deadline: args.deadline
+              ? new Date(args.deadline).getTime()
+              : undefined,
             externalUrl: args.externalUrl,
-            featured: args.featured,
+            featured: args.featured ?? false,
+            formFields: args.formFields,
           })
 
           return {
@@ -705,23 +716,34 @@ export function createOpportunityTools(
 
     tool(
       'update_opportunity',
-      'Update an existing opportunity\'s fields (requires user confirmation). Call get_opportunity first to see current values.',
+      'Update fields on an existing opportunity (requires user confirmation). Only pass the fields you want to change. Call get_opportunity first to see current values.',
       {
         opportunityId: z
           .string()
-          .describe('The Convex document ID of the opportunity'),
+          .describe('The Convex document ID of the opportunity to update'),
         title: z.string().optional().describe('New title'),
         description: z.string().optional().describe('New description'),
         type: z
           .enum(['course', 'fellowship', 'job', 'other'])
           .optional()
           .describe('New type'),
-        deadline: z
-          .number()
+        status: z
+          .enum(['active', 'closed', 'draft'])
           .optional()
-          .describe('New deadline as Unix timestamp in ms'),
+          .describe('New status'),
+        deadline: z
+          .string()
+          .optional()
+          .describe('New deadline as ISO date string, or "none" to remove'),
         externalUrl: z.string().optional().describe('New external URL'),
         featured: z.boolean().optional().describe('Whether to feature'),
+        formFields: z.any().optional().describe('New form field configuration'),
+        redirectOpportunityId: z
+          .string()
+          .optional()
+          .describe(
+            'Set a redirect to another opportunity ID. Pass "none" to remove redirect.',
+          ),
       },
       async (args) => {
         console.log('[tool] update_opportunity', args.opportunityId)
@@ -746,10 +768,24 @@ export function createOpportunityTools(
           if (args.description !== undefined)
             changes.description = args.description
           if (args.type !== undefined) changes.type = args.type
-          if (args.deadline !== undefined)
-            changes.deadline = new Date(args.deadline).toLocaleDateString()
-          if (args.externalUrl !== undefined) changes.externalUrl = args.externalUrl
+          if (args.status !== undefined) changes.status = args.status
+          if (args.deadline !== undefined) {
+            changes.deadline =
+              args.deadline === 'none'
+                ? undefined
+                : new Date(args.deadline).getTime()
+          }
+          if (args.externalUrl !== undefined)
+            changes.externalUrl = args.externalUrl
           if (args.featured !== undefined) changes.featured = args.featured
+          if (args.formFields !== undefined)
+            changes.formFields = args.formFields
+          if (args.redirectOpportunityId !== undefined) {
+            changes.redirectOpportunityId =
+              args.redirectOpportunityId === 'none'
+                ? null
+                : args.redirectOpportunityId
+          }
 
           const approved = await confirmAction(confirmCtx, {
             action: 'Update Opportunity',
@@ -780,11 +816,14 @@ export function createOpportunityTools(
             }
           }
 
-          const { opportunityId, ...updates } = args
-          await convex.mutation(api.orgOpportunities.update, {
-            id: opportunityId as Id<'orgOpportunities'>,
-            ...updates,
-          })
+          const updateArgs: Record<string, unknown> = {
+            id: args.opportunityId as Id<'orgOpportunities'>,
+            ...changes,
+          }
+          await convex.mutation(
+            api.orgOpportunities.update,
+            updateArgs as any,
+          )
 
           return {
             content: [
@@ -948,6 +987,154 @@ export function createOpportunityTools(
           }
         } catch (e: any) {
           console.error('[tool] reopen_opportunity ERROR:', e)
+          return {
+            content: [{ type: 'text' as const, text: `Error: ${e.message}` }],
+            isError: true,
+          }
+        }
+      },
+    ),
+
+    tool(
+      'duplicate_opportunity',
+      'Duplicate an existing opportunity with optional overrides (requires user confirmation). Copies all fields including form configuration. Great for creating an EOI or new iteration. Optionally sets a redirect from the old opportunity to the new one.',
+      {
+        sourceOpportunityId: z
+          .string()
+          .describe('The Convex document ID of the opportunity to duplicate'),
+        overrides: z
+          .object({
+            title: z.string().optional().describe('Override the title'),
+            description: z
+              .string()
+              .optional()
+              .describe('Override the description'),
+            type: z
+              .enum(['course', 'fellowship', 'job', 'other'])
+              .optional()
+              .describe('Override the type'),
+            status: z
+              .enum(['active', 'closed', 'draft'])
+              .optional()
+              .describe('Status for the new opportunity (default "draft")'),
+            deadline: z
+              .string()
+              .optional()
+              .describe(
+                'New deadline as ISO date string. Omit to remove deadline.',
+              ),
+            externalUrl: z
+              .string()
+              .optional()
+              .describe('Override external URL'),
+            featured: z.boolean().optional().describe('Override featured flag'),
+            formFields: z
+              .any()
+              .optional()
+              .describe('Override form fields (otherwise copied from source)'),
+          })
+          .optional()
+          .describe('Fields to override on the duplicate'),
+        redirectOldToNew: z
+          .boolean()
+          .optional()
+          .describe(
+            'If true, set a redirect on the old opportunity pointing to the new one and close the old one (default false)',
+          ),
+      },
+      async (args) => {
+        console.log('[tool] duplicate_opportunity', args.sourceOpportunityId)
+        try {
+          const source = await convex.query(api.orgOpportunities.get, {
+            id: args.sourceOpportunityId as Id<'orgOpportunities'>,
+          })
+
+          if (!source) {
+            return {
+              content: [
+                {
+                  type: 'text' as const,
+                  text: `Source opportunity not found: ${args.sourceOpportunityId}`,
+                },
+              ],
+              isError: true,
+            }
+          }
+
+          const overrides = args.overrides ?? {}
+          const newTitle = overrides.title ?? source.title
+
+          const approved = await confirmAction(confirmCtx, {
+            action: 'Duplicate Opportunity',
+            description: `Duplicate "${source.title}" as "${newTitle}"${args.redirectOldToNew ? ' (with redirect)' : ''}`,
+            details: {
+              source: source.title,
+              newTitle,
+              newStatus: overrides.status ?? 'draft',
+              redirectOldToNew: args.redirectOldToNew ?? false,
+            },
+          })
+
+          await convex.mutation(api.agentActionLog.logAgentAction, {
+            userId,
+            orgId,
+            toolName: 'duplicate_opportunity',
+            params: JSON.stringify({
+              sourceOpportunityId: args.sourceOpportunityId,
+              newTitle,
+              redirectOldToNew: args.redirectOldToNew,
+            }),
+            result: approved ? 'approved' : 'rejected',
+            approvalStatus: approved ? 'approved' : 'rejected',
+          })
+
+          if (!approved) {
+            return {
+              content: [
+                { type: 'text' as const, text: 'Action rejected by user.' },
+              ],
+            }
+          }
+
+          const newId = await convex.mutation(api.orgOpportunities.create, {
+            orgId,
+            title: newTitle,
+            description: overrides.description ?? source.description,
+            type: overrides.type ?? source.type,
+            status: overrides.status ?? 'draft',
+            deadline: overrides.deadline
+              ? new Date(overrides.deadline).getTime()
+              : undefined,
+            externalUrl: overrides.externalUrl ?? source.externalUrl,
+            featured: overrides.featured ?? false,
+            formFields: overrides.formFields ?? source.formFields,
+          })
+
+          if (args.redirectOldToNew) {
+            await convex.mutation(api.orgOpportunities.update, {
+              id: args.sourceOpportunityId as Id<'orgOpportunities'>,
+              status: 'closed',
+              redirectOpportunityId: newId,
+            })
+          }
+
+          const lines = [
+            `Opportunity duplicated successfully.`,
+            `**New ID:** ${newId}`,
+            `**Title:** ${newTitle}`,
+            `**Status:** ${overrides.status ?? 'draft'}`,
+          ]
+          if (args.redirectOldToNew) {
+            lines.push(
+              `**Redirect:** Old opportunity (${args.sourceOpportunityId}) is now closed and redirects to the new one.`,
+            )
+          }
+
+          return {
+            content: [{ type: 'text' as const, text: lines.join('\n') }],
+          }
+        } catch (e: any) {
+          console.error('[tool] duplicate_opportunity ERROR:', e)
           return {
             content: [{ type: 'text' as const, text: `Error: ${e.message}` }],
             isError: true,

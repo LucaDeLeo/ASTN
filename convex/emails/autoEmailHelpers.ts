@@ -3,6 +3,47 @@ import { internalMutation, internalQuery } from '../_generated/server'
 import { resolveApplicantDisplayName } from '../lib/applicantName'
 import { getLegacyUserEmail } from '../lib/auth'
 
+export type AutoEmailTemplate = {
+  trigger: string
+  subject: string
+  markdownBody: string
+  requiresPoll: boolean
+}
+
+/**
+ * Normalize legacy flat config → templates array.
+ * If `templates` is already present, returns it directly.
+ * Otherwise converts old flat fields into one template per trigger.
+ */
+export function resolveTemplates(config: {
+  templates?: Array<AutoEmailTemplate>
+  triggers?: Array<string>
+  subject?: string
+  markdownBody?: string
+  requiresPoll?: boolean
+}): Array<AutoEmailTemplate> {
+  if (config.templates && config.templates.length > 0) {
+    return config.templates
+  }
+  // Legacy fallback: one shared template applied to each trigger
+  if (config.triggers && config.subject && config.markdownBody != null) {
+    return config.triggers.map((trigger) => ({
+      trigger,
+      subject: config.subject!,
+      markdownBody: config.markdownBody!,
+      requiresPoll: config.requiresPoll ?? false,
+    }))
+  }
+  return []
+}
+
+const templateValidator = v.object({
+  trigger: v.string(),
+  subject: v.string(),
+  markdownBody: v.string(),
+  requiresPoll: v.boolean(),
+})
+
 /**
  * Get application + auto-email config in a single query transaction.
  * Avoids redundant application fetches across separate queries.
@@ -22,10 +63,7 @@ export const getApplicationAndConfig = internalQuery({
       config: v.union(
         v.object({
           enabled: v.boolean(),
-          triggers: v.array(v.string()),
-          subject: v.string(),
-          markdownBody: v.string(),
-          requiresPoll: v.boolean(),
+          templates: v.array(templateValidator),
         }),
         v.null(),
       ),
@@ -55,10 +93,7 @@ export const getApplicationAndConfig = internalQuery({
       config: config
         ? {
             enabled: config.enabled,
-            triggers: config.triggers,
-            subject: config.subject,
-            markdownBody: config.markdownBody,
-            requiresPoll: config.requiresPoll,
+            templates: resolveTemplates(config),
           }
         : null,
     }
