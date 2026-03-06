@@ -14,6 +14,18 @@ const messageValidator = v.object({
           input: v.any(),
           output: v.optional(v.string()),
         }),
+        v.object({
+          type: v.literal('confirmation'),
+          confirmId: v.string(),
+          action: v.string(),
+          description: v.string(),
+          details: v.any(),
+          status: v.union(
+            v.literal('pending'),
+            v.literal('approved'),
+            v.literal('rejected'),
+          ),
+        }),
       ),
     ),
   ),
