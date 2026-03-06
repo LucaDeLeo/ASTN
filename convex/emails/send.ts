@@ -593,6 +593,52 @@ export const sendDeadlineReminder = internalMutation({
   },
 })
 
+// ===== Feedback Notification Email =====
+
+/**
+ * Send a notification email when someone submits feedback
+ */
+export const sendFeedbackNotification = internalMutation({
+  args: {
+    featureRequests: v.optional(v.string()),
+    bugReports: v.optional(v.string()),
+    page: v.string(),
+    userId: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, { featureRequests, bugReports, page, userId }) => {
+    const to = process.env.FEEDBACK_NOTIFICATION_EMAIL
+    if (!to) return null
+
+    const sections = []
+    if (featureRequests) {
+      sections.push(
+        `<h3>Feature Requests</h3><p>${featureRequests.replace(/\n/g, '<br>')}</p>`,
+      )
+    }
+    if (bugReports) {
+      sections.push(
+        `<h3>Bug Reports</h3><p>${bugReports.replace(/\n/g, '<br>')}</p>`,
+      )
+    }
+
+    const html = `
+      <h2>New Feedback Submitted</h2>
+      <p><strong>Page:</strong> ${page}</p>
+      <p><strong>User:</strong> ${userId ?? 'Anonymous'}</p>
+      ${sections.join('')}
+    `
+
+    await resend.sendEmail(ctx, {
+      from: FROM_ADDRESS,
+      to,
+      subject: `[ASTN Feedback] New feedback from ${page}`,
+      html,
+    })
+    return null
+  },
+})
+
 // ===== Event Digest Email Functions =====
 
 /**
