@@ -212,6 +212,42 @@ export function useAdminAgent(orgSlug: string) {
             break
           }
 
+          case 'confirm_request': {
+            setIsStreaming(true)
+            partsRef.current = [
+              ...partsRef.current,
+              {
+                type: 'confirmation',
+                confirmId: data.confirmId,
+                action: data.action,
+                description: data.description,
+                details: data.details,
+                status: 'pending',
+              },
+            ]
+            setStreamParts(partsRef.current)
+            break
+          }
+
+          case 'action_result': {
+            partsRef.current = partsRef.current.map((p) => {
+              if (
+                p.type === 'confirmation' &&
+                p.confirmId === data.confirmId
+              ) {
+                return {
+                  ...p,
+                  status: data.success
+                    ? ('approved' as const)
+                    : ('rejected' as const),
+                }
+              }
+              return p
+            })
+            setStreamParts(partsRef.current)
+            break
+          }
+
           case 'done': {
             const parts = partsRef.current
             if (parts.length > 0) {
@@ -337,6 +373,53 @@ export function useAdminAgent(orgSlug: string) {
     wsRef.current.send(JSON.stringify(msg))
   }
 
+  const sendConfirmResponse = (confirmId: string, approved: boolean) => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return
+
+    const msg: AdminClientMessage = {
+      type: 'confirm_response',
+      confirmId,
+      approved,
+    }
+    wsRef.current.send(JSON.stringify(msg))
+
+    // Optimistically update the card status in stream parts
+    const updatedParts = partsRef.current.map((p) => {
+      if (p.type === 'confirmation' && p.confirmId === confirmId) {
+        return {
+          ...p,
+          status: approved ? ('approved' as const) : ('rejected' as const),
+        }
+      }
+      return p
+    })
+    partsRef.current = updatedParts
+    setStreamParts(updatedParts)
+
+    // Also update finalized messages (for cards in already-committed messages)
+    setMessages((prev) => {
+      const updated = prev.map((msg) => {
+        if (msg.role !== 'assistant') return msg
+        return {
+          ...msg,
+          parts: msg.parts.map((p) => {
+            if (p.type === 'confirmation' && p.confirmId === confirmId) {
+              return {
+                ...p,
+                status: approved
+                  ? ('approved' as const)
+                  : ('rejected' as const),
+              }
+            }
+            return p
+          }),
+        }
+      })
+      persistToConvex(updated)
+      return updated
+    })
+  }
+
   const clearChat = () => {
     setMessages([])
     if (orgId) {
@@ -349,6 +432,7 @@ export function useAdminAgent(orgSlug: string) {
     messages,
     streamParts,
     sendMessage,
+    sendConfirmResponse,
     clearChat,
     isStreaming,
   }

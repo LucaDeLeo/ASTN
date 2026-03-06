@@ -1318,6 +1318,18 @@ export default defineSchema({
                 input: v.any(),
                 output: v.optional(v.string()),
               }),
+              v.object({
+                type: v.literal('confirmation'),
+                confirmId: v.string(),
+                action: v.string(),
+                description: v.string(),
+                details: v.any(),
+                status: v.union(
+                  v.literal('pending'),
+                  v.literal('approved'),
+                  v.literal('rejected'),
+                ),
+              }),
             ),
           ),
         ),
@@ -1325,6 +1337,24 @@ export default defineSchema({
     ),
     updatedAt: v.number(),
   }).index('by_userId_orgId', ['userId', 'orgId']),
+
+  // Admin agent action audit log
+  agentActionLog: defineTable({
+    userId: v.string(),
+    orgId: v.id('organizations'),
+    toolName: v.string(),
+    params: v.string(), // JSON
+    result: v.string(), // JSON
+    timestamp: v.number(),
+    approvalStatus: v.union(
+      v.literal('auto'),
+      v.literal('approved'),
+      v.literal('rejected'),
+      v.literal('n/a'),
+    ),
+  })
+    .index('by_org', ['orgId'])
+    .index('by_org_timestamp', ['orgId', 'timestamp']),
 
   // Push notification tokens for mobile (Tauri) clients
   pushTokens: defineTable({

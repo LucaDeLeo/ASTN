@@ -7,8 +7,10 @@ import type {
   AgentModel,
   ThinkingLevel,
 } from '../shared/admin-agent/types'
+import type { ConfirmationContext } from './tools/confirmable'
 import { mapSdkMessage } from './sdk-mapper'
 import { createAvailabilityTools } from './tools/availability'
+import { createGuestTools } from './tools/guests'
 import { createMemberTools } from './tools/members'
 import { createOpportunityTools } from './tools/opportunities'
 import { createProgramTools } from './tools/programs'
@@ -21,14 +23,19 @@ export function createAdminAgent(
   convex: ConvexClient,
   orgId: Id<'organizations'>,
   orgName: string,
+  userId: string,
+  emit: ConfirmationContext['emit'],
+  requestConfirmation: ConfirmationContext['requestConfirmation'],
 ) {
+  const confirmCtx: ConfirmationContext = { emit, requestConfirmation }
   // Build tools, MCP server, and system prompt once per connection
   const tools = [
-    ...createMemberTools(convex, orgId),
-    ...createOpportunityTools(convex, orgId),
-    ...createProgramTools(convex, orgId),
+    ...createMemberTools(convex, orgId, userId, confirmCtx),
+    ...createOpportunityTools(convex, orgId, userId, confirmCtx),
+    ...createProgramTools(convex, orgId, userId),
     ...createStatsTools(convex, orgId),
     ...createAvailabilityTools(convex, orgId),
+    ...createGuestTools(convex, orgId, userId),
   ]
 
   const mcpServer = createSdkMcpServer({
@@ -59,7 +66,14 @@ export function createAdminAgent(
     '- get_application(applicationId): Get full application details including all essay/form responses — use this to read what applicants actually wrote',
     '- set_quality_score(applicationId, qualityScore, reason): Set a quality score (0–100) with reasoning on an application — always include a reason explaining the score. Call list_applications first to get IDs.',
     "- fetch_linkedin(linkedinUrl): Fetch and parse a LinkedIn profile — returns name, location, education, work history, and skills. Use when an application includes a LinkedIn URL to evaluate the applicant's background.",
+    '- override_engagement(userId, level, notes, expiresInDays?): Override a member\'s engagement level — levels: highly_engaged, moderate, at_risk, new, inactive. Always provide notes.',
+    '- clear_engagement_override(userId): Clear an engagement override, returning member to computed level.',
     '- list_programs: List programs with participant counts',
+    '- enroll_participant(programId, userId, adminNotes?): Enroll a member in a program.',
+    '- remove_participant(participationId, reason?): Remove a participant from a program.',
+    '- list_guest_visits: List pending guest visit applications for the org.',
+    '- approve_guest_visit(bookingId, message?): Approve a pending guest visit.',
+    '- reject_guest_visit(bookingId, reason): Reject a pending guest visit with a reason.',
     '- get_org_stats(timeRange?): Member counts, skills distribution, engagement breakdown, event metrics',
     '- get_engagement_overview: Engagement levels for all members at a glance',
     '- get_availability_poll(opportunityId): Get the availability poll config for an opportunity',
@@ -67,7 +81,19 @@ export function createAdminAgent(
     '- get_respondent_application_map(pollId): Map poll respondents to their application IDs (for cross-referencing quality)',
     '- analyze_fixed_schedule(pollId, blockDurationMinutes): Find the best fixed daily time block — ranks all possible start times by attendance across all days, shows per-day breakdown with who can/cannot make it',
     '',
+    'CONFIRMABLE TOOLS (require user approval before executing):',
+    '- update_application_status(applicationId, newStatus, reviewNotes?): Change an application status (submitted, under_review, accepted, rejected, waitlisted). Call list_applications first.',
+    '- send_broadcast_email(opportunityId, statuses, subject, markdownBody): Send a broadcast email to applicants filtered by status. Body is markdown.',
+    '- promote_to_admin(userId): Promote a member to admin role. Call list_members first.',
+    '- demote_to_member(userId): Demote an admin to regular member. Call list_members first.',
+    '- create_opportunity(title, description, type, status?, ...): Create a new opportunity.',
+    '- update_opportunity(opportunityId, title?, description?, type?, ...): Update an existing opportunity. Call get_opportunity first.',
+    '- close_opportunity(opportunityId): Close an opportunity to stop accepting applications.',
+    '- reopen_opportunity(opportunityId): Reopen a closed opportunity.',
+    '',
     'Guidelines:',
+    '- WRITE TOOLS: override_engagement, clear_engagement_override, set_quality_score, enroll_participant, remove_participant, approve_guest_visit, reject_guest_visit all modify data. Always read first (get_member_engagement, list_applications, list_programs, list_guest_visits) before writing.',
+    '- CONFIRMABLE TOOLS will pause and ask the user for approval before executing. The user will see a confirmation card with details of the action. You do NOT need to ask the user separately — the tool handles confirmation automatically.',
     "- ALWAYS call tools first, talk second. Never say 'would you like me to...' — just do it.",
     '- Be concise and data-driven. Lead with the answer, not the process.',
     '- Format data as readable markdown — use bold, tables, and lists.',

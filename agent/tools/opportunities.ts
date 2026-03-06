@@ -3,10 +3,14 @@ import { tool } from '@anthropic-ai/claude-agent-sdk'
 import type { ConvexClient } from 'convex/browser'
 import type { Id } from '../../convex/_generated/dataModel'
 import { api } from '../../convex/_generated/api'
+import type { ConfirmationContext } from './confirmable'
+import { confirmAction } from './confirmable'
 
 export function createOpportunityTools(
   convex: ConvexClient,
   orgId: Id<'organizations'>,
+  userId: string,
+  confirmCtx: ConfirmationContext,
 ) {
   return [
     tool(
@@ -383,20 +387,241 @@ export function createOpportunityTools(
         }
       },
     ),
+
+    // ── Confirmable write tools ──────────────────────────────
+
+    tool(
+      'update_application_status',
+      'Update an application\'s status (requires user confirmation). Statuses: submitted, under_review, accepted, rejected, waitlisted. Call list_applications first to get the applicationId.',
+      {
+        applicationId: z
+          .string()
+          .describe('The Convex document ID of the application'),
+        newStatus: z
+          .enum([
+            'submitted',
+            'under_review',
+            'accepted',
+            'rejected',
+            'waitlisted',
+          ])
+          .describe('The new status to set'),
+        reviewNotes: z
+          .string()
+          .optional()
+          .describe('Optional review notes'),
+      },
+      async (args) => {
+        console.log(
+          '[tool] update_application_status',
+          args.applicationId,
+          args.newStatus,
+        )
+        try {
+          const app = await convex.query(api.opportunityApplications.getById, {
+            applicationId: args.applicationId as Id<'opportunityApplications'>,
+          })
+          if (!app) {
+            return {
+              content: [
+                {
+                  type: 'text' as const,
+                  text: `Application not found: ${args.applicationId}`,
+                },
+              ],
+              isError: true,
+            }
+          }
+
+          const opp = await convex.query(api.orgOpportunities.get, {
+            id: app.opportunityId as Id<'orgOpportunities'>,
+          })
+
+          const applicantName =
+            app.userId || app.guestEmail || 'Unknown applicant'
+          const oppTitle = opp?.title || 'Unknown opportunity'
+
+          const approved = await confirmAction(confirmCtx, {
+            action: 'Update Application Status',
+            description: `Change ${applicantName}'s application status from "${app.status}" to "${args.newStatus}"`,
+            details: {
+              applicant: applicantName,
+              opportunity: oppTitle,
+              currentStatus: app.status,
+              newStatus: args.newStatus,
+              ...(args.reviewNotes ? { reviewNotes: args.reviewNotes } : {}),
+            },
+          })
+
+          await convex.mutation(api.agentActionLog.logAgentAction, {
+            userId,
+            orgId,
+            toolName: 'update_application_status',
+            params: JSON.stringify(args),
+            result: approved ? 'approved' : 'rejected',
+            approvalStatus: approved ? 'approved' : 'rejected',
+          })
+
+          if (!approved) {
+            return {
+              content: [
+                { type: 'text' as const, text: 'Action rejected by user.' },
+              ],
+            }
+          }
+
+          await convex.mutation(api.opportunityApplications.updateStatus, {
+            applicationId: args.applicationId as Id<'opportunityApplications'>,
+            status: args.newStatus,
+            reviewNotes: args.reviewNotes,
+          })
+
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: `Application status updated to "${args.newStatus}" for ${applicantName}.`,
+              },
+            ],
+          }
+        } catch (e: any) {
+          console.error('[tool] update_application_status ERROR:', e)
+          return {
+            content: [{ type: 'text' as const, text: `Error: ${e.message}` }],
+            isError: true,
+          }
+        }
+      },
+    ),
+
+    tool(
+      'send_broadcast_email',
+      'Send a broadcast email to applicants of an opportunity (requires user confirmation). Filters by application status. Body is markdown.',
+      {
+        opportunityId: z
+          .string()
+          .describe(
+            'The Convex document ID of the opportunity from list_opportunities',
+          ),
+        statuses: z
+          .array(
+            z.enum([
+              'submitted',
+              'under_review',
+              'accepted',
+              'rejected',
+              'waitlisted',
+            ]),
+          )
+          .describe('Which application statuses to send to'),
+        subject: z.string().describe('Email subject line'),
+        markdownBody: z.string().describe('Email body in markdown format'),
+      },
+      async (args) => {
+        console.log(
+          '[tool] send_broadcast_email',
+          args.opportunityId,
+          args.statuses,
+        )
+        try {
+          const opp = await convex.query(api.orgOpportunities.get, {
+            id: args.opportunityId as Id<'orgOpportunities'>,
+          })
+          const oppTitle = opp?.title || 'Unknown opportunity'
+
+          // Count recipients by querying applications
+          const allApps = await convex.query(
+            api.opportunityApplications.listByOpportunity,
+            {
+              opportunityId: args.opportunityId as Id<'orgOpportunities'>,
+            },
+          )
+          const recipientCount = allApps
+            ? allApps.filter((a: any) => args.statuses.includes(a.status))
+                .length
+            : 0
+
+          const bodyPreview =
+            args.markdownBody.length > 200
+              ? args.markdownBody.slice(0, 200) + '...'
+              : args.markdownBody
+
+          const approved = await confirmAction(confirmCtx, {
+            action: 'Send Broadcast Email',
+            description: `Send email to ${recipientCount} applicant(s) of "${oppTitle}"`,
+            details: {
+              opportunity: oppTitle,
+              recipientCount,
+              targetStatuses: args.statuses,
+              subject: args.subject,
+              bodyPreview,
+            },
+          })
+
+          await convex.mutation(api.agentActionLog.logAgentAction, {
+            userId,
+            orgId,
+            toolName: 'send_broadcast_email',
+            params: JSON.stringify({
+              opportunityId: args.opportunityId,
+              statuses: args.statuses,
+              subject: args.subject,
+            }),
+            result: approved
+              ? `approved — sending to ${recipientCount} recipients`
+              : 'rejected',
+            approvalStatus: approved ? 'approved' : 'rejected',
+          })
+
+          if (!approved) {
+            return {
+              content: [
+                { type: 'text' as const, text: 'Action rejected by user.' },
+              ],
+            }
+          }
+
+          const result = await convex.action(
+            api.emails.adminBroadcastAction.sendBroadcastToApplicants,
+            {
+              opportunityId: args.opportunityId as Id<'orgOpportunities'>,
+              statuses: args.statuses,
+              subject: args.subject,
+              markdownBody: args.markdownBody,
+            },
+          )
+
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: `Broadcast email sent: ${(result as any).sent} delivered, ${(result as any).failed} failed.`,
+              },
+            ],
+          }
+        } catch (e: any) {
+          console.error('[tool] send_broadcast_email ERROR:', e)
+          return {
+            content: [{ type: 'text' as const, text: `Error: ${e.message}` }],
+            isError: true,
+          }
+        }
+      },
+    ),
+
     tool(
       'create_opportunity',
-      'Create a new opportunity for the organization. Returns the new opportunity ID.',
+      'Create a new opportunity (requires user confirmation). Types: course, fellowship, job, other. Status: active, closed, draft.',
       {
-        title: z.string().describe('Title of the opportunity'),
-        description: z.string().describe('Description (supports markdown)'),
+        title: z.string().describe('Opportunity title'),
+        description: z.string().describe('Opportunity description'),
         type: z
           .enum(['course', 'fellowship', 'job', 'other'])
-          .describe('Type of opportunity'),
+          .describe('Opportunity type'),
         status: z
           .enum(['active', 'closed', 'draft'])
-          .describe(
-            'Initial status — use "active" to publish immediately, "draft" to keep hidden',
-          ),
+          .default('draft')
+          .describe('Initial status (default: draft)'),
         deadline: z
           .string()
           .optional()
@@ -406,7 +631,7 @@ export function createOpportunityTools(
         externalUrl: z
           .string()
           .optional()
-          .describe('External URL (e.g. for an external application form)'),
+          .describe('External URL for more information'),
         featured: z
           .boolean()
           .optional()
@@ -421,7 +646,43 @@ export function createOpportunityTools(
       async (args) => {
         console.log('[tool] create_opportunity', args.title)
         try {
-          const newId = await convex.mutation(api.orgOpportunities.create, {
+          const approved = await confirmAction(confirmCtx, {
+            action: 'Create Opportunity',
+            description: `Create new ${args.type} opportunity: "${args.title}"`,
+            details: {
+              title: args.title,
+              type: args.type,
+              status: args.status,
+              description:
+                args.description.length > 200
+                  ? args.description.slice(0, 200) + '...'
+                  : args.description,
+              ...(args.deadline
+                ? { deadline: new Date(args.deadline).toLocaleDateString() }
+                : {}),
+              ...(args.externalUrl ? { externalUrl: args.externalUrl } : {}),
+              featured: args.featured ?? false,
+            },
+          })
+
+          await convex.mutation(api.agentActionLog.logAgentAction, {
+            userId,
+            orgId,
+            toolName: 'create_opportunity',
+            params: JSON.stringify({ title: args.title, type: args.type }),
+            result: approved ? 'approved' : 'rejected',
+            approvalStatus: approved ? 'approved' : 'rejected',
+          })
+
+          if (!approved) {
+            return {
+              content: [
+                { type: 'text' as const, text: 'Action rejected by user.' },
+              ],
+            }
+          }
+
+          const oppId = await convex.mutation(api.orgOpportunities.create, {
             orgId,
             title: args.title,
             description: args.description,
@@ -434,11 +695,12 @@ export function createOpportunityTools(
             featured: args.featured ?? false,
             formFields: args.formFields,
           })
+
           return {
             content: [
               {
                 type: 'text' as const,
-                text: `Opportunity created successfully.\n**ID:** ${newId}\n**Title:** ${args.title}\n**Status:** ${args.status}`,
+                text: `Opportunity created: "${args.title}" (ID: ${oppId}, status: ${args.status})`,
               },
             ],
           }
@@ -454,7 +716,7 @@ export function createOpportunityTools(
 
     tool(
       'update_opportunity',
-      'Update fields on an existing opportunity. Only pass the fields you want to change. Use this to close opportunities, change deadlines, set redirects, etc.',
+      'Update fields on an existing opportunity (requires user confirmation). Only pass the fields you want to change. Call get_opportunity first to see current values.',
       {
         opportunityId: z
           .string()
@@ -480,44 +742,94 @@ export function createOpportunityTools(
           .string()
           .optional()
           .describe(
-            'Set a redirect to another opportunity ID. When users visit the old opportunity, they\'ll be shown the new one. Pass "none" to remove redirect.',
+            'Set a redirect to another opportunity ID. Pass "none" to remove redirect.',
           ),
       },
       async (args) => {
         console.log('[tool] update_opportunity', args.opportunityId)
         try {
-          const updateArgs: Record<string, unknown> = {
+          const opp = await convex.query(api.orgOpportunities.get, {
             id: args.opportunityId as Id<'orgOpportunities'>,
+          })
+          if (!opp) {
+            return {
+              content: [
+                {
+                  type: 'text' as const,
+                  text: `Opportunity not found: ${args.opportunityId}`,
+                },
+              ],
+              isError: true,
+            }
           }
-          if (args.title !== undefined) updateArgs.title = args.title
+
+          const changes: Record<string, unknown> = {}
+          if (args.title !== undefined) changes.title = args.title
           if (args.description !== undefined)
-            updateArgs.description = args.description
-          if (args.type !== undefined) updateArgs.type = args.type
-          if (args.status !== undefined) updateArgs.status = args.status
+            changes.description = args.description
+          if (args.type !== undefined) changes.type = args.type
+          if (args.status !== undefined) changes.status = args.status
           if (args.deadline !== undefined) {
-            updateArgs.deadline =
+            changes.deadline =
               args.deadline === 'none'
                 ? undefined
                 : new Date(args.deadline).getTime()
           }
           if (args.externalUrl !== undefined)
-            updateArgs.externalUrl = args.externalUrl
-          if (args.featured !== undefined) updateArgs.featured = args.featured
+            changes.externalUrl = args.externalUrl
+          if (args.featured !== undefined) changes.featured = args.featured
           if (args.formFields !== undefined)
-            updateArgs.formFields = args.formFields
+            changes.formFields = args.formFields
           if (args.redirectOpportunityId !== undefined) {
-            updateArgs.redirectOpportunityId =
+            changes.redirectOpportunityId =
               args.redirectOpportunityId === 'none'
                 ? null
                 : args.redirectOpportunityId
           }
 
-          await convex.mutation(api.orgOpportunities.update, updateArgs as any)
+          const approved = await confirmAction(confirmCtx, {
+            action: 'Update Opportunity',
+            description: `Update opportunity: "${opp.title}"`,
+            details: {
+              opportunity: opp.title,
+              changes,
+            },
+          })
+
+          await convex.mutation(api.agentActionLog.logAgentAction, {
+            userId,
+            orgId,
+            toolName: 'update_opportunity',
+            params: JSON.stringify({
+              opportunityId: args.opportunityId,
+              ...changes,
+            }),
+            result: approved ? 'approved' : 'rejected',
+            approvalStatus: approved ? 'approved' : 'rejected',
+          })
+
+          if (!approved) {
+            return {
+              content: [
+                { type: 'text' as const, text: 'Action rejected by user.' },
+              ],
+            }
+          }
+
+          const updateArgs: Record<string, unknown> = {
+            id: args.opportunityId as Id<'orgOpportunities'>,
+            ...changes,
+          }
+          await convex.mutation(
+            api.orgOpportunities.update,
+            updateArgs as any,
+          )
+
           return {
             content: [
               {
                 type: 'text' as const,
-                text: `Opportunity ${args.opportunityId} updated successfully.`,
+                text: `Opportunity "${opp.title}" updated successfully.`,
               },
             ],
           }
@@ -532,8 +844,160 @@ export function createOpportunityTools(
     ),
 
     tool(
+      'close_opportunity',
+      'Close an opportunity so it stops accepting applications (requires user confirmation). Call list_opportunities first.',
+      {
+        opportunityId: z
+          .string()
+          .describe('The Convex document ID of the opportunity'),
+      },
+      async (args) => {
+        console.log('[tool] close_opportunity', args.opportunityId)
+        try {
+          const opp = await convex.query(api.orgOpportunities.get, {
+            id: args.opportunityId as Id<'orgOpportunities'>,
+          })
+          if (!opp) {
+            return {
+              content: [
+                {
+                  type: 'text' as const,
+                  text: `Opportunity not found: ${args.opportunityId}`,
+                },
+              ],
+              isError: true,
+            }
+          }
+
+          const approved = await confirmAction(confirmCtx, {
+            action: 'Close Opportunity',
+            description: `Close opportunity: "${opp.title}" (currently ${opp.status})`,
+            details: {
+              opportunity: opp.title,
+              currentStatus: opp.status,
+              newStatus: 'closed',
+            },
+          })
+
+          await convex.mutation(api.agentActionLog.logAgentAction, {
+            userId,
+            orgId,
+            toolName: 'close_opportunity',
+            params: JSON.stringify({ opportunityId: args.opportunityId }),
+            result: approved ? 'approved' : 'rejected',
+            approvalStatus: approved ? 'approved' : 'rejected',
+          })
+
+          if (!approved) {
+            return {
+              content: [
+                { type: 'text' as const, text: 'Action rejected by user.' },
+              ],
+            }
+          }
+
+          await convex.mutation(api.orgOpportunities.update, {
+            id: args.opportunityId as Id<'orgOpportunities'>,
+            status: 'closed',
+          })
+
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: `Opportunity "${opp.title}" has been closed.`,
+              },
+            ],
+          }
+        } catch (e: any) {
+          console.error('[tool] close_opportunity ERROR:', e)
+          return {
+            content: [{ type: 'text' as const, text: `Error: ${e.message}` }],
+            isError: true,
+          }
+        }
+      },
+    ),
+
+    tool(
+      'reopen_opportunity',
+      'Reopen a closed opportunity so it accepts applications again (requires user confirmation). Call list_opportunities first.',
+      {
+        opportunityId: z
+          .string()
+          .describe('The Convex document ID of the opportunity'),
+      },
+      async (args) => {
+        console.log('[tool] reopen_opportunity', args.opportunityId)
+        try {
+          const opp = await convex.query(api.orgOpportunities.get, {
+            id: args.opportunityId as Id<'orgOpportunities'>,
+          })
+          if (!opp) {
+            return {
+              content: [
+                {
+                  type: 'text' as const,
+                  text: `Opportunity not found: ${args.opportunityId}`,
+                },
+              ],
+              isError: true,
+            }
+          }
+
+          const approved = await confirmAction(confirmCtx, {
+            action: 'Reopen Opportunity',
+            description: `Reopen opportunity: "${opp.title}" (currently ${opp.status})`,
+            details: {
+              opportunity: opp.title,
+              currentStatus: opp.status,
+              newStatus: 'active',
+            },
+          })
+
+          await convex.mutation(api.agentActionLog.logAgentAction, {
+            userId,
+            orgId,
+            toolName: 'reopen_opportunity',
+            params: JSON.stringify({ opportunityId: args.opportunityId }),
+            result: approved ? 'approved' : 'rejected',
+            approvalStatus: approved ? 'approved' : 'rejected',
+          })
+
+          if (!approved) {
+            return {
+              content: [
+                { type: 'text' as const, text: 'Action rejected by user.' },
+              ],
+            }
+          }
+
+          await convex.mutation(api.orgOpportunities.update, {
+            id: args.opportunityId as Id<'orgOpportunities'>,
+            status: 'active',
+          })
+
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: `Opportunity "${opp.title}" has been reopened and is now active.`,
+              },
+            ],
+          }
+        } catch (e: any) {
+          console.error('[tool] reopen_opportunity ERROR:', e)
+          return {
+            content: [{ type: 'text' as const, text: `Error: ${e.message}` }],
+            isError: true,
+          }
+        }
+      },
+    ),
+
+    tool(
       'duplicate_opportunity',
-      'Duplicate an existing opportunity with optional overrides. Copies all fields including form configuration. Great for creating an EOI or new iteration of an existing opportunity. Optionally sets a redirect from the old opportunity to the new one.',
+      'Duplicate an existing opportunity with optional overrides (requires user confirmation). Copies all fields including form configuration. Great for creating an EOI or new iteration. Optionally sets a redirect from the old opportunity to the new one.',
       {
         sourceOpportunityId: z
           .string()
@@ -581,7 +1045,6 @@ export function createOpportunityTools(
       async (args) => {
         console.log('[tool] duplicate_opportunity', args.sourceOpportunityId)
         try {
-          // Fetch the source opportunity
           const source = await convex.query(api.orgOpportunities.get, {
             id: args.sourceOpportunityId as Id<'orgOpportunities'>,
           })
@@ -599,11 +1062,43 @@ export function createOpportunityTools(
           }
 
           const overrides = args.overrides ?? {}
+          const newTitle = overrides.title ?? source.title
 
-          // Create the duplicate
+          const approved = await confirmAction(confirmCtx, {
+            action: 'Duplicate Opportunity',
+            description: `Duplicate "${source.title}" as "${newTitle}"${args.redirectOldToNew ? ' (with redirect)' : ''}`,
+            details: {
+              source: source.title,
+              newTitle,
+              newStatus: overrides.status ?? 'draft',
+              redirectOldToNew: args.redirectOldToNew ?? false,
+            },
+          })
+
+          await convex.mutation(api.agentActionLog.logAgentAction, {
+            userId,
+            orgId,
+            toolName: 'duplicate_opportunity',
+            params: JSON.stringify({
+              sourceOpportunityId: args.sourceOpportunityId,
+              newTitle,
+              redirectOldToNew: args.redirectOldToNew,
+            }),
+            result: approved ? 'approved' : 'rejected',
+            approvalStatus: approved ? 'approved' : 'rejected',
+          })
+
+          if (!approved) {
+            return {
+              content: [
+                { type: 'text' as const, text: 'Action rejected by user.' },
+              ],
+            }
+          }
+
           const newId = await convex.mutation(api.orgOpportunities.create, {
             orgId,
-            title: overrides.title ?? source.title,
+            title: newTitle,
             description: overrides.description ?? source.description,
             type: overrides.type ?? source.type,
             status: overrides.status ?? 'draft',
@@ -615,7 +1110,6 @@ export function createOpportunityTools(
             formFields: overrides.formFields ?? source.formFields,
           })
 
-          // Optionally redirect old → new and close the old one
           if (args.redirectOldToNew) {
             await convex.mutation(api.orgOpportunities.update, {
               id: args.sourceOpportunityId as Id<'orgOpportunities'>,
@@ -627,7 +1121,7 @@ export function createOpportunityTools(
           const lines = [
             `Opportunity duplicated successfully.`,
             `**New ID:** ${newId}`,
-            `**Title:** ${overrides.title ?? source.title}`,
+            `**Title:** ${newTitle}`,
             `**Status:** ${overrides.status ?? 'draft'}`,
           ]
           if (args.redirectOldToNew) {

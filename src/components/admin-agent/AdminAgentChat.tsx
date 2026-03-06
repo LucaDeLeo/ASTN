@@ -1,5 +1,14 @@
 import { memo, useEffect, useRef, useState } from 'react'
-import { Check, Copy, Send, Terminal, Trash2 } from 'lucide-react'
+import {
+  Check,
+  CheckCircle2,
+  Copy,
+  Send,
+  ShieldAlert,
+  Terminal,
+  Trash2,
+  XCircle,
+} from 'lucide-react'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 
@@ -90,6 +99,84 @@ function ToolCallCard({ part }: { part: ContentPart & { type: 'tool_call' } }) {
   )
 }
 
+function ConfirmationCard({
+  part,
+  onRespond,
+}: {
+  part: ContentPart & { type: 'confirmation' }
+  onRespond: (confirmId: string, approved: boolean) => void
+}) {
+  const isPending = part.status === 'pending'
+  const isApproved = part.status === 'approved'
+  const isRejected = part.status === 'rejected'
+
+  return (
+    <div
+      className={cn(
+        'my-2 rounded-lg border p-3 text-sm',
+        isPending && 'border-yellow-500/50 bg-yellow-50/50 dark:bg-yellow-950/20',
+        isApproved && 'border-green-500/50 bg-green-50/50 dark:bg-green-950/20',
+        isRejected && 'border-red-500/50 bg-red-50/50 dark:bg-red-950/20',
+      )}
+    >
+      <div className="flex items-start gap-2 mb-2">
+        <ShieldAlert className="size-4 mt-0.5 text-yellow-600 dark:text-yellow-400 shrink-0" />
+        <div className="min-w-0">
+          <div className="font-medium text-foreground">{part.action}</div>
+          <div className="text-muted-foreground mt-0.5">{part.description}</div>
+        </div>
+      </div>
+
+      {Object.keys(part.details).length > 0 && (
+        <div className="ml-6 mb-2">
+          {Object.entries(part.details).map(([key, value]) => (
+            <div key={key} className="text-xs text-muted-foreground">
+              <span className="font-medium">{key}:</span>{' '}
+              {typeof value === 'string' ? value : JSON.stringify(value)}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {isPending && (
+        <div className="flex gap-2 ml-6">
+          <Button
+            size="sm"
+            className="h-7 bg-green-600 hover:bg-green-700 text-white"
+            onClick={() => onRespond(part.confirmId, true)}
+          >
+            <Check className="size-3.5 mr-1" />
+            Approve
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 border-red-300 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950"
+            onClick={() => onRespond(part.confirmId, false)}
+          >
+            <XCircle className="size-3.5 mr-1" />
+            Reject
+          </Button>
+        </div>
+      )}
+
+      {isApproved && (
+        <div className="flex items-center gap-1.5 ml-6 text-xs text-green-600 dark:text-green-400">
+          <CheckCircle2 className="size-3.5" />
+          Approved
+        </div>
+      )}
+
+      {isRejected && (
+        <div className="flex items-center gap-1.5 ml-6 text-xs text-red-600 dark:text-red-400">
+          <XCircle className="size-3.5" />
+          Rejected
+        </div>
+      )}
+    </div>
+  )
+}
+
 const TextPart = memo(function TextPart({ content }: { content: string }) {
   return (
     <div
@@ -102,9 +189,11 @@ const TextPart = memo(function TextPart({ content }: { content: string }) {
 function AssistantParts({
   parts,
   isStreaming,
+  onConfirmRespond,
 }: {
   parts: Array<ContentPart>
   isStreaming?: boolean
+  onConfirmRespond?: (confirmId: string, approved: boolean) => void
 }) {
   return (
     <div className="flex justify-start mb-3">
@@ -121,6 +210,15 @@ function AssistantParts({
               </span>
             )
           }
+          if (part.type === 'confirmation') {
+            return (
+              <ConfirmationCard
+                key={i}
+                part={part}
+                onRespond={onConfirmRespond ?? (() => {})}
+              />
+            )
+          }
           return <ToolCallCard key={i} part={part} />
         })}
       </div>
@@ -128,7 +226,13 @@ function AssistantParts({
   )
 }
 
-function MessageBubble({ message }: { message: AdminAgentMessage }) {
+function MessageBubble({
+  message,
+  onConfirmRespond,
+}: {
+  message: AdminAgentMessage
+  onConfirmRespond?: (confirmId: string, approved: boolean) => void
+}) {
   if (message.role === 'user') {
     return (
       <div className="flex justify-end mb-3">
@@ -139,7 +243,12 @@ function MessageBubble({ message }: { message: AdminAgentMessage }) {
     )
   }
 
-  return <AssistantParts parts={message.parts} />
+  return (
+    <AssistantParts
+      parts={message.parts}
+      onConfirmRespond={onConfirmRespond}
+    />
+  )
 }
 
 function DisconnectedView({ orgSlug }: { orgSlug: string }) {
@@ -186,8 +295,15 @@ export function AdminAgentChat({
   agent: UseAdminAgentReturn
   orgSlug: string
 }) {
-  const { status, messages, streamParts, sendMessage, clearChat, isStreaming } =
-    agent
+  const {
+    status,
+    messages,
+    streamParts,
+    sendMessage,
+    sendConfirmResponse,
+    clearChat,
+    isStreaming,
+  } = agent
 
   const [input, setInput] = useState('')
   const [model, setModel] = useState<AgentModel>('claude-opus-4-6')
@@ -282,11 +398,19 @@ export function AdminAgentChat({
         )}
 
         {messages.map((msg, i) => (
-          <MessageBubble key={i} message={msg} />
+          <MessageBubble
+            key={i}
+            message={msg}
+            onConfirmRespond={sendConfirmResponse}
+          />
         ))}
 
         {isStreaming && streamParts.length > 0 && (
-          <AssistantParts parts={streamParts} isStreaming />
+          <AssistantParts
+            parts={streamParts}
+            isStreaming
+            onConfirmRespond={sendConfirmResponse}
+          />
         )}
 
         <div ref={messagesEndRef} />
