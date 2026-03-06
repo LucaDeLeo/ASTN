@@ -124,8 +124,63 @@ export function createProgramTools(
     ),
 
     tool(
+      'list_program_participants',
+      'List all participants in a program with their names and enrollment details. Use this to find participationIds for remove_participant.',
+      {
+        programId: z
+          .string()
+          .describe('The Convex document ID of the program from list_programs'),
+      },
+      async (args) => {
+        console.log('[tool] list_program_participants', args.programId)
+        try {
+          const participants = await convex.query(
+            api.programs.getProgramParticipants,
+            {
+              programId: args.programId as Id<'programs'>,
+            },
+          )
+
+          if (!participants || participants.length === 0) {
+            return {
+              content: [
+                {
+                  type: 'text' as const,
+                  text: 'No participants found in this program.',
+                },
+              ],
+            }
+          }
+
+          const lines = participants.map((p: any) => {
+            const status = p.status || 'active'
+            const enrolled = p.enrolledAt
+              ? new Date(p.enrolledAt).toLocaleDateString()
+              : 'N/A'
+            return `- **${p.memberName}** | Status: ${status} | Enrolled: ${enrolled} | User: ${p.userId} | Participation ID: ${p._id}`
+          })
+
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: `## Program Participants (${participants.length})\n\n${lines.join('\n')}`,
+              },
+            ],
+          }
+        } catch (e: any) {
+          console.error('[tool] list_program_participants ERROR:', e)
+          return {
+            content: [{ type: 'text' as const, text: `Error: ${e.message}` }],
+            isError: true,
+          }
+        }
+      },
+    ),
+
+    tool(
       'remove_participant',
-      'Remove a participant from a program. You need the participationId — use list_programs and get the program participants to find it.',
+      'Remove a participant from a program. Use list_program_participants to find the participationId.',
       {
         participationId: z
           .string()

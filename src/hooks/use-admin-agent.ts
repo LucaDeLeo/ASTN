@@ -397,8 +397,8 @@ export function useAdminAgent(orgSlug: string) {
     setStreamParts(updatedParts)
 
     // Also update finalized messages (for cards in already-committed messages)
-    setMessages((prev) =>
-      prev.map((msg) => {
+    setMessages((prev) => {
+      const updated = prev.map((msg) => {
         if (msg.role !== 'assistant') return msg
         return {
           ...msg,
@@ -414,8 +414,10 @@ export function useAdminAgent(orgSlug: string) {
             return p
           }),
         }
-      }),
-    )
+      })
+      persistToConvex(updated)
+      return updated
+    })
   }
 
   const clearChat = () => {
