@@ -398,11 +398,11 @@ export function useAdminAgent(orgSlug: string) {
 
     // Also update finalized messages (for cards in already-committed messages)
     setMessages((prev) => {
-      const updated = prev.map((msg) => {
-        if (msg.role !== 'assistant') return msg
+      const updated = prev.map((m) => {
+        if (m.role !== 'assistant') return m
         return {
-          ...msg,
-          parts: msg.parts.map((p) => {
+          ...m,
+          parts: m.parts.map((p) => {
             if (p.type === 'confirmation' && p.confirmId === confirmId) {
               return {
                 ...p,
