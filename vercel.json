@@ -7,6 +7,10 @@
     {
       "source": "/ingest/:path*",
       "destination": "https://us.i.posthog.com/:path*"
+    },
+    {
+      "source": "/tunnel",
+      "destination": "https://o4510997439053824.ingest.de.sentry.io/api/4510997440692304/envelope/?sentry_key=f7612c740401feef0039be0728f64cc4"
     }
   ],
   "headers": [

@@ -1,3 +1,6 @@
+import * as Sentry from '@sentry/tanstackstart-react'
+import { useEffect } from 'react'
+
 /**
  * User-friendly error display component.
  * Extracts structured messages from ConvexError, shows dev-only stack traces.
@@ -9,6 +12,10 @@ export function ErrorDisplay({
   error: Error
   reset: () => void
 }) {
+  useEffect(() => {
+    Sentry.captureException(error)
+  }, [error])
+
   // Extract user-friendly message from ConvexError if available
   let friendlyMessage: string | null = null
   if ('data' in error) {
