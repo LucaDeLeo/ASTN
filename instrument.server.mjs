@@ -5,4 +5,9 @@ Sentry.init({
   sendDefaultPii: true,
   tracesSampleRate: 1.0,
   enableLogs: true,
+  integrations: [
+    Sentry.httpIntegration({
+      ignoreIncomingRequestUrls: [/^\/ingest/, /^\/tunnel/],
+    }),
+  ],
 })

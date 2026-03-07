@@ -98,7 +98,9 @@ function EmailComposePage() {
 
   const previewHtml = useMemo(() => {
     if (!body.trim()) return ''
-    return DOMPurify.sanitize(marked.parse(body, { async: false }))
+    return DOMPurify.sanitize(
+      marked.parse(body, { async: false, breaks: true, gfm: true }),
+    )
   }, [body])
 
   const toggleStatus = (status: ApplicationStatus) => {
@@ -321,17 +323,16 @@ function EmailComposePage() {
                     placeholder="Write your message here... Markdown is supported."
                     disabled={hasSent}
                   />
-                  {activePoll &&
-                    activePoll.status !== 'finalized' && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Use{' '}
-                        <code className="bg-slate-100 px-1 rounded text-[11px]">
-                          {'{{poll_link}}'}
-                        </code>{' '}
-                        to include each applicant&apos;s unique availability
-                        poll link.
-                      </p>
-                    )}
+                  {activePoll && activePoll.status !== 'finalized' && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Use{' '}
+                      <code className="bg-slate-100 px-1 rounded text-[11px]">
+                        {'{{poll_link}}'}
+                      </code>{' '}
+                      to include each applicant&apos;s unique availability poll
+                      link.
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>

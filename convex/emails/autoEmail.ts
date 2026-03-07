@@ -80,7 +80,7 @@ export const sendAutoEmail = internalAction({
     }
 
     // Render HTML
-    const bodyHtml: string = await marked(body)
+    const bodyHtml: string = await marked(body, { breaks: true, gfm: true })
     const html: string = await renderAdminBroadcast({
       userName: recipientData.name,
       bodyHtml,

@@ -85,16 +85,17 @@ export const sendBroadcastToApplicants = action({
         let recipientMarkdown = markdownBody
         if (tokenMap && pollLinkBase) {
           const token = tokenMap.get(recipient.applicationId)
-          const link = token
-            ? `${pollLinkBase}/${token}`
-            : pollLinkBase
+          const link = token ? `${pollLinkBase}/${token}` : pollLinkBase
           recipientMarkdown = recipientMarkdown.replaceAll(
             '{{poll_link}}',
             link,
           )
         }
 
-        const recipientHtml: string = await marked(recipientMarkdown)
+        const recipientHtml: string = await marked(recipientMarkdown, {
+          breaks: true,
+          gfm: true,
+        })
 
         const html: string = await renderAdminBroadcast({
           userName: recipient.name,
