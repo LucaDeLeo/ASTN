@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useState } from 'react'
 import { useMutation } from 'convex/react'
 import { toast } from 'sonner'
 import { api } from '../../../convex/_generated/api'
@@ -11,8 +11,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '~/components/ui/dialog'
+import { Field, FieldDescription, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
-import { Label } from '~/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -36,9 +36,6 @@ export function CreateProgramDialog({
 }: CreateProgramDialogProps) {
   const [open, setOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const id = useId()
-  const maxParticipantsHelpId = `${id}-max-participants-help`
 
   // Form state
   const [name, setName] = useState('')
@@ -128,18 +125,18 @@ export function CreateProgramDialog({
           <DialogTitle>Create Program</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="name">Program Name *</Label>
+          <Field>
+            <FieldLabel htmlFor="name">Program Name *</FieldLabel>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., AGISF Reading Group - Spring 2026"
             />
-          </div>
+          </Field>
 
-          <div>
-            <Label htmlFor="description">Description</Label>
+          <Field>
+            <FieldLabel htmlFor="description">Description</FieldLabel>
             <Textarea
               id="description"
               value={description}
@@ -147,11 +144,11 @@ export function CreateProgramDialog({
               placeholder="Brief description of the program..."
               rows={2}
             />
-          </div>
+          </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <Label>Program Type</Label>
+            <Field>
+              <FieldLabel>Program Type</FieldLabel>
               <Select
                 value={type}
                 onValueChange={(v) => setType(v as typeof type)}
@@ -170,10 +167,10 @@ export function CreateProgramDialog({
                   <SelectItem value="custom">Custom</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
 
-            <div>
-              <Label>Enrollment Method</Label>
+            <Field>
+              <FieldLabel>Enrollment Method</FieldLabel>
               <Select
                 value={enrollmentMethod}
                 onValueChange={(v) =>
@@ -191,11 +188,13 @@ export function CreateProgramDialog({
                   </SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
           </div>
 
-          <div>
-            <Label htmlFor="maxParticipants">Max Participants (optional)</Label>
+          <Field>
+            <FieldLabel htmlFor="maxParticipants">
+              Max Participants (optional)
+            </FieldLabel>
             <Input
               id="maxParticipants"
               type="number"
@@ -203,18 +202,14 @@ export function CreateProgramDialog({
               value={maxParticipants}
               onChange={(e) => setMaxParticipants(e.target.value)}
               placeholder="Leave empty for unlimited"
-              aria-describedby={maxParticipantsHelpId}
             />
-            <p
-              id={maxParticipantsHelpId}
-              className="text-xs text-muted-foreground mt-1"
-            >
+            <FieldDescription>
               Leave empty for unlimited participants
-            </p>
-          </div>
+            </FieldDescription>
+          </Field>
 
-          <div>
-            <Label>Completion Criteria</Label>
+          <Field>
+            <FieldLabel>Completion Criteria</FieldLabel>
             <Select
               value={completionType}
               onValueChange={(v) =>
@@ -235,11 +230,11 @@ export function CreateProgramDialog({
                 <SelectItem value="manual">Manual Only</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </Field>
 
           {completionType === 'attendance_count' && (
-            <div>
-              <Label htmlFor="requiredCount">Required Sessions</Label>
+            <Field>
+              <FieldLabel htmlFor="requiredCount">Required Sessions</FieldLabel>
               <Input
                 id="requiredCount"
                 type="number"
@@ -248,12 +243,14 @@ export function CreateProgramDialog({
                 onChange={(e) => setRequiredCount(e.target.value)}
                 placeholder="e.g., 5"
               />
-            </div>
+            </Field>
           )}
 
           {completionType === 'attendance_percentage' && (
-            <div>
-              <Label htmlFor="requiredPercentage">Required Percentage</Label>
+            <Field>
+              <FieldLabel htmlFor="requiredPercentage">
+                Required Percentage
+              </FieldLabel>
               <Input
                 id="requiredPercentage"
                 type="number"
@@ -263,7 +260,7 @@ export function CreateProgramDialog({
                 onChange={(e) => setRequiredPercentage(e.target.value)}
                 placeholder="e.g., 80"
               />
-            </div>
+            </Field>
           )}
 
           <div className="flex justify-end gap-2 pt-4">

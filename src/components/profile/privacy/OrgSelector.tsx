@@ -2,7 +2,11 @@ import { useMemo, useState } from 'react'
 import { useQuery } from 'convex/react'
 import { Building2, ChevronDown, ChevronUp, Search, X } from 'lucide-react'
 import { api } from '../../../../convex/_generated/api'
-import { Input } from '~/components/ui/input'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '~/components/ui/input-group'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Checkbox } from '~/components/ui/checkbox'
@@ -82,15 +86,16 @@ export function OrgSelector({ selectedOrgs, onOrgsChange }: OrgSelectorProps) {
       )}
 
       {/* Search input */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-        <Input
+      <InputGroup>
+        <InputGroupAddon>
+          <Search />
+        </InputGroupAddon>
+        <InputGroupInput
           placeholder="Search organizations..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9"
         />
-      </div>
+      </InputGroup>
 
       {/* Search results */}
       {searchQuery.trim() && searchResults && (

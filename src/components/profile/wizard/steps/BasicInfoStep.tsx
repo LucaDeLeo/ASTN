@@ -1,9 +1,9 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Check } from 'lucide-react'
 import type { Doc } from '../../../../../convex/_generated/dataModel'
+import { Field, FieldDescription, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import { Textarea } from '~/components/ui/textarea'
-import { Label } from '~/components/ui/label'
 
 interface BasicInfoStepProps {
   profile: Doc<'profiles'> | null
@@ -18,10 +18,6 @@ export function BasicInfoStep({
   isSaving,
   lastSaved,
 }: BasicInfoStepProps) {
-  const id = useId()
-  const locationHelpId = `${id}-location-help`
-  const headlineHelpId = `${id}-headline-help`
-
   const [name, setName] = useState(profile?.name ?? '')
   const [pronouns, setPronouns] = useState(profile?.pronouns ?? '')
   const [location, setLocation] = useState(profile?.location ?? '')
@@ -44,10 +40,10 @@ export function BasicInfoStep({
   return (
     <div className="space-y-6">
       <div className="grid gap-6">
-        <div className="grid gap-2">
-          <Label htmlFor="name">
+        <Field>
+          <FieldLabel htmlFor="name">
             Name <span className="text-red-500">*</span>
-          </Label>
+          </FieldLabel>
           <Input
             id="name"
             value={name}
@@ -55,10 +51,10 @@ export function BasicInfoStep({
             onBlur={() => saveField('name', name)}
             placeholder="Your full name"
           />
-        </div>
+        </Field>
 
-        <div className="grid gap-2">
-          <Label htmlFor="pronouns">Pronouns</Label>
+        <Field>
+          <FieldLabel htmlFor="pronouns">Pronouns</FieldLabel>
           <Input
             id="pronouns"
             value={pronouns}
@@ -66,27 +62,26 @@ export function BasicInfoStep({
             onBlur={() => saveField('pronouns', pronouns)}
             placeholder="e.g., they/them, she/her, he/him"
           />
-        </div>
+        </Field>
 
-        <div className="grid gap-2">
-          <Label htmlFor="location">
+        <Field>
+          <FieldLabel htmlFor="location">
             Location <span className="text-red-500">*</span>
-          </Label>
+          </FieldLabel>
           <Input
             id="location"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             onBlur={() => saveField('location', location)}
             placeholder="e.g., San Francisco, CA"
-            aria-describedby={locationHelpId}
           />
-          <p id={locationHelpId} className="text-xs text-muted-foreground">
+          <FieldDescription>
             City and country/region helps with opportunity matching
-          </p>
-        </div>
+          </FieldDescription>
+        </Field>
 
-        <div className="grid gap-2">
-          <Label htmlFor="headline">Headline</Label>
+        <Field>
+          <FieldLabel htmlFor="headline">Headline</FieldLabel>
           <Textarea
             id="headline"
             value={headline}
@@ -94,12 +89,11 @@ export function BasicInfoStep({
             onBlur={() => saveField('headline', headline)}
             placeholder="A brief tagline about yourself, e.g., 'ML researcher focused on interpretability'"
             rows={2}
-            aria-describedby={headlineHelpId}
           />
-          <p id={headlineHelpId} className="text-xs text-muted-foreground">
+          <FieldDescription>
             A short summary that appears on your profile card
-          </p>
-        </div>
+          </FieldDescription>
+        </Field>
       </div>
 
       {/* Save indicator */}

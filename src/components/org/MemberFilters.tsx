@@ -4,6 +4,11 @@ import type { EngagementLevel } from '~/components/engagement/EngagementBadge'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '~/components/ui/input-group'
 import { Label } from '~/components/ui/label'
 import {
   ResponsiveSheet,
@@ -187,9 +192,11 @@ export function MemberFilters({
               {/* Search */}
               <div className="space-y-2">
                 <Label>Search</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                  <Input
+                <InputGroup className="h-11">
+                  <InputGroupAddon>
+                    <Search />
+                  </InputGroupAddon>
+                  <InputGroupInput
                     placeholder="Name or email..."
                     value={filters.search ?? ''}
                     onChange={(e) =>
@@ -198,9 +205,8 @@ export function MemberFilters({
                         search: e.target.value || undefined,
                       })
                     }
-                    className="pl-10 min-h-11"
                   />
-                </div>
+                </InputGroup>
               </div>
 
               {/* Engagement Level */}
@@ -370,9 +376,11 @@ export function MemberFilters({
       {/* Desktop: Keep existing inline layout */}
       <div className="hidden md:flex flex-wrap items-center gap-3 p-4 bg-slate-50 rounded-lg">
         {/* Search input */}
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-          <Input
+        <InputGroup className="flex-1 min-w-[200px]">
+          <InputGroupAddon>
+            <Search />
+          </InputGroupAddon>
+          <InputGroupInput
             placeholder="Search by name or email..."
             value={filters.search ?? ''}
             onChange={(e) =>
@@ -381,9 +389,8 @@ export function MemberFilters({
                 search: e.target.value || undefined,
               })
             }
-            className="pl-10"
           />
-        </div>
+        </InputGroup>
 
         {/* Engagement filter */}
         <Select

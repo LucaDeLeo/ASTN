@@ -3,7 +3,11 @@ import { useCallback } from 'react'
 import { Search, X } from 'lucide-react'
 import { MobileFilters } from './mobile-filters'
 import { Button } from '~/components/ui/button'
-import { Input } from '~/components/ui/input'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '~/components/ui/input-group'
 import {
   Select,
   SelectContent,
@@ -131,16 +135,17 @@ export function OpportunityFilters() {
         {/* Desktop filters */}
         <div className="hidden md:flex flex-wrap items-center gap-3">
           {/* Search */}
-          <div className="relative w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-muted-foreground" />
-            <Input
+          <InputGroup className="w-64">
+            <InputGroupAddon>
+              <Search />
+            </InputGroupAddon>
+            <InputGroupInput
               type="search"
               placeholder="Search opportunities..."
               value={searchTerm}
               onChange={(e) => updateFilter('q', e.target.value)}
-              className="pl-9"
             />
-          </div>
+          </InputGroup>
 
           {/* Type Filter */}
           <Select

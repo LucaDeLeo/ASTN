@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useMutation } from '@tanstack/react-query'
 import { useConvexMutation } from '@convex-dev/react-query'
@@ -6,8 +6,8 @@ import { toast } from 'sonner'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { Button } from '~/components/ui/button'
+import { Field, FieldDescription, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
-import { Label } from '~/components/ui/label'
 import { Textarea } from '~/components/ui/textarea'
 import { Checkbox } from '~/components/ui/checkbox'
 import {
@@ -57,9 +57,6 @@ export function OpportunityForm({
   mode: 'create' | 'edit'
 }) {
   const navigate = useNavigate()
-  const id = useId()
-  const requirementsHelpId = `${id}-requirements-help`
-
   const createMutationFn = useConvexMutation(api.admin.createOpportunity)
   const { mutateAsync: createOpportunity, isPending: isCreating } = useMutation(
     {
@@ -136,8 +133,8 @@ export function OpportunityForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
-      <div className="space-y-2">
-        <Label htmlFor="title">Title *</Label>
+      <Field>
+        <FieldLabel htmlFor="title">Title *</FieldLabel>
         <Input
           id="title"
           value={formData.title}
@@ -145,11 +142,11 @@ export function OpportunityForm({
           placeholder="Research Engineer - AI Safety"
           required
         />
-      </div>
+      </Field>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="organization">Organization *</Label>
+        <Field>
+          <FieldLabel htmlFor="organization">Organization *</FieldLabel>
           <Input
             id="organization"
             value={formData.organization}
@@ -159,9 +156,9 @@ export function OpportunityForm({
             placeholder="Anthropic"
             required
           />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="organizationLogoUrl">Logo URL</Label>
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="organizationLogoUrl">Logo URL</FieldLabel>
           <Input
             id="organizationLogoUrl"
             value={formData.organizationLogoUrl}
@@ -170,12 +167,12 @@ export function OpportunityForm({
             }
             placeholder="https://cdn.brandfetch.io/..."
           />
-        </div>
+        </Field>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="location">Location *</Label>
+        <Field>
+          <FieldLabel htmlFor="location">Location *</FieldLabel>
           <Input
             id="location"
             value={formData.location}
@@ -185,7 +182,7 @@ export function OpportunityForm({
             placeholder="San Francisco, CA"
             required
           />
-        </div>
+        </Field>
         <div className="flex items-center space-x-2 pt-8">
           <Checkbox
             id="isRemote"
@@ -194,13 +191,13 @@ export function OpportunityForm({
               setFormData({ ...formData, isRemote: checked === true })
             }
           />
-          <Label htmlFor="isRemote">Remote friendly</Label>
+          <FieldLabel htmlFor="isRemote">Remote friendly</FieldLabel>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="roleType">Role Type *</Label>
+        <Field>
+          <FieldLabel htmlFor="roleType">Role Type *</FieldLabel>
           <Select
             value={formData.roleType}
             onValueChange={(value) =>
@@ -218,9 +215,9 @@ export function OpportunityForm({
               ))}
             </SelectContent>
           </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="experienceLevel">Experience Level</Label>
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="experienceLevel">Experience Level</FieldLabel>
           <Select
             value={formData.experienceLevel}
             onValueChange={(value) =>
@@ -238,11 +235,11 @@ export function OpportunityForm({
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </Field>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="description">Description *</Label>
+      <Field>
+        <FieldLabel htmlFor="description">Description *</FieldLabel>
         <Textarea
           id="description"
           value={formData.description}
@@ -253,10 +250,12 @@ export function OpportunityForm({
           rows={6}
           required
         />
-      </div>
+      </Field>
 
-      <div className="space-y-2">
-        <Label htmlFor="requirements">Requirements (one per line)</Label>
+      <Field>
+        <FieldLabel htmlFor="requirements">
+          Requirements (one per line)
+        </FieldLabel>
         <Textarea
           id="requirements"
           value={formData.requirementsText}
@@ -267,16 +266,15 @@ export function OpportunityForm({
             'PhD in ML or equivalent\n3+ years experience\nStrong communication skills'
           }
           rows={4}
-          aria-describedby={requirementsHelpId}
         />
-        <p id={requirementsHelpId} className="text-xs text-muted-foreground">
+        <FieldDescription>
           Enter each requirement on a separate line
-        </p>
-      </div>
+        </FieldDescription>
+      </Field>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="salaryRange">Salary Range</Label>
+        <Field>
+          <FieldLabel htmlFor="salaryRange">Salary Range</FieldLabel>
           <Input
             id="salaryRange"
             value={formData.salaryRange}
@@ -285,9 +283,9 @@ export function OpportunityForm({
             }
             placeholder="$150,000 - $200,000"
           />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="deadline">Application Deadline</Label>
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="deadline">Application Deadline</FieldLabel>
           <Input
             id="deadline"
             type="date"
@@ -296,11 +294,11 @@ export function OpportunityForm({
               setFormData({ ...formData, deadlineStr: e.target.value })
             }
           />
-        </div>
+        </Field>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="sourceUrl">Application URL *</Label>
+      <Field>
+        <FieldLabel htmlFor="sourceUrl">Application URL *</FieldLabel>
         <Input
           id="sourceUrl"
           type="url"
@@ -311,7 +309,7 @@ export function OpportunityForm({
           placeholder="https://company.com/careers/job-123"
           required
         />
-      </div>
+      </Field>
 
       <div className="flex gap-4">
         <Button type="submit" disabled={isSubmitting}>

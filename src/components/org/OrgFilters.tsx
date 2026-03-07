@@ -1,7 +1,11 @@
 import { useQuery } from 'convex/react'
 import { MapPin, Search, X } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
-import { Input } from '~/components/ui/input'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '~/components/ui/input-group'
 import {
   Select,
   SelectContent,
@@ -36,16 +40,17 @@ export function OrgFilters({
   return (
     <div className="flex flex-col sm:flex-row gap-3 mb-4">
       {/* Search input */}
-      <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-        <Input
+      <InputGroup className="flex-1">
+        <InputGroupAddon>
+          <Search />
+        </InputGroupAddon>
+        <InputGroupInput
           type="text"
           placeholder="Search organizations..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-9"
         />
-      </div>
+      </InputGroup>
 
       {/* Country filter */}
       <Select

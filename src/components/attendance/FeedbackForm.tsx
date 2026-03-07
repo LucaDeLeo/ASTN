@@ -1,9 +1,10 @@
-import { useId, useState } from 'react'
+import { useState } from 'react'
 import { useMutation } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import { StarRating } from './StarRating'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { Button } from '~/components/ui/button'
+import { Field, FieldLabel } from '~/components/ui/field'
 import { Textarea } from '~/components/ui/textarea'
 
 interface FeedbackFormProps {
@@ -17,9 +18,6 @@ export function FeedbackForm({
   eventTitle,
   onComplete,
 }: FeedbackFormProps) {
-  const id = useId()
-  const commentsHelpId = `${id}-comments-help`
-
   const [rating, setRating] = useState(0)
   const [text, setText] = useState('')
   const [showSkipConfirm, setShowSkipConfirm] = useState(false)
@@ -64,28 +62,23 @@ export function FeedbackForm({
         </p>
       </div>
 
-      <div className="space-y-1">
-        <label className="text-xs text-muted-foreground">Rating</label>
+      <Field>
+        <FieldLabel className="text-xs">Rating</FieldLabel>
         <StarRating value={rating} onChange={setRating} size="md" />
-      </div>
+      </Field>
 
-      <div className="space-y-1">
-        <label
-          id={commentsHelpId}
-          htmlFor="feedback-text"
-          className="text-xs text-muted-foreground"
-        >
+      <Field>
+        <FieldLabel htmlFor="feedback-text" className="text-xs">
           Comments (optional)
-        </label>
+        </FieldLabel>
         <Textarea
           id="feedback-text"
           placeholder="What did you like? What could be improved?"
           value={text}
           onChange={(e) => setText(e.target.value)}
           className="min-h-16 text-sm"
-          aria-describedby={commentsHelpId}
         />
-      </div>
+      </Field>
 
       {showSkipConfirm && (
         <div className="bg-amber-50 border border-amber-200 rounded-md px-3 py-2 text-xs text-amber-700">

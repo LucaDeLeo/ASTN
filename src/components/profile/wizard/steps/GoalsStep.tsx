@@ -1,8 +1,8 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Check, X } from 'lucide-react'
 import type { Doc } from '../../../../../convex/_generated/dataModel'
+import { Field, FieldDescription, FieldLabel } from '~/components/ui/field'
 import { Textarea } from '~/components/ui/textarea'
-import { Label } from '~/components/ui/label'
 import { Badge } from '~/components/ui/badge'
 
 interface GoalsStepProps {
@@ -46,10 +46,6 @@ export function GoalsStep({
   isSaving,
   lastSaved,
 }: GoalsStepProps) {
-  const id = useId()
-  const interestsHelpId = `${id}-interests-help`
-  const seekingHelpId = `${id}-seeking-help`
-
   const [careerGoals, setCareerGoals] = useState(profile?.careerGoals ?? '')
   const [seeking, setSeeking] = useState(profile?.seeking ?? '')
   const [selectedInterests, setSelectedInterests] = useState<Array<string>>(
@@ -76,11 +72,11 @@ export function GoalsStep({
   return (
     <div className="space-y-6">
       <div className="grid gap-6">
-        <div className="grid gap-2">
-          <Label htmlFor="careerGoals">
+        <Field>
+          <FieldLabel htmlFor="careerGoals">
             What are your career goals in AI safety?{' '}
             <span className="text-red-500">*</span>
-          </Label>
+          </FieldLabel>
           <Textarea
             id="careerGoals"
             value={careerGoals}
@@ -89,20 +85,15 @@ export function GoalsStep({
             placeholder="Describe your long-term career aspirations. What kind of impact do you want to have? What problems do you want to work on?"
             rows={4}
           />
-        </div>
+        </Field>
 
-        <div className="grid gap-3">
-          <Label>Which areas of AI safety interest you most?</Label>
-          <p id={interestsHelpId} className="text-xs text-slate-500">
+        <Field>
+          <FieldLabel>Which areas of AI safety interest you most?</FieldLabel>
+          <FieldDescription>
             Select all that apply. This helps us recommend relevant
             opportunities.
-          </p>
-          <div
-            className="flex flex-wrap gap-2"
-            role="group"
-            aria-describedby={interestsHelpId}
-            aria-label="AI safety interest areas"
-          >
+          </FieldDescription>
+          <div className="flex flex-wrap gap-2">
             {AI_SAFETY_AREAS.map((area) => {
               const isSelected = selectedInterests.includes(area)
               return (
@@ -122,10 +113,10 @@ export function GoalsStep({
               )
             })}
           </div>
-        </div>
+        </Field>
 
-        <div className="grid gap-2">
-          <Label htmlFor="seeking">What are you looking for?</Label>
+        <Field>
+          <FieldLabel htmlFor="seeking">What are you looking for?</FieldLabel>
           <Textarea
             id="seeking"
             value={seeking}
@@ -133,13 +124,12 @@ export function GoalsStep({
             onBlur={() => saveField('seeking', seeking)}
             placeholder="Are you looking for full-time roles, engineering positions, fellowships, policy work, mentorship, collaborators, or something else?"
             rows={3}
-            aria-describedby={seekingHelpId}
           />
-          <p id={seekingHelpId} className="text-xs text-slate-500">
+          <FieldDescription>
             Be specific about the type of opportunities, timeline, and any
             constraints (e.g., location, visa requirements)
-          </p>
-        </div>
+          </FieldDescription>
+        </Field>
       </div>
 
       {/* Save indicator */}

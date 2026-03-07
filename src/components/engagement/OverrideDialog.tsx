@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from 'convex/react'
-import { useId, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '~/components/ui/dialog'
-import { Label } from '~/components/ui/label'
+import { Field, FieldDescription, FieldLabel } from '~/components/ui/field'
 import {
   Select,
   SelectContent,
@@ -59,9 +59,6 @@ export function OverrideDialog({
   orgId,
   userId,
 }: OverrideDialogProps) {
-  const id = useId()
-  const notesHelpId = `${id}-notes-help`
-
   const [selectedLevel, setSelectedLevel] =
     useState<EngagementLevel>(currentLevel)
   const [notes, setNotes] = useState('')
@@ -133,8 +130,8 @@ export function OverrideDialog({
 
         <div className="space-y-4">
           {/* Current level section */}
-          <div className="space-y-2">
-            <Label className="text-slate-600">Current Level</Label>
+          <Field>
+            <FieldLabel className="text-slate-600">Current Level</FieldLabel>
             <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
               <EngagementBadge level={currentLevel} hasOverride={hasOverride} />
               <p className="text-sm text-slate-600 flex-1">
@@ -146,11 +143,11 @@ export function OverrideDialog({
                 Manual override: "{overrideNotes}"
               </p>
             )}
-          </div>
+          </Field>
 
           {/* New level selection */}
-          <div className="space-y-2">
-            <Label htmlFor="level">New Level</Label>
+          <Field>
+            <FieldLabel htmlFor="level">New Level</FieldLabel>
             <Select
               value={selectedLevel}
               onValueChange={(value) =>
@@ -168,25 +165,24 @@ export function OverrideDialog({
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Field>
 
           {/* Notes (required) */}
-          <div className="space-y-2">
-            <Label htmlFor="notes">
+          <Field>
+            <FieldLabel htmlFor="notes">
               Notes <span className="text-red-500">*</span>
-            </Label>
+            </FieldLabel>
             <Textarea
               id="notes"
               placeholder="e.g., Spoke at meetup last week, working on a research project offline..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="min-h-[80px]"
-              aria-describedby={notesHelpId}
             />
-            <p id={notesHelpId} className="text-xs text-slate-500">
+            <FieldDescription>
               Required. Briefly explain why you're overriding.
-            </p>
-          </div>
+            </FieldDescription>
+          </Field>
 
           {/* Override history */}
           {engagementData?.overrideHistory && (
