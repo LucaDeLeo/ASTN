@@ -344,7 +344,7 @@ function EmailComposePage() {
               </CardHeader>
               <CardContent>
                 <div className="bg-gray-100 rounded-lg p-4">
-                  <div className="bg-white rounded-lg p-6 max-w-md mx-auto shadow-sm">
+                  <div className="bg-white rounded-lg p-6 max-w-xl mx-auto shadow-sm">
                     {/* Logo */}
                     <div className="text-center mb-4">
                       <img
@@ -359,7 +359,7 @@ function EmailComposePage() {
                     </p>
                     {previewHtml ? (
                       <div
-                        className="prose max-w-none text-gray-700"
+                        className="max-w-none text-gray-700 [&_p]:my-3 break-words"
                         dangerouslySetInnerHTML={{ __html: previewHtml }}
                       />
                     ) : (
