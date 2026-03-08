@@ -23,14 +23,8 @@ import { Button } from '~/components/ui/button'
 import { Spinner } from '~/components/ui/spinner'
 import { cn } from '~/lib/utils'
 
-// Configure marked for safe rendering
-marked.setOptions({
-  breaks: true,
-  gfm: true,
-})
-
 function renderMarkdown(content: string): string {
-  const raw = marked.parse(content)
+  const raw = marked.parse(content, { breaks: true, gfm: true })
   if (typeof raw !== 'string') return content
   return DOMPurify.sanitize(raw)
 }
@@ -114,7 +108,8 @@ function ConfirmationCard({
     <div
       className={cn(
         'my-2 rounded-lg border p-3 text-sm',
-        isPending && 'border-yellow-500/50 bg-yellow-50/50 dark:bg-yellow-950/20',
+        isPending &&
+          'border-yellow-500/50 bg-yellow-50/50 dark:bg-yellow-950/20',
         isApproved && 'border-green-500/50 bg-green-50/50 dark:bg-green-950/20',
         isRejected && 'border-red-500/50 bg-red-50/50 dark:bg-red-950/20',
       )}
@@ -244,10 +239,7 @@ function MessageBubble({
   }
 
   return (
-    <AssistantParts
-      parts={message.parts}
-      onConfirmRespond={onConfirmRespond}
-    />
+    <AssistantParts parts={message.parts} onConfirmRespond={onConfirmRespond} />
   )
 }
 

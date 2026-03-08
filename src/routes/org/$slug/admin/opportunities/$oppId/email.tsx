@@ -98,7 +98,9 @@ function EmailComposePage() {
 
   const previewHtml = useMemo(() => {
     if (!body.trim()) return ''
-    return DOMPurify.sanitize(marked.parse(body, { async: false, gfm: true }))
+    return DOMPurify.sanitize(
+      marked.parse(body, { async: false, breaks: true, gfm: true }),
+    )
   }, [body])
 
   const toggleStatus = (status: ApplicationStatus) => {
@@ -357,7 +359,7 @@ function EmailComposePage() {
                     </p>
                     {previewHtml ? (
                       <div
-                        className="prose prose-sm max-w-none text-gray-700"
+                        className="prose max-w-none text-gray-700"
                         dangerouslySetInnerHTML={{ __html: previewHtml }}
                       />
                     ) : (
