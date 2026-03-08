@@ -792,5 +792,11 @@ export async function renderAdminBroadcast(
   props: AdminBroadcastProps,
 ): Promise<string> {
   const html = await render(<AdminBroadcastEmail {...props} />)
-  return html.replace(BODY_PLACEHOLDER, props.bodyHtml)
+  // Add inline styles to <p> tags so paragraph spacing and word-break
+  // work across all email clients (Gmail resets <p> margins by default).
+  const styledBody = props.bodyHtml.replace(
+    /<p>/g,
+    '<p style="margin:12px 0;word-break:break-word">',
+  )
+  return html.replace(BODY_PLACEHOLDER, styledBody)
 }
