@@ -93,7 +93,6 @@ export const sendBroadcastToApplicants = action({
         }
 
         const recipientHtml: string = await marked(recipientMarkdown, {
-          breaks: true,
           gfm: true,
         })
 

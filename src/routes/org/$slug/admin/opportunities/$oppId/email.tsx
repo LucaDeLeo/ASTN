@@ -98,9 +98,7 @@ function EmailComposePage() {
 
   const previewHtml = useMemo(() => {
     if (!body.trim()) return ''
-    return DOMPurify.sanitize(
-      marked.parse(body, { async: false, breaks: true, gfm: true }),
-    )
+    return DOMPurify.sanitize(marked.parse(body, { async: false, gfm: true }))
   }, [body])
 
   const toggleStatus = (status: ApplicationStatus) => {
