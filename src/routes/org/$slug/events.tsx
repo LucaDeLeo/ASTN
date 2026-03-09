@@ -1,10 +1,16 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useQuery } from 'convex/react'
-import { Building2, Calendar, ExternalLink } from 'lucide-react'
+import {
+  Building2,
+  Calendar,
+  Clock,
+  ExternalLink,
+  MapPin,
+  Video,
+} from 'lucide-react'
 import { api } from '../../../../convex/_generated/api'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { GradientBg } from '~/components/layout/GradientBg'
-import { LumaEmbed } from '~/components/events/LumaEmbed'
 import { Card } from '~/components/ui/card'
 import { Button } from '~/components/ui/button'
 
@@ -12,9 +18,101 @@ export const Route = createFileRoute('/org/$slug/events')({
   component: OrgEventsPage,
 })
 
+function formatEventDate(startAt: number, endAt?: number, timezone?: string) {
+  const start = new Date(startAt)
+  const dateOpts: Intl.DateTimeFormatOptions = {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    timeZone: timezone,
+  }
+  const timeOpts: Intl.DateTimeFormatOptions = {
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: timezone,
+  }
+
+  const dateStr = start.toLocaleDateString('en-US', dateOpts)
+  const timeStr = start.toLocaleTimeString('en-US', timeOpts)
+
+  if (endAt) {
+    const end = new Date(endAt)
+    const endTimeStr = end.toLocaleTimeString('en-US', timeOpts)
+    return `${dateStr} · ${timeStr} – ${endTimeStr}`
+  }
+
+  return `${dateStr} · ${timeStr}`
+}
+
+function EventCard({
+  event,
+}: {
+  event: {
+    title: string
+    startAt: number
+    endAt?: number
+    timezone: string
+    coverUrl?: string
+    url: string
+    location?: string
+    isVirtual: boolean
+  }
+}) {
+  const lumaUrl = `https://lu.ma/${event.url}`
+
+  return (
+    <a
+      href={lumaUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="block group"
+    >
+      <Card className="overflow-hidden hover:shadow-md transition-shadow">
+        <div className="flex gap-4 p-4">
+          {event.coverUrl && (
+            <img
+              src={event.coverUrl}
+              alt=""
+              className="size-20 rounded-lg object-cover shrink-0"
+            />
+          )}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+              {event.title}
+            </h3>
+            <div className="mt-1 flex items-center gap-1.5 text-sm text-slate-600">
+              <Clock className="size-3.5 shrink-0" />
+              <span>
+                {formatEventDate(event.startAt, event.endAt, event.timezone)}
+              </span>
+            </div>
+            {event.location && (
+              <div className="mt-1 flex items-center gap-1.5 text-sm text-slate-500">
+                <MapPin className="size-3.5 shrink-0" />
+                <span className="truncate">{event.location}</span>
+              </div>
+            )}
+            {event.isVirtual && (
+              <div className="mt-1 flex items-center gap-1.5 text-sm text-slate-500">
+                <Video className="size-3.5 shrink-0" />
+                <span>Online event</span>
+              </div>
+            )}
+          </div>
+          <ExternalLink className="size-4 text-slate-400 shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
+      </Card>
+    </a>
+  )
+}
+
 function OrgEventsPage() {
   const { slug } = Route.useParams()
   const org = useQuery(api.orgs.directory.getOrgBySlug, { slug })
+  const events = useQuery(
+    api.events.queries.getOrgEvents,
+    org ? { orgId: org._id } : 'skip',
+  )
 
   // Loading state
   if (org === undefined) {
@@ -58,6 +156,9 @@ function OrgEventsPage() {
     )
   }
 
+  const hasEvents =
+    events && (events.upcoming.length > 0 || events.past.length > 0)
+
   return (
     <GradientBg>
       <AuthHeader />
@@ -94,24 +195,57 @@ function OrgEventsPage() {
                   Events Calendar
                 </h1>
               </div>
-            </div>
-          </Card>
-
-          {/* Events content */}
-          {org.lumaCalendarUrl ? (
-            <div className="space-y-4">
-              <LumaEmbed calendarUrl={org.lumaCalendarUrl} />
-              <p className="text-center text-sm text-slate-500">
+              {org.lumaCalendarUrl && (
                 <a
                   href={org.lumaCalendarUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 hover:text-slate-700 transition-colors"
+                  className="text-sm text-slate-500 hover:text-slate-700 transition-colors inline-flex items-center gap-1"
                 >
                   View on lu.ma
                   <ExternalLink className="size-3" />
                 </a>
-              </p>
+              )}
+            </div>
+          </Card>
+
+          {/* Events content */}
+          {events === undefined ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="h-24 bg-slate-100 rounded-xl animate-pulse"
+                />
+              ))}
+            </div>
+          ) : hasEvents ? (
+            <div className="space-y-8">
+              {events.upcoming.length > 0 && (
+                <section>
+                  <h2 className="text-lg font-semibold text-foreground mb-3">
+                    Upcoming Events
+                  </h2>
+                  <div className="space-y-3">
+                    {events.upcoming.map((event) => (
+                      <EventCard key={event._id} event={event} />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {events.past.length > 0 && (
+                <section>
+                  <h2 className="text-lg font-semibold text-slate-500 mb-3">
+                    Past Events
+                  </h2>
+                  <div className="space-y-3 opacity-75">
+                    {events.past.map((event) => (
+                      <EventCard key={event._id} event={event} />
+                    ))}
+                  </div>
+                </section>
+              )}
             </div>
           ) : (
             <Card className="p-12 text-center">
@@ -119,7 +253,7 @@ function OrgEventsPage() {
                 <Calendar className="size-8 text-slate-400" />
               </div>
               <h2 className="text-lg font-semibold text-foreground mb-2">
-                No Events Calendar
+                No Events Yet
               </h2>
               <p className="text-slate-600">
                 This organization hasn&apos;t set up their event calendar yet.

@@ -19,6 +19,33 @@ export const getOrgsWithLumaConfig = internalQuery({
 })
 
 /**
+ * Get events for an organization's event page.
+ * Returns upcoming events first, then past events.
+ */
+export const getOrgEvents = query({
+  args: { orgId: v.id('organizations') },
+  handler: async (ctx, { orgId }) => {
+    const now = Date.now()
+
+    const upcoming = await ctx.db
+      .query('events')
+      .withIndex('by_org_start', (q) =>
+        q.eq('orgId', orgId).gte('startAt', now),
+      )
+      .order('asc')
+      .take(50)
+
+    const past = await ctx.db
+      .query('events')
+      .withIndex('by_org_start', (q) => q.eq('orgId', orgId).lt('startAt', now))
+      .order('desc')
+      .take(20)
+
+    return { upcoming, past }
+  },
+})
+
+/**
  * Get events for dashboard - prioritize user's orgs.
  * Returns events from orgs user has joined first, then other org events for discovery.
  */
