@@ -1,16 +1,20 @@
+import { v } from 'convex/values'
 import { internalQuery, query } from '../_generated/server'
 
 /**
- * Get all organizations that have Lu.ma API keys configured.
+ * Get all organizations that have Lu.ma calendar sync configured.
  * Used by sync action to know which orgs to sync events from.
  */
 export const getOrgsWithLumaConfig = internalQuery({
   args: {},
+  returns: v.array(v.object({ _id: v.id('organizations'), name: v.string() })),
   handler: async (ctx) => {
     const orgs = await ctx.db.query('organizations').collect()
 
-    // Filter to orgs with lu.ma API key configured
-    return orgs.filter((org) => org.lumaApiKey)
+    // Filter to orgs with lu.ma calendar API ID configured
+    return orgs
+      .filter((org) => org.lumaCalendarApiId)
+      .map((org) => ({ _id: org._id, name: org.name }))
   },
 })
 

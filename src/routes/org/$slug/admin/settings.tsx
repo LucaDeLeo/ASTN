@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { useMutation, useQuery } from 'convex/react'
-import { Building2, Loader2, Save, Shield } from 'lucide-react'
+import { useAction, useMutation, useQuery } from 'convex/react'
+import { Building2, CheckCircle2, Loader2, Save, Shield } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { api } from '../../../../../convex/_generated/api'
@@ -36,16 +36,17 @@ function OrgAdminSettings() {
 
   // Form state
   const [lumaCalendarUrl, setLumaCalendarUrl] = useState('')
-  const [lumaApiKey, setLumaApiKey] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+  const [isResolved, setIsResolved] = useState(false)
 
   const updateLumaConfig = useMutation(api.orgs.admin.updateLumaConfig)
+  const resolveLumaCalendar = useAction(api.events.sync.resolveLumaCalendar)
 
   // Populate form when config loads
   useEffect(() => {
     if (lumaConfig) {
       setLumaCalendarUrl(lumaConfig.lumaCalendarUrl || '')
-      setLumaApiKey(lumaConfig.lumaApiKey || '')
+      setIsResolved(!!lumaConfig.lumaCalendarApiId)
     }
   }, [lumaConfig])
 
@@ -117,11 +118,31 @@ function OrgAdminSettings() {
     setIsSaving(true)
 
     try {
+      const trimmedUrl = lumaCalendarUrl.trim()
+      let calendarApiId: string | undefined
+
+      // Auto-resolve calendar API ID from URL
+      if (trimmedUrl) {
+        try {
+          calendarApiId = await resolveLumaCalendar({
+            calendarUrl: trimmedUrl,
+          })
+        } catch (resolveError) {
+          console.error('Failed to resolve Lu.ma calendar:', resolveError)
+          toast.error(
+            'Could not resolve Lu.ma calendar. Please check the URL and try again.',
+          )
+          setIsSaving(false)
+          return
+        }
+      }
+
       await updateLumaConfig({
         orgId: org._id,
-        lumaCalendarUrl: lumaCalendarUrl.trim() || undefined,
-        lumaApiKey: lumaApiKey.trim() || undefined,
+        lumaCalendarUrl: trimmedUrl || undefined,
+        lumaCalendarApiId: calendarApiId,
       })
+      setIsResolved(!!calendarApiId)
       toast.success('Settings saved successfully')
     } catch (error) {
       console.error('Failed to save settings:', error)
@@ -169,7 +190,7 @@ function OrgAdminSettings() {
               <CardTitle>Lu.ma Events Integration</CardTitle>
               <CardDescription>
                 Connect your lu.ma calendar to display events on your
-                organization page
+                organization page and dashboard
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -186,28 +207,24 @@ function OrgAdminSettings() {
                       type="url"
                       placeholder="https://lu.ma/your-calendar"
                       value={lumaCalendarUrl}
-                      onChange={(e) => setLumaCalendarUrl(e.target.value)}
+                      onChange={(e) => {
+                        setLumaCalendarUrl(e.target.value)
+                        setIsResolved(false)
+                      }}
                     />
                     <p className="text-sm text-slate-500">
                       Your public lu.ma calendar URL (e.g.,
-                      https://lu.ma/your-calendar)
+                      https://lu.ma/your-calendar). Events will be synced
+                      automatically.
                     </p>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="lumaApiKey">Lu.ma API Key</Label>
-                    <Input
-                      id="lumaApiKey"
-                      type="password"
-                      placeholder="Enter API key"
-                      value={lumaApiKey}
-                      onChange={(e) => setLumaApiKey(e.target.value)}
-                    />
-                    <p className="text-sm text-slate-500">
-                      Optional - enables event display on dashboard. Requires
-                      Luma Plus subscription.
-                    </p>
-                  </div>
+                  {isResolved && (
+                    <div className="flex items-center gap-2 text-sm text-green-700">
+                      <CheckCircle2 className="size-4" />
+                      Calendar connected - events will sync daily
+                    </div>
+                  )}
 
                   {lumaConfig.eventsLastSynced && (
                     <div className="rounded-lg bg-slate-50 px-4 py-3 text-sm">

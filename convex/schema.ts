@@ -387,7 +387,8 @@ export default defineSchema({
 
     // Lu.ma integration for events
     lumaCalendarUrl: v.optional(v.string()), // Public calendar URL (e.g., "https://lu.ma/baish") for embed
-    lumaApiKey: v.optional(v.string()), // API key for sync (requires Luma Plus)
+    lumaCalendarApiId: v.optional(v.string()), // Calendar API ID (e.g., "cal-0oFAsTn5vpwcAwb") for free sync
+    lumaApiKey: v.optional(v.string()), // Deprecated - was for paid API sync
     eventsLastSynced: v.optional(v.number()), // Timestamp of last sync
   })
     .index('by_name', ['name'])

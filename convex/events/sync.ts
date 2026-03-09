@@ -1,51 +1,65 @@
 'use node'
 import { v } from 'convex/values'
-import { internalAction } from '../_generated/server'
+import { action, internalAction } from '../_generated/server'
 import { internal } from '../_generated/api'
 import { log } from '../lib/logging'
-import { fetchLumaEvents } from './lumaClient'
+import { fetchLumaEvents, resolveLumaCalendarId } from './lumaClient'
+
+/**
+ * Resolve a Lu.ma calendar URL to its calendar API ID.
+ * Called from admin settings when configuring event sync.
+ */
+export const resolveLumaCalendar = action({
+  args: { calendarUrl: v.string() },
+  returns: v.string(),
+  handler: async (_ctx, { calendarUrl }) => {
+    return await resolveLumaCalendarId(calendarUrl)
+  },
+})
 
 /**
  * Sync events for a single organization from Lu.ma.
- * Fetches events and upserts them to the database.
+ * Uses the free public API (no API key needed).
  */
 export const syncOrgEvents = internalAction({
   args: { orgId: v.id('organizations') },
+  returns: v.null(),
   handler: async (ctx, { orgId }) => {
     // Get org's lu.ma config
     const org = await ctx.runQuery(internal.orgs.queries.getById, { orgId })
-    if (!org?.lumaApiKey) {
-      log('info', 'Org has no lu.ma API key, skipping', { orgId })
-      return
+    if (!org?.lumaCalendarApiId) {
+      log('info', 'Org has no lu.ma calendar ID, skipping', { orgId })
+      return null
     }
 
     log('info', 'Syncing events for org', { orgName: org.name })
 
-    // Fetch events from lu.ma API
-    // Get events from 30 days ago to 90 days in the future
-    const thirtyDaysAgo = new Date(
-      Date.now() - 30 * 24 * 60 * 60 * 1000,
-    ).toISOString()
-    const ninetyDaysAhead = new Date(
-      Date.now() + 90 * 24 * 60 * 60 * 1000,
-    ).toISOString()
+    // Fetch upcoming and recent past events from the public API
+    const [upcomingEvents, pastEvents] = await Promise.all([
+      fetchLumaEvents(org.lumaCalendarApiId, { period: 'upcoming' }),
+      fetchLumaEvents(org.lumaCalendarApiId, { period: 'past' }),
+    ])
 
-    const lumaEvents = await fetchLumaEvents(org.lumaApiKey, {
-      after: thirtyDaysAgo,
-      before: ninetyDaysAhead,
+    // Combine and dedupe by event API ID
+    const seen = new Set<string>()
+    const allEntries = [...upcomingEvents, ...pastEvents].filter((entry) => {
+      if (seen.has(entry.event.api_id)) return false
+      seen.add(entry.event.api_id)
+      return true
     })
 
     log('info', 'Fetched events from lu.ma', {
       orgName: org.name,
-      eventCount: lumaEvents.length,
+      upcoming: upcomingEvents.length,
+      past: pastEvents.length,
+      total: allEntries.length,
     })
 
     // Transform lu.ma events to our schema format
-    const events = lumaEvents.map((entry) => ({
+    const events = allEntries.map((entry) => ({
       lumaEventId: entry.event.api_id,
       title: entry.event.name,
-      description:
-        entry.event.description_md ?? entry.event.description ?? undefined,
+      description: undefined as string | undefined,
       startAt: new Date(entry.event.start_at).getTime(),
       endAt: entry.event.end_at
         ? new Date(entry.event.end_at).getTime()
@@ -53,8 +67,12 @@ export const syncOrgEvents = internalAction({
       timezone: entry.event.timezone,
       coverUrl: entry.event.cover_url ?? undefined,
       url: entry.event.url,
-      location: entry.event.geo_address_json?.address ?? undefined,
-      isVirtual: !!entry.event.meeting_url,
+      location:
+        entry.event.geo_address_info?.full_address ??
+        entry.event.geo_address_info?.address ??
+        entry.event.geo_address_info?.city ??
+        undefined,
+      isVirtual: entry.event.location_type === 'online',
     }))
 
     // Upsert events to database
@@ -75,6 +93,8 @@ export const syncOrgEvents = internalAction({
       orgName: org.name,
       eventCount: events.length,
     })
+
+    return null
   },
 })
 
@@ -84,10 +104,11 @@ export const syncOrgEvents = internalAction({
  */
 export const runFullEventSync = internalAction({
   args: {},
+  returns: v.null(),
   handler: async (ctx) => {
     log('info', 'Starting lu.ma event sync')
 
-    // Get all orgs with lu.ma API keys configured
+    // Get all orgs with lu.ma calendar IDs configured
     const orgsWithLuma = await ctx.runQuery(
       internal.events.queries.getOrgsWithLumaConfig,
     )
@@ -115,5 +136,6 @@ export const runFullEventSync = internalAction({
     }
 
     log('info', 'Event sync complete')
+    return null
   },
 })

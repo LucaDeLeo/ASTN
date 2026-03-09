@@ -159,7 +159,8 @@ export const createInviteLink = mutation({
     // Default to 30-day expiration if not specified
     const DEFAULT_INVITE_EXPIRY_DAYS = 30
     const expiresAt =
-      Date.now() + (expiresInDays ?? DEFAULT_INVITE_EXPIRY_DAYS) * 24 * 60 * 60 * 1000
+      Date.now() +
+      (expiresInDays ?? DEFAULT_INVITE_EXPIRY_DAYS) * 24 * 60 * 60 * 1000
 
     // Insert invite link
     await ctx.db.insert('orgInviteLinks', {
@@ -278,9 +279,10 @@ export const updateLumaConfig = mutation({
   args: {
     orgId: v.id('organizations'),
     lumaCalendarUrl: v.optional(v.string()),
-    lumaApiKey: v.optional(v.string()),
+    lumaCalendarApiId: v.optional(v.string()),
   },
-  handler: async (ctx, { orgId, lumaCalendarUrl, lumaApiKey }) => {
+  returns: v.object({ success: v.boolean() }),
+  handler: async (ctx, { orgId, lumaCalendarUrl, lumaCalendarApiId }) => {
     await requireOrgAdmin(ctx, orgId)
 
     // Get current org to verify it exists
@@ -292,7 +294,7 @@ export const updateLumaConfig = mutation({
     // Update lu.ma config fields
     await ctx.db.patch('organizations', orgId, {
       lumaCalendarUrl: lumaCalendarUrl || undefined,
-      lumaApiKey: lumaApiKey || undefined,
+      lumaCalendarApiId: lumaCalendarApiId || undefined,
     })
 
     return { success: true }
@@ -302,6 +304,11 @@ export const updateLumaConfig = mutation({
 // Get lu.ma configuration for an organization (admin only)
 export const getLumaConfig = query({
   args: { orgId: v.id('organizations') },
+  returns: v.object({
+    lumaCalendarUrl: v.optional(v.string()),
+    lumaCalendarApiId: v.optional(v.string()),
+    eventsLastSynced: v.optional(v.number()),
+  }),
   handler: async (ctx, { orgId }) => {
     await requireOrgAdmin(ctx, orgId)
 
@@ -312,7 +319,7 @@ export const getLumaConfig = query({
 
     return {
       lumaCalendarUrl: org.lumaCalendarUrl,
-      lumaApiKey: org.lumaApiKey,
+      lumaCalendarApiId: org.lumaCalendarApiId,
       eventsLastSynced: org.eventsLastSynced,
     }
   },
