@@ -2,19 +2,17 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-11)
+See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** Planning next milestone
+**Current focus:** v2.0 Course Program Platform
 
 ## Current Position
 
-Phase: 36 of 36 (all phases complete)
-Plan: All complete
-Status: Milestone v1.6 shipped
-Last activity: 2026-02-11 -- v1.6 Career Actions milestone archived
-
-Progress: [██████████] 100%
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-10 — Milestone v2.0 started
 
 ## Milestone History
 
@@ -29,16 +27,13 @@ Progress: [██████████] 100%
 
 **Total:** 36 phases, 125 plans across 7 shipped milestones + partial v2.0
 
-## Accumulated Decisions
+## Accumulated Context
 
-(Cleared at milestone boundary -- see PROJECT.md Key Decisions for v1.6 outcomes)
+(Carried from previous milestone)
 
-## Performance Metrics
-
-**Velocity:**
-
-- Total plans completed: 125
-- Total execution time: ~22 hours (across all milestones)
+- COURSE-PROGRAM-PLAN.md is the detailed design document for v2.0
+- Existing program tables: programs, programParticipation, programModules, programSessions, sessionRsvps, sessionAttendance, materialProgress
+- BAISH pilot: ~10 participants, 6 weekly sessions in Spanish
 
 ## Pending Todos
 
@@ -54,12 +49,12 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-11
-Stopped at: v1.6 milestone archived
+Last session: 2026-03-10
+Stopped at: Milestone v2.0 initialization
 Resume file: None
-Next action: `/gsd:new-milestone` to start next milestone
+Next action: Define requirements and create roadmap
 
 ---
 
 _State initialized: 2026-01-17_
-_Last updated: 2026-02-11 -- v1.6 Career Actions milestone archived_
+_Last updated: 2026-03-10 — Milestone v2.0 Course Program Platform started_
