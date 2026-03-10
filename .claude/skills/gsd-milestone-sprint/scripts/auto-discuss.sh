@@ -2,12 +2,15 @@
 # auto-discuss.sh - Claude ↔ Codex dialogue for phase discussion
 # Replaces human Q&A with AI conversation that makes decisions autonomously
 
+[[ -n "${_AUTO_DISCUSS_SOURCED:-}" ]] && return 0 2>/dev/null || true
+_AUTO_DISCUSS_SOURCED=1
+
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+_AD_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Discover skills directory relative to this script (supports both local and global installs)
-SKILLS_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
-CODEX_SCRIPT="$SKILLS_DIR/codex-oracle/scripts/ask_codex.sh"
+SKILLS_DIR="${SKILLS_DIR:-$(cd "$_AD_SCRIPT_DIR/../.." && pwd)}"
+CODEX_SCRIPT="${CODEX_SCRIPT:-$SKILLS_DIR/codex-oracle/scripts/ask_codex.sh}"
 
 # Source sprint-helpers for fix loop functions
 if [[ -f "$SKILLS_DIR/gsd-sprint/scripts/sprint-helpers.sh" ]]; then
@@ -15,9 +18,9 @@ if [[ -f "$SKILLS_DIR/gsd-sprint/scripts/sprint-helpers.sh" ]]; then
 fi
 
 # Source milestone-helpers for phase normalization functions
-MILESTONE_HELPERS="$SCRIPT_DIR/milestone-helpers.sh"
-if [[ -f "$MILESTONE_HELPERS" ]]; then
-  source "$MILESTONE_HELPERS"
+_AD_MILESTONE_HELPERS="$_AD_SCRIPT_DIR/milestone-helpers.sh"
+if [[ -f "$_AD_MILESTONE_HELPERS" ]]; then
+  source "$_AD_MILESTONE_HELPERS"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -74,6 +77,8 @@ auto_discuss_phase() {
       echo "  ✓ Codex agrees - skipping incorporation round"
       echo ""
 
+      AUTO_DISCUSS_ROUNDS=2
+
       # Write CONTEXT.md directly from proposal
       write_context_file "$PHASE" "$CLAUDE_PROPOSAL" "$CODEX_REVIEW" "2" ""
 
@@ -106,6 +111,8 @@ auto_discuss_phase() {
     }
   ')
 
+  AUTO_DISCUSS_ROUNDS=3
+
   # ─── Handle Uncertainties ───
   local RESOLUTION=""
   if [[ -n "$UNCERTAINTIES" ]]; then
@@ -128,7 +135,15 @@ auto_discuss_phase() {
       case "$response" in
         review)
           RESOLUTION="reviewed"
-          resolve_uncertainties "$UNCERTAINTIES"
+          local USER_DECISIONS
+          USER_DECISIONS=$(resolve_uncertainties "$UNCERTAINTIES")
+          if [[ -n "$USER_DECISIONS" ]]; then
+            FINAL_DECISIONS="$FINAL_DECISIONS
+
+## User Decisions
+
+$USER_DECISIONS"
+          fi
           ;;
         halt)
           echo "Halting for manual review."
@@ -406,11 +421,11 @@ EOF
 resolve_uncertainties() {
   local UNCERTAINTIES="$1"
 
-  echo ""
-  echo "Please resolve these uncertainties:"
-  echo "$UNCERTAINTIES"
-  echo ""
-  echo "Enter your decisions (press Enter twice when done):"
+  echo "" >&2
+  echo "Please resolve these uncertainties:" >&2
+  echo "$UNCERTAINTIES" >&2
+  echo "" >&2
+  echo "Enter your decisions (press Enter twice when done):" >&2
 
   local DECISIONS=""
   local LINE=""
@@ -420,7 +435,8 @@ resolve_uncertainties() {
   done < /dev/tty
 
   if [[ -n "$DECISIONS" ]]; then
-    echo "  → Recorded decisions"
+    echo "  → Recorded decisions" >&2
+    echo -e "$DECISIONS"
   fi
 }
 

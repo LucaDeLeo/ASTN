@@ -200,7 +200,7 @@ for PHASE in $REMAINING_PHASES; do
     fi
 
     echo "  ✓ Auto-discuss complete ($STEP_DURATION)"
-    log_auto_discuss "$PHASE" "3" "see CONTEXT.md" "auto"
+    log_auto_discuss "$PHASE" "${AUTO_DISCUSS_ROUNDS:-3}" "see CONTEXT.md" "auto"
   else
     echo "→ Context exists for phase $PHASE, skipping auto-discuss"
   fi
@@ -268,7 +268,7 @@ Create PLAN.md files for the phase. Focus on actionable plans that can be execut
       echo "→ Codex validating plans..."
 
       if ! run_codex_fix_loop "plan" "$PHASE"; then
-        log_codex_result "$PHASE" "plan" "FAIL" "fix loop failed"
+        log_codex_result "$PHASE" "FAIL" "plan fix loop failed"
         halt_milestone_sprint "Codex validation failed for phase $PHASE plans"
         exit 1
       fi
@@ -276,7 +276,7 @@ Create PLAN.md files for the phase. Focus on actionable plans that can be execut
       STEP_END=$(date +%s)
       STEP_DURATION=$(format_duration $((STEP_END - STEP_START)))
       echo "  ✓ Codex plan validation complete ($STEP_DURATION)"
-      log_codex_result "$PHASE" "plan" "OK" ""
+      log_codex_result "$PHASE" "OK" "plans validated"
     fi
   else
     echo "→ Plans exist for phase $PHASE, skipping planning"
@@ -342,7 +342,7 @@ Execute all plans. Create SUMMARY.md for each plan.
       ;;
     1)
       ERROR_DETAILS=""
-      ERROR_DETAILS=$(extract_error_details)
+      ERROR_DETAILS=$(extract_error_details "$(get_stream_output)")
       halt_milestone_sprint "Execution error in phase $PHASE: $ERROR_DETAILS"
       exit 1
       ;;
@@ -352,7 +352,7 @@ Execute all plans. Create SUMMARY.md for each plan.
       ;;
     3)
       CHECKPOINT_DETAILS=""
-      CHECKPOINT_DETAILS=$(extract_checkpoint_details)
+      CHECKPOINT_DETAILS=$(extract_checkpoint_details "$(get_stream_output)")
       halt_milestone_sprint "Checkpoint in phase $PHASE: $CHECKPOINT_DETAILS"
       exit 2
       ;;
@@ -369,7 +369,7 @@ Execute all plans. Create SUMMARY.md for each plan.
     echo "→ Codex reviewing code..."
 
     if ! run_codex_fix_loop "code" "$PHASE"; then
-      log_codex_result "$PHASE" "code" "FAIL" "fix loop failed"
+      log_codex_result "$PHASE" "FAIL" "code fix loop failed"
       halt_milestone_sprint "Codex code review failed for phase $PHASE"
       exit 1
     fi
@@ -377,7 +377,7 @@ Execute all plans. Create SUMMARY.md for each plan.
     STEP_END=$(date +%s)
     STEP_DURATION=$(format_duration $((STEP_END - STEP_START)))
     echo "  ✓ Codex code review complete ($STEP_DURATION)"
-    log_codex_result "$PHASE" "code" "OK" ""
+    log_codex_result "$PHASE" "OK" "code reviewed"
   fi
 
   # ─── PHASE COMPLETE ───

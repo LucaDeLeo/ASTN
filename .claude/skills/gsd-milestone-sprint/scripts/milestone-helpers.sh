@@ -2,18 +2,21 @@
 # milestone-helpers.sh - Helper functions for milestone-sprint
 # Sources sprint-helpers.sh for common functionality
 
+[[ -n "${_MILESTONE_HELPERS_SOURCED:-}" ]] && return 0
+_MILESTONE_HELPERS_SOURCED=1
+
 set -euo pipefail
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Source common sprint helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+_MH_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Discover skills directory relative to this script (supports both local and global installs)
-SKILLS_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+SKILLS_DIR="${SKILLS_DIR:-$(cd "$_MH_SCRIPT_DIR/../.." && pwd)}"
 SPRINT_HELPERS="$SKILLS_DIR/gsd-sprint/scripts/sprint-helpers.sh"
 CODEX_SCRIPT="$SKILLS_DIR/codex-oracle/scripts/ask_codex.sh"
-AUTO_DISCUSS_SCRIPT="$SCRIPT_DIR/auto-discuss.sh"
+AUTO_DISCUSS_SCRIPT="$_MH_SCRIPT_DIR/auto-discuss.sh"
 
 if [[ -f "$SPRINT_HELPERS" ]]; then
   source "$SPRINT_HELPERS"
@@ -299,20 +302,7 @@ has_context() {
   return 1
 }
 
-# Check if phase has PLAN.md files
-has_plans() {
-  local PHASE="$1"
-  local PHASE_DIR
-  PHASE_DIR=$(find_phase_dir "$PHASE")
-
-  if [[ -n "$PHASE_DIR" ]]; then
-    # Use find instead of glob to avoid nullglob issues
-    local PLAN_COUNT
-    PLAN_COUNT=$(find "$PHASE_DIR" -maxdepth 1 -name "*-PLAN.md" -type f 2>/dev/null | wc -l | tr -d ' ')
-    [[ "$PLAN_COUNT" -gt 0 ]] && return 0
-  fi
-  return 1
-}
+# has_plans() is defined in sprint-helpers.sh (sourced above)
 
 # Get milestone goal from ROADMAP.md
 get_milestone_goal() {
@@ -509,12 +499,13 @@ log_auto_discuss() {
     return
   fi
 
-  # Append to auto-discuss log table
-  sed -i.bak "/^## Auto-Discuss Log/,/^---/{
-    /^| Phase | Rounds/a\\
-| $PHASE | $ROUNDS | $FLAGGED | $RESOLUTION |
-  }" "$MILESTONE_SPRINT_FILE" 2>/dev/null || true
-  rm -f "$MILESTONE_SPRINT_FILE.bak"
+  # Append to auto-discuss log table (portable awk instead of sed)
+  local ROW="| $PHASE | $ROUNDS | $FLAGGED | $RESOLUTION |"
+  awk -v row="$ROW" '
+    { print }
+    /^\| Phase \| Rounds/ { getline; print; print row; next }
+  ' "$MILESTONE_SPRINT_FILE" > "${MILESTONE_SPRINT_FILE}.tmp" \
+    && mv "${MILESTONE_SPRINT_FILE}.tmp" "$MILESTONE_SPRINT_FILE"
 }
 
 # Halt milestone sprint

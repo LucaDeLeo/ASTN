@@ -1,6 +1,9 @@
 #!/bin/bash
 # sprint-helpers.sh - State management and validation functions for GSD Sprint
 
+[[ -n "${_SPRINT_HELPERS_SOURCED:-}" ]] && return 0
+_SPRINT_HELPERS_SOURCED=1
+
 # Enable nullglob for safe glob handling (Fix 2)
 shopt -s nullglob
 
@@ -354,6 +357,12 @@ run_codex_fix_loop() {
   local PHASE="$2"
   local MAX_FIX_ROUNDS=5
   local fix_round=0
+
+  # Check if codex-oracle script exists
+  if [[ ! -x "$CODEX_SCRIPT" ]]; then
+    echo "  ⚠ Codex script not found — skipping validation"
+    return 0
+  fi
 
   while true; do
     echo "  → Codex review (round $((fix_round + 1)))..."

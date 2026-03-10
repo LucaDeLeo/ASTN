@@ -1,7 +1,7 @@
 ---
 name: gsd:milestone-sprint
 description: Run entire milestone autonomously with Codex validation. Auto-detects current milestone, executes all phases, and runs audit.
-argument-hint: '[milestone] [--yolo] [--skip-codex] [--resume] [--complete]'
+argument-hint: '[milestone] [--interactive] [--skip-codex] [--resume] [--complete]'
 ---
 
 # Milestone Sprint
@@ -21,14 +21,14 @@ Run an entire milestone autonomously, from current position to milestone complet
 ## Usage
 
 ```bash
-# Run current milestone (auto-detect from 🚧 marker in ROADMAP.md)
+# Run current milestone in YOLO mode (default - auto-continue, use defaults)
 /gsd:milestone-sprint
 
 # Run specific milestone
 /gsd:milestone-sprint v1.2
 
-# AFK mode (still halts on critical issues, still runs audit)
-/gsd:milestone-sprint --yolo
+# Interactive mode (pause between phases, prompt on warnings)
+/gsd:milestone-sprint --interactive
 
 # Skip codex validation (audit still runs)
 /gsd:milestone-sprint --skip-codex
@@ -70,11 +70,11 @@ Max 5 rounds. Early exit if Codex returns `[READY]` with no questions.
 
 ## Modes
 
-| Mode                          | Behavior                                                                    |
-| ----------------------------- | --------------------------------------------------------------------------- |
-| **Interactive** (default)     | Pause between phases, prompt on warnings, ask about uncertainties           |
-| **YOLO** (`--yolo`)           | Auto-continue, use defaults for uncertainties, only halt on critical issues |
-| **No Codex** (`--skip-codex`) | Skip Codex validation steps (audit still runs at end)                       |
+| Mode                              | Behavior                                                                    |
+| --------------------------------- | --------------------------------------------------------------------------- |
+| **YOLO** (default)                | Auto-continue, use defaults for uncertainties, only halt on critical issues |
+| **Interactive** (`--interactive`) | Pause between phases, prompt on warnings, ask about uncertainties           |
+| **No Codex** (`--skip-codex`)     | Skip Codex validation steps (audit still runs at end)                       |
 
 ## State File
 
