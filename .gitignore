@@ -29,10 +29,14 @@ airtable_bases.json
 app.config.timestamp_*.js
 vite.config.timestamp_*.js
 
-# Tauri
-src-tauri/target/
-src-tauri/gen/
-src-tauri/Cargo.lock
+# Capacitor
+ios/App/Pods/
+android/.gradle/
+android/app/build/
+android/build/
+
+# BMAD backup files
+*.bak
 
 # Agent CLI
 agent/node_modules/
