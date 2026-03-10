@@ -1,6 +1,6 @@
 {
   "include": ["**/*.ts", "**/*.tsx", "public/script*.js"],
-  "exclude": ["node_modules", "src-tauri", "agent"],
+  "exclude": ["node_modules", "agent", "ios", "android"],
   "compilerOptions": {
     "target": "ES2022",
     "jsx": "react-jsx",

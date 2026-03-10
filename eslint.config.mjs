@@ -12,6 +12,8 @@ export default defineConfig([
     '.claude/**',
     'node_modules/**',
     'dist/**',
+    'ios/**',
+    'android/**',
     '.planning/**',
     'app.config.timestamp*.js',
   ]),

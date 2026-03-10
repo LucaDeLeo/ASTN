@@ -43,7 +43,7 @@ import {
   clearPendingGuestApplication,
   getPendingGuestApplication,
 } from '~/lib/pendingGuestApplication'
-import { isTauri } from '~/lib/platform'
+import { isNativeApp } from '~/lib/platform'
 
 export const Route = createFileRoute('/')({
   component: Home,
@@ -115,7 +115,7 @@ const clerkAppearance = {
     headerTitle: { display: 'none' },
     headerSubtitle: { display: 'none' },
     footer: { display: 'none' },
-    ...(isTauri() && {
+    ...(isNativeApp() && {
       socialButtons: { display: 'none' as const },
       socialButtonsBlockButton: { display: 'none' as const },
       dividerRow: { display: 'none' as const },
