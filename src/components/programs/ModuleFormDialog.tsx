@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
+import type { MaterialItem } from '~/lib/program-constants'
 import { MaterialIcon } from '~/components/programs/MaterialIcon'
 import { Button } from '~/components/ui/button'
 import {
@@ -24,13 +25,12 @@ import {
 import { Textarea } from '~/components/ui/textarea'
 import { Spinner } from '~/components/ui/spinner'
 
-type MaterialType = 'link' | 'pdf' | 'video' | 'reading'
 type ModuleStatus = 'locked' | 'available' | 'completed'
 
-interface Material {
-  label: string
-  url: string
-  type: MaterialType
+interface SessionOption {
+  _id: Id<'programSessions'>
+  dayNumber: number
+  title: string
 }
 
 interface ModuleFormDialogProps {
@@ -40,9 +40,11 @@ interface ModuleFormDialogProps {
     title: string
     description?: string
     weekNumber: number
-    materials?: Array<Material>
+    linkedSessionId?: Id<'programSessions'>
+    materials?: Array<MaterialItem>
     status: ModuleStatus
   }
+  sessions?: Array<SessionOption>
   onSuccess?: () => void
   trigger?: React.ReactNode
 }
@@ -50,6 +52,7 @@ interface ModuleFormDialogProps {
 export function ModuleFormDialog({
   programId,
   module,
+  sessions = [],
   onSuccess,
   trigger,
 }: ModuleFormDialogProps) {
@@ -61,7 +64,10 @@ export function ModuleFormDialog({
     module?.weekNumber.toString() ?? '1',
   )
   const [status, setStatus] = useState<ModuleStatus>(module?.status ?? 'locked')
-  const [materials, setMaterials] = useState<Array<Material>>(
+  const [linkedSessionId, setLinkedSessionId] = useState<string>(
+    module?.linkedSessionId ?? 'none',
+  )
+  const [materials, setMaterials] = useState<Array<MaterialItem>>(
     module?.materials ?? [],
   )
 
@@ -76,6 +82,7 @@ export function ModuleFormDialog({
       setDescription('')
       setWeekNumber('1')
       setStatus('locked')
+      setLinkedSessionId('none')
       setMaterials([])
     }
   }
@@ -90,6 +97,11 @@ export function ModuleFormDialog({
         (m) => m.label.trim() && m.url.trim(),
       )
 
+      const sessionId =
+        linkedSessionId !== 'none'
+          ? (linkedSessionId as Id<'programSessions'>)
+          : undefined
+
       if (module) {
         await updateModule({
           moduleId: module._id,
@@ -97,6 +109,7 @@ export function ModuleFormDialog({
           description: description.trim() || undefined,
           weekNumber: parseInt(weekNumber),
           status,
+          linkedSessionId: sessionId,
           materials: validMaterials.length > 0 ? validMaterials : undefined,
         })
         toast.success('Module updated')
@@ -107,6 +120,7 @@ export function ModuleFormDialog({
           description: description.trim() || undefined,
           weekNumber: parseInt(weekNumber),
           status,
+          linkedSessionId: sessionId,
           materials: validMaterials.length > 0 ? validMaterials : undefined,
         })
         toast.success('Module created')
@@ -125,7 +139,7 @@ export function ModuleFormDialog({
   }
 
   const addMaterial = () => {
-    setMaterials([...materials, { label: '', url: '', type: 'link' }])
+    setMaterials([...materials, { label: '', url: '', type: 'link' as const }])
   }
 
   const removeMaterial = (index: number) => {
@@ -134,8 +148,8 @@ export function ModuleFormDialog({
 
   const updateMaterial = (
     index: number,
-    field: keyof Material,
-    value: string,
+    field: keyof MaterialItem,
+    value: string | number | undefined,
   ) => {
     const updated = [...materials]
     updated[index] = { ...updated[index], [field]: value }
@@ -152,6 +166,7 @@ export function ModuleFormDialog({
           setDescription(module.description ?? '')
           setWeekNumber(module.weekNumber.toString())
           setStatus(module.status)
+          setLinkedSessionId(module.linkedSessionId ?? 'none')
           setMaterials(module.materials ?? [])
         }
       }}
@@ -225,6 +240,30 @@ export function ModuleFormDialog({
             </div>
           </div>
 
+          {sessions.length > 0 && (
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1 block">
+                Linked Session
+              </label>
+              <Select
+                value={linkedSessionId}
+                onValueChange={setLinkedSessionId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="None" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {sessions.map((s) => (
+                    <SelectItem key={s._id} value={s._id}>
+                      Day {s.dayNumber}: {s.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-sm font-medium text-foreground">
@@ -287,11 +326,31 @@ export function ModuleFormDialog({
                         </SelectContent>
                       </Select>
                     </div>
-                    <Input
-                      placeholder="URL"
-                      value={mat.url}
-                      onChange={(e) => updateMaterial(i, 'url', e.target.value)}
-                    />
+                    <div className="grid grid-cols-[1fr,auto] gap-2">
+                      <Input
+                        placeholder="URL"
+                        value={mat.url}
+                        onChange={(e) =>
+                          updateMaterial(i, 'url', e.target.value)
+                        }
+                      />
+                      <Input
+                        type="number"
+                        min="0"
+                        placeholder="Min"
+                        className="w-20"
+                        value={mat.estimatedMinutes ?? ''}
+                        onChange={(e) =>
+                          updateMaterial(
+                            i,
+                            'estimatedMinutes',
+                            e.target.value
+                              ? parseInt(e.target.value)
+                              : undefined,
+                          )
+                        }
+                      />
+                    </div>
                   </div>
                 ))}
               </div>

@@ -5,12 +5,9 @@ import {
   BookOpen,
   Building2,
   Calendar,
-  Check,
-  Clock,
+  ClipboardCheck,
   ExternalLink,
   Link2,
-  MapPin,
-  Minus,
   MoreHorizontal,
   Pencil,
   Plus,
@@ -25,7 +22,9 @@ import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { api } from '../../../../../../convex/_generated/api'
 import type { Id } from '../../../../../../convex/_generated/dataModel'
+import { AttendanceSheet } from '~/components/programs/AttendanceSheet'
 import { ModuleFormDialog } from '~/components/programs/ModuleFormDialog'
+import { SessionFormDialog } from '~/components/programs/SessionFormDialog'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
@@ -53,7 +52,6 @@ import {
   SelectValue,
 } from '~/components/ui/select'
 import { Spinner } from '~/components/ui/spinner'
-import { formatEventDate } from '~/lib/format-event-date'
 import {
   moduleStatusColors,
   programStatusColors,
@@ -110,12 +108,34 @@ function ProgramDetailPage() {
       ? { programId: programId as Id<'programs'> }
       : 'skip',
   )
-  const programEvents = useQuery(
-    api.programs.getProgramEvents,
+  const programSessions = useQuery(
+    api.programs.getProgramSessions,
     org && membership?.role === 'admin'
       ? { programId: programId as Id<'programs'> }
       : 'skip',
   )
+  const sessionAttendance = useQuery(
+    api.programs.getSessionAttendance,
+    org && membership?.role === 'admin'
+      ? { programId: programId as Id<'programs'> }
+      : 'skip',
+  )
+  const allRsvps = useQuery(
+    api.programs.getSessionRsvps,
+    org && membership?.role === 'admin'
+      ? { programId: programId as Id<'programs'> }
+      : 'skip',
+  )
+
+  // Pre-build attendance count per user (one record per session+user from backend)
+  const attendanceCountMap = useMemo(() => {
+    const map = new Map<string, number>()
+    if (!sessionAttendance) return map
+    for (const a of sessionAttendance) {
+      map.set(a.userId, (map.get(a.userId) ?? 0) + 1)
+    }
+    return map
+  }, [sessionAttendance])
 
   // Loading
   if (org === undefined || membership === undefined || program === undefined) {
@@ -308,15 +328,26 @@ function ProgramDetailPage() {
           />
 
           {/* Sessions */}
-          <SessionsCard
-            orgId={org._id}
+          <ProgramSessionsCard
             programId={program._id}
-            events={programEvents}
-            linkedEventIds={program.linkedEventIds ?? []}
+            sessions={programSessions}
+            allRsvps={allRsvps}
           />
 
           {/* Curriculum */}
-          <CurriculumCard programId={program._id} modules={programModules} />
+          <CurriculumCard
+            programId={program._id}
+            modules={programModules}
+            sessions={programSessions}
+          />
+
+          {/* Attendance */}
+          <AttendanceCard
+            sessions={programSessions}
+            participants={participants}
+            attendance={sessionAttendance}
+            rsvps={allRsvps}
+          />
 
           {/* Participants Section */}
           <Card>
@@ -371,6 +402,9 @@ function ProgramDetailPage() {
                           key={participant._id}
                           participant={participant}
                           program={program}
+                          attendedCount={
+                            attendanceCountMap.get(participant.userId) ?? 0
+                          }
                         />
                       ))}
                     </tbody>
@@ -390,7 +424,6 @@ interface ParticipantRowProps {
     _id: Id<'programParticipation'>
     userId: string
     status: 'enrolled' | 'pending' | 'completed' | 'withdrawn' | 'removed'
-    manualAttendanceCount?: number
     enrolledAt: number
     memberName: string
   }
@@ -402,17 +435,18 @@ interface ParticipantRowProps {
       requiredPercentage?: number
     }
   }
+  attendedCount: number
 }
 
-function ParticipantRow({ participant, program }: ParticipantRowProps) {
+function ParticipantRow({
+  participant,
+  program,
+  attendedCount,
+}: ParticipantRowProps) {
   const [isLoading, setIsLoading] = useState(false)
-  const [attendanceCount, setAttendanceCount] = useState(
-    participant.manualAttendanceCount ?? 0,
-  )
 
   const markCompleted = useMutation(api.programs.markCompleted)
   const unenrollMember = useMutation(api.programs.unenrollMember)
-  const updateAttendance = useMutation(api.programs.updateManualAttendance)
 
   const enrolledDate = new Date(participant.enrolledAt).toLocaleDateString(
     'en-US',
@@ -457,20 +491,10 @@ function ParticipantRow({ participant, program }: ParticipantRowProps) {
     }
   }
 
-  const handleUpdateAttendance = async (newCount: number) => {
-    if (newCount < 0) return
-    setAttendanceCount(newCount)
-    try {
-      await updateAttendance({
-        participationId: participant._id,
-        count: newCount,
-      })
-    } catch (error) {
-      toast.error('Failed to update attendance')
-      setAttendanceCount(participant.manualAttendanceCount ?? 0)
-      console.error(error)
-    }
-  }
+  const requiredCount =
+    program.completionCriteria?.type === 'attendance_count'
+      ? program.completionCriteria.requiredCount
+      : undefined
 
   return (
     <tr className="hover:bg-slate-50">
@@ -485,36 +509,11 @@ function ParticipantRow({ participant, program }: ParticipantRowProps) {
         </Badge>
       </td>
       <td className="px-4 py-3">
-        {participant.status === 'enrolled' ? (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="size-8 p-0"
-              onClick={() => handleUpdateAttendance(attendanceCount - 1)}
-              disabled={attendanceCount <= 0}
-            >
-              <Minus className="size-4" />
-            </Button>
-            <span className="w-12 text-center text-foreground">
-              {attendanceCount}
-              {program.completionCriteria?.type === 'attendance_count' &&
-                ` / ${program.completionCriteria.requiredCount}`}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              className="size-8 p-0"
-              onClick={() => handleUpdateAttendance(attendanceCount + 1)}
-            >
-              <Plus className="size-4" />
-            </Button>
-          </div>
-        ) : (
-          <span className="text-slate-500">
-            {participant.manualAttendanceCount ?? 0}
-          </span>
-        )}
+        <span className="text-foreground">
+          {attendedCount}
+          {requiredCount !== undefined && ` / ${requiredCount}`}
+          {requiredCount !== undefined && ' sessions'}
+        </span>
       </td>
       <td className="px-4 py-3 text-slate-600">{enrolledDate}</td>
       <td className="px-4 py-3 text-right">
@@ -918,75 +917,64 @@ function LinkedOpportunityCard({
 }
 
 // ============================================================
-// Sessions Card
+// Program Sessions Card
 // ============================================================
 
-function SessionsCard({
-  orgId,
+function ProgramSessionsCard({
   programId,
-  events,
-  linkedEventIds,
+  sessions,
+  allRsvps,
 }: {
-  orgId: Id<'organizations'>
   programId: Id<'programs'>
-  events:
+  sessions:
     | Array<{
-        _id: Id<'events'>
+        _id: Id<'programSessions'>
+        dayNumber: number
         title: string
-        startAt: number
-        endAt?: number
-        timezone: string
-        location?: string
-        isVirtual: boolean
-        url: string
+        date: number
+        morningStartTime: string
+        afternoonStartTime: string
+        lumaUrl?: string
       }>
     | undefined
-  linkedEventIds: Array<Id<'events'>>
+  allRsvps:
+    | Array<{
+        sessionId: Id<'programSessions'>
+        userId: string
+        userName: string
+        preference: 'morning' | 'afternoon' | 'either'
+      }>
+    | undefined
 }) {
-  const [showPicker, setShowPicker] = useState(false)
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const orgEvents = useQuery(
-    api.programs.getOrgEventsForLinking,
-    showPicker ? { orgId } : 'skip',
-  )
-  const updateProgram = useMutation(api.programs.updateProgram)
+  const deleteSession = useMutation(api.programs.deleteSession)
 
-  const handleAddSessions = async () => {
-    const newIds = [
-      ...linkedEventIds,
-      ...([...selectedIds] as Array<Id<'events'>>),
-    ]
+  const handleDelete = async (
+    sessionId: Id<'programSessions'>,
+    title: string,
+  ) => {
+    if (
+      !confirm(
+        `Delete session "${title}"? This will also delete all RSVPs and attendance for this session.`,
+      )
+    )
+      return
     try {
-      await updateProgram({ programId, linkedEventIds: newIds })
-      toast.success('Sessions added')
-      setShowPicker(false)
-      setSelectedIds(new Set())
+      await deleteSession({ sessionId })
+      toast.success('Session deleted')
     } catch (error) {
-      toast.error('Failed to add sessions')
+      toast.error('Failed to delete session')
       console.error(error)
     }
   }
 
-  const handleRemoveEvent = async (eventId: Id<'events'>) => {
-    const newIds = linkedEventIds.filter((id) => id !== eventId)
-    try {
-      await updateProgram({ programId, linkedEventIds: newIds })
-      toast.success('Session removed')
-    } catch (error) {
-      toast.error('Failed to remove session')
-      console.error(error)
+  const rsvpCountBySession = useMemo(() => {
+    const map = new Map<string, number>()
+    if (!allRsvps) return map
+    for (const r of allRsvps) {
+      map.set(r.sessionId, (map.get(r.sessionId) ?? 0) + 1)
     }
-  }
-
-  const toggleEvent = (id: string) => {
-    const next = new Set(selectedIds)
-    if (next.has(id)) next.delete(id)
-    else next.add(id)
-    setSelectedIds(next)
-  }
-
-  const linkedSet = new Set(linkedEventIds.map(String))
-  const availableEvents = orgEvents?.filter((e) => !linkedSet.has(e._id))
+    return map
+  }, [allRsvps])
 
   return (
     <Card className="mb-8">
@@ -996,129 +984,73 @@ function SessionsCard({
             <Calendar className="size-5" />
             Sessions
           </CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowPicker(!showPicker)}
-          >
-            <Plus className="size-4 mr-1" />
-            Add Session
-          </Button>
+          <SessionFormDialog programId={programId} />
         </div>
       </CardHeader>
       <CardContent>
-        {showPicker && (
-          <div className="mb-4 border rounded-lg p-3 bg-slate-50">
-            <p className="text-sm font-medium text-slate-600 mb-2">
-              Select events to add:
-            </p>
-            {orgEvents === undefined ? (
-              <div className="flex justify-center py-4">
-                <Spinner className="size-6" />
-              </div>
-            ) : availableEvents && availableEvents.length > 0 ? (
-              <>
-                <div className="max-h-48 overflow-y-auto space-y-1 mb-3">
-                  {availableEvents.map((ev) => (
-                    <label
-                      key={ev._id}
-                      className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-white cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.has(ev._id)}
-                        onChange={() => toggleEvent(ev._id)}
-                        className="rounded"
-                      />
-                      <span className="text-sm text-foreground">
-                        {ev.title}
-                      </span>
-                      <span className="text-xs text-slate-500 ml-auto">
-                        {new Date(ev.startAt).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                        })}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    onClick={handleAddSessions}
-                    disabled={selectedIds.size === 0}
-                  >
-                    <Check className="size-4 mr-1" />
-                    Add {selectedIds.size} Session
-                    {selectedIds.size !== 1 ? 's' : ''}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setShowPicker(false)
-                      setSelectedIds(new Set())
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <p className="text-sm text-slate-500 text-center py-2">
-                No more events available to add
-              </p>
-            )}
-          </div>
-        )}
-
-        {events === undefined ? (
+        {sessions === undefined ? (
           <div className="flex justify-center py-4">
             <Spinner className="size-6" />
           </div>
-        ) : events.length === 0 ? (
+        ) : sessions.length === 0 ? (
           <p className="text-slate-500 text-sm text-center py-4">
-            No sessions linked yet
+            No sessions created yet
           </p>
         ) : (
           <div className="space-y-2">
-            {events.map((ev) => (
+            {sessions.map((session) => (
               <div
-                key={ev._id}
+                key={session._id}
                 className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50"
               >
-                <div>
-                  <p className="font-medium text-foreground text-sm">
-                    {ev.title}
-                  </p>
-                  <div className="flex items-center gap-3 text-xs text-slate-500 mt-0.5">
-                    <span className="flex items-center gap-1">
-                      <Clock className="size-3" />
-                      {formatEventDate(ev.startAt, ev.endAt, ev.timezone)}
-                    </span>
-                    {ev.location && (
-                      <span className="flex items-center gap-1">
-                        <MapPin className="size-3" />
-                        {ev.location}
-                      </span>
-                    )}
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded shrink-0">
+                    Day {session.dayNumber}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-medium text-foreground text-sm truncate">
+                      {session.title}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {new Date(session.date).toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                      })}{' '}
+                      · {session.morningStartTime} /{' '}
+                      {session.afternoonStartTime}
+                      {(rsvpCountBySession.get(session._id) ?? 0) > 0 && (
+                        <> · {rsvpCountBySession.get(session._id)} RSVPs</>
+                      )}
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <a
-                    href={`https://lu.ma/${ev.url}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Button variant="ghost" size="sm" className="size-8 p-0">
-                      <ExternalLink className="size-3.5" />
-                    </Button>
-                  </a>
+                <div className="flex items-center gap-1 shrink-0">
+                  {session.lumaUrl && (
+                    <a
+                      href={session.lumaUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button variant="ghost" size="sm" className="size-8 p-0">
+                        <ExternalLink className="size-3.5" />
+                      </Button>
+                    </a>
+                  )}
+                  <SessionFormDialog
+                    programId={programId}
+                    session={session}
+                    trigger={
+                      <Button variant="ghost" size="sm" className="size-8 p-0">
+                        <Pencil className="size-3.5" />
+                      </Button>
+                    }
+                  />
                   <Button
                     variant="ghost"
                     size="sm"
                     className="size-8 p-0 text-red-500 hover:text-red-700"
-                    onClick={() => handleRemoveEvent(ev._id)}
+                    onClick={() => handleDelete(session._id, session.title)}
                   >
                     <Trash2 className="size-3.5" />
                   </Button>
@@ -1133,12 +1065,82 @@ function SessionsCard({
 }
 
 // ============================================================
+// Attendance Card
+// ============================================================
+
+function AttendanceCard({
+  sessions,
+  participants,
+  attendance,
+  rsvps,
+}: {
+  sessions:
+    | Array<{
+        _id: Id<'programSessions'>
+        dayNumber: number
+        title: string
+      }>
+    | undefined
+  participants:
+    | Array<{
+        _id: Id<'programParticipation'>
+        userId: string
+        memberName: string
+        status: string
+      }>
+    | undefined
+  attendance:
+    | Array<{
+        sessionId: Id<'programSessions'>
+        userId: string
+        slot: 'morning' | 'afternoon'
+        markedAt: number
+      }>
+    | undefined
+  rsvps:
+    | Array<{
+        sessionId: Id<'programSessions'>
+        userId: string
+        preference: 'morning' | 'afternoon' | 'either'
+      }>
+    | undefined
+}) {
+  return (
+    <Card className="mb-8">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <ClipboardCheck className="size-5" />
+          Attendance
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {sessions === undefined ||
+        participants === undefined ||
+        attendance === undefined ? (
+          <div className="flex justify-center py-4">
+            <Spinner className="size-6" />
+          </div>
+        ) : (
+          <AttendanceSheet
+            sessions={sessions}
+            participants={participants}
+            attendance={attendance}
+            rsvps={rsvps ?? []}
+          />
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+// ============================================================
 // Curriculum Card
 // ============================================================
 
 function CurriculumCard({
   programId,
   modules,
+  sessions,
 }: {
   programId: Id<'programs'>
   modules:
@@ -1150,14 +1152,23 @@ function CurriculumCard({
         description?: string
         weekNumber: number
         orderIndex: number
+        linkedSessionId?: Id<'programSessions'>
         materials?: Array<{
           label: string
           url: string
           type: 'link' | 'pdf' | 'video' | 'reading'
+          estimatedMinutes?: number
         }>
         status: 'locked' | 'available' | 'completed'
         createdAt: number
         updatedAt: number
+      }>
+    | undefined
+  sessions?:
+    | Array<{
+        _id: Id<'programSessions'>
+        dayNumber: number
+        title: string
       }>
     | undefined
 }) {
@@ -1177,6 +1188,8 @@ function CurriculumCard({
     }
   }
 
+  const sessionMap = new Map((sessions ?? []).map((s) => [s._id, s]))
+
   return (
     <Card className="mb-8">
       <CardHeader>
@@ -1185,7 +1198,7 @@ function CurriculumCard({
             <BookOpen className="size-5" />
             Curriculum
           </CardTitle>
-          <ModuleFormDialog programId={programId} />
+          <ModuleFormDialog programId={programId} sessions={sessions ?? []} />
         </div>
       </CardHeader>
       <CardContent>
@@ -1199,49 +1212,64 @@ function CurriculumCard({
           </p>
         ) : (
           <div className="space-y-2">
-            {modules.map((mod) => (
-              <div
-                key={mod._id}
-                className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded shrink-0">
-                    Week {mod.weekNumber}
-                  </span>
-                  <span className="font-medium text-foreground text-sm truncate">
-                    {mod.title}
-                  </span>
-                  <Badge className={moduleStatusColors[mod.status]}>
-                    {mod.status}
-                  </Badge>
-                  {mod.materials && mod.materials.length > 0 && (
-                    <span className="text-xs text-slate-500 shrink-0">
-                      {mod.materials.length} material
-                      {mod.materials.length !== 1 ? 's' : ''}
+            {modules.map((mod) => {
+              const linkedSession = mod.linkedSessionId
+                ? sessionMap.get(mod.linkedSessionId)
+                : undefined
+              return (
+                <div
+                  key={mod._id}
+                  className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded shrink-0">
+                      Week {mod.weekNumber}
                     </span>
-                  )}
+                    <span className="font-medium text-foreground text-sm truncate">
+                      {mod.title}
+                    </span>
+                    <Badge className={moduleStatusColors[mod.status]}>
+                      {mod.status}
+                    </Badge>
+                    {linkedSession && (
+                      <span className="text-xs text-slate-400 shrink-0">
+                        → Day {linkedSession.dayNumber}
+                      </span>
+                    )}
+                    {mod.materials && mod.materials.length > 0 && (
+                      <span className="text-xs text-slate-500 shrink-0">
+                        {mod.materials.length} material
+                        {mod.materials.length !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <ModuleFormDialog
+                      programId={programId}
+                      module={mod}
+                      sessions={sessions ?? []}
+                      trigger={
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="size-8 p-0"
+                        >
+                          <Pencil className="size-3.5" />
+                        </Button>
+                      }
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="size-8 p-0 text-red-500 hover:text-red-700"
+                      onClick={() => handleDelete(mod._id, mod.title)}
+                    >
+                      <Trash2 className="size-3.5" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <ModuleFormDialog
-                    programId={programId}
-                    module={mod}
-                    trigger={
-                      <Button variant="ghost" size="sm" className="size-8 p-0">
-                        <Pencil className="size-3.5" />
-                      </Button>
-                    }
-                  />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="size-8 p-0 text-red-500 hover:text-red-700"
-                    onClick={() => handleDelete(mod._id, mod.title)}
-                  >
-                    <Trash2 className="size-3.5" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </CardContent>

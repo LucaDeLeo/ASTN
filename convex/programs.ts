@@ -584,6 +584,524 @@ export const getLinkedOpportunityInfo = query({
 })
 
 // ============================================================
+// Session CRUD
+// ============================================================
+
+const materialValidator = v.object({
+  label: v.string(),
+  url: v.string(),
+  type: v.union(
+    v.literal('link'),
+    v.literal('pdf'),
+    v.literal('video'),
+    v.literal('reading'),
+  ),
+  estimatedMinutes: v.optional(v.number()),
+})
+
+const slotValidator = v.union(v.literal('morning'), v.literal('afternoon'))
+const preferenceValidator = v.union(
+  v.literal('morning'),
+  v.literal('afternoon'),
+  v.literal('either'),
+)
+
+export const createSession = mutation({
+  args: {
+    programId: v.id('programs'),
+    dayNumber: v.number(),
+    title: v.string(),
+    date: v.number(),
+    morningStartTime: v.string(),
+    afternoonStartTime: v.string(),
+    lumaUrl: v.optional(v.string()),
+  },
+  returns: v.id('programSessions'),
+  handler: async (ctx, args) => {
+    const program = await ctx.db.get('programs', args.programId)
+    if (!program) throw new Error('Program not found')
+    await requireOrgAdmin(ctx, program.orgId)
+
+    const now = Date.now()
+    return await ctx.db.insert('programSessions', {
+      programId: args.programId,
+      dayNumber: args.dayNumber,
+      title: args.title,
+      date: args.date,
+      morningStartTime: args.morningStartTime,
+      afternoonStartTime: args.afternoonStartTime,
+      lumaUrl: args.lumaUrl,
+      createdAt: now,
+      updatedAt: now,
+    })
+  },
+})
+
+export const updateSession = mutation({
+  args: {
+    sessionId: v.id('programSessions'),
+    dayNumber: v.optional(v.number()),
+    title: v.optional(v.string()),
+    date: v.optional(v.number()),
+    morningStartTime: v.optional(v.string()),
+    afternoonStartTime: v.optional(v.string()),
+    lumaUrl: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, { sessionId, ...updates }) => {
+    const session = await ctx.db.get('programSessions', sessionId)
+    if (!session) throw new Error('Session not found')
+
+    const program = await ctx.db.get('programs', session.programId)
+    if (!program) throw new Error('Program not found')
+    await requireOrgAdmin(ctx, program.orgId)
+
+    const patchData: Record<string, unknown> = { updatedAt: Date.now() }
+    for (const [key, value] of Object.entries(updates)) {
+      patchData[key] = value
+    }
+    await ctx.db.patch('programSessions', sessionId, patchData)
+    return null
+  },
+})
+
+export const deleteSession = mutation({
+  args: {
+    sessionId: v.id('programSessions'),
+  },
+  returns: v.null(),
+  handler: async (ctx, { sessionId }) => {
+    const session = await ctx.db.get('programSessions', sessionId)
+    if (!session) throw new Error('Session not found')
+
+    const program = await ctx.db.get('programs', session.programId)
+    if (!program) throw new Error('Program not found')
+    await requireOrgAdmin(ctx, program.orgId)
+
+    // Fetch related RSVPs and attendance in parallel
+    const [rsvps, attendance] = await Promise.all([
+      ctx.db
+        .query('sessionRsvps')
+        .withIndex('by_session', (q) => q.eq('sessionId', sessionId))
+        .collect(),
+      ctx.db
+        .query('sessionAttendance')
+        .withIndex('by_session', (q) => q.eq('sessionId', sessionId))
+        .collect(),
+    ])
+    for (const rsvp of rsvps) {
+      await ctx.db.delete('sessionRsvps', rsvp._id)
+    }
+    for (const att of attendance) {
+      await ctx.db.delete('sessionAttendance', att._id)
+    }
+
+    await ctx.db.delete('programSessions', sessionId)
+    return null
+  },
+})
+
+export const getProgramSessions = query({
+  args: {
+    programId: v.id('programs'),
+  },
+  returns: v.array(
+    v.object({
+      _id: v.id('programSessions'),
+      _creationTime: v.number(),
+      programId: v.id('programs'),
+      dayNumber: v.number(),
+      title: v.string(),
+      date: v.number(),
+      morningStartTime: v.string(),
+      afternoonStartTime: v.string(),
+      lumaUrl: v.optional(v.string()),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    }),
+  ),
+  handler: async (ctx, { programId }) => {
+    const program = await ctx.db.get('programs', programId)
+    if (!program) throw new Error('Program not found')
+    await requireProgramAccess(ctx, program)
+
+    const sessions = await ctx.db
+      .query('programSessions')
+      .withIndex('by_program', (q) => q.eq('programId', programId))
+      .collect()
+
+    return sessions.sort((a, b) => a.dayNumber - b.dayNumber)
+  },
+})
+
+// ============================================================
+// RSVP Functions
+// ============================================================
+
+export const setSessionRsvp = mutation({
+  args: {
+    sessionId: v.id('programSessions'),
+    preference: preferenceValidator,
+  },
+  returns: v.null(),
+  handler: async (ctx, { sessionId, preference }) => {
+    const session = await ctx.db.get('programSessions', sessionId)
+    if (!session) throw new Error('Session not found')
+
+    const program = await ctx.db.get('programs', session.programId)
+    if (!program) throw new Error('Program not found')
+    const userId = await requireProgramAccess(ctx, program)
+
+    const existing = await ctx.db
+      .query('sessionRsvps')
+      .withIndex('by_session_and_user', (q) =>
+        q.eq('sessionId', sessionId).eq('userId', userId),
+      )
+      .first()
+
+    if (existing) {
+      await ctx.db.patch('sessionRsvps', existing._id, {
+        preference,
+        updatedAt: Date.now(),
+      })
+    } else {
+      await ctx.db.insert('sessionRsvps', {
+        sessionId,
+        programId: session.programId,
+        userId,
+        preference,
+        updatedAt: Date.now(),
+      })
+    }
+    return null
+  },
+})
+
+export const getSessionRsvps = query({
+  args: {
+    programId: v.id('programs'),
+  },
+  returns: v.array(
+    v.object({
+      sessionId: v.id('programSessions'),
+      userId: v.string(),
+      userName: v.string(),
+      preference: preferenceValidator,
+    }),
+  ),
+  handler: async (ctx, { programId }) => {
+    const program = await ctx.db.get('programs', programId)
+    if (!program) throw new Error('Program not found')
+    await requireProgramAccess(ctx, program)
+
+    const rsvps = await ctx.db
+      .query('sessionRsvps')
+      .withIndex('by_program_and_user', (q) => q.eq('programId', programId))
+      .collect()
+
+    // Batch fetch profiles
+    const userIds = [...new Set(rsvps.map((r) => r.userId))]
+    const profiles = await Promise.all(
+      userIds.map((userId) =>
+        ctx.db
+          .query('profiles')
+          .withIndex('by_user', (q) => q.eq('userId', userId))
+          .first(),
+      ),
+    )
+    const profileMap = new Map<string, string>()
+    for (let i = 0; i < userIds.length; i++) {
+      profileMap.set(userIds[i], profiles[i]?.name ?? 'Unknown')
+    }
+
+    return rsvps.map((r) => ({
+      sessionId: r.sessionId,
+      userId: r.userId,
+      userName: profileMap.get(r.userId) ?? 'Unknown',
+      preference: r.preference,
+    }))
+  },
+})
+
+export const getMyRsvps = query({
+  args: {
+    programId: v.id('programs'),
+  },
+  returns: v.array(
+    v.object({
+      sessionId: v.id('programSessions'),
+      preference: preferenceValidator,
+    }),
+  ),
+  handler: async (ctx, { programId }) => {
+    const program = await ctx.db.get('programs', programId)
+    if (!program) throw new Error('Program not found')
+    const userId = await requireProgramAccess(ctx, program)
+
+    const rsvps = await ctx.db
+      .query('sessionRsvps')
+      .withIndex('by_program_and_user', (q) =>
+        q.eq('programId', programId).eq('userId', userId),
+      )
+      .collect()
+
+    return rsvps.map((r) => ({
+      sessionId: r.sessionId,
+      preference: r.preference,
+    }))
+  },
+})
+
+// ============================================================
+// Attendance Functions
+// ============================================================
+
+export const batchMarkAttendance = mutation({
+  args: {
+    sessionId: v.id('programSessions'),
+    attendees: v.array(
+      v.object({
+        userId: v.string(),
+        slot: slotValidator,
+      }),
+    ),
+  },
+  returns: v.object({ marked: v.number() }),
+  handler: async (ctx, { sessionId, attendees }) => {
+    const session = await ctx.db.get('programSessions', sessionId)
+    if (!session) throw new Error('Session not found')
+
+    const program = await ctx.db.get('programs', session.programId)
+    if (!program) throw new Error('Program not found')
+    const adminMembership = await requireOrgAdmin(ctx, program.orgId)
+    const adminUserId = adminMembership.userId
+
+    let marked = 0
+    for (const { userId, slot } of attendees) {
+      const existing = await ctx.db
+        .query('sessionAttendance')
+        .withIndex('by_session_and_user', (q) =>
+          q.eq('sessionId', sessionId).eq('userId', userId),
+        )
+        .first()
+
+      if (existing) {
+        await ctx.db.patch('sessionAttendance', existing._id, {
+          slot,
+          markedBy: adminUserId,
+          markedAt: Date.now(),
+        })
+      } else {
+        await ctx.db.insert('sessionAttendance', {
+          sessionId,
+          programId: session.programId,
+          userId,
+          slot,
+          markedBy: adminUserId,
+          markedAt: Date.now(),
+        })
+      }
+      marked++
+    }
+
+    // Check auto-completion after all marks (avoids N+1 in loop)
+    if (program.completionCriteria?.type === 'attendance_count') {
+      const required = program.completionCriteria.requiredCount ?? 0
+      const affectedUserIds = [...new Set(attendees.map((a) => a.userId))]
+
+      for (const userId of affectedUserIds) {
+        const allAttendance = await ctx.db
+          .query('sessionAttendance')
+          .withIndex('by_program_and_user', (q) =>
+            q.eq('programId', session.programId).eq('userId', userId),
+          )
+          .collect()
+
+        if (allAttendance.length >= required) {
+          const participation = await ctx.db
+            .query('programParticipation')
+            .withIndex('by_program_and_user', (q) =>
+              q.eq('programId', session.programId).eq('userId', userId),
+            )
+            .first()
+
+          if (participation && participation.status === 'enrolled') {
+            await ctx.db.patch('programParticipation', participation._id, {
+              status: 'completed',
+              completedAt: Date.now(),
+            })
+          }
+        }
+      }
+    }
+
+    return { marked }
+  },
+})
+
+export const removeAttendance = mutation({
+  args: {
+    sessionId: v.id('programSessions'),
+    userId: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, { sessionId, userId }) => {
+    const session = await ctx.db.get('programSessions', sessionId)
+    if (!session) throw new Error('Session not found')
+
+    const program = await ctx.db.get('programs', session.programId)
+    if (!program) throw new Error('Program not found')
+    await requireOrgAdmin(ctx, program.orgId)
+
+    const existing = await ctx.db
+      .query('sessionAttendance')
+      .withIndex('by_session_and_user', (q) =>
+        q.eq('sessionId', sessionId).eq('userId', userId),
+      )
+      .first()
+
+    if (existing) {
+      await ctx.db.delete('sessionAttendance', existing._id)
+    }
+    return null
+  },
+})
+
+export const getSessionAttendance = query({
+  args: {
+    programId: v.id('programs'),
+  },
+  returns: v.array(
+    v.object({
+      sessionId: v.id('programSessions'),
+      userId: v.string(),
+      slot: slotValidator,
+      markedAt: v.number(),
+    }),
+  ),
+  handler: async (ctx, { programId }) => {
+    const program = await ctx.db.get('programs', programId)
+    if (!program) throw new Error('Program not found')
+    await requireOrgAdmin(ctx, program.orgId)
+
+    const attendance = await ctx.db
+      .query('sessionAttendance')
+      .withIndex('by_program', (q) => q.eq('programId', programId))
+      .collect()
+
+    return attendance.map((a) => ({
+      sessionId: a.sessionId,
+      userId: a.userId,
+      slot: a.slot,
+      markedAt: a.markedAt,
+    }))
+  },
+})
+
+export const getMyAttendance = query({
+  args: {
+    programId: v.id('programs'),
+  },
+  returns: v.array(
+    v.object({
+      sessionId: v.id('programSessions'),
+      slot: slotValidator,
+    }),
+  ),
+  handler: async (ctx, { programId }) => {
+    const program = await ctx.db.get('programs', programId)
+    if (!program) throw new Error('Program not found')
+    const userId = await requireProgramAccess(ctx, program)
+
+    const attendance = await ctx.db
+      .query('sessionAttendance')
+      .withIndex('by_program_and_user', (q) =>
+        q.eq('programId', programId).eq('userId', userId),
+      )
+      .collect()
+
+    return attendance.map((a) => ({
+      sessionId: a.sessionId,
+      slot: a.slot,
+    }))
+  },
+})
+
+// ============================================================
+// Material Progress Functions
+// ============================================================
+
+export const toggleMaterialProgress = mutation({
+  args: {
+    moduleId: v.id('programModules'),
+    materialIndex: v.number(),
+  },
+  returns: v.null(),
+  handler: async (ctx, { moduleId, materialIndex }) => {
+    const mod = await ctx.db.get('programModules', moduleId)
+    if (!mod) throw new Error('Module not found')
+
+    const program = await ctx.db.get('programs', mod.programId)
+    if (!program) throw new Error('Program not found')
+    const userId = await requireProgramAccess(ctx, program)
+
+    // Check if already completed
+    const existing = await ctx.db
+      .query('materialProgress')
+      .withIndex('by_module_and_user', (q) =>
+        q.eq('moduleId', moduleId).eq('userId', userId),
+      )
+      .collect()
+
+    const match = existing.find((e) => e.materialIndex === materialIndex)
+
+    if (match) {
+      await ctx.db.delete('materialProgress', match._id)
+    } else {
+      await ctx.db.insert('materialProgress', {
+        moduleId,
+        programId: mod.programId,
+        userId,
+        materialIndex,
+        completedAt: Date.now(),
+      })
+    }
+    return null
+  },
+})
+
+export const getMyMaterialProgress = query({
+  args: {
+    programId: v.id('programs'),
+  },
+  returns: v.array(
+    v.object({
+      moduleId: v.id('programModules'),
+      materialIndex: v.number(),
+      completedAt: v.number(),
+    }),
+  ),
+  handler: async (ctx, { programId }) => {
+    const program = await ctx.db.get('programs', programId)
+    if (!program) throw new Error('Program not found')
+    const userId = await requireProgramAccess(ctx, program)
+
+    const progress = await ctx.db
+      .query('materialProgress')
+      .withIndex('by_program_and_user', (q) =>
+        q.eq('programId', programId).eq('userId', userId),
+      )
+      .collect()
+
+    return progress.map((p) => ({
+      moduleId: p.moduleId,
+      materialIndex: p.materialIndex,
+      completedAt: p.completedAt,
+    }))
+  },
+})
+
+// ============================================================
 // Module CRUD
 // ============================================================
 
@@ -601,20 +1119,8 @@ export const getProgramModules = query({
       description: v.optional(v.string()),
       weekNumber: v.number(),
       orderIndex: v.number(),
-      materials: v.optional(
-        v.array(
-          v.object({
-            label: v.string(),
-            url: v.string(),
-            type: v.union(
-              v.literal('link'),
-              v.literal('pdf'),
-              v.literal('video'),
-              v.literal('reading'),
-            ),
-          }),
-        ),
-      ),
+      materials: v.optional(v.array(materialValidator)),
+      linkedSessionId: v.optional(v.id('programSessions')),
       status: v.union(
         v.literal('locked'),
         v.literal('available'),
@@ -647,20 +1153,8 @@ export const createModule = mutation({
     title: v.string(),
     description: v.optional(v.string()),
     weekNumber: v.number(),
-    materials: v.optional(
-      v.array(
-        v.object({
-          label: v.string(),
-          url: v.string(),
-          type: v.union(
-            v.literal('link'),
-            v.literal('pdf'),
-            v.literal('video'),
-            v.literal('reading'),
-          ),
-        }),
-      ),
-    ),
+    materials: v.optional(v.array(materialValidator)),
+    linkedSessionId: v.optional(v.id('programSessions')),
     status: v.optional(
       v.union(
         v.literal('locked'),
@@ -694,6 +1188,7 @@ export const createModule = mutation({
       weekNumber: args.weekNumber,
       orderIndex: maxOrder + 1,
       materials: args.materials,
+      linkedSessionId: args.linkedSessionId,
       status: args.status ?? 'locked',
       createdAt: now,
       updatedAt: now,
@@ -709,20 +1204,8 @@ export const updateModule = mutation({
     description: v.optional(v.string()),
     weekNumber: v.optional(v.number()),
     orderIndex: v.optional(v.number()),
-    materials: v.optional(
-      v.array(
-        v.object({
-          label: v.string(),
-          url: v.string(),
-          type: v.union(
-            v.literal('link'),
-            v.literal('pdf'),
-            v.literal('video'),
-            v.literal('reading'),
-          ),
-        }),
-      ),
-    ),
+    materials: v.optional(v.array(materialValidator)),
+    linkedSessionId: v.optional(v.id('programSessions')),
     status: v.optional(
       v.union(
         v.literal('locked'),
@@ -765,6 +1248,15 @@ export const deleteModule = mutation({
     if (!program) throw new Error('Program not found')
 
     await requireOrgAdmin(ctx, program.orgId)
+
+    // Clean up related material progress
+    const progress = await ctx.db
+      .query('materialProgress')
+      .withIndex('by_module_and_user', (q) => q.eq('moduleId', moduleId))
+      .collect()
+    for (const p of progress) {
+      await ctx.db.delete('materialProgress', p._id)
+    }
 
     await ctx.db.delete('programModules', moduleId)
     return null
@@ -928,6 +1420,17 @@ export const getProgramBySlug = query({
         ),
         startDate: v.optional(v.number()),
         endDate: v.optional(v.number()),
+        completionCriteria: v.optional(
+          v.object({
+            type: v.union(
+              v.literal('attendance_count'),
+              v.literal('attendance_percentage'),
+              v.literal('manual'),
+            ),
+            requiredCount: v.optional(v.number()),
+            requiredPercentage: v.optional(v.number()),
+          }),
+        ),
       }),
       participation: v.union(
         v.object({
@@ -951,25 +1454,43 @@ export const getProgramBySlug = query({
           description: v.optional(v.string()),
           weekNumber: v.number(),
           orderIndex: v.number(),
-          materials: v.optional(
-            v.array(
-              v.object({
-                label: v.string(),
-                url: v.string(),
-                type: v.union(
-                  v.literal('link'),
-                  v.literal('pdf'),
-                  v.literal('video'),
-                  v.literal('reading'),
-                ),
-              }),
-            ),
-          ),
+          materials: v.optional(v.array(materialValidator)),
+          linkedSessionId: v.optional(v.id('programSessions')),
           status: v.union(
             v.literal('locked'),
             v.literal('available'),
             v.literal('completed'),
           ),
+        }),
+      ),
+      sessions: v.array(
+        v.object({
+          _id: v.id('programSessions'),
+          dayNumber: v.number(),
+          title: v.string(),
+          date: v.number(),
+          morningStartTime: v.string(),
+          afternoonStartTime: v.string(),
+          lumaUrl: v.optional(v.string()),
+        }),
+      ),
+      myRsvps: v.array(
+        v.object({
+          sessionId: v.id('programSessions'),
+          preference: preferenceValidator,
+        }),
+      ),
+      myAttendance: v.array(
+        v.object({
+          sessionId: v.id('programSessions'),
+          slot: slotValidator,
+        }),
+      ),
+      myMaterialProgress: v.array(
+        v.object({
+          moduleId: v.id('programModules'),
+          materialIndex: v.number(),
+          completedAt: v.number(),
         }),
       ),
       events: v.array(
@@ -1019,6 +1540,36 @@ export const getProgramBySlug = query({
       .withIndex('by_program_and_order', (q) => q.eq('programId', program._id))
       .collect()
 
+    // Get sessions
+    const sessions = await ctx.db
+      .query('programSessions')
+      .withIndex('by_program', (q) => q.eq('programId', program._id))
+      .collect()
+
+    // Get user's RSVPs
+    const myRsvps = await ctx.db
+      .query('sessionRsvps')
+      .withIndex('by_program_and_user', (q) =>
+        q.eq('programId', program._id).eq('userId', access.userId),
+      )
+      .collect()
+
+    // Get user's attendance
+    const myAttendance = await ctx.db
+      .query('sessionAttendance')
+      .withIndex('by_program_and_user', (q) =>
+        q.eq('programId', program._id).eq('userId', access.userId),
+      )
+      .collect()
+
+    // Get user's material progress
+    const myMaterialProgress = await ctx.db
+      .query('materialProgress')
+      .withIndex('by_program_and_user', (q) =>
+        q.eq('programId', program._id).eq('userId', access.userId),
+      )
+      .collect()
+
     // Get linked events
     const validEvents = await fetchLinkedEvents(
       ctx,
@@ -1035,6 +1586,7 @@ export const getProgramBySlug = query({
         status: program.status,
         startDate: program.startDate,
         endDate: program.endDate,
+        completionCriteria: program.completionCriteria,
       },
       participation: participation
         ? {
@@ -1051,7 +1603,32 @@ export const getProgramBySlug = query({
         weekNumber: m.weekNumber,
         orderIndex: m.orderIndex,
         materials: m.materials,
+        linkedSessionId: m.linkedSessionId,
         status: m.status,
+      })),
+      sessions: sessions
+        .sort((a, b) => a.dayNumber - b.dayNumber)
+        .map((s) => ({
+          _id: s._id,
+          dayNumber: s.dayNumber,
+          title: s.title,
+          date: s.date,
+          morningStartTime: s.morningStartTime,
+          afternoonStartTime: s.afternoonStartTime,
+          lumaUrl: s.lumaUrl,
+        })),
+      myRsvps: myRsvps.map((r) => ({
+        sessionId: r.sessionId,
+        preference: r.preference,
+      })),
+      myAttendance: myAttendance.map((a) => ({
+        sessionId: a.sessionId,
+        slot: a.slot,
+      })),
+      myMaterialProgress: myMaterialProgress.map((p) => ({
+        moduleId: p.moduleId,
+        materialIndex: p.materialIndex,
+        completedAt: p.completedAt,
       })),
       events: validEvents,
     }
@@ -1156,6 +1733,9 @@ export const getProgram = query({
       ),
       linkedEventIds: v.optional(v.array(v.id('events'))),
       linkedOpportunityId: v.optional(v.id('orgOpportunities')),
+      createdBy: v.id('orgMemberships'),
+      createdAt: v.number(),
+      updatedAt: v.number(),
       participantCount: v.number(),
     }),
     v.null(),

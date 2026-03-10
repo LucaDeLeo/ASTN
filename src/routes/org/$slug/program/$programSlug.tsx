@@ -4,25 +4,33 @@ import {
   Building2,
   Calendar,
   CheckCircle2,
-  Clock,
-  ExternalLink,
   GraduationCap,
   Lock,
-  MapPin,
 } from 'lucide-react'
+import { useMemo } from 'react'
 import { api } from '../../../../../convex/_generated/api'
+import type { Id } from '../../../../../convex/_generated/dataModel'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { GradientBg } from '~/components/layout/GradientBg'
-import { MaterialIcon } from '~/components/programs/MaterialIcon'
-import { formatEventDate } from '~/lib/format-event-date'
+import { MaterialChecklist } from '~/components/programs/MaterialChecklist'
+import { RsvpGrid } from '~/components/programs/RsvpGrid'
+import { RsvpSelector } from '~/components/programs/RsvpSelector'
 import { programTypeLabels } from '~/lib/program-constants'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Card } from '~/components/ui/card'
+import { Spinner } from '~/components/ui/spinner'
 
 export const Route = createFileRoute('/org/$slug/program/$programSlug')({
   component: ProgramPage,
 })
+
+const EMPTY_SET = new Set<number>()
+const EMPTY_RSVPS: Array<{
+  userId: string
+  userName: string
+  preference: 'morning' | 'afternoon' | 'either'
+}> = []
 
 function ProgramPage() {
   const { slug, programSlug } = Route.useParams()
@@ -30,6 +38,11 @@ function ProgramPage() {
   const data = useQuery(
     api.programs.getProgramBySlug,
     org ? { orgId: org._id, programSlug } : 'skip',
+  )
+  // Fetch all RSVPs separately (heavier query)
+  const allRsvps = useQuery(
+    api.programs.getSessionRsvps,
+    data?.program ? { programId: data.program._id } : 'skip',
   )
 
   if (org === undefined || data === undefined) {
@@ -76,16 +89,43 @@ function ProgramPage() {
     )
   }
 
-  const { program, participation, modules, events } = data
+  const {
+    program,
+    participation,
+    modules,
+    sessions,
+    myRsvps,
+    myAttendance,
+    myMaterialProgress,
+  } = data
 
-  const visibleModules = modules.filter(
-    (m) => m.status === 'available' || m.status === 'completed',
-  )
-  const lockedModules = modules.filter((m) => m.status === 'locked')
+  // Compute progressMap once and pass to children
+  const progressMap = useMemo(() => {
+    const map = new Map<string, Set<number>>()
+    for (const p of myMaterialProgress) {
+      if (!map.has(p.moduleId)) map.set(p.moduleId, new Set())
+      map.get(p.moduleId)!.add(p.materialIndex)
+    }
+    return map
+  }, [myMaterialProgress])
 
-  const now = Date.now()
-  const upcomingEvents = events.filter((e) => e.startAt > now)
-  const pastEvents = events.filter((e) => e.startAt <= now)
+  // Pre-group allRsvps by sessionId to avoid O(S*R) filtering
+  const rsvpsBySession = useMemo(() => {
+    const map = new Map<
+      string,
+      Array<{
+        userId: string
+        userName: string
+        preference: 'morning' | 'afternoon' | 'either'
+      }>
+    >()
+    if (!allRsvps) return map
+    for (const r of allRsvps) {
+      if (!map.has(r.sessionId)) map.set(r.sessionId, [])
+      map.get(r.sessionId)!.push(r)
+    }
+    return map
+  }, [allRsvps])
 
   return (
     <GradientBg>
@@ -167,192 +207,405 @@ function ProgramPage() {
             )}
           </Card>
 
-          {/* Upcoming Sessions */}
-          {upcomingEvents.length > 0 && (
-            <section className="mb-6">
-              <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-                <Calendar className="size-5" />
-                Upcoming Sessions
-              </h2>
-              <div className="space-y-3">
-                {upcomingEvents.map((event) => (
-                  <Card key={event._id} className="p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="font-medium text-foreground">
-                          {event.title}
-                        </h3>
-                        <div className="mt-1 flex items-center gap-1.5 text-sm text-slate-600">
-                          <Clock className="size-3.5 shrink-0" />
-                          <span>
-                            {formatEventDate(
-                              event.startAt,
-                              event.endAt,
-                              event.timezone,
-                            )}
-                          </span>
-                        </div>
-                        {event.location && (
-                          <div className="mt-1 flex items-center gap-1.5 text-sm text-slate-500">
-                            <MapPin className="size-3.5 shrink-0" />
-                            <span>{event.location}</span>
-                          </div>
-                        )}
-                      </div>
-                      <a
-                        href={`https://lu.ma/${event.url}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="shrink-0"
-                      >
-                        <Button variant="outline" size="sm">
-                          <ExternalLink className="size-3.5 mr-1" />
-                          Open in Luma
-                        </Button>
-                      </a>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </section>
+          {/* Session Timeline */}
+          {sessions.length > 0 && (
+            <SessionTimeline
+              sessions={sessions}
+              modules={modules}
+              myRsvps={myRsvps}
+              myAttendance={myAttendance}
+              progressMap={progressMap}
+              rsvpsBySession={rsvpsBySession}
+              allRsvpsLoaded={allRsvps !== undefined}
+            />
           )}
 
-          {/* Curriculum */}
-          {(visibleModules.length > 0 || lockedModules.length > 0) && (
-            <section className="mb-6">
-              <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-                <GraduationCap className="size-5" />
-                Curriculum
-              </h2>
-              <div className="space-y-3">
-                {visibleModules.map((mod) => (
-                  <Card key={mod._id} className="p-5">
-                    <div className="flex items-start justify-between gap-3 mb-2">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                            Week {mod.weekNumber}
-                          </span>
-                          {mod.status === 'completed' && (
-                            <CheckCircle2 className="size-4 text-green-600" />
-                          )}
-                        </div>
-                        <h3 className="font-medium text-foreground mt-1">
-                          {mod.title}
-                        </h3>
-                      </div>
-                    </div>
-                    {mod.description && (
-                      <p className="text-sm text-slate-600 mb-3">
-                        {mod.description}
-                      </p>
-                    )}
-                    {mod.materials && mod.materials.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {mod.materials.map((mat, i) => (
-                          <a
-                            key={i}
-                            href={mat.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-sm bg-slate-50 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg transition-colors"
-                          >
-                            <MaterialIcon type={mat.type} className="size-4" />
-                            {mat.label}
-                            <ExternalLink className="size-3 text-slate-400" />
-                          </a>
-                        ))}
-                      </div>
-                    )}
-                  </Card>
-                ))}
-
-                {lockedModules.length > 0 && (
-                  <Card className="p-4 bg-slate-50 border-dashed">
-                    <div className="flex items-center gap-2 text-slate-500">
-                      <Lock className="size-4" />
-                      <span className="text-sm">
-                        {lockedModules.length} more module
-                        {lockedModules.length > 1 ? 's' : ''} coming soon
-                      </span>
-                    </div>
-                  </Card>
-                )}
-              </div>
-            </section>
-          )}
-
-          {/* Past Sessions */}
-          {pastEvents.length > 0 && (
-            <section className="mb-6">
-              <h2 className="text-lg font-semibold text-slate-500 mb-3">
-                Past Sessions
-              </h2>
-              <div className="space-y-3 opacity-75">
-                {pastEvents.map((event) => (
-                  <Card key={event._id} className="p-4">
-                    <h3 className="font-medium text-foreground">
-                      {event.title}
-                    </h3>
-                    <div className="mt-1 flex items-center gap-1.5 text-sm text-slate-500">
-                      <Clock className="size-3.5 shrink-0" />
-                      <span>
-                        {formatEventDate(
-                          event.startAt,
-                          event.endAt,
-                          event.timezone,
-                        )}
-                      </span>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </section>
-          )}
+          {/* Unlinked Modules (not linked to any session) */}
+          <UnlinkedModules
+            modules={modules}
+            sessions={sessions}
+            progressMap={progressMap}
+          />
 
           {/* My Progress */}
           {participation && (
-            <section>
-              <h2 className="text-lg font-semibold text-foreground mb-3">
-                My Progress
-              </h2>
-              <Card className="p-5">
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <div>
-                    <p className="text-sm text-slate-500 mb-1">Status</p>
-                    <Badge
-                      className={
-                        participation.status === 'completed'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-green-100 text-green-700'
-                      }
-                    >
-                      {participation.status}
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500 mb-1">
-                      Sessions Attended
-                    </p>
-                    <p className="text-foreground font-medium">
-                      {participation.manualAttendanceCount ?? 0}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500 mb-1">Enrolled</p>
-                    <p className="text-foreground">
-                      {new Date(participation.enrolledAt).toLocaleDateString(
-                        'en-US',
-                        { month: 'short', day: 'numeric', year: 'numeric' },
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            </section>
+            <ProgressSection
+              participation={participation}
+              myAttendance={myAttendance}
+              myMaterialProgress={myMaterialProgress}
+              modules={modules}
+              program={program}
+            />
           )}
         </div>
       </main>
     </GradientBg>
+  )
+}
+
+// ============================================================
+// Session Timeline
+// ============================================================
+
+function SessionTimeline({
+  sessions,
+  modules,
+  myRsvps,
+  myAttendance,
+  progressMap,
+  rsvpsBySession,
+  allRsvpsLoaded,
+}: {
+  sessions: Array<{
+    _id: Id<'programSessions'>
+    dayNumber: number
+    title: string
+    date: number
+    morningStartTime: string
+    afternoonStartTime: string
+    lumaUrl?: string
+  }>
+  modules: Array<{
+    _id: Id<'programModules'>
+    title: string
+    description?: string
+    weekNumber: number
+    orderIndex: number
+    linkedSessionId?: Id<'programSessions'>
+    materials?: Array<{
+      label: string
+      url: string
+      type: 'link' | 'pdf' | 'video' | 'reading'
+      estimatedMinutes?: number
+    }>
+    status: 'locked' | 'available' | 'completed'
+  }>
+  myRsvps: Array<{
+    sessionId: Id<'programSessions'>
+    preference: 'morning' | 'afternoon' | 'either'
+  }>
+  myAttendance: Array<{
+    sessionId: Id<'programSessions'>
+    slot: 'morning' | 'afternoon'
+  }>
+  progressMap: Map<string, Set<number>>
+  rsvpsBySession: Map<
+    string,
+    Array<{
+      userId: string
+      userName: string
+      preference: 'morning' | 'afternoon' | 'either'
+    }>
+  >
+  allRsvpsLoaded: boolean
+}) {
+  const rsvpMap = useMemo(
+    () => new Map(myRsvps.map((r) => [r.sessionId, r.preference])),
+    [myRsvps],
+  )
+
+  const attendanceMap = useMemo(
+    () => new Map(myAttendance.map((a) => [a.sessionId, a.slot])),
+    [myAttendance],
+  )
+
+  // Pre-group modules by linkedSessionId to avoid O(S*M) filtering per render
+  const modulesBySession = useMemo(() => {
+    const map = new Map<string, typeof modules>()
+    for (const m of modules) {
+      if (
+        m.linkedSessionId &&
+        (m.status === 'available' || m.status === 'completed')
+      ) {
+        if (!map.has(m.linkedSessionId)) map.set(m.linkedSessionId, [])
+        map.get(m.linkedSessionId)!.push(m)
+      }
+    }
+    return map
+  }, [modules])
+
+  const now = Date.now()
+
+  return (
+    <section className="mb-6">
+      <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+        <Calendar className="size-5" />
+        Sessions
+      </h2>
+      <div className="space-y-4">
+        {sessions.map((session) => {
+          const linkedModules = modulesBySession.get(session._id) ?? []
+          const currentRsvp = rsvpMap.get(session._id)
+          const attendedSlot = attendanceMap.get(session._id)
+          const isPast = session.date < now - 24 * 60 * 60 * 1000 // Past if >24h ago
+
+          return (
+            <Card
+              key={session._id}
+              className={`p-5 ${isPast && !attendedSlot ? 'opacity-60' : ''}`}
+            >
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                      Day {session.dayNumber}
+                    </span>
+                    {attendedSlot && (
+                      <Badge className="bg-green-100 text-green-700">
+                        <CheckCircle2 className="size-3 mr-1" />
+                        Attended (
+                        {attendedSlot === 'morning' ? 'Morning' : 'Afternoon'})
+                      </Badge>
+                    )}
+                  </div>
+                  <h3 className="font-medium text-foreground">
+                    {session.title}
+                  </h3>
+                  <p className="text-sm text-slate-500 mt-0.5">
+                    {new Date(session.date).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      month: 'short',
+                      day: 'numeric',
+                    })}{' '}
+                    · Morning {session.morningStartTime} · Afternoon{' '}
+                    {session.afternoonStartTime}
+                  </p>
+                </div>
+              </div>
+
+              {/* RSVP selector (only for future sessions not yet attended) */}
+              {!attendedSlot && (
+                <div className="mb-3">
+                  <p className="text-xs font-medium text-slate-500 mb-1.5">
+                    Your slot:
+                  </p>
+                  <RsvpSelector
+                    sessionId={session._id}
+                    currentPreference={currentRsvp}
+                  />
+                </div>
+              )}
+
+              {/* Pre-work materials */}
+              {linkedModules.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-xs font-medium text-slate-500 mb-1.5">
+                    Pre-work:
+                  </p>
+                  {linkedModules.map((mod) => (
+                    <div key={mod._id}>
+                      {mod.materials && mod.materials.length > 0 && (
+                        <MaterialChecklist
+                          moduleId={mod._id}
+                          materials={mod.materials}
+                          completedIndexes={
+                            progressMap.get(mod._id) ?? EMPTY_SET
+                          }
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Who's coming */}
+              {allRsvpsLoaded && (
+                <div>
+                  <p className="text-xs font-medium text-slate-500 mb-1.5">
+                    Who's coming:
+                  </p>
+                  <RsvpGrid
+                    rsvps={rsvpsBySession.get(session._id) ?? EMPTY_RSVPS}
+                  />
+                </div>
+              )}
+              {!allRsvpsLoaded && (
+                <div className="flex items-center gap-2 text-xs text-slate-400">
+                  <Spinner className="size-3" />
+                  Loading RSVPs...
+                </div>
+              )}
+            </Card>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
+// ============================================================
+// Unlinked Modules
+// ============================================================
+
+function UnlinkedModules({
+  modules,
+  sessions,
+  progressMap,
+}: {
+  modules: Array<{
+    _id: Id<'programModules'>
+    title: string
+    description?: string
+    weekNumber: number
+    orderIndex: number
+    linkedSessionId?: Id<'programSessions'>
+    materials?: Array<{
+      label: string
+      url: string
+      type: 'link' | 'pdf' | 'video' | 'reading'
+      estimatedMinutes?: number
+    }>
+    status: 'locked' | 'available' | 'completed'
+  }>
+  sessions: Array<{ _id: Id<'programSessions'> }>
+  progressMap: Map<string, Set<number>>
+}) {
+  const sessionIds = new Set(sessions.map((s) => s._id))
+  const unlinkedVisible = modules.filter(
+    (m) =>
+      (m.status === 'available' || m.status === 'completed') &&
+      (!m.linkedSessionId || !sessionIds.has(m.linkedSessionId)),
+  )
+  const lockedModules = modules.filter((m) => m.status === 'locked')
+
+  if (unlinkedVisible.length === 0 && lockedModules.length === 0) return null
+
+  return (
+    <section className="mb-6">
+      <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+        <GraduationCap className="size-5" />
+        Curriculum
+      </h2>
+      <div className="space-y-3">
+        {unlinkedVisible.map((mod) => (
+          <Card key={mod._id} className="p-5">
+            <div className="flex items-start justify-between gap-3 mb-2">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                    Week {mod.weekNumber}
+                  </span>
+                  {mod.status === 'completed' && (
+                    <CheckCircle2 className="size-4 text-green-600" />
+                  )}
+                </div>
+                <h3 className="font-medium text-foreground mt-1">
+                  {mod.title}
+                </h3>
+              </div>
+            </div>
+            {mod.description && (
+              <p className="text-sm text-slate-600 mb-3">{mod.description}</p>
+            )}
+            {mod.materials && mod.materials.length > 0 && (
+              <MaterialChecklist
+                moduleId={mod._id}
+                materials={mod.materials}
+                completedIndexes={progressMap.get(mod._id) ?? EMPTY_SET}
+              />
+            )}
+          </Card>
+        ))}
+
+        {lockedModules.length > 0 && (
+          <Card className="p-4 bg-slate-50 border-dashed">
+            <div className="flex items-center gap-2 text-slate-500">
+              <Lock className="size-4" />
+              <span className="text-sm">
+                {lockedModules.length} more module
+                {lockedModules.length > 1 ? 's' : ''} coming soon
+              </span>
+            </div>
+          </Card>
+        )}
+      </div>
+    </section>
+  )
+}
+
+// ============================================================
+// Progress Section
+// ============================================================
+
+function ProgressSection({
+  participation,
+  myAttendance,
+  myMaterialProgress,
+  modules,
+  program,
+}: {
+  participation: {
+    status: string
+    enrolledAt: number
+    completedAt?: number
+  }
+  myAttendance: Array<{
+    sessionId: Id<'programSessions'>
+    slot: 'morning' | 'afternoon'
+  }>
+  myMaterialProgress: Array<{
+    moduleId: Id<'programModules'>
+    materialIndex: number
+  }>
+  modules: Array<{
+    _id: Id<'programModules'>
+    materials?: Array<unknown>
+    status: string
+  }>
+  program: {
+    completionCriteria?: {
+      type: string
+      requiredCount?: number
+    }
+  }
+}) {
+  const sessionsAttended = myAttendance.length
+  const requiredSessions =
+    program.completionCriteria?.type === 'attendance_count'
+      ? program.completionCriteria.requiredCount
+      : undefined
+
+  const totalMaterials = modules
+    .filter((m) => m.status !== 'locked')
+    .reduce((sum, m) => sum + (m.materials?.length ?? 0), 0)
+  const completedMaterials = myMaterialProgress.length
+
+  return (
+    <section>
+      <h2 className="text-lg font-semibold text-foreground mb-3">
+        My Progress
+      </h2>
+      <Card className="p-5">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div>
+            <p className="text-sm text-slate-500 mb-1">Status</p>
+            <Badge
+              className={
+                participation.status === 'completed'
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'bg-green-100 text-green-700'
+              }
+            >
+              {participation.status}
+            </Badge>
+          </div>
+          <div>
+            <p className="text-sm text-slate-500 mb-1">Sessions Attended</p>
+            <p className="text-foreground font-medium">
+              {sessionsAttended}
+              {requiredSessions !== undefined &&
+                ` / ${requiredSessions} required`}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-slate-500 mb-1">Materials Completed</p>
+            <p className="text-foreground font-medium">
+              {completedMaterials}
+              {totalMaterials > 0 && ` / ${totalMaterials}`}
+            </p>
+          </div>
+        </div>
+      </Card>
+    </section>
   )
 }

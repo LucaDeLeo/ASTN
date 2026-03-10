@@ -19,3 +19,25 @@ export const moduleStatusColors = {
   available: 'bg-green-100 text-green-700',
   completed: 'bg-blue-100 text-blue-700',
 } as const
+
+export type SlotPreference = 'morning' | 'afternoon' | 'either'
+export type Slot = 'morning' | 'afternoon'
+
+export interface MaterialItem {
+  label: string
+  url: string
+  type: 'link' | 'pdf' | 'video' | 'reading'
+  estimatedMinutes?: number
+}
+
+export const slotLabels = {
+  morning: 'Morning',
+  afternoon: 'Afternoon',
+  either: 'Either',
+} as const
+
+export const rsvpPreferenceColors = {
+  morning: 'bg-amber-100 text-amber-700',
+  afternoon: 'bg-indigo-100 text-indigo-700',
+  either: 'bg-slate-100 text-slate-600',
+} as const

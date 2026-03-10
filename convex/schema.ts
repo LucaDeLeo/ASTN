@@ -1073,9 +1073,11 @@ export default defineSchema({
             v.literal('video'),
             v.literal('reading'),
           ),
+          estimatedMinutes: v.optional(v.number()),
         }),
       ),
     ),
+    linkedSessionId: v.optional(v.id('programSessions')),
     status: v.union(
       v.literal('locked'),
       v.literal('available'),
@@ -1086,6 +1088,62 @@ export default defineSchema({
   })
     .index('by_program', ['programId'])
     .index('by_program_and_order', ['programId', 'orderIndex']),
+
+  // Program sessions (course schedule)
+  programSessions: defineTable({
+    programId: v.id('programs'),
+    dayNumber: v.number(),
+    title: v.string(),
+    date: v.number(),
+    morningStartTime: v.string(),
+    afternoonStartTime: v.string(),
+    lumaUrl: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_program', ['programId'])
+    .index('by_program_and_day', ['programId', 'dayNumber']),
+
+  // Session RSVPs (slot preference per session)
+  sessionRsvps: defineTable({
+    sessionId: v.id('programSessions'),
+    programId: v.id('programs'),
+    userId: v.string(),
+    preference: v.union(
+      v.literal('morning'),
+      v.literal('afternoon'),
+      v.literal('either'),
+    ),
+    updatedAt: v.number(),
+  })
+    .index('by_session', ['sessionId'])
+    .index('by_session_and_user', ['sessionId', 'userId'])
+    .index('by_program_and_user', ['programId', 'userId']),
+
+  // Session attendance (admin-marked)
+  sessionAttendance: defineTable({
+    sessionId: v.id('programSessions'),
+    programId: v.id('programs'),
+    userId: v.string(),
+    slot: v.union(v.literal('morning'), v.literal('afternoon')),
+    markedBy: v.string(),
+    markedAt: v.number(),
+  })
+    .index('by_session', ['sessionId'])
+    .index('by_session_and_user', ['sessionId', 'userId'])
+    .index('by_program_and_user', ['programId', 'userId'])
+    .index('by_program', ['programId']),
+
+  // Material progress (participant completion tracking)
+  materialProgress: defineTable({
+    moduleId: v.id('programModules'),
+    programId: v.id('programs'),
+    userId: v.string(),
+    materialIndex: v.number(),
+    completedAt: v.number(),
+  })
+    .index('by_module_and_user', ['moduleId', 'userId'])
+    .index('by_program_and_user', ['programId', 'userId']),
 
   // Guest profiles (Phase 33) - lightweight accounts for visitors
   guestProfiles: defineTable({
