@@ -9,7 +9,7 @@ outputFile: '{test_artifacts}/test-review.md'
 
 ## STEP GOAL
 
-Read outputs from 4 quality subprocesses, calculate weighted overall score (0-100), and aggregate violations for report generation.
+Read outputs from 4 quality subagents, calculate weighted overall score (0-100), and aggregate violations for report generation.
 
 ---
 
@@ -17,10 +17,10 @@ Read outputs from 4 quality subprocesses, calculate weighted overall score (0-10
 
 - 📖 Read the entire step file before acting
 - ✅ Speak in `{communication_language}`
-- ✅ Read all 4 subprocess outputs
+- ✅ Read all 4 subagent outputs
 - ✅ Calculate weighted overall score
 - ✅ Aggregate violations by severity
-- ❌ Do NOT re-evaluate quality (use subprocess outputs)
+- ❌ Do NOT re-evaluate quality (use subagent outputs)
 
 ---
 
@@ -34,11 +34,11 @@ Read outputs from 4 quality subprocesses, calculate weighted overall score (0-10
 
 ## MANDATORY SEQUENCE
 
-### 1. Read All Subprocess Outputs
+### 1. Read All Subagent Outputs
 
 ```javascript
 // Use the SAME timestamp generated in Step 3 (do not regenerate).
-const timestamp = subprocessContext?.timestamp
+const timestamp = subagentContext?.timestamp
 if (!timestamp) {
   throw new Error(
     'Missing timestamp from Step 3 context. Pass Step 3 timestamp into Step 3F.',
@@ -63,7 +63,7 @@ dimensions.forEach((dim) => {
 ```javascript
 const allSucceeded = dimensions.every((dim) => results[dim].score !== undefined)
 if (!allSucceeded) {
-  throw new Error('One or more quality subprocesses failed!')
+  throw new Error('One or more quality subagents failed!')
 }
 ```
 
@@ -188,7 +188,7 @@ const reviewSummary = {
 
   top_10_recommendations: prioritizedRecommendations,
 
-  subprocess_execution: 'PARALLEL (4 quality dimensions)',
+  subagent_execution: 'PARALLEL (4 quality dimensions)',
   performance_gain: '~60% faster than sequential',
 }
 
@@ -260,7 +260,7 @@ fs.writeFileSync(
 
 Proceed to Step 4 when:
 
-- ✅ All subprocess outputs read successfully
+- ✅ All subagent outputs read successfully
 - ✅ Overall score calculated
 - ✅ Violations aggregated
 - ✅ Recommendations prioritized
@@ -276,14 +276,14 @@ Load next step: `{nextStepFile}`
 
 ### ✅ SUCCESS:
 
-- All 4 subprocess outputs read and parsed
+- All 4 subagent outputs read and parsed
 - Overall score calculated with proper weights
 - Violations aggregated correctly
 - Summary complete and saved
 
 ### ❌ FAILURE:
 
-- Failed to read one or more subprocess outputs
+- Failed to read one or more subagent outputs
 - Score calculation incorrect
 - Summary missing or incomplete
 

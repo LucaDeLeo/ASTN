@@ -63,6 +63,11 @@
 
 ## Opportunities / Matches UX
 
+- [ ] Fix matches buttons for saving
+- [ ] Add search bar for matches
+- [ ] Check if courses appear as matches (they should/shouldn't?)
+- [ ] Persist scroll position in matches when navigating back
+- [ ] Let users refresh stale matches regardless of rate limit
 - [ ] Maybe remove opportunities as a standalone page, simplify to a directory list
 - [x] Move "your next steps" to its own section — _implemented as "Your Next Moves" in `CareerActionsSection`_
 - [ ] Add visa/residency/citizenship eligibility filters — some positions require NDAs or citizenship _(Augusto: RAND example)_ — _work authorization exists in profile match prefs but not as a browsable filter on opportunities page_

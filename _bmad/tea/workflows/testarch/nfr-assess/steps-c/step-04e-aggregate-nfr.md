@@ -9,7 +9,7 @@ outputFile: '{test_artifacts}/nfr-assessment.md'
 
 ## STEP GOAL
 
-Read outputs from 4 parallel NFR subprocesses, calculate overall risk level, aggregate compliance status, and identify cross-domain risks.
+Read outputs from 4 parallel NFR subagents, calculate overall risk level, aggregate compliance status, and identify cross-domain risks.
 
 ---
 
@@ -17,15 +17,15 @@ Read outputs from 4 parallel NFR subprocesses, calculate overall risk level, agg
 
 - 📖 Read the entire step file before acting
 - ✅ Speak in `{communication_language}`
-- ✅ Read all 4 subprocess outputs
+- ✅ Read all 4 subagent outputs
 - ✅ Calculate overall risk level
-- ❌ Do NOT re-assess NFRs (use subprocess outputs)
+- ❌ Do NOT re-assess NFRs (use subagent outputs)
 
 ---
 
 ## MANDATORY SEQUENCE
 
-### 1. Read All Subprocess Outputs
+### 1. Read All Subagent Outputs
 
 ```javascript
 const domains = ['security', 'performance', 'reliability', 'scalability']
@@ -155,6 +155,23 @@ const prioritizedActions = allPriorityActions.sort((a, b) =>
 ### 6. Generate Executive Summary
 
 ```javascript
+const resolvedMode = subagentContext?.execution?.resolvedMode ?? 'unknown'
+const subagentExecutionLabel =
+  resolvedMode === 'sequential'
+    ? 'SEQUENTIAL (4 NFR domains)'
+    : resolvedMode === 'agent-team'
+      ? 'AGENT-TEAM (4 NFR domains)'
+      : resolvedMode === 'subagent'
+        ? 'SUBAGENT (4 NFR domains)'
+        : 'MODE-DEPENDENT (4 NFR domains)'
+
+const performanceGainLabel =
+  resolvedMode === 'sequential'
+    ? 'baseline (no parallel speedup)'
+    : resolvedMode === 'agent-team' || resolvedMode === 'subagent'
+      ? '~67% faster than sequential'
+      : 'mode-dependent'
+
 const executiveSummary = {
   overall_risk: overallRisk,
   assessment_date: new Date().toISOString(),
@@ -174,8 +191,8 @@ const executiveSummary = {
     scalability: assessments.scalability.risk_level,
   },
 
-  subprocess_execution: 'PARALLEL (4 NFR domains)',
-  performance_gain: '~67% faster than sequential',
+  subagent_execution: subagentExecutionLabel,
+  performance_gain: performanceGainLabel,
 }
 
 // Save for Step 5 (report generation)
@@ -191,7 +208,7 @@ fs.writeFileSync(
 ### 7. Display Summary to User
 
 ```
-✅ NFR Assessment Complete (Parallel Execution)
+✅ NFR Assessment Complete ({subagentExecutionLabel})
 
 🎯 Overall Risk Level: {overallRisk}
 
@@ -208,7 +225,7 @@ fs.writeFileSync(
 
 🎯 Priority Actions: {priority_action_count}
 
-🚀 Performance: Parallel execution ~67% faster
+🚀 Performance: {performanceGainLabel}
 
 ✅ Ready for report generation (Step 5)
 ```
@@ -245,7 +262,7 @@ fs.writeFileSync(
 
 Proceed to Step 5 when:
 
-- ✅ All subprocess outputs read
+- ✅ All subagent outputs read
 - ✅ Overall risk calculated
 - ✅ Compliance aggregated
 - ✅ Summary saved
@@ -265,5 +282,5 @@ Load next step: `{nextStepFile}`
 
 ### ❌ FAILURE:
 
-- Failed to read subprocess outputs
+- Failed to read subagent outputs
 - Risk calculation incorrect
