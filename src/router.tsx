@@ -117,6 +117,10 @@ export function getRouter() {
       replaysSessionSampleRate: 0.1,
       replaysOnErrorSampleRate: 1.0,
       enableLogs: true,
+      ignoreErrors: [
+        // Benign: browser aborts ViewTransition when a new navigation starts during an ongoing transition
+        'Skipped ViewTransition due to another transition starting',
+      ],
     })
   }
 
