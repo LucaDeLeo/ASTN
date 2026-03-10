@@ -320,6 +320,8 @@ export const getMyApplication = query({
       reviewedAt: v.optional(v.number()),
       reviewedBy: v.optional(v.string()),
       reviewNotes: v.optional(v.string()),
+      qualityScore: v.optional(v.number()),
+      qualityScoreReason: v.optional(v.string()),
     }),
     v.null(),
   ),
