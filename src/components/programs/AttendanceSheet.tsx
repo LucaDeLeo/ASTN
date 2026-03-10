@@ -1,6 +1,6 @@
 import { useMutation } from 'convex/react'
 import { Save } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
@@ -98,20 +98,10 @@ export function AttendanceSheet({
     return map
   }, [activeSessionId, enrolledParticipants, attendanceLookup])
 
-  // Sync local state when server map changes (tab switch or data update)
-  const [lastServerMapRef, setLastServerMapRef] = useState(serverMap)
-  if (serverMap !== lastServerMapRef) {
-    setLastServerMapRef(serverMap)
+  // Sync local state when active session or attendance data changes
+  useEffect(() => {
     setLocalAttendance(serverMap)
-  }
-
-  if (sessions.length === 0) {
-    return (
-      <p className="text-slate-500 text-sm text-center py-4">
-        No sessions created yet
-      </p>
-    )
-  }
+  }, [serverMap])
 
   const toggleSlot = (userId: string, slot: Slot) => {
     setLocalAttendance((prev) => {

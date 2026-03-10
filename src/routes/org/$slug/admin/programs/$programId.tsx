@@ -1120,6 +1120,10 @@ function AttendanceCard({
           <div className="flex justify-center py-4">
             <Spinner className="size-6" />
           </div>
+        ) : sessions.length === 0 ? (
+          <p className="text-slate-500 text-sm text-center py-4">
+            No sessions created yet
+          </p>
         ) : (
           <AttendanceSheet
             sessions={sessions}
