@@ -85,14 +85,18 @@ export function AttendanceSheet({
   }, [rsvps])
 
   // Build server attendance map for the active session
+  // sessions[activeTab] can be undefined at runtime when sessions is empty,
+  // but TS doesn't know this without noUncheckedIndexedAccess
+  const activeSessionId = sessions.at(activeTab)?._id
   const serverMap = useMemo(() => {
     const map = new Map<string, Slot | null>()
+    if (!activeSessionId) return map
     for (const p of enrolledParticipants) {
-      const slot = attendanceLookup.get(`${activeSession._id}:${p.userId}`)
+      const slot = attendanceLookup.get(`${activeSessionId}:${p.userId}`)
       map.set(p.userId, slot ?? null)
     }
     return map
-  }, [activeSession, enrolledParticipants, attendanceLookup])
+  }, [activeSessionId, enrolledParticipants, attendanceLookup])
 
   // Sync local state when server map changes (tab switch or data update)
   const [lastServerMapRef, setLastServerMapRef] = useState(serverMap)
