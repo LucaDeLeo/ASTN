@@ -1,0 +1,14 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TEAM_ID.org.safetytalent.app"],
+        "components": [
+          {
+            "/": "*"
+          }
+        ]
+      }
+    ]
+  }
+}

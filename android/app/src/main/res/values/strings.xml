@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AI Safety Talent Network</string>
+    <string name="title_activity_main">AI Safety Talent Network</string>
+    <string name="package_name">org.safetytalent.app</string>
+    <string name="custom_url_scheme">org.safetytalent.app</string>
+</resources>
