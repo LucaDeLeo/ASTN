@@ -1,7 +1,7 @@
 # Requirements: ASTN v2.0 Course Program Platform
 
 **Defined:** 2026-03-10
-**Core Value:** Build a course/program platform meaningfully better than BlueDot Impact — one unified system with AI woven into every layer
+**Core Value:** Build a course/program platform meaningfully better than BlueDot Impact -- one unified system with AI woven into every layer
 
 ## v1 Requirements
 
@@ -59,7 +59,7 @@ Requirements for v2.0 milestone. Each maps to roadmap phases.
 
 - [ ] **MOD-01**: Facilitator can mark materials as essential or optional, with visual distinction
 - [ ] **MOD-02**: Facilitator can upload audio materials (MP3) via Convex file storage with inline playback
-- [ ] **MOD-03**: Participant sees time-to-session indicator ("Session 3 in 4 days — 2h 15m pre-work remaining")
+- [ ] **MOD-03**: Participant sees time-to-session indicator ("Session 3 in 4 days -- 2h 15m pre-work remaining")
 - [ ] **MOD-04**: Participant sees continue-here marker highlighting first incomplete material/exercise
 
 ## v2 Requirements
@@ -99,56 +99,56 @@ Explicitly excluded. Documented to prevent scope creep.
 
 Which phases cover which requirements. Updated during roadmap creation.
 
-| Requirement | Phase | Status  |
-| ----------- | ----- | ------- |
-| PROMPT-01   | —     | Pending |
-| PROMPT-02   | —     | Pending |
-| PROMPT-03   | —     | Pending |
-| PROMPT-04   | —     | Pending |
-| PROMPT-05   | —     | Pending |
-| PROMPT-06   | —     | Pending |
-| PROMPT-07   | —     | Pending |
-| PROMPT-08   | —     | Pending |
-| PROMPT-09   | —     | Pending |
-| SIDE-01     | —     | Pending |
-| SIDE-02     | —     | Pending |
-| SIDE-03     | —     | Pending |
-| SIDE-04     | —     | Pending |
-| SIDE-05     | —     | Pending |
-| SIDE-06     | —     | Pending |
-| SIDE-07     | —     | Pending |
-| SIDE-08     | —     | Pending |
-| AGENT-01    | —     | Pending |
-| AGENT-02    | —     | Pending |
-| AGENT-03    | —     | Pending |
-| AGENT-04    | —     | Pending |
-| AGENT-05    | —     | Pending |
-| AGENT-06    | —     | Pending |
-| AGENT-07    | —     | Pending |
-| AGENT-08    | —     | Pending |
-| AGENT-09    | —     | Pending |
-| SESS-01     | —     | Pending |
-| SESS-02     | —     | Pending |
-| SESS-03     | —     | Pending |
-| SESS-04     | —     | Pending |
-| SESS-05     | —     | Pending |
-| SESS-06     | —     | Pending |
-| SESS-07     | —     | Pending |
-| SESS-08     | —     | Pending |
-| SESS-09     | —     | Pending |
-| SESS-10     | —     | Pending |
-| MOD-01      | —     | Pending |
-| MOD-02      | —     | Pending |
-| MOD-03      | —     | Pending |
-| MOD-04      | —     | Pending |
+| Requirement | Phase    | Status  |
+| ----------- | -------- | ------- |
+| PROMPT-01   | Phase 37 | Pending |
+| PROMPT-02   | Phase 37 | Pending |
+| PROMPT-03   | Phase 37 | Pending |
+| PROMPT-04   | Phase 37 | Pending |
+| PROMPT-05   | Phase 37 | Pending |
+| PROMPT-06   | Phase 37 | Pending |
+| PROMPT-07   | Phase 37 | Pending |
+| PROMPT-08   | Phase 37 | Pending |
+| PROMPT-09   | Phase 37 | Pending |
+| SIDE-01     | Phase 38 | Pending |
+| SIDE-02     | Phase 38 | Pending |
+| SIDE-03     | Phase 38 | Pending |
+| SIDE-04     | Phase 38 | Pending |
+| SIDE-05     | Phase 38 | Pending |
+| SIDE-06     | Phase 38 | Pending |
+| SIDE-07     | Phase 38 | Pending |
+| SIDE-08     | Phase 38 | Pending |
+| AGENT-01    | Phase 39 | Pending |
+| AGENT-02    | Phase 39 | Pending |
+| AGENT-03    | Phase 39 | Pending |
+| AGENT-04    | Phase 39 | Pending |
+| AGENT-05    | Phase 39 | Pending |
+| AGENT-06    | Phase 39 | Pending |
+| AGENT-07    | Phase 39 | Pending |
+| AGENT-08    | Phase 39 | Pending |
+| AGENT-09    | Phase 39 | Pending |
+| SESS-01     | Phase 40 | Pending |
+| SESS-02     | Phase 40 | Pending |
+| SESS-03     | Phase 40 | Pending |
+| SESS-04     | Phase 40 | Pending |
+| SESS-05     | Phase 40 | Pending |
+| SESS-06     | Phase 40 | Pending |
+| SESS-07     | Phase 40 | Pending |
+| SESS-08     | Phase 40 | Pending |
+| SESS-09     | Phase 40 | Pending |
+| SESS-10     | Phase 40 | Pending |
+| MOD-01      | Phase 41 | Pending |
+| MOD-02      | Phase 41 | Pending |
+| MOD-03      | Phase 41 | Pending |
+| MOD-04      | Phase 41 | Pending |
 
 **Coverage:**
 
 - v1 requirements: 40 total
-- Mapped to phases: 0
-- Unmapped: 40 ⚠️
+- Mapped to phases: 40
+- Unmapped: 0
 
 ---
 
 _Requirements defined: 2026-03-10_
-_Last updated: 2026-03-10 after initial definition_
+_Last updated: 2026-03-10 -- All 40 requirements mapped to phases 37-41_

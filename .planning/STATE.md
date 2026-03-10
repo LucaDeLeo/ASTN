@@ -5,14 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** Individuals get enough value from smart matching + recommendations that they keep profiles fresh
-**Current focus:** v2.0 Course Program Platform
+**Current focus:** v2.0 Course Program Platform -- Phase 37: Unified Prompt System
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-10 — Milestone v2.0 started
+Phase: 37 of 41 (Unified Prompt System)
+Plan: -- (not yet planned)
+Status: Ready to plan
+Last activity: 2026-03-10 -- Roadmap created for v2.0 Course Program Platform
+
+Progress: [░░░░░░░░░░] 0% (0/5 phases)
 
 ## Milestone History
 
@@ -25,15 +27,24 @@ Last activity: 2026-03-10 — Milestone v2.0 started
 - v1.5 Org Onboarding & Co-working - 5 phases (30-34), 17 plans - shipped 2026-02-03
 - v1.6 Career Actions - 2 phases (35-36), 5 plans - shipped 2026-02-11
 
-**Total:** 36 phases, 125 plans across 7 shipped milestones + partial v2.0
+**Total:** 36 phases, 114 plans across 7 shipped milestones + partial v2.0
 
 ## Accumulated Context
 
-(Carried from previous milestone)
+### Decisions
+
+- v2.0: Facilitator agent uses local Bun process + Claude Agent SDK + WebSocket bridge (same as existing admin agent), NOT @convex-dev/agent
+- v2.0: Participant AI sidebar uses @convex-dev/agent inside Convex with ASTN API keys
+- v2.0: Sidebar messages must use separate table (not embedded array) to avoid 1 MiB Convex document limit
+- v2.0: Write-then-reveal state lives on prompt (revealedAt), not on individual responses (TOCTOU fix)
+- v2.0: New course features go in convex/course/ directory (convex/programs.ts already 1000+ lines)
+
+### Key Context
 
 - COURSE-PROGRAM-PLAN.md is the detailed design document for v2.0
 - Existing program tables: programs, programParticipation, programModules, programSessions, sessionRsvps, sessionAttendance, materialProgress
 - BAISH pilot: ~10 participants, 6 weekly sessions in Spanish
+- Research flags: Phase 39 needs contextual proposal card UX design spike; Phase 40 needs subscription architecture design
 
 ## Pending Todos
 
@@ -50,11 +61,11 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-10
-Stopped at: Milestone v2.0 initialization
+Stopped at: Roadmap created for v2.0 Course Program Platform
 Resume file: None
-Next action: Define requirements and create roadmap
+Next action: /gsd:plan-phase 37
 
 ---
 
 _State initialized: 2026-01-17_
-_Last updated: 2026-03-10 — Milestone v2.0 Course Program Platform started_
+_Last updated: 2026-03-10 -- v2.0 roadmap created, ready to plan Phase 37_
