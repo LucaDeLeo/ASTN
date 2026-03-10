@@ -2,11 +2,21 @@ import { Link, createFileRoute } from '@tanstack/react-router'
 import { useMutation, useQuery } from 'convex/react'
 import {
   Archive,
+  BookOpen,
   Building2,
+  Calendar,
+  Check,
+  Clock,
+  ExternalLink,
+  Link2,
+  MapPin,
   Minus,
   MoreHorizontal,
+  Pencil,
   Plus,
   Shield,
+  Trash2,
+  Upload,
   UserCheck,
   UserMinus,
   Users,
@@ -15,6 +25,7 @@ import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { api } from '../../../../../../convex/_generated/api'
 import type { Id } from '../../../../../../convex/_generated/dataModel'
+import { ModuleFormDialog } from '~/components/programs/ModuleFormDialog'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
@@ -42,26 +53,16 @@ import {
   SelectValue,
 } from '~/components/ui/select'
 import { Spinner } from '~/components/ui/spinner'
+import { formatEventDate } from '~/lib/format-event-date'
+import {
+  moduleStatusColors,
+  programStatusColors,
+  programTypeLabels,
+} from '~/lib/program-constants'
 
 export const Route = createFileRoute('/org/$slug/admin/programs/$programId')({
   component: ProgramDetailPage,
 })
-
-const statusColors = {
-  planning: 'bg-slate-100 text-slate-700',
-  active: 'bg-green-100 text-green-700',
-  completed: 'bg-blue-100 text-blue-700',
-  archived: 'bg-slate-50 text-slate-500',
-}
-
-const typeLabels = {
-  reading_group: 'Reading Group',
-  fellowship: 'Fellowship',
-  mentorship: 'Mentorship',
-  cohort: 'Cohort',
-  workshop_series: 'Workshop Series',
-  custom: 'Custom',
-}
 
 const enrollmentLabels = {
   admin_only: 'Admin Only',
@@ -85,9 +86,11 @@ function ProgramDetailPage() {
     api.orgs.membership.getMembership,
     org ? { orgId: org._id } : 'skip',
   )
-  const programs = useQuery(
-    api.programs.getOrgPrograms,
-    org && membership?.role === 'admin' ? { orgId: org._id } : 'skip',
+  const program = useQuery(
+    api.programs.getProgram,
+    org && membership?.role === 'admin'
+      ? { programId: programId as Id<'programs'> }
+      : 'skip',
   )
   const participants = useQuery(
     api.programs.getProgramParticipants,
@@ -95,11 +98,27 @@ function ProgramDetailPage() {
       ? { programId: programId as Id<'programs'> }
       : 'skip',
   )
-
-  const program = programs?.find((p) => p._id === programId)
+  const linkedOppInfo = useQuery(
+    api.programs.getLinkedOpportunityInfo,
+    org && membership?.role === 'admin'
+      ? { programId: programId as Id<'programs'> }
+      : 'skip',
+  )
+  const programModules = useQuery(
+    api.programs.getProgramModules,
+    org && membership?.role === 'admin'
+      ? { programId: programId as Id<'programs'> }
+      : 'skip',
+  )
+  const programEvents = useQuery(
+    api.programs.getProgramEvents,
+    org && membership?.role === 'admin'
+      ? { programId: programId as Id<'programs'> }
+      : 'skip',
+  )
 
   // Loading
-  if (org === undefined || membership === undefined || programs === undefined) {
+  if (org === undefined || membership === undefined || program === undefined) {
     return (
       <div className="min-h-screen bg-slate-50">
         <AuthHeader />
@@ -216,12 +235,12 @@ function ProgramDetailPage() {
                   <h1 className="text-2xl font-display text-foreground">
                     {program.name}
                   </h1>
-                  <Badge className={statusColors[program.status]}>
+                  <Badge className={programStatusColors[program.status]}>
                     {program.status}
                   </Badge>
                 </div>
                 <p className="text-slate-600 mt-1">
-                  {typeLabels[program.type]} &middot;{' '}
+                  {programTypeLabels[program.type]} &middot;{' '}
                   {enrollmentLabels[program.enrollmentMethod]}
                 </p>
               </div>
@@ -279,6 +298,25 @@ function ProgramDetailPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Linked Opportunity */}
+          <LinkedOpportunityCard
+            orgId={org._id}
+            programId={program._id}
+            linkedOppInfo={linkedOppInfo}
+            hasLinkedOpportunity={!!program.linkedOpportunityId}
+          />
+
+          {/* Sessions */}
+          <SessionsCard
+            orgId={org._id}
+            programId={program._id}
+            events={programEvents}
+            linkedEventIds={program.linkedEventIds ?? []}
+          />
+
+          {/* Curriculum */}
+          <CurriculumCard programId={program._id} modules={programModules} />
 
           {/* Participants Section */}
           <Card>
@@ -722,5 +760,491 @@ function ProgramActions({ program, slug }: ProgramActionsProps) {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  )
+}
+
+// ============================================================
+// Linked Opportunity Card
+// ============================================================
+
+function LinkedOpportunityCard({
+  orgId,
+  programId,
+  linkedOppInfo,
+  hasLinkedOpportunity,
+}: {
+  orgId: Id<'organizations'>
+  programId: Id<'programs'>
+  linkedOppInfo:
+    | { title: string; status: string; acceptedCount: number }
+    | null
+    | undefined
+  hasLinkedOpportunity: boolean
+}) {
+  const [showPicker, setShowPicker] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
+  const opportunities = useQuery(
+    api.orgOpportunities.listAllByOrg,
+    showPicker ? { orgId } : 'skip',
+  )
+  const updateProgram = useMutation(api.programs.updateProgram)
+  const bulkEnroll = useMutation(api.programs.bulkEnrollFromOpportunity)
+
+  const handleLink = async (oppId: Id<'orgOpportunities'>) => {
+    try {
+      await updateProgram({ programId, linkedOpportunityId: oppId })
+      toast.success('Opportunity linked')
+      setShowPicker(false)
+    } catch (error) {
+      toast.error('Failed to link opportunity')
+      console.error(error)
+    }
+  }
+
+  const handleImport = async () => {
+    setIsImporting(true)
+    try {
+      const result = await bulkEnroll({ programId })
+      toast.success(
+        `Enrolled ${result.enrolled}, skipped ${result.skipped}${result.noAccount > 0 ? `, ${result.noAccount} without accounts` : ''}`,
+      )
+    } catch (error) {
+      toast.error('Failed to import applicants')
+      console.error(error)
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
+  return (
+    <Card className="mb-8">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Link2 className="size-5" />
+          Linked Opportunity
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {hasLinkedOpportunity && linkedOppInfo ? (
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium text-foreground">
+                {linkedOppInfo.title}
+              </p>
+              <p className="text-sm text-slate-500">
+                {linkedOppInfo.acceptedCount} accepted applicant
+                {linkedOppInfo.acceptedCount !== 1 ? 's' : ''}
+              </p>
+            </div>
+            <Button
+              onClick={handleImport}
+              disabled={isImporting || linkedOppInfo.acceptedCount === 0}
+            >
+              {isImporting ? (
+                <Spinner className="size-4 mr-1" />
+              ) : (
+                <Upload className="size-4 mr-1" />
+              )}
+              Import Accepted Applicants
+            </Button>
+          </div>
+        ) : hasLinkedOpportunity && linkedOppInfo === undefined ? (
+          <div className="flex justify-center py-4">
+            <Spinner className="size-6" />
+          </div>
+        ) : (
+          <>
+            {!showPicker ? (
+              <div className="text-center py-4">
+                <p className="text-slate-500 text-sm mb-3">
+                  No opportunity linked yet
+                </p>
+                <Button variant="outline" onClick={() => setShowPicker(true)}>
+                  <Link2 className="size-4 mr-1" />
+                  Link to Opportunity
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-slate-600 mb-2">
+                  Select an opportunity:
+                </p>
+                {opportunities === undefined ? (
+                  <div className="flex justify-center py-4">
+                    <Spinner className="size-6" />
+                  </div>
+                ) : opportunities.length === 0 ? (
+                  <p className="text-slate-500 text-sm text-center py-4">
+                    No opportunities found
+                  </p>
+                ) : (
+                  <div className="max-h-48 overflow-y-auto space-y-1">
+                    {opportunities.map((opp) => (
+                      <button
+                        key={opp._id}
+                        onClick={() => handleLink(opp._id)}
+                        className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center justify-between"
+                      >
+                        <span className="font-medium text-foreground">
+                          {opp.title}
+                        </span>
+                        <Badge
+                          className={
+                            opp.status === 'active'
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-slate-100 text-slate-600'
+                          }
+                        >
+                          {opp.status}
+                        </Badge>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowPicker(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+// ============================================================
+// Sessions Card
+// ============================================================
+
+function SessionsCard({
+  orgId,
+  programId,
+  events,
+  linkedEventIds,
+}: {
+  orgId: Id<'organizations'>
+  programId: Id<'programs'>
+  events:
+    | Array<{
+        _id: Id<'events'>
+        title: string
+        startAt: number
+        endAt?: number
+        timezone: string
+        location?: string
+        isVirtual: boolean
+        url: string
+      }>
+    | undefined
+  linkedEventIds: Array<Id<'events'>>
+}) {
+  const [showPicker, setShowPicker] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const orgEvents = useQuery(
+    api.programs.getOrgEventsForLinking,
+    showPicker ? { orgId } : 'skip',
+  )
+  const updateProgram = useMutation(api.programs.updateProgram)
+
+  const handleAddSessions = async () => {
+    const newIds = [
+      ...linkedEventIds,
+      ...([...selectedIds] as Array<Id<'events'>>),
+    ]
+    try {
+      await updateProgram({ programId, linkedEventIds: newIds })
+      toast.success('Sessions added')
+      setShowPicker(false)
+      setSelectedIds(new Set())
+    } catch (error) {
+      toast.error('Failed to add sessions')
+      console.error(error)
+    }
+  }
+
+  const handleRemoveEvent = async (eventId: Id<'events'>) => {
+    const newIds = linkedEventIds.filter((id) => id !== eventId)
+    try {
+      await updateProgram({ programId, linkedEventIds: newIds })
+      toast.success('Session removed')
+    } catch (error) {
+      toast.error('Failed to remove session')
+      console.error(error)
+    }
+  }
+
+  const toggleEvent = (id: string) => {
+    const next = new Set(selectedIds)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    setSelectedIds(next)
+  }
+
+  const linkedSet = new Set(linkedEventIds.map(String))
+  const availableEvents = orgEvents?.filter((e) => !linkedSet.has(e._id))
+
+  return (
+    <Card className="mb-8">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="size-5" />
+            Sessions
+          </CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowPicker(!showPicker)}
+          >
+            <Plus className="size-4 mr-1" />
+            Add Session
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {showPicker && (
+          <div className="mb-4 border rounded-lg p-3 bg-slate-50">
+            <p className="text-sm font-medium text-slate-600 mb-2">
+              Select events to add:
+            </p>
+            {orgEvents === undefined ? (
+              <div className="flex justify-center py-4">
+                <Spinner className="size-6" />
+              </div>
+            ) : availableEvents && availableEvents.length > 0 ? (
+              <>
+                <div className="max-h-48 overflow-y-auto space-y-1 mb-3">
+                  {availableEvents.map((ev) => (
+                    <label
+                      key={ev._id}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-white cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(ev._id)}
+                        onChange={() => toggleEvent(ev._id)}
+                        className="rounded"
+                      />
+                      <span className="text-sm text-foreground">
+                        {ev.title}
+                      </span>
+                      <span className="text-xs text-slate-500 ml-auto">
+                        {new Date(ev.startAt).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={handleAddSessions}
+                    disabled={selectedIds.size === 0}
+                  >
+                    <Check className="size-4 mr-1" />
+                    Add {selectedIds.size} Session
+                    {selectedIds.size !== 1 ? 's' : ''}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setShowPicker(false)
+                      setSelectedIds(new Set())
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-slate-500 text-center py-2">
+                No more events available to add
+              </p>
+            )}
+          </div>
+        )}
+
+        {events === undefined ? (
+          <div className="flex justify-center py-4">
+            <Spinner className="size-6" />
+          </div>
+        ) : events.length === 0 ? (
+          <p className="text-slate-500 text-sm text-center py-4">
+            No sessions linked yet
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {events.map((ev) => (
+              <div
+                key={ev._id}
+                className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50"
+              >
+                <div>
+                  <p className="font-medium text-foreground text-sm">
+                    {ev.title}
+                  </p>
+                  <div className="flex items-center gap-3 text-xs text-slate-500 mt-0.5">
+                    <span className="flex items-center gap-1">
+                      <Clock className="size-3" />
+                      {formatEventDate(ev.startAt, ev.endAt, ev.timezone)}
+                    </span>
+                    {ev.location && (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="size-3" />
+                        {ev.location}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  <a
+                    href={`https://lu.ma/${ev.url}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="ghost" size="sm" className="size-8 p-0">
+                      <ExternalLink className="size-3.5" />
+                    </Button>
+                  </a>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="size-8 p-0 text-red-500 hover:text-red-700"
+                    onClick={() => handleRemoveEvent(ev._id)}
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+// ============================================================
+// Curriculum Card
+// ============================================================
+
+function CurriculumCard({
+  programId,
+  modules,
+}: {
+  programId: Id<'programs'>
+  modules:
+    | Array<{
+        _id: Id<'programModules'>
+        _creationTime: number
+        programId: Id<'programs'>
+        title: string
+        description?: string
+        weekNumber: number
+        orderIndex: number
+        materials?: Array<{
+          label: string
+          url: string
+          type: 'link' | 'pdf' | 'video' | 'reading'
+        }>
+        status: 'locked' | 'available' | 'completed'
+        createdAt: number
+        updatedAt: number
+      }>
+    | undefined
+}) {
+  const deleteModule = useMutation(api.programs.deleteModule)
+
+  const handleDelete = async (
+    moduleId: Id<'programModules'>,
+    title: string,
+  ) => {
+    if (!confirm(`Delete module "${title}"? This cannot be undone.`)) return
+    try {
+      await deleteModule({ moduleId })
+      toast.success('Module deleted')
+    } catch (error) {
+      toast.error('Failed to delete module')
+      console.error(error)
+    }
+  }
+
+  return (
+    <Card className="mb-8">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <BookOpen className="size-5" />
+            Curriculum
+          </CardTitle>
+          <ModuleFormDialog programId={programId} />
+        </div>
+      </CardHeader>
+      <CardContent>
+        {modules === undefined ? (
+          <div className="flex justify-center py-4">
+            <Spinner className="size-6" />
+          </div>
+        ) : modules.length === 0 ? (
+          <p className="text-slate-500 text-sm text-center py-4">
+            No modules added yet
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {modules.map((mod) => (
+              <div
+                key={mod._id}
+                className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded shrink-0">
+                    Week {mod.weekNumber}
+                  </span>
+                  <span className="font-medium text-foreground text-sm truncate">
+                    {mod.title}
+                  </span>
+                  <Badge className={moduleStatusColors[mod.status]}>
+                    {mod.status}
+                  </Badge>
+                  {mod.materials && mod.materials.length > 0 && (
+                    <span className="text-xs text-slate-500 shrink-0">
+                      {mod.materials.length} material
+                      {mod.materials.length !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <ModuleFormDialog
+                    programId={programId}
+                    module={mod}
+                    trigger={
+                      <Button variant="ghost" size="sm" className="size-8 p-0">
+                        <Pencil className="size-3.5" />
+                      </Button>
+                    }
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="size-8 p-0 text-red-500 hover:text-red-700"
+                    onClick={() => handleDelete(mod._id, mod.title)}
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }

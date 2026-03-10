@@ -11,38 +11,13 @@ import {
 import { api } from '../../../../convex/_generated/api'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { GradientBg } from '~/components/layout/GradientBg'
+import { formatEventDate } from '~/lib/format-event-date'
 import { Card } from '~/components/ui/card'
 import { Button } from '~/components/ui/button'
 
 export const Route = createFileRoute('/org/$slug/events')({
   component: OrgEventsPage,
 })
-
-function formatEventDate(startAt: number, endAt?: number, timezone?: string) {
-  const start = new Date(startAt)
-  const dateOpts: Intl.DateTimeFormatOptions = {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    timeZone: timezone,
-  }
-  const timeOpts: Intl.DateTimeFormatOptions = {
-    hour: 'numeric',
-    minute: '2-digit',
-    timeZone: timezone,
-  }
-
-  const dateStr = start.toLocaleDateString('en-US', dateOpts)
-  const timeStr = start.toLocaleTimeString('en-US', timeOpts)
-
-  if (endAt) {
-    const end = new Date(endAt)
-    const endTimeStr = end.toLocaleTimeString('en-US', timeOpts)
-    return `${dateStr} · ${timeStr} – ${endTimeStr}`
-  }
-
-  return `${dateStr} · ${timeStr}`
-}
 
 function EventCard({
   event,

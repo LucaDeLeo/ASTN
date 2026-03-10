@@ -153,6 +153,10 @@ function OrgHeader({ org }: OrgHeaderProps) {
             </Button>
           )}
 
+          <Authenticated>
+            <ProgramsButton orgId={org._id} orgSlug={org.slug} />
+          </Authenticated>
+
           <AuthLoading>
             <Spinner className="size-5" />
           </AuthLoading>
@@ -163,6 +167,27 @@ function OrgHeader({ org }: OrgHeaderProps) {
         </div>
       </div>
     </Card>
+  )
+}
+
+function ProgramsButton({
+  orgId,
+  orgSlug,
+}: {
+  orgId: Id<'organizations'>
+  orgSlug?: string
+}) {
+  const myPrograms = useQuery(api.programs.getMyPrograms, { orgId })
+
+  if (!myPrograms || myPrograms.length === 0 || !orgSlug) return null
+
+  return (
+    <Button variant="outline" size="sm" asChild>
+      <Link to="/org/$slug/programs" params={{ slug: orgSlug }}>
+        <GraduationCap className="size-4 mr-1" />
+        Programs
+      </Link>
+    </Button>
   )
 }
 

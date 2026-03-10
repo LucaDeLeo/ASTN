@@ -410,6 +410,7 @@ export default defineSchema({
     invitedBy: v.optional(v.id('orgMemberships')),
   })
     .index('by_user', ['userId'])
+    .index('by_user_and_org', ['userId', 'orgId'])
     .index('by_org', ['orgId'])
     .index('by_org_and_directoryVisibility', ['orgId', 'directoryVisibility'])
     .index('by_org_role', ['orgId', 'role']),
@@ -1004,6 +1005,9 @@ export default defineSchema({
     // Linked events (for auto-attendance counting)
     linkedEventIds: v.optional(v.array(v.id('events'))),
 
+    // Linked opportunity (for bulk enrollment from accepted applicants)
+    linkedOpportunityId: v.optional(v.id('orgOpportunities')),
+
     // Metadata
     createdBy: v.id('orgMemberships'),
     createdAt: v.number(),
@@ -1045,10 +1049,43 @@ export default defineSchema({
     approvedAt: v.optional(v.number()),
   })
     .index('by_program', ['programId'])
+    .index('by_program_and_user', ['programId', 'userId'])
     .index('by_user', ['userId'])
     .index('by_org', ['orgId'])
     .index('by_program_status', ['programId', 'status'])
     .index('by_user_org', ['userId', 'orgId']),
+
+  // Program modules (curriculum content)
+  programModules: defineTable({
+    programId: v.id('programs'),
+    title: v.string(),
+    description: v.optional(v.string()),
+    weekNumber: v.number(),
+    orderIndex: v.number(),
+    materials: v.optional(
+      v.array(
+        v.object({
+          label: v.string(),
+          url: v.string(),
+          type: v.union(
+            v.literal('link'),
+            v.literal('pdf'),
+            v.literal('video'),
+            v.literal('reading'),
+          ),
+        }),
+      ),
+    ),
+    status: v.union(
+      v.literal('locked'),
+      v.literal('available'),
+      v.literal('completed'),
+    ),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_program', ['programId'])
+    .index('by_program_and_order', ['programId', 'orderIndex']),
 
   // Guest profiles (Phase 33) - lightweight accounts for visitors
   guestProfiles: defineTable({
