@@ -19,3 +19,6 @@
 | 39 | 00:09 | passed | code | OK |
 | 40 | 00:38 | passed | plan | OK |
 | 40 | - | passed | code | 4 plans executed |
+| 40 | 01:05 | passed | code | OK |
+| 41 | 01:31 | passed | plan | OK |
+| 41 | 01:44 | passed | code | OK |

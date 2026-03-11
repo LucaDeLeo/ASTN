@@ -47,3 +47,33 @@ agent/astn-agent
 
 # Claude Code
 .claude/worktrees/
+
+# ── GSD baseline (auto-generated) ──
+.gsd/activity/
+.gsd/runtime/
+.gsd/worktrees/
+.gsd/auto.lock
+.gsd/metrics.json
+.gsd/STATE.md
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+*.code-workspace
+.env.*
+!.env.example
+node_modules/
+.next/
+dist/
+build/
+__pycache__/
+*.pyc
+.venv/
+venv/
+target/
+vendor/
+*.log
+coverage/
+.cache/
+tmp/
