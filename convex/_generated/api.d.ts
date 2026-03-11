@@ -50,6 +50,10 @@ import type * as course_facilitatorQueries from "../course/facilitatorQueries.js
 import type * as course_prompts from "../course/prompts.js";
 import type * as course_proposals from "../course/proposals.js";
 import type * as course_responses from "../course/responses.js";
+import type * as course_sessionPairing from "../course/sessionPairing.js";
+import type * as course_sessionQueries from "../course/sessionQueries.js";
+import type * as course_sessionRunner from "../course/sessionRunner.js";
+import type * as course_sessionSetup from "../course/sessionSetup.js";
 import type * as course_sidebar from "../course/sidebar.js";
 import type * as course_sidebarAgent from "../course/sidebarAgent.js";
 import type * as course_sidebarQueries from "../course/sidebarQueries.js";
@@ -192,6 +196,10 @@ declare const fullApi: ApiFromModules<{
   "course/prompts": typeof course_prompts;
   "course/proposals": typeof course_proposals;
   "course/responses": typeof course_responses;
+  "course/sessionPairing": typeof course_sessionPairing;
+  "course/sessionQueries": typeof course_sessionQueries;
+  "course/sessionRunner": typeof course_sessionRunner;
+  "course/sessionSetup": typeof course_sessionSetup;
   "course/sidebar": typeof course_sidebar;
   "course/sidebarAgent": typeof course_sidebarAgent;
   "course/sidebarQueries": typeof course_sidebarQueries;

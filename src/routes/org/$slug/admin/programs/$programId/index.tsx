@@ -10,6 +10,7 @@ import {
   Link2,
   MoreHorizontal,
   Pencil,
+  Play,
   Plus,
   Shield,
   Trash2,
@@ -20,8 +21,8 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { api } from '../../../../../../convex/_generated/api'
-import type { Id } from '../../../../../../convex/_generated/dataModel'
+import { api } from '../../../../../../../convex/_generated/api'
+import type { Id } from '../../../../../../../convex/_generated/dataModel'
 import { useAdminAgentSidebar } from '~/components/admin-agent/AdminAgentProvider'
 import { AdminModulePrompts } from '~/components/course/AdminModulePrompts'
 import { FacilitatorAgentProvider } from '~/components/facilitator-agent/FacilitatorAgentProvider'
@@ -64,7 +65,7 @@ import {
   programTypeLabels,
 } from '~/lib/program-constants'
 
-export const Route = createFileRoute('/org/$slug/admin/programs/$programId')({
+export const Route = createFileRoute('/org/$slug/admin/programs/$programId/')({
   component: ProgramDetailPage,
 })
 
@@ -346,6 +347,7 @@ function ProgramDetailPage() {
               {/* Sessions */}
               <ProgramSessionsCard
                 programId={program._id}
+                slug={slug}
                 sessions={programSessions}
                 allRsvps={allRsvps}
               />
@@ -948,10 +950,12 @@ function LinkedOpportunityCard({
 
 function ProgramSessionsCard({
   programId,
+  slug,
   sessions,
   allRsvps,
 }: {
   programId: Id<'programs'>
+  slug: string
   sessions:
     | Array<{
         _id: Id<'programSessions'>
@@ -1052,6 +1056,19 @@ function ProgramSessionsCard({
                   </div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
+                  <Link
+                    to="/org/$slug/admin/programs/$programId/session-runner"
+                    params={{ slug, programId }}
+                    search={{ sessionId: session._id }}
+                  >
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="size-8 p-0 text-green-600 hover:text-green-800"
+                    >
+                      <Play className="size-3.5" />
+                    </Button>
+                  </Link>
                   {session.lumaUrl && (
                     <a
                       href={session.lumaUrl}
