@@ -52,8 +52,8 @@ Requirements for v2.0 milestone. Each maps to roadmap phases.
 - [ ] **SESS-06**: Facilitator can see who's submitted, who's typing, who hasn't started during a prompt phase
 - [ ] **SESS-07**: Pairing system supports complementary (from exercise choices), random, and manual strategies
 - [ ] **SESS-08**: Pairing handles odd numbers (creates trio) and absences (pairs from present participants)
-- [ ] **SESS-09**: Facilitator can create ad-hoc prompts during a live session (new phase appears for all participants)
-- [ ] **SESS-10**: Session data is preserved: responses per phase, pair assignments, actual durations, attendance (auto-marked from participation)
+- [ ] **SESS-09**: Facilitator can create ad-hoc prompts during a live session (ad-hoc prompt appears for all participants immediately via activePromptIds on current phase)
+- [ ] **SESS-10**: Session data is preserved: responses per phase, pair assignments, actual durations (attendance is tracked separately via existing sessionAttendance system per CONTEXT.md decision)
 
 ### Module Enhancements
 
