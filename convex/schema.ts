@@ -1066,14 +1066,17 @@ export default defineSchema({
       v.array(
         v.object({
           label: v.string(),
-          url: v.string(),
+          url: v.optional(v.string()),
           type: v.union(
             v.literal('link'),
             v.literal('pdf'),
             v.literal('video'),
             v.literal('reading'),
+            v.literal('audio'),
           ),
           estimatedMinutes: v.optional(v.number()),
+          isEssential: v.optional(v.boolean()),
+          storageId: v.optional(v.id('_storage')),
         }),
       ),
     ),

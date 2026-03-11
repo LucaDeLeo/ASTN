@@ -81,7 +81,7 @@ export function MaterialChecklist({
               )}
             </button>
             <a
-              href={mat.url}
+              href={mat.url ?? '#'}
               target="_blank"
               rel="noopener noreferrer"
               className={cn(

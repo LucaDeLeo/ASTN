@@ -589,14 +589,33 @@ export const getLinkedOpportunityInfo = query({
 
 const materialValidator = v.object({
   label: v.string(),
-  url: v.string(),
+  url: v.optional(v.string()),
   type: v.union(
     v.literal('link'),
     v.literal('pdf'),
     v.literal('video'),
     v.literal('reading'),
+    v.literal('audio'),
   ),
   estimatedMinutes: v.optional(v.number()),
+  isEssential: v.optional(v.boolean()),
+  storageId: v.optional(v.id('_storage')),
+})
+
+const materialReturnValidator = v.object({
+  label: v.string(),
+  url: v.optional(v.string()),
+  type: v.union(
+    v.literal('link'),
+    v.literal('pdf'),
+    v.literal('video'),
+    v.literal('reading'),
+    v.literal('audio'),
+  ),
+  estimatedMinutes: v.optional(v.number()),
+  isEssential: v.optional(v.boolean()),
+  storageId: v.optional(v.id('_storage')),
+  audioUrl: v.optional(v.string()),
 })
 
 const slotValidator = v.union(v.literal('morning'), v.literal('afternoon'))
@@ -1224,6 +1243,21 @@ export const updateModule = mutation({
 
     await requireOrgAdmin(ctx, program.orgId)
 
+    // Clean up orphaned audio blobs when materials are updated
+    if (updates.materials !== undefined) {
+      const oldStorageIds = (mod.materials ?? [])
+        .map((m) => m.storageId)
+        .filter(Boolean)
+      const newStorageIdSet = new Set(
+        (updates.materials ?? []).map((m) => m.storageId).filter(Boolean),
+      )
+      for (const oldId of oldStorageIds) {
+        if (oldId && !newStorageIdSet.has(oldId)) {
+          await ctx.storage.delete(oldId)
+        }
+      }
+    }
+
     const patchData: Record<string, unknown> = { updatedAt: Date.now() }
     for (const [key, value] of Object.entries(updates)) {
       patchData[key] = value
@@ -1248,6 +1282,13 @@ export const deleteModule = mutation({
     if (!program) throw new Error('Program not found')
 
     await requireOrgAdmin(ctx, program.orgId)
+
+    // Clean up audio storage blobs
+    for (const mat of mod.materials ?? []) {
+      if (mat.storageId) {
+        await ctx.storage.delete(mat.storageId as any)
+      }
+    }
 
     // Clean up related material progress
     const progress = await ctx.db
@@ -1454,13 +1495,20 @@ export const getProgramBySlug = query({
           description: v.optional(v.string()),
           weekNumber: v.number(),
           orderIndex: v.number(),
-          materials: v.optional(v.array(materialValidator)),
+          materials: v.optional(v.array(materialReturnValidator)),
           linkedSessionId: v.optional(v.id('programSessions')),
           status: v.union(
             v.literal('locked'),
             v.literal('available'),
             v.literal('completed'),
           ),
+        }),
+      ),
+      promptCompletionByModule: v.array(
+        v.object({
+          moduleId: v.id('programModules'),
+          totalPrompts: v.number(),
+          completedPrompts: v.number(),
         }),
       ),
       sessions: v.array(
@@ -1576,6 +1624,31 @@ export const getProgramBySlug = query({
       program.linkedEventIds ?? [],
     )
 
+    // Compute prompt completion per module
+    const promptCompletionByModule = await Promise.all(
+      modules.map(async (m) => {
+        const prompts = await ctx.db
+          .query('coursePrompts')
+          .withIndex('by_moduleId', (q) => q.eq('moduleId', m._id))
+          .collect()
+        let completedPrompts = 0
+        for (const prompt of prompts) {
+          const response = await ctx.db
+            .query('coursePromptResponses')
+            .withIndex('by_promptId_and_userId', (q) =>
+              q.eq('promptId', prompt._id).eq('userId', access.userId),
+            )
+            .first()
+          if (response?.status === 'submitted') completedPrompts++
+        }
+        return {
+          moduleId: m._id,
+          totalPrompts: prompts.length,
+          completedPrompts,
+        }
+      }),
+    )
+
     return {
       program: {
         _id: program._id,
@@ -1596,16 +1669,28 @@ export const getProgramBySlug = query({
             manualAttendanceCount: participation.manualAttendanceCount,
           }
         : null,
-      modules: modules.map((m) => ({
-        _id: m._id,
-        title: m.title,
-        description: m.description,
-        weekNumber: m.weekNumber,
-        orderIndex: m.orderIndex,
-        materials: m.materials,
-        linkedSessionId: m.linkedSessionId,
-        status: m.status,
-      })),
+      modules: await Promise.all(
+        modules.map(async (m) => ({
+          _id: m._id,
+          title: m.title,
+          description: m.description,
+          weekNumber: m.weekNumber,
+          orderIndex: m.orderIndex,
+          materials: m.materials
+            ? await Promise.all(
+                m.materials.map(async (mat) => ({
+                  ...mat,
+                  audioUrl: mat.storageId
+                    ? ((await ctx.storage.getUrl(mat.storageId)) ?? undefined)
+                    : undefined,
+                })),
+              )
+            : undefined,
+          linkedSessionId: m.linkedSessionId,
+          status: m.status,
+        })),
+      ),
+      promptCompletionByModule,
       sessions: sessions
         .sort((a, b) => a.dayNumber - b.dayNumber)
         .map((s) => ({

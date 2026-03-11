@@ -305,9 +305,12 @@ function SessionTimeline({
     linkedSessionId?: Id<'programSessions'>
     materials?: Array<{
       label: string
-      url: string
-      type: 'link' | 'pdf' | 'video' | 'reading'
+      url?: string
+      type: 'link' | 'pdf' | 'video' | 'reading' | 'audio'
       estimatedMinutes?: number
+      isEssential?: boolean
+      storageId?: string
+      audioUrl?: string
     }>
     status: 'locked' | 'available' | 'completed'
   }>
@@ -485,9 +488,12 @@ function UnlinkedModules({
     linkedSessionId?: Id<'programSessions'>
     materials?: Array<{
       label: string
-      url: string
-      type: 'link' | 'pdf' | 'video' | 'reading'
+      url?: string
+      type: 'link' | 'pdf' | 'video' | 'reading' | 'audio'
       estimatedMinutes?: number
+      isEssential?: boolean
+      storageId?: string
+      audioUrl?: string
     }>
     status: 'locked' | 'available' | 'completed'
   }>

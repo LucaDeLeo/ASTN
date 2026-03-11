@@ -93,9 +93,12 @@ export function ModuleFormDialog({
 
     setIsSubmitting(true)
     try {
-      const validMaterials = materials.filter(
-        (m) => m.label.trim() && m.url.trim(),
-      )
+      const validMaterials = materials
+        .filter((m) => m.label.trim() && (m.url?.trim() || m.storageId))
+        .map(({ audioUrl: _audioUrl, ...m }) => ({
+          ...m,
+          storageId: m.storageId ? (m.storageId as Id<'_storage'>) : undefined,
+        }))
 
       const sessionId =
         linkedSessionId !== 'none'

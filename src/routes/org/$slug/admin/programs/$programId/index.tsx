@@ -1202,9 +1202,11 @@ function CurriculumCard({
         linkedSessionId?: Id<'programSessions'>
         materials?: Array<{
           label: string
-          url: string
-          type: 'link' | 'pdf' | 'video' | 'reading'
+          url?: string
+          type: 'link' | 'pdf' | 'video' | 'reading' | 'audio'
           estimatedMinutes?: number
+          isEssential?: boolean
+          storageId?: string
         }>
         status: 'locked' | 'available' | 'completed'
         createdAt: number

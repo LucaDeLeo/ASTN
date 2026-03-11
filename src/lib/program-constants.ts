@@ -25,9 +25,12 @@ export type Slot = 'morning' | 'afternoon'
 
 export interface MaterialItem {
   label: string
-  url: string
-  type: 'link' | 'pdf' | 'video' | 'reading'
+  url?: string
+  type: 'link' | 'pdf' | 'video' | 'reading' | 'audio'
   estimatedMinutes?: number
+  isEssential?: boolean
+  storageId?: string
+  audioUrl?: string
 }
 
 export const slotLabels = {
