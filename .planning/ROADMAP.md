@@ -24,7 +24,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 37: Unified Prompt System** - One interactive primitive for exercises, activities, polls, and feedback across modules and sessions
 - [x] **Phase 38: AI Sidebar** - Participant learning partner with Socratic feedback, module context, and proactive AI responses
 - [x] **Phase 39: Facilitator Agent** - AI copilot with program data access and propose-and-approve workflow via local Bun process
-- [ ] **Phase 40: Session Runner** - Live session management with phases, timers, pairing, and real-time participant views
+- [x] **Phase 40: Session Runner** - Live session management with phases, timers, pairing, and real-time participant views
 - [ ] **Phase 41: Module Enhancements** - Essential/optional flags, audio materials, time-to-session, and continue-here markers
 
 ## Phase Details
@@ -110,10 +110,10 @@ Plans:
 
 Plans:
 
-- [ ] 40-01-PLAN.md -- Schema foundation: 5 new tables (sessionPhases, sessionLiveState, sessionPresence, sessionPairAssignments, sessionPhaseResults), coursePrompts migration, session phase CRUD
-- [ ] 40-02-PLAN.md -- Session runner backend: live session lifecycle mutations (start/advance/extend/skip/end), presence tracking, pairing algorithms (random/complementary/manual), ad-hoc prompts
-- [ ] 40-03-PLAN.md -- Facilitator UI: session setup phase editor, live runner dashboard with timer/controls/presence/pairs, dedicated session-runner route, admin page integration
-- [ ] 40-04-PLAN.md -- Participant live view: real-time session banner on program page with phase title/timer/prompts/pairs, presence heartbeat, post-session indicators
+- [x] 40-01-PLAN.md -- Schema foundation: 5 new tables (sessionPhases, sessionLiveState, sessionPresence, sessionPairAssignments, sessionPhaseResults), coursePrompts migration, session phase CRUD
+- [x] 40-02-PLAN.md -- Session runner backend: live session lifecycle mutations (start/advance/extend/skip/end), presence tracking, pairing algorithms (random/complementary/manual), ad-hoc prompts
+- [x] 40-03-PLAN.md -- Facilitator UI: session setup phase editor, live runner dashboard with timer/controls/presence/pairs, dedicated session-runner route, admin page integration
+- [x] 40-04-PLAN.md -- Participant live view: real-time session banner on program page with phase title/timer/prompts/pairs, presence heartbeat, post-session indicators
 
 ### Phase 41: Module Enhancements
 
@@ -147,12 +147,12 @@ Phases execute in numeric order: 37 -> 38 -> 39 -> 40 -> 41
 | 37. Unified Prompt System       | v2.0 Course Platform | 4/4            | Complete    | 2026-03-10 |
 | 38. AI Sidebar                  | v2.0 Course Platform | 3/3            | Complete    | 2026-03-10 |
 | 39. Facilitator Agent           | v2.0 Course Platform | 3/3            | Complete    | 2026-03-11 |
-| 40. Session Runner              | v2.0 Course Platform | 0/?            | Not started | -          |
+| 40. Session Runner              | v2.0 Course Platform | 4/4            | Complete    | 2026-03-11 |
 | 41. Module Enhancements         | v2.0 Course Platform | 0/?            | Not started | -          |
 
-**Total: 38 phases complete (121 plans), 3 phases remaining for v2.0 Course Platform**
+**Total: 39 phases complete (125 plans), 2 phases remaining for v2.0 Course Platform**
 
 ---
 
 _Roadmap created: 2026-01-20_
-_Last updated: 2026-03-11 -- Phase 39 complete (3 plans executed)_
+_Last updated: 2026-03-11 -- Phase 40 complete (4 plans executed)_
