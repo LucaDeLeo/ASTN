@@ -42,7 +42,14 @@ Decimal phases appear between their surrounding integers in numeric order.
 4. Facilitator can view all participant responses for any prompt and spotlight exceptional responses visible to the entire cohort
 5. The prompt component is a single reusable primitive (one table, one component) that renders the same whether attached to a module or a session phase
 
-**Plans**: TBD
+**Plans:** 4 plans
+
+Plans:
+
+- [ ] 37-01-PLAN.md -- Schema + backend: coursePrompts/coursePromptResponses tables, CRUD mutations, response save/visibility queries, reveal/spotlight
+- [ ] 37-02-PLAN.md -- Participant prompt UI: PromptRenderer, field subcomponents (text/choice/multi-choice), markdown body, draft save/submit flow
+- [ ] 37-03-PLAN.md -- Facilitator UI: prompt creation form with dynamic field builder, response viewer, reveal trigger, spotlight toggle
+- [ ] 37-04-PLAN.md -- Integration: wire into program page and admin page, end-to-end verification checkpoint
 
 ### Phase 38: AI Sidebar
 
@@ -118,7 +125,7 @@ Phases execute in numeric order: 37 -> 38 -> 39 -> 40 -> 41
 | 27-29. Security -> Performance  | v1.4                 | 9/9            | Complete    | 2026-02-02 |
 | 30-34. Onboarding -> Admin      | v1.5                 | 17/17          | Complete    | 2026-02-03 |
 | 35-36. Generation -> Completion | v1.6                 | 5/5            | Complete    | 2026-02-11 |
-| 37. Unified Prompt System       | v2.0 Course Platform | 0/?            | Not started | -          |
+| 37. Unified Prompt System       | v2.0 Course Platform | 0/4            | Planned     | -          |
 | 38. AI Sidebar                  | v2.0 Course Platform | 0/?            | Not started | -          |
 | 39. Facilitator Agent           | v2.0 Course Platform | 0/?            | Not started | -          |
 | 40. Session Runner              | v2.0 Course Platform | 0/?            | Not started | -          |
