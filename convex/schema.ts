@@ -1145,6 +1145,100 @@ export default defineSchema({
     .index('by_module_and_user', ['moduleId', 'userId'])
     .index('by_program_and_user', ['programId', 'userId']),
 
+  // Course prompts (Phase 37) - unified interactive primitive for exercises, activities, polls, feedback
+  coursePrompts: defineTable({
+    programId: v.id('programs'),
+
+    // Denormalized for indexing (mirrors attachedTo)
+    moduleId: v.optional(v.id('programModules')),
+    sessionId: v.optional(v.id('programSessions')),
+
+    // Canonical attachment info
+    attachedTo: v.union(
+      v.object({
+        type: v.literal('module'),
+        moduleId: v.id('programModules'),
+      }),
+      v.object({
+        type: v.literal('session_phase'),
+        sessionId: v.id('programSessions'),
+        phaseIndex: v.number(),
+      }),
+    ),
+
+    // Content
+    title: v.string(),
+    body: v.optional(v.string()), // Markdown
+    orderIndex: v.number(),
+
+    // Fields (the actual questions)
+    fields: v.array(
+      v.object({
+        id: v.string(),
+        type: v.union(
+          v.literal('text'),
+          v.literal('choice'),
+          v.literal('multiple_choice'),
+        ),
+        label: v.string(),
+        required: v.boolean(),
+        placeholder: v.optional(v.string()),
+        options: v.optional(
+          v.array(v.object({ id: v.string(), label: v.string() })),
+        ),
+        maxLength: v.optional(v.number()),
+      }),
+    ),
+
+    // Visibility configuration
+    revealMode: v.union(
+      v.literal('immediate'),
+      v.literal('facilitator_only'),
+      v.literal('write_then_reveal'),
+    ),
+    revealedAt: v.optional(v.number()), // Timestamp when reveal was triggered
+
+    // Metadata
+    createdBy: v.string(), // Clerk userId
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_programId', ['programId'])
+    .index('by_moduleId', ['moduleId'])
+    .index('by_sessionId', ['sessionId'])
+    .index('by_programId_and_orderIndex', ['programId', 'orderIndex']),
+
+  // Course prompt responses (Phase 37) - participant answers to prompts
+  coursePromptResponses: defineTable({
+    promptId: v.id('coursePrompts'),
+    programId: v.id('programs'), // Denormalized
+    userId: v.string(), // Clerk userId
+
+    // Response data keyed by field id
+    fieldResponses: v.array(
+      v.object({
+        fieldId: v.string(),
+        textValue: v.optional(v.string()),
+        selectedOptionIds: v.optional(v.array(v.string())),
+      }),
+    ),
+
+    // Status
+    status: v.union(v.literal('draft'), v.literal('submitted')),
+
+    // Spotlight (facilitator highlights)
+    spotlighted: v.optional(v.boolean()),
+    spotlightedBy: v.optional(v.string()),
+    spotlightedAt: v.optional(v.number()),
+
+    // Timestamps
+    savedAt: v.number(),
+    submittedAt: v.optional(v.number()),
+  })
+    .index('by_promptId', ['promptId'])
+    .index('by_promptId_and_userId', ['promptId', 'userId'])
+    .index('by_programId_and_userId', ['programId', 'userId']),
+
   // Guest profiles (Phase 33) - lightweight accounts for visitors
   guestProfiles: defineTable({
     userId: v.string(),
