@@ -126,7 +126,13 @@ Plans:
 2. Facilitator can upload MP3 audio materials via Convex file storage, and participants can play them inline alongside other materials
 3. Participant sees a time-to-session indicator showing days until next session and estimated pre-work remaining, plus a continue-here marker highlighting the first incomplete material or exercise
 
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+
+- [ ] 41-01-PLAN.md -- Schema + backend: material schema evolution (isEssential, audio, storageId), validator sync, audio URL resolution, blob cleanup, promptCompletionByModule query
+- [ ] 41-02-PLAN.md -- Facilitator UI: ModuleFormDialog essential/optional toggle, audio file upload, MaterialIcon audio icon
+- [ ] 41-03-PLAN.md -- Participant UI: MaterialChecklist essential/optional badges + audio player, time-to-session indicator, continue-here marker, ProgressSection essential-only counting
 
 ## Progress
 
@@ -148,9 +154,9 @@ Phases execute in numeric order: 37 -> 38 -> 39 -> 40 -> 41
 | 38. AI Sidebar                  | v2.0 Course Platform | 3/3            | Complete    | 2026-03-10 |
 | 39. Facilitator Agent           | v2.0 Course Platform | 3/3            | Complete    | 2026-03-11 |
 | 40. Session Runner              | v2.0 Course Platform | 4/4            | Complete    | 2026-03-11 |
-| 41. Module Enhancements         | v2.0 Course Platform | 0/?            | Not started | -          |
+| 41. Module Enhancements         | v2.0 Course Platform | 0/3            | Not started | -          |
 
-**Total: 39 phases complete (125 plans), 2 phases remaining for v2.0 Course Platform**
+**Total: 39 phases complete (125 plans), 1 phase remaining for v2.0 Course Platform**
 
 ---
 
