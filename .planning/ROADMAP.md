@@ -68,9 +68,9 @@ Plans:
 
 Plans:
 
-- [ ] 38-01-PLAN.md -- Schema + agent backend: courseSidebarThreads table, learningAgent definition, thread ops, context builder, message queries
-- [ ] 38-02-PLAN.md -- Sidebar UI + proactive feedback: right-side panel, chat component, program page integration, aiFeedback trigger on prompt submission
-- [ ] 38-03-PLAN.md -- Facilitator view: read-only participant conversation browser on admin program page
+- [x] 38-01-PLAN.md -- Schema + agent backend: courseSidebarThreads table, learningAgent definition, thread ops, context builder, message queries
+- [x] 38-02-PLAN.md -- Sidebar UI + proactive feedback: right-side panel, chat component, program page integration, aiFeedback trigger on prompt submission
+- [x] 38-03-PLAN.md -- Facilitator view: read-only participant conversation browser on admin program page
 
 ### Phase 39: Facilitator Agent
 

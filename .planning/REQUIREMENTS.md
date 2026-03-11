@@ -21,14 +21,14 @@ Requirements for v2.0 milestone. Each maps to roadmap phases.
 
 ### AI Sidebar (Participant Learning Partner)
 
-- [ ] **SIDE-01**: Participant can chat with an AI learning partner from the program page
-- [ ] **SIDE-02**: AI sidebar has context of current module materials, participant's progress, and their exercise responses
-- [ ] **SIDE-03**: AI uses Socratic method (pushback, not answers) when participants ask about exercises
-- [ ] **SIDE-04**: AI proactively offers feedback in sidebar when participant submits a prompt with aiFeedback enabled
-- [ ] **SIDE-05**: AI can recommend study priorities when participant asks ("I only have 30 minutes")
-- [ ] **SIDE-06**: Conversation history persists per-participant per-module
-- [ ] **SIDE-07**: Facilitator can view participant sidebar conversations from admin page
-- [ ] **SIDE-08**: Sidebar runs via @convex-dev/agent with ASTN API keys (no participant setup required)
+- [x] **SIDE-01**: Participant can chat with an AI learning partner from the program page
+- [x] **SIDE-02**: AI sidebar has context of current module materials, participant's progress, and their exercise responses
+- [x] **SIDE-03**: AI uses Socratic method (pushback, not answers) when participants ask about exercises
+- [x] **SIDE-04**: AI proactively offers feedback in sidebar when participant submits a prompt with aiFeedback enabled
+- [x] **SIDE-05**: AI can recommend study priorities when participant asks ("I only have 30 minutes")
+- [x] **SIDE-06**: Conversation history persists per-participant per-module
+- [x] **SIDE-07**: Facilitator can view participant sidebar conversations from admin page
+- [x] **SIDE-08**: Sidebar runs via @convex-dev/agent with ASTN API keys (no participant setup required)
 
 ### Facilitator Agent
 
@@ -110,14 +110,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PROMPT-07   | Phase 37 | Pending |
 | PROMPT-08   | Phase 37 | Pending |
 | PROMPT-09   | Phase 37 | Pending |
-| SIDE-01     | Phase 38 | Pending |
-| SIDE-02     | Phase 38 | Pending |
-| SIDE-03     | Phase 38 | Pending |
-| SIDE-04     | Phase 38 | Pending |
-| SIDE-05     | Phase 38 | Pending |
-| SIDE-06     | Phase 38 | Pending |
-| SIDE-07     | Phase 38 | Pending |
-| SIDE-08     | Phase 38 | Pending |
+| SIDE-01     | Phase 38 | Done    |
+| SIDE-02     | Phase 38 | Done    |
+| SIDE-03     | Phase 38 | Done    |
+| SIDE-04     | Phase 38 | Done    |
+| SIDE-05     | Phase 38 | Done    |
+| SIDE-06     | Phase 38 | Done    |
+| SIDE-07     | Phase 38 | Done    |
+| SIDE-08     | Phase 38 | Done    |
 | AGENT-01    | Phase 39 | Pending |
 | AGENT-02    | Phase 39 | Pending |
 | AGENT-03    | Phase 39 | Pending |
