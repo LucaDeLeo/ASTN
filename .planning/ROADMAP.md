@@ -106,7 +106,14 @@ Plans:
 4. Pairing system supports complementary (derived from exercise choices), random, and manual strategies, handles odd numbers by creating a trio, and handles absences by pairing only from present participants
 5. All session data is preserved after completion: responses per phase, pair assignments, actual durations, and attendance auto-marked from participation
 
-**Plans**: TBD
+**Plans:** 4 plans
+
+Plans:
+
+- [ ] 40-01-PLAN.md -- Schema foundation: 5 new tables (sessionPhases, sessionLiveState, sessionPresence, sessionPairAssignments, sessionPhaseResults), coursePrompts migration, session phase CRUD
+- [ ] 40-02-PLAN.md -- Session runner backend: live session lifecycle mutations (start/advance/extend/skip/end), presence tracking, pairing algorithms (random/complementary/manual), ad-hoc prompts
+- [ ] 40-03-PLAN.md -- Facilitator UI: session setup phase editor, live runner dashboard with timer/controls/presence/pairs, dedicated session-runner route, admin page integration
+- [ ] 40-04-PLAN.md -- Participant live view: real-time session banner on program page with phase title/timer/prompts/pairs, presence heartbeat, post-session indicators
 
 ### Phase 41: Module Enhancements
 
