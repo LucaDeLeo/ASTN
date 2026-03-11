@@ -10,7 +10,7 @@
 - ✅ **v1.4 Hardening** — Phases 27-29 (shipped 2026-02-02) — [details](milestones/v1.4-ROADMAP.md)
 - ✅ **v1.5 Org Onboarding & Co-working** — Phases 30-34 (shipped 2026-02-03) — [details](milestones/v1.5-ROADMAP.md)
 - ✅ **v1.6 Career Actions** — Phases 35-36 (shipped 2026-02-11) — [details](milestones/v1.6-ROADMAP.md)
-- 🚧 **v2.0 Course Program Platform** — Phases 37-41 (in progress)
+- ✅ **v2.0 Course Program Platform** — Phases 37-41 (shipped 2026-03-11)
 
 ## Phases
 
@@ -25,7 +25,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 38: AI Sidebar** - Participant learning partner with Socratic feedback, module context, and proactive AI responses
 - [x] **Phase 39: Facilitator Agent** - AI copilot with program data access and propose-and-approve workflow via local Bun process
 - [x] **Phase 40: Session Runner** - Live session management with phases, timers, pairing, and real-time participant views
-- [ ] **Phase 41: Module Enhancements** - Essential/optional flags, audio materials, time-to-session, and continue-here markers
+- [x] **Phase 41: Module Enhancements** - Essential/optional flags, audio materials, time-to-session, and continue-here markers
 
 ## Phase Details
 
@@ -130,9 +130,9 @@ Plans:
 
 Plans:
 
-- [ ] 41-01-PLAN.md -- Schema + backend: material schema evolution (isEssential, audio, storageId), validator sync, audio URL resolution, blob cleanup, promptCompletionByModule query
-- [ ] 41-02-PLAN.md -- Facilitator UI: ModuleFormDialog essential/optional toggle, audio file upload, MaterialIcon audio icon
-- [ ] 41-03-PLAN.md -- Participant UI: MaterialChecklist essential/optional badges + audio player, time-to-session indicator, continue-here marker, ProgressSection essential-only counting
+- [x] 41-01-PLAN.md -- Schema + backend: material schema evolution (isEssential, audio, storageId), validator sync, audio URL resolution, blob cleanup, promptCompletionByModule query
+- [x] 41-02-PLAN.md -- Facilitator UI: ModuleFormDialog essential/optional toggle, audio file upload, MaterialIcon audio icon
+- [x] 41-03-PLAN.md -- Participant UI: MaterialChecklist essential/optional badges + audio player, time-to-session indicator, continue-here marker, ProgressSection essential-only counting
 
 ## Progress
 
@@ -140,25 +140,25 @@ Plans:
 Phases execute in numeric order: 37 -> 38 -> 39 -> 40 -> 41
 (Phase 41 is independent and can execute in parallel with any phase if needed)
 
-| Phase                           | Milestone            | Plans Complete | Status      | Completed  |
-| ------------------------------- | -------------------- | -------------- | ----------- | ---------- |
-| 1-6. Foundation -> Polish       | v1.0                 | 21/21          | Complete    | 2026-01-18 |
-| 7-10. Upload -> Wizard          | v1.1                 | 13/13          | Complete    | 2026-01-19 |
-| 11-16. Discovery -> CRM         | v1.2                 | 20/20          | Complete    | 2026-01-19 |
-| 17-20. Tokens -> Integration    | v1.3                 | 13/13          | Complete    | 2026-01-20 |
-| 21-23, 26. Responsive -> UX     | v2.0 Mobile          | 16/16          | Complete    | --         |
-| 27-29. Security -> Performance  | v1.4                 | 9/9            | Complete    | 2026-02-02 |
-| 30-34. Onboarding -> Admin      | v1.5                 | 17/17          | Complete    | 2026-02-03 |
-| 35-36. Generation -> Completion | v1.6                 | 5/5            | Complete    | 2026-02-11 |
-| 37. Unified Prompt System       | v2.0 Course Platform | 4/4            | Complete    | 2026-03-10 |
-| 38. AI Sidebar                  | v2.0 Course Platform | 3/3            | Complete    | 2026-03-10 |
-| 39. Facilitator Agent           | v2.0 Course Platform | 3/3            | Complete    | 2026-03-11 |
-| 40. Session Runner              | v2.0 Course Platform | 4/4            | Complete    | 2026-03-11 |
-| 41. Module Enhancements         | v2.0 Course Platform | 0/3            | Not started | -          |
+| Phase                           | Milestone            | Plans Complete | Status   | Completed  |
+| ------------------------------- | -------------------- | -------------- | -------- | ---------- |
+| 1-6. Foundation -> Polish       | v1.0                 | 21/21          | Complete | 2026-01-18 |
+| 7-10. Upload -> Wizard          | v1.1                 | 13/13          | Complete | 2026-01-19 |
+| 11-16. Discovery -> CRM         | v1.2                 | 20/20          | Complete | 2026-01-19 |
+| 17-20. Tokens -> Integration    | v1.3                 | 13/13          | Complete | 2026-01-20 |
+| 21-23, 26. Responsive -> UX     | v2.0 Mobile          | 16/16          | Complete | --         |
+| 27-29. Security -> Performance  | v1.4                 | 9/9            | Complete | 2026-02-02 |
+| 30-34. Onboarding -> Admin      | v1.5                 | 17/17          | Complete | 2026-02-03 |
+| 35-36. Generation -> Completion | v1.6                 | 5/5            | Complete | 2026-02-11 |
+| 37. Unified Prompt System       | v2.0 Course Platform | 4/4            | Complete | 2026-03-10 |
+| 38. AI Sidebar                  | v2.0 Course Platform | 3/3            | Complete | 2026-03-10 |
+| 39. Facilitator Agent           | v2.0 Course Platform | 3/3            | Complete | 2026-03-11 |
+| 40. Session Runner              | v2.0 Course Platform | 4/4            | Complete | 2026-03-11 |
+| 41. Module Enhancements         | v2.0 Course Platform | 3/3            | Complete | 2026-03-11 |
 
-**Total: 39 phases complete (125 plans), 1 phase remaining for v2.0 Course Platform**
+**Total: 40 phases complete (128 plans), v2.0 Course Platform milestone complete**
 
 ---
 
 _Roadmap created: 2026-01-20_
-_Last updated: 2026-03-11 -- Phase 40 complete (4 plans executed)_
+_Last updated: 2026-03-11 -- Phase 41 complete (3 plans executed), v2.0 Course Platform milestone complete_
