@@ -21,7 +21,7 @@
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 37: Unified Prompt System** - One interactive primitive for exercises, activities, polls, and feedback across modules and sessions
+- [x] **Phase 37: Unified Prompt System** - One interactive primitive for exercises, activities, polls, and feedback across modules and sessions
 - [ ] **Phase 38: AI Sidebar** - Participant learning partner with Socratic feedback, module context, and proactive AI responses
 - [ ] **Phase 39: Facilitator Agent** - AI copilot with program data access and propose-and-approve workflow via local Bun process
 - [ ] **Phase 40: Session Runner** - Live session management with phases, timers, pairing, and real-time participant views
@@ -46,10 +46,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 
-- [ ] 37-01-PLAN.md -- Schema + backend: coursePrompts/coursePromptResponses tables, CRUD mutations, response save/visibility queries, reveal/spotlight
-- [ ] 37-02-PLAN.md -- Participant prompt UI: PromptRenderer, field subcomponents (text/choice/multi-choice), markdown body, draft save/submit flow
-- [ ] 37-03-PLAN.md -- Facilitator UI: prompt creation form with dynamic field builder, response viewer, reveal trigger, spotlight toggle
-- [ ] 37-04-PLAN.md -- Integration: wire into program page and admin page, end-to-end verification checkpoint
+- [x] 37-01-PLAN.md -- Schema + backend: coursePrompts/coursePromptResponses tables, CRUD mutations, response save/visibility queries, reveal/spotlight
+- [x] 37-02-PLAN.md -- Participant prompt UI: PromptRenderer, field subcomponents (text/choice/multi-choice), markdown body, draft save/submit flow
+- [x] 37-03-PLAN.md -- Facilitator UI: prompt creation form with dynamic field builder, response viewer, reveal trigger, spotlight toggle
+- [x] 37-04-PLAN.md -- Integration: wire into program page and admin page, end-to-end verification checkpoint
 
 ### Phase 38: AI Sidebar
 
@@ -125,13 +125,13 @@ Phases execute in numeric order: 37 -> 38 -> 39 -> 40 -> 41
 | 27-29. Security -> Performance  | v1.4                 | 9/9            | Complete    | 2026-02-02 |
 | 30-34. Onboarding -> Admin      | v1.5                 | 17/17          | Complete    | 2026-02-03 |
 | 35-36. Generation -> Completion | v1.6                 | 5/5            | Complete    | 2026-02-11 |
-| 37. Unified Prompt System       | v2.0 Course Platform | 0/4            | Planned     | -          |
+| 37. Unified Prompt System       | v2.0 Course Platform | 4/4            | Complete    | 2026-03-10 |
 | 38. AI Sidebar                  | v2.0 Course Platform | 0/?            | Not started | -          |
 | 39. Facilitator Agent           | v2.0 Course Platform | 0/?            | Not started | -          |
 | 40. Session Runner              | v2.0 Course Platform | 0/?            | Not started | -          |
 | 41. Module Enhancements         | v2.0 Course Platform | 0/?            | Not started | -          |
 
-**Total: 36 phases complete (114 plans), 5 phases planned for v2.0 Course Platform**
+**Total: 37 phases complete (118 plans), 4 phases planned for v2.0 Course Platform**
 
 ---
 
