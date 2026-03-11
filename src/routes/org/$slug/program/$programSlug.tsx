@@ -4,6 +4,7 @@ import {
   Building2,
   Calendar,
   CheckCircle2,
+  Clock,
   GraduationCap,
   Lock,
 } from 'lucide-react'
@@ -25,6 +26,14 @@ import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Card } from '~/components/ui/card'
 import { Spinner } from '~/components/ui/spinner'
+
+function daysUntilSession(sessionDate: number): number {
+  const sessionDay = new Date(sessionDate)
+  sessionDay.setHours(0, 0, 0, 0)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  return Math.ceil((sessionDay.getTime() - today.getTime()) / 86400000)
+}
 
 export const Route = createFileRoute('/org/$slug/program/$programSlug')({
   component: ProgramPage,
@@ -102,6 +111,7 @@ function ProgramPage() {
     myRsvps,
     myAttendance,
     myMaterialProgress,
+    promptCompletionByModule,
   } = data
 
   // Compute progressMap once and pass to children
@@ -113,6 +123,42 @@ function ProgramPage() {
     }
     return map
   }, [myMaterialProgress])
+
+  // Compute continue-here target: first incomplete essential material or exercise
+  const continueHere = useMemo(() => {
+    const promptMap = new Map(
+      promptCompletionByModule.map((p) => [p.moduleId, p]),
+    )
+    for (const mod of [...modules].sort(
+      (a, b) => a.orderIndex - b.orderIndex,
+    )) {
+      if (mod.status === 'locked') continue
+      const completed = progressMap.get(mod._id)
+      // Check essential materials first
+      if (mod.materials) {
+        for (let i = 0; i < mod.materials.length; i++) {
+          if (mod.materials[i].isEssential === false) continue
+          if (!completed?.has(i)) {
+            return {
+              moduleId: mod._id,
+              materialIndex: i,
+              type: 'material' as const,
+            }
+          }
+        }
+      }
+      // Then check prompts
+      const pc = promptMap.get(mod._id)
+      if (pc && pc.completedPrompts < pc.totalPrompts) {
+        return {
+          moduleId: mod._id,
+          materialIndex: null,
+          type: 'prompt' as const,
+        }
+      }
+    }
+    return null
+  }, [modules, progressMap, promptCompletionByModule])
 
   // Active module for sidebar (default to first available module)
   const [activeModuleId, setActiveModuleId] =
@@ -234,6 +280,13 @@ function ProgramPage() {
               <ParticipantLiveView sessions={sessions} />
             )}
 
+            {/* Time-to-session indicator */}
+            <TimeToSessionIndicator
+              sessions={sessions}
+              modules={modules}
+              progressMap={progressMap}
+            />
+
             {/* Session Timeline */}
             {sessions.length > 0 && (
               <SessionTimeline
@@ -245,6 +298,7 @@ function ProgramPage() {
                 rsvpsBySession={rsvpsBySession}
                 allRsvpsLoaded={allRsvps !== undefined}
                 onModuleClick={setActiveModuleId}
+                continueHere={continueHere}
               />
             )}
 
@@ -254,6 +308,7 @@ function ProgramPage() {
               sessions={sessions}
               progressMap={progressMap}
               onModuleClick={setActiveModuleId}
+              continueHere={continueHere}
             />
 
             {/* My Progress */}
@@ -277,6 +332,83 @@ function ProgramPage() {
 // Session Timeline
 // ============================================================
 
+// ============================================================
+// Time-to-Session Indicator
+// ============================================================
+
+function TimeToSessionIndicator({
+  sessions,
+  modules,
+  progressMap,
+}: {
+  sessions: Array<{
+    _id: Id<'programSessions'>
+    date: number
+    dayNumber: number
+    title: string
+  }>
+  modules: Array<{
+    _id: Id<'programModules'>
+    linkedSessionId?: Id<'programSessions'>
+    materials?: Array<{
+      estimatedMinutes?: number
+      isEssential?: boolean
+    }>
+    status: string
+  }>
+  progressMap: Map<string, Set<number>>
+}) {
+  const nextSession = sessions.find((s) => daysUntilSession(s.date) >= 0)
+  if (!nextSession) return null
+
+  const days = daysUntilSession(nextSession.date)
+  if (days < 0) return null
+
+  // Compute remaining essential pre-work minutes for linked modules
+  const linkedModules = modules.filter(
+    (m) => m.linkedSessionId === nextSession._id && m.status !== 'locked',
+  )
+  const remainingMinutes = linkedModules.reduce((sum, mod) => {
+    const completed = progressMap.get(mod._id)
+    return (
+      sum +
+      (mod.materials ?? []).reduce((mSum, mat, i) => {
+        if (mat.isEssential === false) return mSum
+        if (completed?.has(i)) return mSum
+        return mSum + (mat.estimatedMinutes ?? 0)
+      }, 0)
+    )
+  }, 0)
+
+  const daysLabel =
+    days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : `In ${days} days`
+  const hours = Math.floor(remainingMinutes / 60)
+  const mins = remainingMinutes % 60
+  const timeLabel =
+    remainingMinutes === 0
+      ? 'All pre-work complete'
+      : hours > 0
+        ? `~${hours}h ${mins}m pre-work remaining`
+        : `~${mins}m pre-work remaining`
+
+  return (
+    <Card className="p-4 mb-6 border-blue-200 bg-blue-50/50">
+      <div className="flex items-center gap-2 text-sm">
+        <Clock className="size-4 text-blue-600" />
+        <span className="font-medium text-blue-900">{nextSession.title}</span>
+        <span className="text-blue-700">· {daysLabel}</span>
+        <span className="text-blue-600">· {timeLabel}</span>
+      </div>
+    </Card>
+  )
+}
+
+type ContinueHere = {
+  moduleId: Id<'programModules'>
+  materialIndex: number | null
+  type: 'material' | 'prompt'
+} | null
+
 function SessionTimeline({
   sessions,
   modules,
@@ -286,6 +418,7 @@ function SessionTimeline({
   rsvpsBySession,
   allRsvpsLoaded,
   onModuleClick,
+  continueHere,
 }: {
   sessions: Array<{
     _id: Id<'programSessions'>
@@ -333,6 +466,7 @@ function SessionTimeline({
   >
   allRsvpsLoaded: boolean
   onModuleClick: (id: Id<'programModules'>) => void
+  continueHere: ContinueHere
 }) {
   const rsvpMap = useMemo(
     () => new Map(myRsvps.map((r) => [r.sessionId, r.preference])),
@@ -436,9 +570,21 @@ function SessionTimeline({
                           completedIndexes={
                             progressMap.get(mod._id) ?? EMPTY_SET
                           }
+                          continueHereIndex={
+                            continueHere?.moduleId === mod._id &&
+                            continueHere.type === 'material'
+                              ? (continueHere.materialIndex ?? undefined)
+                              : undefined
+                          }
                         />
                       )}
-                      <ModulePrompts moduleId={mod._id} />
+                      <ModulePrompts
+                        moduleId={mod._id}
+                        isContinueHere={
+                          continueHere?.moduleId === mod._id &&
+                          continueHere.type === 'prompt'
+                        }
+                      />
                     </div>
                   ))}
                 </div>
@@ -478,6 +624,7 @@ function UnlinkedModules({
   sessions,
   progressMap,
   onModuleClick,
+  continueHere,
 }: {
   modules: Array<{
     _id: Id<'programModules'>
@@ -500,6 +647,7 @@ function UnlinkedModules({
   sessions: Array<{ _id: Id<'programSessions'> }>
   progressMap: Map<string, Set<number>>
   onModuleClick: (id: Id<'programModules'>) => void
+  continueHere: ContinueHere
 }) {
   const sessionIds = new Set(sessions.map((s) => s._id))
   const unlinkedVisible = modules.filter(
@@ -547,9 +695,21 @@ function UnlinkedModules({
                 moduleId={mod._id}
                 materials={mod.materials}
                 completedIndexes={progressMap.get(mod._id) ?? EMPTY_SET}
+                continueHereIndex={
+                  continueHere?.moduleId === mod._id &&
+                  continueHere.type === 'material'
+                    ? (continueHere.materialIndex ?? undefined)
+                    : undefined
+                }
               />
             )}
-            <ModulePrompts moduleId={mod._id} />
+            <ModulePrompts
+              moduleId={mod._id}
+              isContinueHere={
+                continueHere?.moduleId === mod._id &&
+                continueHere.type === 'prompt'
+              }
+            />
           </Card>
         ))}
 
@@ -595,7 +755,7 @@ function ProgressSection({
   }>
   modules: Array<{
     _id: Id<'programModules'>
-    materials?: Array<unknown>
+    materials?: Array<{ isEssential?: boolean }>
     status: string
   }>
   program: {
@@ -611,10 +771,22 @@ function ProgressSection({
       ? program.completionCriteria.requiredCount
       : undefined
 
+  // Count only essential materials
   const totalMaterials = modules
     .filter((m) => m.status !== 'locked')
-    .reduce((sum, m) => sum + (m.materials?.length ?? 0), 0)
-  const completedMaterials = myMaterialProgress.length
+    .reduce(
+      (sum, m) =>
+        sum +
+        (m.materials?.filter((mat) => mat.isEssential !== false).length ?? 0),
+      0,
+    )
+
+  // Count completed essential materials only
+  const completedMaterials = myMaterialProgress.filter((p) => {
+    const mod = modules.find((m) => m._id === p.moduleId)
+    if (!mod?.materials?.[p.materialIndex]) return false
+    return mod.materials[p.materialIndex].isEssential !== false
+  }).length
 
   return (
     <section>

@@ -1,6 +1,6 @@
 import { useMutation } from 'convex/react'
-import { Plus, X } from 'lucide-react'
-import { useState } from 'react'
+import { Plus, Upload, X } from 'lucide-react'
+import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
@@ -73,6 +73,9 @@ export function ModuleFormDialog({
 
   const createModule = useMutation(api.programs.createModule)
   const updateModule = useMutation(api.programs.updateModule)
+  const generateUploadUrl = useMutation(api.upload.generateUploadUrl)
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null)
+  const fileInputRefs = useRef<Map<number, HTMLInputElement>>(new Map())
 
   const isEditing = Boolean(module)
 
@@ -145,6 +148,36 @@ export function ModuleFormDialog({
     setMaterials([...materials, { label: '', url: '', type: 'link' as const }])
   }
 
+  const handleAudioUpload = async (index: number, file: File) => {
+    if (!file.type.startsWith('audio/')) {
+      toast.error('Please select an audio file')
+      return
+    }
+    setUploadingIndex(index)
+    try {
+      const url = await generateUploadUrl()
+      const result = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      })
+      const { storageId } = await result.json()
+      const updated = [...materials]
+      updated[index] = {
+        ...updated[index],
+        storageId,
+        url: undefined,
+        label: updated[index].label || file.name.replace(/\.[^.]+$/, ''),
+      }
+      setMaterials(updated)
+      toast.success('Audio uploaded')
+    } catch {
+      toast.error('Failed to upload audio')
+    } finally {
+      setUploadingIndex(null)
+    }
+  }
+
   const removeMaterial = (index: number) => {
     setMaterials(materials.filter((_, i) => i !== index))
   }
@@ -152,10 +185,14 @@ export function ModuleFormDialog({
   const updateMaterial = (
     index: number,
     field: keyof MaterialItem,
-    value: string | number | undefined,
+    value: string | number | boolean | undefined,
   ) => {
     const updated = [...materials]
     updated[index] = { ...updated[index], [field]: value }
+    // When switching away from audio, clear storageId
+    if (field === 'type' && value !== 'audio' && updated[index].storageId) {
+      updated[index] = { ...updated[index], storageId: undefined }
+    }
     setMaterials(updated)
   }
 
@@ -326,17 +363,57 @@ export function ModuleFormDialog({
                           <SelectItem value="pdf">PDF</SelectItem>
                           <SelectItem value="video">Video</SelectItem>
                           <SelectItem value="reading">Reading</SelectItem>
+                          <SelectItem value="audio">Audio</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="grid grid-cols-[1fr,auto] gap-2">
-                      <Input
-                        placeholder="URL"
-                        value={mat.url}
-                        onChange={(e) =>
-                          updateMaterial(i, 'url', e.target.value)
-                        }
-                      />
+                      {mat.type === 'audio' ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="file"
+                            accept="audio/*"
+                            className="hidden"
+                            ref={(el) => {
+                              if (el) fileInputRefs.current.set(i, el)
+                            }}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) handleAudioUpload(i, file)
+                            }}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="shrink-0"
+                            disabled={uploadingIndex === i}
+                            onClick={() =>
+                              fileInputRefs.current.get(i)?.click()
+                            }
+                          >
+                            {uploadingIndex === i ? (
+                              <Spinner className="size-3.5 mr-1" />
+                            ) : (
+                              <Upload className="size-3.5 mr-1" />
+                            )}
+                            {mat.storageId ? 'Replace' : 'Upload'}
+                          </Button>
+                          {mat.storageId && (
+                            <span className="text-xs text-green-600">
+                              Audio uploaded
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <Input
+                          placeholder="URL"
+                          value={mat.url ?? ''}
+                          onChange={(e) =>
+                            updateMaterial(i, 'url', e.target.value)
+                          }
+                        />
+                      )}
                       <Input
                         type="number"
                         min="0"
@@ -353,6 +430,27 @@ export function ModuleFormDialog({
                           )
                         }
                       />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        className="text-xs text-slate-500 hover:text-slate-700 transition-colors"
+                        onClick={() =>
+                          updateMaterial(
+                            i,
+                            'isEssential',
+                            mat.isEssential === false ? undefined : false,
+                          )
+                        }
+                      >
+                        {mat.isEssential === false ? (
+                          <span className="text-slate-400">Optional</span>
+                        ) : (
+                          <span className="text-slate-600 font-medium">
+                            Essential
+                          </span>
+                        )}
+                      </button>
                     </div>
                   </div>
                 ))}

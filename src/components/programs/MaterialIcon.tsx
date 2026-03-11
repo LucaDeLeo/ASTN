@@ -1,4 +1,4 @@
-import { BookOpen, FileText, Link2, Video } from 'lucide-react'
+import { BookOpen, FileText, Headphones, Link2, Video } from 'lucide-react'
 
 export function MaterialIcon({
   type,
@@ -14,6 +14,8 @@ export function MaterialIcon({
       return <Video className={className} />
     case 'reading':
       return <BookOpen className={className} />
+    case 'audio':
+      return <Headphones className={className} />
     default:
       return <Link2 className={className} />
   }
