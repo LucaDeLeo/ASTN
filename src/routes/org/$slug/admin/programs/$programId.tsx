@@ -18,11 +18,15 @@ import {
   UserMinus,
   Users,
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { api } from '../../../../../../convex/_generated/api'
 import type { Id } from '../../../../../../convex/_generated/dataModel'
+import { useAdminAgentSidebar } from '~/components/admin-agent/AdminAgentProvider'
 import { AdminModulePrompts } from '~/components/course/AdminModulePrompts'
+import { FacilitatorAgentProvider } from '~/components/facilitator-agent/FacilitatorAgentProvider'
+import { FacilitatorAgentSidebar } from '~/components/facilitator-agent/FacilitatorAgentSidebar'
+import { FacilitatorSidebarAwareWrapper } from '~/components/facilitator-agent/FacilitatorSidebarAwareWrapper'
 import { FacilitatorConversations } from '~/components/course/FacilitatorConversations'
 import { AttendanceSheet } from '~/components/programs/AttendanceSheet'
 import { ModuleFormDialog } from '~/components/programs/ModuleFormDialog'
@@ -80,6 +84,13 @@ const participantStatusColors = {
 
 function ProgramDetailPage() {
   const { slug, programId } = Route.useParams()
+
+  // Close admin sidebar on program pages — facilitator sidebar takes over
+  const adminSidebar = useAdminAgentSidebar()
+  const closeAdminSidebar = adminSidebar.close
+  useEffect(() => {
+    closeAdminSidebar()
+  }, [closeAdminSidebar])
 
   const org = useQuery(api.orgs.directory.getOrgBySlug, { slug })
   const membership = useQuery(
@@ -218,211 +229,219 @@ function ProgramDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <AuthHeader />
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-5xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-2 text-slate-500 text-sm mb-2">
-              <Link
-                to="/org/$slug"
-                params={{ slug }}
-                className="hover:text-slate-700 transition-colors"
-              >
-                {org.name}
-              </Link>
-              <span>/</span>
-              <Link
-                to="/org/$slug/admin"
-                params={{ slug }}
-                className="hover:text-slate-700 transition-colors"
-              >
-                Admin
-              </Link>
-              <span>/</span>
-              <Link
-                to="/org/$slug/admin/programs"
-                params={{ slug }}
-                className="hover:text-slate-700 transition-colors"
-              >
-                Programs
-              </Link>
-              <span>/</span>
-              <span className="text-slate-700">{program.name}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-display text-foreground">
-                    {program.name}
-                  </h1>
-                  <Badge className={programStatusColors[program.status]}>
-                    {program.status}
-                  </Badge>
+    <FacilitatorAgentProvider programId={programId} orgSlug={slug}>
+      <FacilitatorSidebarAwareWrapper>
+        <div className="min-h-screen bg-slate-50">
+          <AuthHeader />
+          <main className="container mx-auto px-4 py-8">
+            <div className="max-w-5xl mx-auto">
+              {/* Header */}
+              <div className="mb-8">
+                <div className="flex items-center gap-2 text-slate-500 text-sm mb-2">
+                  <Link
+                    to="/org/$slug"
+                    params={{ slug }}
+                    className="hover:text-slate-700 transition-colors"
+                  >
+                    {org.name}
+                  </Link>
+                  <span>/</span>
+                  <Link
+                    to="/org/$slug/admin"
+                    params={{ slug }}
+                    className="hover:text-slate-700 transition-colors"
+                  >
+                    Admin
+                  </Link>
+                  <span>/</span>
+                  <Link
+                    to="/org/$slug/admin/programs"
+                    params={{ slug }}
+                    className="hover:text-slate-700 transition-colors"
+                  >
+                    Programs
+                  </Link>
+                  <span>/</span>
+                  <span className="text-slate-700">{program.name}</span>
                 </div>
-                <p className="text-slate-600 mt-1">
-                  {programTypeLabels[program.type]} &middot;{' '}
-                  {enrollmentLabels[program.enrollmentMethod]}
-                </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-3">
+                      <h1 className="text-2xl font-display text-foreground">
+                        {program.name}
+                      </h1>
+                      <Badge className={programStatusColors[program.status]}>
+                        {program.status}
+                      </Badge>
+                    </div>
+                    <p className="text-slate-600 mt-1">
+                      {programTypeLabels[program.type]} &middot;{' '}
+                      {enrollmentLabels[program.enrollmentMethod]}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <AddParticipantDialog
+                      orgId={org._id}
+                      programId={program._id}
+                      existingParticipantUserIds={
+                        participants
+                          ?.filter(
+                            (p) =>
+                              p.status === 'enrolled' || p.status === 'pending',
+                          )
+                          .map((p) => p.userId) ?? []
+                      }
+                    />
+                    <ProgramActions program={program} slug={slug} />
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <AddParticipantDialog
-                  orgId={org._id}
-                  programId={program._id}
-                  existingParticipantUserIds={
-                    participants
-                      ?.filter(
-                        (p) =>
-                          p.status === 'enrolled' || p.status === 'pending',
-                      )
-                      .map((p) => p.userId) ?? []
-                  }
+
+              {/* Program Info Card */}
+              <Card className="mb-8">
+                <CardContent className="pt-6">
+                  <div className="grid gap-6 sm:grid-cols-3">
+                    <div>
+                      <p className="text-sm text-slate-500 mb-1">Description</p>
+                      <p className="text-foreground">
+                        {program.description || 'No description'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-500 mb-1">Capacity</p>
+                      <p className="text-foreground">
+                        {program.maxParticipants
+                          ? `${program.participantCount} / ${program.maxParticipants}`
+                          : `${program.participantCount} (unlimited)`}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-500 mb-1">
+                        Completion Criteria
+                      </p>
+                      <p className="text-foreground">
+                        {program.completionCriteria
+                          ? program.completionCriteria.type ===
+                            'attendance_count'
+                            ? `${program.completionCriteria.requiredCount} sessions`
+                            : program.completionCriteria.type ===
+                                'attendance_percentage'
+                              ? `${program.completionCriteria.requiredPercentage}% attendance`
+                              : 'Manual'
+                          : 'None'}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Linked Opportunity */}
+              <LinkedOpportunityCard
+                orgId={org._id}
+                programId={program._id}
+                linkedOppInfo={linkedOppInfo}
+                hasLinkedOpportunity={!!program.linkedOpportunityId}
+              />
+
+              {/* Sessions */}
+              <ProgramSessionsCard
+                programId={program._id}
+                sessions={programSessions}
+                allRsvps={allRsvps}
+              />
+
+              {/* Curriculum */}
+              <CurriculumCard
+                programId={program._id}
+                modules={programModules}
+                sessions={programSessions}
+              />
+
+              {/* Attendance */}
+              <AttendanceCard
+                sessions={programSessions}
+                participants={participants}
+                attendance={sessionAttendance}
+                rsvps={allRsvps}
+              />
+
+              {/* Participants Section */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="size-5" />
+                      Participants
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {participants === undefined ? (
+                    <div className="flex justify-center py-8">
+                      <Spinner className="size-8" />
+                    </div>
+                  ) : participants.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Users className="size-12 text-slate-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-foreground mb-2">
+                        No participants yet
+                      </h3>
+                      <p className="text-slate-500 text-sm">
+                        Add members to this program to track their participation
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b bg-slate-50">
+                            <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
+                              Name
+                            </th>
+                            <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
+                              Status
+                            </th>
+                            <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
+                              Sessions
+                            </th>
+                            <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
+                              Enrolled
+                            </th>
+                            <th className="text-right text-sm font-medium text-slate-500 px-4 py-3">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y">
+                          {participants.map((participant) => (
+                            <ParticipantRow
+                              key={participant._id}
+                              participant={participant}
+                              program={program}
+                              attendedCount={
+                                attendanceCountMap.get(participant.userId) ?? 0
+                              }
+                            />
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* AI Conversations */}
+              {programModules && programModules.length > 0 && (
+                <FacilitatorConversations
+                  programId={programId as Id<'programs'>}
                 />
-                <ProgramActions program={program} slug={slug} />
-              </div>
-            </div>
-          </div>
-
-          {/* Program Info Card */}
-          <Card className="mb-8">
-            <CardContent className="pt-6">
-              <div className="grid gap-6 sm:grid-cols-3">
-                <div>
-                  <p className="text-sm text-slate-500 mb-1">Description</p>
-                  <p className="text-foreground">
-                    {program.description || 'No description'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-500 mb-1">Capacity</p>
-                  <p className="text-foreground">
-                    {program.maxParticipants
-                      ? `${program.participantCount} / ${program.maxParticipants}`
-                      : `${program.participantCount} (unlimited)`}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-500 mb-1">
-                    Completion Criteria
-                  </p>
-                  <p className="text-foreground">
-                    {program.completionCriteria
-                      ? program.completionCriteria.type === 'attendance_count'
-                        ? `${program.completionCriteria.requiredCount} sessions`
-                        : program.completionCriteria.type ===
-                            'attendance_percentage'
-                          ? `${program.completionCriteria.requiredPercentage}% attendance`
-                          : 'Manual'
-                      : 'None'}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Linked Opportunity */}
-          <LinkedOpportunityCard
-            orgId={org._id}
-            programId={program._id}
-            linkedOppInfo={linkedOppInfo}
-            hasLinkedOpportunity={!!program.linkedOpportunityId}
-          />
-
-          {/* Sessions */}
-          <ProgramSessionsCard
-            programId={program._id}
-            sessions={programSessions}
-            allRsvps={allRsvps}
-          />
-
-          {/* Curriculum */}
-          <CurriculumCard
-            programId={program._id}
-            modules={programModules}
-            sessions={programSessions}
-          />
-
-          {/* Attendance */}
-          <AttendanceCard
-            sessions={programSessions}
-            participants={participants}
-            attendance={sessionAttendance}
-            rsvps={allRsvps}
-          />
-
-          {/* Participants Section */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="size-5" />
-                  Participants
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {participants === undefined ? (
-                <div className="flex justify-center py-8">
-                  <Spinner className="size-8" />
-                </div>
-              ) : participants.length === 0 ? (
-                <div className="text-center py-8">
-                  <Users className="size-12 text-slate-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-foreground mb-2">
-                    No participants yet
-                  </h3>
-                  <p className="text-slate-500 text-sm">
-                    Add members to this program to track their participation
-                  </p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b bg-slate-50">
-                        <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
-                          Name
-                        </th>
-                        <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
-                          Status
-                        </th>
-                        <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
-                          Sessions
-                        </th>
-                        <th className="text-left text-sm font-medium text-slate-500 px-4 py-3">
-                          Enrolled
-                        </th>
-                        <th className="text-right text-sm font-medium text-slate-500 px-4 py-3">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y">
-                      {participants.map((participant) => (
-                        <ParticipantRow
-                          key={participant._id}
-                          participant={participant}
-                          program={program}
-                          attendedCount={
-                            attendanceCountMap.get(participant.userId) ?? 0
-                          }
-                        />
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
               )}
-            </CardContent>
-          </Card>
-
-          {/* AI Conversations */}
-          {programModules && programModules.length > 0 && (
-            <FacilitatorConversations programId={programId as Id<'programs'>} />
-          )}
+            </div>
+          </main>
         </div>
-      </main>
-    </div>
+      </FacilitatorSidebarAwareWrapper>
+      <FacilitatorAgentSidebar />
+    </FacilitatorAgentProvider>
   )
 }
 
