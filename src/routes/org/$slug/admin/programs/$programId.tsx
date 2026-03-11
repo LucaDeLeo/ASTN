@@ -22,6 +22,7 @@ import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { api } from '../../../../../../convex/_generated/api'
 import type { Id } from '../../../../../../convex/_generated/dataModel'
+import { AdminModulePrompts } from '~/components/course/AdminModulePrompts'
 import { AttendanceSheet } from '~/components/programs/AttendanceSheet'
 import { ModuleFormDialog } from '~/components/programs/ModuleFormDialog'
 import { SessionFormDialog } from '~/components/programs/SessionFormDialog'
@@ -1221,56 +1222,59 @@ function CurriculumCard({
                 ? sessionMap.get(mod.linkedSessionId)
                 : undefined
               return (
-                <div
-                  key={mod._id}
-                  className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded shrink-0">
-                      Week {mod.weekNumber}
-                    </span>
-                    <span className="font-medium text-foreground text-sm truncate">
-                      {mod.title}
-                    </span>
-                    <Badge className={moduleStatusColors[mod.status]}>
-                      {mod.status}
-                    </Badge>
-                    {linkedSession && (
-                      <span className="text-xs text-slate-400 shrink-0">
-                        → Day {linkedSession.dayNumber}
+                <div key={mod._id} className="rounded-lg hover:bg-slate-50">
+                  <div className="flex items-center justify-between py-2 px-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded shrink-0">
+                        Week {mod.weekNumber}
                       </span>
-                    )}
-                    {mod.materials && mod.materials.length > 0 && (
-                      <span className="text-xs text-slate-500 shrink-0">
-                        {mod.materials.length} material
-                        {mod.materials.length !== 1 ? 's' : ''}
+                      <span className="font-medium text-foreground text-sm truncate">
+                        {mod.title}
                       </span>
-                    )}
+                      <Badge className={moduleStatusColors[mod.status]}>
+                        {mod.status}
+                      </Badge>
+                      {linkedSession && (
+                        <span className="text-xs text-slate-400 shrink-0">
+                          → Day {linkedSession.dayNumber}
+                        </span>
+                      )}
+                      {mod.materials && mod.materials.length > 0 && (
+                        <span className="text-xs text-slate-500 shrink-0">
+                          {mod.materials.length} material
+                          {mod.materials.length !== 1 ? 's' : ''}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <ModuleFormDialog
+                        programId={programId}
+                        module={mod}
+                        sessions={sessions ?? []}
+                        trigger={
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="size-8 p-0"
+                          >
+                            <Pencil className="size-3.5" />
+                          </Button>
+                        }
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="size-8 p-0 text-red-500 hover:text-red-700"
+                        onClick={() => handleDelete(mod._id, mod.title)}
+                      >
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <ModuleFormDialog
-                      programId={programId}
-                      module={mod}
-                      sessions={sessions ?? []}
-                      trigger={
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="size-8 p-0"
-                        >
-                          <Pencil className="size-3.5" />
-                        </Button>
-                      }
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="size-8 p-0 text-red-500 hover:text-red-700"
-                      onClick={() => handleDelete(mod._id, mod.title)}
-                    >
-                      <Trash2 className="size-3.5" />
-                    </Button>
-                  </div>
+                  <AdminModulePrompts
+                    programId={programId}
+                    moduleId={mod._id}
+                  />
                 </div>
               )
             })}

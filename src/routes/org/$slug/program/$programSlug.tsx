@@ -10,6 +10,7 @@ import {
 import { useMemo } from 'react'
 import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
+import { ModulePrompts } from '~/components/course/ModulePrompts'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { GradientBg } from '~/components/layout/GradientBg'
 import { MaterialChecklist } from '~/components/programs/MaterialChecklist'
@@ -403,6 +404,7 @@ function SessionTimeline({
                           }
                         />
                       )}
+                      <ModulePrompts moduleId={mod._id} />
                     </div>
                   ))}
                 </div>
@@ -504,6 +506,7 @@ function UnlinkedModules({
                 completedIndexes={progressMap.get(mod._id) ?? EMPTY_SET}
               />
             )}
+            <ModulePrompts moduleId={mod._id} />
           </Card>
         ))}
 
