@@ -22,22 +22,38 @@ const orgSlug = orgFlag?.split('=')[1]
 
 if (!orgSlug) {
   console.error('Error: --org=<slug> flag is required')
-  console.error('Usage: bun run cli.ts --org=my-org-slug')
+  console.error(
+    'Usage: bun run cli.ts --org=my-org-slug [--program=<programId>]',
+  )
   process.exit(1)
 }
+
+// Parse --program flag (optional — enables facilitator mode)
+const programFlag = process.argv.find((arg) => arg.startsWith('--program='))
+const programId = programFlag?.split('=')[1]
 
 const token = randomBytes(32).toString('base64url')
 process.env.AGENT_TOKEN = token
 process.env.ORG_SLUG = orgSlug
 
-console.log('ASTN admin agent starting...')
-console.log(`Organization: ${orgSlug}`)
-console.log(`WebSocket: ws://localhost:3002`)
+if (programId) {
+  process.env.FACILITATOR_PROGRAM_ID = programId
+  console.log('ASTN facilitator agent starting...')
+  console.log(`Organization: ${orgSlug}`)
+  console.log(`Program: ${programId}`)
+  console.log(`WebSocket: ws://localhost:3003`)
+} else {
+  console.log('ASTN admin agent starting...')
+  console.log(`Organization: ${orgSlug}`)
+  console.log(`WebSocket: ws://localhost:3002`)
+}
 console.log()
 
 // Open browser with token in hash (never sent to server)
 const appUrl = process.env.APP_URL ?? 'https://safetytalent.org'
-const targetUrl = `${appUrl}/org/${orgSlug}/admin#agent=${token}`
+const targetUrl = programId
+  ? `${appUrl}/org/${orgSlug}/admin/programs/${programId}#agent=${token}`
+  : `${appUrl}/org/${orgSlug}/admin#agent=${token}`
 
 console.log(`Opening ${targetUrl}`)
 const open = await import('open')

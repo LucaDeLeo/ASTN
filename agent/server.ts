@@ -1,7 +1,10 @@
 import { ConvexClient } from 'convex/browser'
 import { api } from '../convex/_generated/api'
-import { createAdminAgent } from './agent'
-import { ADMIN_AGENT_WS_PORT } from '../shared/admin-agent/constants'
+import { createAdminAgent, createFacilitatorAgent } from './agent'
+import {
+  ADMIN_AGENT_WS_PORT,
+  FACILITATOR_AGENT_WS_PORT,
+} from '../shared/admin-agent/constants'
 import type {
   AdminAgentEvent,
   AdminClientMessage,
@@ -11,6 +14,12 @@ import type { Id } from '../convex/_generated/dataModel'
 const CONFIRMATION_TIMEOUT_MS = 2 * 60 * 1000 // 2 minutes
 
 const token = process.env.AGENT_TOKEN!
+// Facilitator mode — set by CLI when --program flag is provided
+const facilitatorProgramId = process.env.FACILITATOR_PROGRAM_ID
+const port = facilitatorProgramId
+  ? FACILITATOR_AGENT_WS_PORT
+  : ADMIN_AGENT_WS_PORT
+
 // Fallback Convex URL from env — browser can override per-connection
 const fallbackConvexUrl = process.env.VITE_CONVEX_URL ?? process.env.CONVEX_URL
 if (!fallbackConvexUrl) {
@@ -27,7 +36,7 @@ type PendingConfirmation = {
 
 type ConnectionState = {
   convex: ConvexClient
-  agent: ReturnType<typeof createAdminAgent>
+  agent: { chat: ReturnType<typeof createAdminAgent>['chat'] }
   orgName: string
   clerkToken: string
   tokenHolder: { current: string }
@@ -39,7 +48,7 @@ type ConnectionState = {
 const connections = new Map<object, ConnectionState>()
 
 Bun.serve({
-  port: ADMIN_AGENT_WS_PORT,
+  port,
   async fetch(req, server) {
     const url = new URL(req.url)
     const clientToken = url.searchParams.get('token')
@@ -139,10 +148,7 @@ Bun.serve({
         }
 
         // Get the authenticated user's ID for audit logging
-        const profile = await convex.query(
-          api.profiles.getOrCreateProfile,
-          {},
-        )
+        const profile = await convex.query(api.profiles.getOrCreateProfile, {})
         const userId = profile?.userId ?? 'agent'
 
         // Resolve org by slug
@@ -170,26 +176,62 @@ Bun.serve({
           }
         }
 
-        // requestConfirmation — called by confirmable tools to pause and wait for user
-        const requestConfirmation = (confirmId: string): Promise<boolean> => {
-          return new Promise<boolean>((resolve) => {
-            const timeout = setTimeout(() => {
-              pendingConfirmations.delete(confirmId)
-              resolve(false) // Timeout = reject
-            }, CONFIRMATION_TIMEOUT_MS)
+        let agent: ConnectionState['agent']
 
-            pendingConfirmations.set(confirmId, { resolve, timeout })
+        if (facilitatorProgramId) {
+          // Facilitator mode — verify program exists and belongs to org
+          const program = await convex.query(api.programs.getProgram, {
+            programId: facilitatorProgramId as Id<'programs'>,
           })
-        }
+          if (!program || program.orgId !== org._id) {
+            ws.send(
+              JSON.stringify({
+                type: 'error',
+                message: 'Program not found or does not belong to org',
+              }),
+            )
+            ws.close()
+            return
+          }
 
-        const agent = createAdminAgent(
-          convex,
-          org._id,
-          org.name,
-          userId,
-          emit,
-          requestConfirmation,
-        )
+          agent = createFacilitatorAgent(
+            convex,
+            org._id,
+            facilitatorProgramId as Id<'programs'>,
+            program.name,
+            userId,
+            emit,
+          )
+
+          console.log(
+            `Connected (facilitator): org="${org.name}" program="${program.name}" convex=${convexUrl}`,
+          )
+        } else {
+          // Admin mode — standard admin agent
+          const requestConfirmation = (confirmId: string): Promise<boolean> => {
+            return new Promise<boolean>((resolve) => {
+              const timeout = setTimeout(() => {
+                pendingConfirmations.delete(confirmId)
+                resolve(false) // Timeout = reject
+              }, CONFIRMATION_TIMEOUT_MS)
+
+              pendingConfirmations.set(confirmId, { resolve, timeout })
+            })
+          }
+
+          agent = createAdminAgent(
+            convex,
+            org._id,
+            org.name,
+            userId,
+            emit,
+            requestConfirmation,
+          )
+
+          console.log(
+            `Connected (admin): org="${org.name}" (${org._id}) convex=${convexUrl}`,
+          )
+        }
 
         const state: ConnectionState = {
           convex,
@@ -201,12 +243,7 @@ Bun.serve({
           emit,
         }
 
-        // Store the state with a reference that lets refresh_token update the closure
         connections.set(ws, state)
-
-        console.log(
-          `Connected: org="${org.name}" (${org._id}) convex=${convexUrl}`,
-        )
       } catch (e: any) {
         console.error('Connection setup failed:', e)
         ws.send(
@@ -298,4 +335,5 @@ function isAllowedOrigin(origin: string): boolean {
   return /^https?:\/\/(localhost(:\d+)?|safetytalent\.org)$/.test(origin)
 }
 
-console.log(`Admin agent WebSocket server listening on :${ADMIN_AGENT_WS_PORT}`)
+const mode = facilitatorProgramId ? 'Facilitator' : 'Admin'
+console.log(`${mode} agent WebSocket server listening on :${port}`)

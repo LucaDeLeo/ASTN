@@ -9,6 +9,8 @@ import type {
 } from '../shared/admin-agent/types'
 import type { ConfirmationContext } from './tools/confirmable'
 import { mapSdkMessage } from './sdk-mapper'
+import { createFacilitatorReadTools } from './tools/facilitator'
+import { createFacilitatorProposalTools } from './tools/facilitatorProposals'
 import { createAvailabilityTools } from './tools/availability'
 import { createGuestTools } from './tools/guests'
 import { createMemberTools } from './tools/members'
@@ -66,7 +68,7 @@ export function createAdminAgent(
     '- get_application(applicationId): Get full application details including all essay/form responses — use this to read what applicants actually wrote',
     '- set_quality_score(applicationId, qualityScore, reason): Set a quality score (0–100) with reasoning on an application — always include a reason explaining the score. Call list_applications first to get IDs.',
     "- fetch_linkedin(linkedinUrl): Fetch and parse a LinkedIn profile — returns name, location, education, work history, and skills. Use when an application includes a LinkedIn URL to evaluate the applicant's background.",
-    '- override_engagement(userId, level, notes, expiresInDays?): Override a member\'s engagement level — levels: highly_engaged, moderate, at_risk, new, inactive. Always provide notes.',
+    "- override_engagement(userId, level, notes, expiresInDays?): Override a member's engagement level — levels: highly_engaged, moderate, at_risk, new, inactive. Always provide notes.",
     '- clear_engagement_override(userId): Clear an engagement override, returning member to computed level.',
     '- list_programs: List programs with participant counts',
     '- enroll_participant(programId, userId, adminNotes?): Enroll a member in a program.',
@@ -183,6 +185,161 @@ export function createAdminAgent(
           persistSession: false,
           env: { ...process.env, CLAUDECODE: undefined },
           stderr: (data: string) => console.error('[sdk stderr]', data),
+        },
+      })
+
+      for await (const msg of q) {
+        const result = mapSdkMessage(msg)
+        if (result) {
+          if (Array.isArray(result)) {
+            for (const event of result) {
+              yield event
+            }
+          } else {
+            yield result
+          }
+        }
+      }
+    },
+  }
+}
+
+// --- Facilitator Agent (Phase 39) ---
+
+function buildThinkingConfig(level: ThinkingLevel) {
+  switch (level) {
+    case 'off':
+      return { type: 'disabled' as const }
+    case 'adaptive':
+      return { type: 'adaptive' as const }
+    case 'high':
+      return { type: 'enabled' as const, budgetTokens: 10000 }
+    case 'max':
+      return { type: 'enabled' as const, budgetTokens: 32000 }
+  }
+}
+
+function buildPromptWithHistory(
+  message: string,
+  history: Array<{ role: string; content?: string; parts?: any[] }>,
+): string {
+  if (!history || history.length === 0) return message
+
+  const recent = history.slice(-MAX_HISTORY)
+  const historyText = recent
+    .map((m) => {
+      if (m.role === 'user') {
+        return `Facilitator: ${m.content ?? ''}`
+      }
+      const text =
+        m.parts
+          ?.filter((p: any) => p.type === 'text')
+          .map((p: any) => ('content' in p ? p.content : ''))
+          .join('') ?? ''
+      return `You (assistant): ${text}`
+    })
+    .join('\n\n---\n\n')
+
+  return `<conversation_history>\n${historyText}\n</conversation_history>\n\nFacilitator's new message:\n${message}`
+}
+
+export function createFacilitatorAgent(
+  convex: ConvexClient,
+  orgId: Id<'organizations'>,
+  programId: Id<'programs'>,
+  programName: string,
+  userId: string,
+  emit: (event: AdminAgentEvent) => void,
+) {
+  const tools = [
+    ...createFacilitatorReadTools(convex, orgId, programId),
+    ...createFacilitatorProposalTools(convex, orgId, programId),
+  ]
+
+  const mcpServer = createSdkMcpServer({
+    name: 'facilitator-agent',
+    version: '0.0.1',
+    tools,
+  })
+
+  const allowedTools = tools.map((t) => `mcp__facilitator-agent__${t.name}`)
+
+  const systemPrompt = `You are an AI copilot for a course facilitator. You help the facilitator prepare for sessions, understand participant progress, review exercise responses, and draft feedback.
+
+## Program Context
+You are assisting with the program: "${programName}" (ID: ${programId})
+
+## Your Capabilities
+### Read Tools (immediate access, no approval needed):
+- get_participant_progress: See who's keeping up with materials and exercises
+- get_prompt_responses: Read full text of participant responses to any exercise
+- get_response_counts: Quick overview of submission rates per exercise
+- get_attendance_summary: Session attendance data
+- get_sidebar_conversations: See what participants are discussing with their AI learning partner
+- get_participant_profile: View a participant's background, skills, and goals
+
+### Proposal Tools (facilitator reviews before execution):
+- draft_comment: Write feedback on a participant's exercise response (facilitator approves before participant sees it)
+- draft_message: Draft a message to a participant (facilitator reviews and sends via their channel)
+- suggest_pairs: Recommend participant pairings for activities based on complementary backgrounds
+- flag_pattern: Highlight trends, misconceptions, or notable patterns across responses
+
+## Behavioral Guidelines
+1. IMMEDIATELY call relevant tools when asked about participant data. Do NOT guess or ask clarifying questions first.
+2. When synthesizing responses, look for patterns: common misconceptions, particularly insightful answers, students who may be struggling.
+3. Draft comments should be constructive, specific, and reference the student's actual words.
+4. For session prep, proactively suggest: key discussion points, responses worth highlighting, potential pair assignments.
+5. Keep proposals concise — the facilitator will review each one.
+6. When flagging patterns, cite specific responses or participants as evidence.
+7. You do NOT have access to modify the program structure, create prompts, or change settings. Suggest these to the facilitator verbally.
+8. Be concise and data-driven. Format data as readable markdown.
+9. ALWAYS call tools first, talk second.`
+
+  return {
+    async *chat(
+      message: string,
+      model?: AgentModel,
+      thinking?: ThinkingLevel,
+    ): AsyncGenerator<AdminAgentEvent> {
+      const selectedModel = model ?? 'claude-sonnet-4-6'
+      const thinkingConfig = buildThinkingConfig(thinking ?? 'off')
+
+      // Fetch history from Convex
+      let history: any[] = []
+      try {
+        const messages = await convex.query(
+          api.facilitatorAgentChat.getMessages,
+          { programId },
+        )
+        history = messages ?? []
+      } catch (e: any) {
+        console.log(`[facilitator] Could not fetch history: ${e?.message}`)
+      }
+
+      const prompt = buildPromptWithHistory(message, history)
+      const historyCount = prompt.includes('<conversation_history>')
+        ? 'with history'
+        : 'no history'
+      console.log(
+        `[facilitator] model=${selectedModel} thinking=${thinking ?? 'off'} ${historyCount}`,
+      )
+
+      const q = query({
+        prompt,
+        options: {
+          systemPrompt,
+          model: selectedModel,
+          thinking: thinkingConfig,
+          tools: [],
+          mcpServers: { 'facilitator-agent': mcpServer },
+          allowedTools,
+          permissionMode: 'bypassPermissions',
+          allowDangerouslySkipPermissions: true,
+          includePartialMessages: true,
+          maxTurns: 200,
+          persistSession: false,
+          env: { ...process.env, CLAUDECODE: undefined },
+          stderr: (data: string) => console.error('[facilitator stderr]', data),
         },
       })
 
