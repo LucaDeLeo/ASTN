@@ -23,6 +23,7 @@ import { toast } from 'sonner'
 import { api } from '../../../../../../convex/_generated/api'
 import type { Id } from '../../../../../../convex/_generated/dataModel'
 import { AdminModulePrompts } from '~/components/course/AdminModulePrompts'
+import { FacilitatorConversations } from '~/components/course/FacilitatorConversations'
 import { AttendanceSheet } from '~/components/programs/AttendanceSheet'
 import { ModuleFormDialog } from '~/components/programs/ModuleFormDialog'
 import { SessionFormDialog } from '~/components/programs/SessionFormDialog'
@@ -414,6 +415,11 @@ function ProgramDetailPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* AI Conversations */}
+          {programModules && programModules.length > 0 && (
+            <FacilitatorConversations programId={programId as Id<'programs'>} />
+          )}
         </div>
       </main>
     </div>
