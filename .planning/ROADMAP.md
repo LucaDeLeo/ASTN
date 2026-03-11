@@ -22,8 +22,8 @@
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 37: Unified Prompt System** - One interactive primitive for exercises, activities, polls, and feedback across modules and sessions
-- [ ] **Phase 38: AI Sidebar** - Participant learning partner with Socratic feedback, module context, and proactive AI responses
-- [ ] **Phase 39: Facilitator Agent** - AI copilot with program data access and propose-and-approve workflow via local Bun process
+- [x] **Phase 38: AI Sidebar** - Participant learning partner with Socratic feedback, module context, and proactive AI responses
+- [x] **Phase 39: Facilitator Agent** - AI copilot with program data access and propose-and-approve workflow via local Bun process
 - [ ] **Phase 40: Session Runner** - Live session management with phases, timers, pairing, and real-time participant views
 - [ ] **Phase 41: Module Enhancements** - Essential/optional flags, audio materials, time-to-session, and continue-here markers
 
@@ -85,7 +85,13 @@ Plans:
 4. Agent provides real-time observations during live sessions including response counts, recurring themes, and discussion-worthy responses
 5. Chat history persists per-facilitator per-program in Convex
 
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+
+- [x] 39-01-PLAN.md -- Schema + backend: agentProposals/facilitatorComments tables, proposal CRUD mutations, facilitator comment queries, admin-scoped progress aggregation queries
+- [x] 39-02-PLAN.md -- Agent tools + program scope: facilitator read tools (progress, responses, attendance, conversations, profiles), proposal tools (draft comment/message/pairs/flag), agent factory, CLI --program flag, WebSocket server program mode
+- [x] 39-03-PLAN.md -- Proposal UI + sidebar swap: facilitator agent sidebar, ProposalCard (approve/edit/dismiss), PromptResponseViewer integration, facilitator comment display, conditional sidebar swap on program pages
 
 ### Phase 40: Session Runner
 
@@ -132,14 +138,14 @@ Phases execute in numeric order: 37 -> 38 -> 39 -> 40 -> 41
 | 30-34. Onboarding -> Admin      | v1.5                 | 17/17          | Complete    | 2026-02-03 |
 | 35-36. Generation -> Completion | v1.6                 | 5/5            | Complete    | 2026-02-11 |
 | 37. Unified Prompt System       | v2.0 Course Platform | 4/4            | Complete    | 2026-03-10 |
-| 38. AI Sidebar                  | v2.0 Course Platform | 0/3            | Planned     | -          |
-| 39. Facilitator Agent           | v2.0 Course Platform | 0/?            | Not started | -          |
+| 38. AI Sidebar                  | v2.0 Course Platform | 3/3            | Complete    | 2026-03-10 |
+| 39. Facilitator Agent           | v2.0 Course Platform | 3/3            | Complete    | 2026-03-11 |
 | 40. Session Runner              | v2.0 Course Platform | 0/?            | Not started | -          |
 | 41. Module Enhancements         | v2.0 Course Platform | 0/?            | Not started | -          |
 
-**Total: 37 phases complete (118 plans), 4 phases planned for v2.0 Course Platform**
+**Total: 38 phases complete (121 plans), 3 phases remaining for v2.0 Course Platform**
 
 ---
 
 _Roadmap created: 2026-01-20_
-_Last updated: 2026-03-10 -- v2.0 Course Program Platform roadmap created_
+_Last updated: 2026-03-11 -- Phase 39 complete (3 plans executed)_

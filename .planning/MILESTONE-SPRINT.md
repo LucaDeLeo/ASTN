@@ -4,7 +4,7 @@ milestone: v2.0
 milestone_name: 'v2.0 Course Program Platform'
 mode: yolo
 phase_range: '37-41'
-current_phase: 38
+current_phase: 39
 phases_remaining: [38 39 40 41]
 status: running
 auto_complete: false
@@ -30,6 +30,8 @@ auto_complete: false
 ## Auto-Discuss Log
 
 | Phase | Rounds | Flagged | Resolution |
+| 39 | 3 | see CONTEXT.md | auto |
+| 38 | 3 | see CONTEXT.md | auto |
 | 37 | 3 | see CONTEXT.md | auto |
 |-------|--------|---------|------------|
 
