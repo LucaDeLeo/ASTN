@@ -1162,7 +1162,7 @@ export default defineSchema({
       v.object({
         type: v.literal('session_phase'),
         sessionId: v.id('programSessions'),
-        phaseIndex: v.number(),
+        phaseId: v.id('sessionPhases'),
       }),
     ),
 
@@ -1628,6 +1628,94 @@ export default defineSchema({
   })
     .index('by_org', ['orgId'])
     .index('by_org_timestamp', ['orgId', 'timestamp']),
+
+  // Session phases (Phase 40) — ordered agenda items within a session
+  sessionPhases: defineTable({
+    sessionId: v.id('programSessions'),
+    programId: v.id('programs'),
+    title: v.string(),
+    durationMs: v.number(),
+    notes: v.optional(v.string()),
+    promptIds: v.optional(v.array(v.id('coursePrompts'))),
+    pairConfig: v.optional(
+      v.object({
+        strategy: v.union(
+          v.literal('random'),
+          v.literal('complementary'),
+          v.literal('manual'),
+        ),
+        sourcePromptId: v.optional(v.id('coursePrompts')),
+        sourceFieldId: v.optional(v.string()),
+      }),
+    ),
+    orderIndex: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_sessionId', ['sessionId'])
+    .index('by_sessionId_and_orderIndex', ['sessionId', 'orderIndex']),
+
+  // Session live state (Phase 40) — single document per live session (hot state)
+  sessionLiveState: defineTable({
+    sessionId: v.id('programSessions'),
+    programId: v.id('programs'),
+    status: v.union(
+      v.literal('running'),
+      v.literal('paused'),
+      v.literal('completed'),
+    ),
+    currentPhaseId: v.id('sessionPhases'),
+    phaseStartedAt: v.number(),
+    phaseDurationMs: v.number(),
+    activePromptIds: v.array(v.id('coursePrompts')),
+    startedAt: v.number(),
+    startedBy: v.string(),
+    completedAt: v.optional(v.number()),
+  })
+    .index('by_sessionId', ['sessionId'])
+    .index('by_programId_and_status', ['programId', 'status']),
+
+  // Session presence (Phase 40) — typing/activity indicators
+  sessionPresence: defineTable({
+    sessionId: v.id('programSessions'),
+    userId: v.string(),
+    phaseId: v.id('sessionPhases'),
+    status: v.union(
+      v.literal('typing'),
+      v.literal('idle'),
+      v.literal('submitted'),
+    ),
+    lastSeen: v.number(),
+  })
+    .index('by_sessionId', ['sessionId'])
+    .index('by_sessionId_and_userId', ['sessionId', 'userId'])
+    .index('by_sessionId_and_phaseId', ['sessionId', 'phaseId']),
+
+  // Session pair assignments (Phase 40) — pair/trio assignments per phase
+  sessionPairAssignments: defineTable({
+    sessionId: v.id('programSessions'),
+    phaseId: v.id('sessionPhases'),
+    programId: v.id('programs'),
+    strategy: v.union(
+      v.literal('random'),
+      v.literal('complementary'),
+      v.literal('manual'),
+    ),
+    pairs: v.array(v.object({ members: v.array(v.string()) })),
+    createdAt: v.number(),
+    createdBy: v.string(),
+  })
+    .index('by_sessionId', ['sessionId'])
+    .index('by_sessionId_and_phaseId', ['sessionId', 'phaseId']),
+
+  // Session phase results (Phase 40) — actual durations recorded after each phase
+  sessionPhaseResults: defineTable({
+    sessionId: v.id('programSessions'),
+    phaseId: v.id('sessionPhases'),
+    actualDurationMs: v.number(),
+    startedAt: v.number(),
+    endedAt: v.number(),
+  }).index('by_sessionId', ['sessionId']),
 
   // Push notification tokens for mobile (Tauri) clients
   pushTokens: defineTable({

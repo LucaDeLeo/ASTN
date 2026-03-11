@@ -35,7 +35,7 @@ interface PromptFormProps {
     | {
         type: 'session_phase'
         sessionId: Id<'programSessions'>
-        phaseIndex: number
+        phaseId: Id<'sessionPhases'>
       }
   orderIndex: number
   existingPrompt?: Doc<'coursePrompts'>

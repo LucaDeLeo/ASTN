@@ -23,7 +23,7 @@ const attachedToValidator = v.union(
   v.object({
     type: v.literal('session_phase'),
     sessionId: v.id('programSessions'),
-    phaseIndex: v.number(),
+    phaseId: v.id('sessionPhases'),
   }),
 )
 
