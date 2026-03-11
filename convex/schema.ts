@@ -1254,6 +1254,74 @@ export default defineSchema({
     .index('by_programId', ['programId'])
     .index('by_programId_and_userId', ['programId', 'userId']),
 
+  // Agent proposals (Phase 39) — facilitator agent propose-and-approve workflow
+  agentProposals: defineTable({
+    programId: v.id('programs'),
+    type: v.union(
+      v.literal('comment'),
+      v.literal('message'),
+      v.literal('pairs'),
+      v.literal('summary'),
+      v.literal('flag'),
+      v.literal('prompt'),
+    ),
+    targetId: v.optional(v.string()), // e.g., coursePromptResponses ID for comments
+    targetType: v.optional(v.string()), // e.g., "promptResponse", "session", "participant"
+    content: v.string(), // The proposed text/action
+    status: v.union(
+      v.literal('proposed'),
+      v.literal('approved'),
+      v.literal('edited'),
+      v.literal('dismissed'),
+    ),
+    editedContent: v.optional(v.string()), // Content after facilitator edit
+    approvedBy: v.optional(v.string()), // Clerk userId of approver
+    approvedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index('by_programId', ['programId'])
+    .index('by_programId_and_status', ['programId', 'status'])
+    .index('by_targetId', ['targetId']),
+
+  // Facilitator comments (Phase 39) — approved feedback on participant responses
+  facilitatorComments: defineTable({
+    promptResponseId: v.id('coursePromptResponses'),
+    programId: v.id('programs'),
+    authorId: v.string(), // Clerk userId — facilitator who wrote/approved
+    content: v.string(),
+    fromAgent: v.boolean(), // Was this proposed by the agent?
+    createdAt: v.number(),
+  })
+    .index('by_promptResponseId', ['promptResponseId'])
+    .index('by_programId', ['programId'])
+    .index('by_programId_and_authorId', ['programId', 'authorId']),
+
+  // Facilitator agent chat history (Phase 39) — per facilitator per program
+  facilitatorAgentChats: defineTable({
+    userId: v.string(),
+    programId: v.id('programs'),
+    messages: v.array(
+      v.object({
+        role: v.union(v.literal('user'), v.literal('assistant')),
+        content: v.optional(v.string()),
+        parts: v.optional(
+          v.array(
+            v.union(
+              v.object({ type: v.literal('text'), content: v.string() }),
+              v.object({
+                type: v.literal('tool_call'),
+                name: v.string(),
+                input: v.any(),
+                output: v.optional(v.string()),
+              }),
+            ),
+          ),
+        ),
+      }),
+    ),
+    updatedAt: v.number(),
+  }).index('by_userId_programId', ['userId', 'programId']),
+
   // Guest profiles (Phase 33) - lightweight accounts for visitors
   guestProfiles: defineTable({
     userId: v.string(),
