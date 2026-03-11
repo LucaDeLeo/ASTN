@@ -19,6 +19,7 @@ import { GradientBg } from '~/components/layout/GradientBg'
 import { MaterialChecklist } from '~/components/programs/MaterialChecklist'
 import { RsvpGrid } from '~/components/programs/RsvpGrid'
 import { RsvpSelector } from '~/components/programs/RsvpSelector'
+import { ParticipantLiveView } from '~/components/session/ParticipantLiveView'
 import { programTypeLabels } from '~/lib/program-constants'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
@@ -227,6 +228,11 @@ function ProgramPage() {
                 <p className="text-slate-600 mt-4">{program.description}</p>
               )}
             </Card>
+
+            {/* Live Session Banner */}
+            {participation && sessions.length > 0 && (
+              <ParticipantLiveView sessions={sessions} />
+            )}
 
             {/* Session Timeline */}
             {sessions.length > 0 && (
