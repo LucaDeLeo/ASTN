@@ -1198,6 +1198,9 @@ export default defineSchema({
     ),
     revealedAt: v.optional(v.number()), // Timestamp when reveal was triggered
 
+    // AI feedback (Phase 38) - triggers proactive sidebar feedback on submission
+    aiFeedback: v.optional(v.boolean()),
+
     // Metadata
     createdBy: v.string(), // Clerk userId
     createdAt: v.number(),
@@ -1237,6 +1240,18 @@ export default defineSchema({
   })
     .index('by_promptId', ['promptId'])
     .index('by_promptId_and_userId', ['promptId', 'userId'])
+    .index('by_programId_and_userId', ['programId', 'userId']),
+
+  // Course sidebar threads (Phase 38) - maps user+module to @convex-dev/agent thread
+  courseSidebarThreads: defineTable({
+    userId: v.string(),
+    moduleId: v.id('programModules'),
+    programId: v.id('programs'), // Denormalized for facilitator queries
+    threadId: v.string(), // @convex-dev/agent thread ID
+    createdAt: v.number(),
+  })
+    .index('by_userId_and_moduleId', ['userId', 'moduleId'])
+    .index('by_programId', ['programId'])
     .index('by_programId_and_userId', ['programId', 'userId']),
 
   // Guest profiles (Phase 33) - lightweight accounts for visitors
