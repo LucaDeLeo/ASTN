@@ -64,7 +64,13 @@ Plans:
 4. Conversation history persists per-participant per-module across sessions, and facilitator can view any participant's sidebar conversations from the admin page
 5. Sidebar runs via @convex-dev/agent with ASTN API keys -- participants never need to configure anything
 
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+
+- [ ] 38-01-PLAN.md -- Schema + agent backend: courseSidebarThreads table, learningAgent definition, thread ops, context builder, message queries
+- [ ] 38-02-PLAN.md -- Sidebar UI + proactive feedback: right-side panel, chat component, program page integration, aiFeedback trigger on prompt submission
+- [ ] 38-03-PLAN.md -- Facilitator view: read-only participant conversation browser on admin program page
 
 ### Phase 39: Facilitator Agent
 
@@ -126,7 +132,7 @@ Phases execute in numeric order: 37 -> 38 -> 39 -> 40 -> 41
 | 30-34. Onboarding -> Admin      | v1.5                 | 17/17          | Complete    | 2026-02-03 |
 | 35-36. Generation -> Completion | v1.6                 | 5/5            | Complete    | 2026-02-11 |
 | 37. Unified Prompt System       | v2.0 Course Platform | 4/4            | Complete    | 2026-03-10 |
-| 38. AI Sidebar                  | v2.0 Course Platform | 0/?            | Not started | -          |
+| 38. AI Sidebar                  | v2.0 Course Platform | 0/3            | Planned     | -          |
 | 39. Facilitator Agent           | v2.0 Course Platform | 0/?            | Not started | -          |
 | 40. Session Runner              | v2.0 Course Platform | 0/?            | Not started | -          |
 | 41. Module Enhancements         | v2.0 Course Platform | 0/?            | Not started | -          |
