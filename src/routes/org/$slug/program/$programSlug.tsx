@@ -7,9 +7,12 @@ import {
   GraduationCap,
   Lock,
 } from 'lucide-react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
+import { AISidebar } from '~/components/course/AISidebar'
+import { AISidebarProvider } from '~/components/course/AISidebarProvider'
+import { AISidebarToggle } from '~/components/course/AISidebarToggle'
 import { ModulePrompts } from '~/components/course/ModulePrompts'
 import { AuthHeader } from '~/components/layout/auth-header'
 import { GradientBg } from '~/components/layout/GradientBg'
@@ -110,6 +113,18 @@ function ProgramPage() {
     return map
   }, [myMaterialProgress])
 
+  // Active module for sidebar (default to first available module)
+  const [activeModuleId, setActiveModuleId] =
+    useState<Id<'programModules'> | null>(null)
+
+  const effectiveModuleId = useMemo(() => {
+    if (activeModuleId) return activeModuleId
+    const first = modules.find(
+      (m) => m.status === 'available' || m.status === 'completed',
+    )
+    return first?._id ?? null
+  }, [activeModuleId, modules])
+
   // Pre-group allRsvps by sessionId to avoid O(S*R) filtering
   const rsvpsBySession = useMemo(() => {
     const map = new Map<
@@ -129,118 +144,126 @@ function ProgramPage() {
   }, [allRsvps])
 
   return (
-    <GradientBg>
-      <AuthHeader />
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <Card className="p-6 mb-6">
-            <div className="flex items-center gap-2 text-slate-500 text-sm mb-3">
-              <Link
-                to="/org/$slug"
-                params={{ slug }}
-                className="hover:text-slate-700 transition-colors"
-              >
-                {org.name}
-              </Link>
-              <span>/</span>
-              <Link
-                to="/org/$slug/programs"
-                params={{ slug }}
-                className="hover:text-slate-700 transition-colors"
-              >
-                Programs
-              </Link>
-              <span>/</span>
-              <span className="text-slate-700">{program.name}</span>
-            </div>
+    <AISidebarProvider moduleId={participation ? effectiveModuleId : null}>
+      <GradientBg>
+        <AuthHeader />
+        <AISidebar />
+        <main className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            {/* Header */}
+            <Card className="p-6 mb-6">
+              <div className="flex items-center gap-2 text-slate-500 text-sm mb-3">
+                <Link
+                  to="/org/$slug"
+                  params={{ slug }}
+                  className="hover:text-slate-700 transition-colors"
+                >
+                  {org.name}
+                </Link>
+                <span>/</span>
+                <Link
+                  to="/org/$slug/programs"
+                  params={{ slug }}
+                  className="hover:text-slate-700 transition-colors"
+                >
+                  Programs
+                </Link>
+                <span>/</span>
+                <span className="text-slate-700">{program.name}</span>
+              </div>
 
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-2xl font-display text-foreground">
-                    {program.name}
-                  </h1>
-                  <Badge className="bg-green-100 text-green-700">
-                    {program.status}
-                  </Badge>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <h1 className="text-2xl font-display text-foreground">
+                      {program.name}
+                    </h1>
+                    <Badge className="bg-green-100 text-green-700">
+                      {program.status}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-slate-500">
+                    <span>{programTypeLabels[program.type]}</span>
+                    {program.startDate && (
+                      <>
+                        <span>·</span>
+                        <span>
+                          {new Date(program.startDate).toLocaleDateString(
+                            'en-US',
+                            { month: 'short', day: 'numeric' },
+                          )}
+                          {program.endDate &&
+                            ` – ${new Date(program.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-slate-500">
-                  <span>{programTypeLabels[program.type]}</span>
-                  {program.startDate && (
-                    <>
-                      <span>·</span>
-                      <span>
-                        {new Date(program.startDate).toLocaleDateString(
-                          'en-US',
-                          { month: 'short', day: 'numeric' },
-                        )}
-                        {program.endDate &&
-                          ` – ${new Date(program.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
-                      </span>
-                    </>
+
+                <div className="flex items-center gap-2">
+                  {participation && (
+                    <Badge
+                      className={
+                        participation.status === 'completed'
+                          ? 'bg-blue-50 text-blue-700 border-blue-200'
+                          : 'bg-green-50 text-green-700 border-green-200'
+                      }
+                    >
+                      {participation.status === 'completed' ? (
+                        <>
+                          <CheckCircle2 className="size-3 mr-1" />
+                          Completed
+                        </>
+                      ) : (
+                        'Enrolled'
+                      )}
+                    </Badge>
                   )}
+                  {participation && <AISidebarToggle />}
                 </div>
               </div>
 
-              {participation && (
-                <Badge
-                  className={
-                    participation.status === 'completed'
-                      ? 'bg-blue-50 text-blue-700 border-blue-200'
-                      : 'bg-green-50 text-green-700 border-green-200'
-                  }
-                >
-                  {participation.status === 'completed' ? (
-                    <>
-                      <CheckCircle2 className="size-3 mr-1" />
-                      Completed
-                    </>
-                  ) : (
-                    'Enrolled'
-                  )}
-                </Badge>
+              {program.description && (
+                <p className="text-slate-600 mt-4">{program.description}</p>
               )}
-            </div>
+            </Card>
 
-            {program.description && (
-              <p className="text-slate-600 mt-4">{program.description}</p>
+            {/* Session Timeline */}
+            {sessions.length > 0 && (
+              <SessionTimeline
+                sessions={sessions}
+                modules={modules}
+                myRsvps={myRsvps}
+                myAttendance={myAttendance}
+                progressMap={progressMap}
+                rsvpsBySession={rsvpsBySession}
+                allRsvpsLoaded={allRsvps !== undefined}
+                onModuleClick={setActiveModuleId}
+              />
             )}
-          </Card>
 
-          {/* Session Timeline */}
-          {sessions.length > 0 && (
-            <SessionTimeline
+            {/* Unlinked Modules (not linked to any session) */}
+            <UnlinkedModules
+              modules={modules}
               sessions={sessions}
-              modules={modules}
-              myRsvps={myRsvps}
-              myAttendance={myAttendance}
               progressMap={progressMap}
-              rsvpsBySession={rsvpsBySession}
-              allRsvpsLoaded={allRsvps !== undefined}
+              onModuleClick={setActiveModuleId}
             />
-          )}
 
-          {/* Unlinked Modules (not linked to any session) */}
-          <UnlinkedModules
-            modules={modules}
-            sessions={sessions}
-            progressMap={progressMap}
-          />
-
-          {/* My Progress */}
-          {participation && (
-            <ProgressSection
-              participation={participation}
-              myAttendance={myAttendance}
-              myMaterialProgress={myMaterialProgress}
-              modules={modules}
-              program={program}
-            />
-          )}
-        </div>
-      </main>
-    </GradientBg>
+            {/* My Progress */}
+            {participation && (
+              <ProgressSection
+                participation={participation}
+                myAttendance={myAttendance}
+                myMaterialProgress={myMaterialProgress}
+                modules={modules}
+                program={program}
+              />
+            )}
+          </div>
+        </main>
+      </GradientBg>
+    </AISidebarProvider>
   )
 }
 
@@ -256,6 +279,7 @@ function SessionTimeline({
   progressMap,
   rsvpsBySession,
   allRsvpsLoaded,
+  onModuleClick,
 }: {
   sessions: Array<{
     _id: Id<'programSessions'>
@@ -299,6 +323,7 @@ function SessionTimeline({
     }>
   >
   allRsvpsLoaded: boolean
+  onModuleClick: (id: Id<'programModules'>) => void
 }) {
   const rsvpMap = useMemo(
     () => new Map(myRsvps.map((r) => [r.sessionId, r.preference])),
@@ -394,7 +419,7 @@ function SessionTimeline({
                     Pre-work:
                   </p>
                   {linkedModules.map((mod) => (
-                    <div key={mod._id}>
+                    <div key={mod._id} onClick={() => onModuleClick(mod._id)}>
                       {mod.materials && mod.materials.length > 0 && (
                         <MaterialChecklist
                           moduleId={mod._id}
@@ -443,6 +468,7 @@ function UnlinkedModules({
   modules,
   sessions,
   progressMap,
+  onModuleClick,
 }: {
   modules: Array<{
     _id: Id<'programModules'>
@@ -461,6 +487,7 @@ function UnlinkedModules({
   }>
   sessions: Array<{ _id: Id<'programSessions'> }>
   progressMap: Map<string, Set<number>>
+  onModuleClick: (id: Id<'programModules'>) => void
 }) {
   const sessionIds = new Set(sessions.map((s) => s._id))
   const unlinkedVisible = modules.filter(
@@ -480,7 +507,11 @@ function UnlinkedModules({
       </h2>
       <div className="space-y-3">
         {unlinkedVisible.map((mod) => (
-          <Card key={mod._id} className="p-5">
+          <Card
+            key={mod._id}
+            className="p-5"
+            onClick={() => onModuleClick(mod._id)}
+          >
             <div className="flex items-start justify-between gap-3 mb-2">
               <div>
                 <div className="flex items-center gap-2">

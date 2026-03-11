@@ -1,3 +1,4 @@
+import { useLocation } from '@tanstack/react-router'
 import { Sparkles } from 'lucide-react'
 import { Authenticated } from 'convex/react'
 
@@ -14,9 +15,13 @@ export function AgentFAB() {
 
 function AgentFABInner() {
   const { isOpen, open } = useAgentSidebar()
+  const { pathname } = useLocation()
 
   // Hidden when sidebar/sheet is open
   if (isOpen) return null
+
+  // Hidden on program pages (course sidebar replaces the profile FAB)
+  if (/\/org\/[^/]+\/program\//.test(pathname)) return null
 
   return (
     <Button

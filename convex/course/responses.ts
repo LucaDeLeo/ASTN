@@ -1,4 +1,6 @@
 import { ConvexError, v } from 'convex/values'
+import { createThread, saveMessage } from '@convex-dev/agent'
+import { components, internal } from '../_generated/api'
 import { mutation, query } from '../_generated/server'
 import { getUserId, requireAuth } from '../lib/auth'
 import { checkProgramAccess, requireOrgAdmin } from './_helpers'
@@ -55,6 +57,10 @@ export const saveResponse = mutation({
 
     const now = Date.now()
 
+    let responseId: typeof existing extends null
+      ? never
+      : NonNullable<typeof existing>['_id']
+
     if (existing) {
       if (existing.status === 'submitted') {
         throw new ConvexError('Response already submitted')
@@ -65,18 +71,64 @@ export const saveResponse = mutation({
         savedAt: now,
         submittedAt: submit ? now : undefined,
       })
-      return existing._id
+      responseId = existing._id
+    } else {
+      responseId = await ctx.db.insert('coursePromptResponses', {
+        promptId,
+        programId: prompt.programId,
+        userId,
+        fieldResponses,
+        status: submit ? 'submitted' : 'draft',
+        savedAt: now,
+        submittedAt: submit ? now : undefined,
+      })
     }
 
-    return await ctx.db.insert('coursePromptResponses', {
-      promptId,
-      programId: prompt.programId,
-      userId,
-      fieldResponses,
-      status: submit ? 'submitted' : 'draft',
-      savedAt: now,
-      submittedAt: submit ? now : undefined,
-    })
+    // Proactive AI feedback (SIDE-04)
+    if (submit && prompt.aiFeedback !== false && prompt.moduleId) {
+      const moduleId = prompt.moduleId
+
+      // Find or auto-create sidebar thread
+      let thread = await ctx.db
+        .query('courseSidebarThreads')
+        .withIndex('by_userId_and_moduleId', (q) =>
+          q.eq('userId', userId).eq('moduleId', moduleId),
+        )
+        .first()
+
+      if (!thread) {
+        const threadId = await createThread(ctx, components.agent, { userId })
+        const insertedId = await ctx.db.insert('courseSidebarThreads', {
+          userId,
+          moduleId,
+          programId: prompt.programId,
+          threadId,
+          createdAt: now,
+        })
+        thread = await ctx.db.get('courseSidebarThreads', insertedId)
+      }
+
+      if (thread) {
+        const { messageId } = await saveMessage(ctx, components.agent, {
+          threadId: thread.threadId,
+          prompt: `[System: I just submitted my response to the exercise "${prompt.title}". Can you review it and give me feedback?]`,
+        })
+
+        await ctx.scheduler.runAfter(
+          0,
+          internal.course.sidebarAgent.streamFeedback,
+          {
+            threadId: thread.threadId,
+            promptMessageId: messageId,
+            moduleId,
+            userId,
+            promptId,
+          },
+        )
+      }
+    }
+
+    return responseId
   },
 })
 
