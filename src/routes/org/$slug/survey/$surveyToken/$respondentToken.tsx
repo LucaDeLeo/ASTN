@@ -116,8 +116,8 @@ function RespondentSurveyPage() {
 
   const { survey, opportunity, org, respondentName } = data
 
-  // Closed state
-  if (survey.status === 'closed') {
+  // Not open (draft or closed)
+  if (survey.status !== 'open') {
     return (
       <GradientBg>
         <main className="container mx-auto px-4 py-8">
@@ -127,7 +127,9 @@ function RespondentSurveyPage() {
               Survey Closed
             </h1>
             <p className="text-muted-foreground">
-              This feedback survey is no longer accepting responses.
+              {survey.status === 'draft'
+                ? 'This survey is not yet published.'
+                : 'This feedback survey is no longer accepting responses.'}
             </p>
           </div>
         </main>

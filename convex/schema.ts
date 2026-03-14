@@ -1730,7 +1730,8 @@ export default defineSchema({
     description: v.optional(v.string()),
     formFields: v.any(), // Array<FormField> — see convex/lib/formFields.ts
     accessToken: v.string(), // UUID for generic shareable link
-    status: v.union(v.literal('open'), v.literal('closed')),
+    status: v.union(v.literal('draft'), v.literal('open'), v.literal('closed')),
+    applicantStatuses: v.optional(v.array(v.string())), // which application statuses were included
     createdAt: v.number(),
     updatedAt: v.number(),
   })

@@ -5,6 +5,14 @@ import { resolveApplicantDisplayNameFromApplication } from './lib/applicantName'
 import { validateResponses } from './lib/formFields'
 import type { FormField } from './lib/formFields'
 
+// ─── Validators ───
+
+const surveyStatusValidator = v.union(
+  v.literal('draft'),
+  v.literal('open'),
+  v.literal('closed'),
+)
+
 // ─── Return validators ───
 
 const surveyReturnValidator = v.object({
@@ -18,7 +26,8 @@ const surveyReturnValidator = v.object({
   description: v.optional(v.string()),
   formFields: v.any(),
   accessToken: v.string(),
-  status: v.union(v.literal('open'), v.literal('closed')),
+  status: surveyStatusValidator,
+  applicantStatuses: v.optional(v.array(v.string())),
   createdAt: v.number(),
   updatedAt: v.number(),
 })
@@ -32,6 +41,7 @@ export const createSurvey = mutation({
     description: v.optional(v.string()),
     formFields: v.any(), // Array<FormField>
     programId: v.optional(v.id('programs')),
+    applicantStatuses: v.optional(v.array(v.string())), // filter: only include these statuses
   },
   returns: v.id('feedbackSurveys'),
   handler: async (ctx, args) => {
@@ -40,20 +50,24 @@ export const createSurvey = mutation({
 
     const userId = await requireOrgAdmin(ctx, opportunity.orgId)
 
-    // One active survey per opportunity
+    // One active (draft or open) survey per opportunity
     const existing = await ctx.db
       .query('feedbackSurveys')
       .withIndex('by_opportunity', (q) =>
         q.eq('opportunityId', args.opportunityId),
       )
       .collect()
-    const hasActive = existing.some((s) => s.status === 'open')
+    const hasActive = existing.some(
+      (s) => s.status === 'open' || s.status === 'draft',
+    )
     if (hasActive)
       throw new ConvexError(
         'An active survey already exists for this opportunity',
       )
 
     const now = Date.now()
+    const statusFilter = args.applicantStatuses ?? []
+
     const surveyId = await ctx.db.insert('feedbackSurveys', {
       opportunityId: args.opportunityId,
       orgId: opportunity.orgId,
@@ -63,12 +77,13 @@ export const createSurvey = mutation({
       description: args.description,
       formFields: args.formFields,
       accessToken: crypto.randomUUID(),
-      status: 'open',
+      status: 'draft',
+      applicantStatuses: statusFilter.length > 0 ? statusFilter : undefined,
       createdAt: now,
       updatedAt: now,
     })
 
-    // Generate respondent rows for all applicants
+    // Generate respondent rows for matching applicants
     const applications = await ctx.db
       .query('opportunityApplications')
       .withIndex('by_opportunity_and_status', (q) =>
@@ -76,7 +91,12 @@ export const createSurvey = mutation({
       )
       .collect()
 
-    for (const app of applications) {
+    const filtered =
+      statusFilter.length > 0
+        ? applications.filter((a) => statusFilter.includes(a.status))
+        : applications
+
+    for (const app of filtered) {
       const name = await resolveApplicantDisplayNameFromApplication(
         ctx.db,
         app,
@@ -101,7 +121,8 @@ export const updateSurvey = mutation({
     surveyId: v.id('feedbackSurveys'),
     title: v.optional(v.string()),
     description: v.optional(v.string()),
-    status: v.optional(v.union(v.literal('open'), v.literal('closed'))),
+    formFields: v.optional(v.any()), // Only allowed while draft
+    status: v.optional(surveyStatusValidator),
   },
   returns: v.null(),
   handler: async (ctx, { surveyId, ...updates }) => {
@@ -110,10 +131,16 @@ export const updateSurvey = mutation({
 
     await requireOrgAdmin(ctx, survey.orgId)
 
+    // Only allow editing formFields while in draft
+    if (updates.formFields !== undefined && survey.status !== 'draft') {
+      throw new ConvexError('Cannot edit questions after survey is published')
+    }
+
     const patch: Record<string, unknown> = { updatedAt: Date.now() }
     if (updates.title !== undefined) patch.title = updates.title
     if (updates.description !== undefined)
       patch.description = updates.description
+    if (updates.formFields !== undefined) patch.formFields = updates.formFields
     if (updates.status !== undefined) patch.status = updates.status
 
     await ctx.db.patch('feedbackSurveys', surveyId, patch)
@@ -221,6 +248,36 @@ export const backfillRespondents = mutation({
   },
 })
 
+export const removeRespondent = mutation({
+  args: {
+    surveyId: v.id('feedbackSurveys'),
+    respondentId: v.id('surveyRespondents'),
+  },
+  returns: v.null(),
+  handler: async (ctx, { surveyId, respondentId }) => {
+    const survey = await ctx.db.get('feedbackSurveys', surveyId)
+    if (!survey) throw new ConvexError('Survey not found')
+
+    await requireOrgAdmin(ctx, survey.orgId)
+
+    const respondent = await ctx.db.get('surveyRespondents', respondentId)
+    if (!respondent || respondent.surveyId !== surveyId)
+      throw new ConvexError('Respondent not found')
+
+    // Delete any response they may have submitted
+    const response = await ctx.db
+      .query('surveyResponses')
+      .withIndex('by_survey_and_respondent', (q) =>
+        q.eq('surveyId', surveyId).eq('respondentId', respondentId),
+      )
+      .first()
+    if (response) await ctx.db.delete('surveyResponses', response._id)
+
+    await ctx.db.delete('surveyRespondents', respondentId)
+    return null
+  },
+})
+
 // ─── Admin queries ───
 
 export const getSurveyByOpportunity = query({
@@ -232,9 +289,11 @@ export const getSurveyByOpportunity = query({
       .withIndex('by_opportunity', (q) => q.eq('opportunityId', opportunityId))
       .collect()
 
-    // Return the latest open survey, or the latest overall
-    const open = surveys.find((s) => s.status === 'open')
-    if (open) return open
+    // Return draft/open survey first, then latest closed
+    const active = surveys.find(
+      (s) => s.status === 'draft' || s.status === 'open',
+    )
+    if (active) return active
     if (surveys.length === 0) return null
     return surveys[surveys.length - 1]
   },
@@ -344,7 +403,7 @@ export const listSurveysByOrg = internalQuery({
       _id: v.id('feedbackSurveys'),
       opportunityId: v.id('orgOpportunities'),
       title: v.string(),
-      status: v.union(v.literal('open'), v.literal('closed')),
+      status: surveyStatusValidator,
       createdAt: v.number(),
     }),
   ),

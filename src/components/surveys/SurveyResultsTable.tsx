@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, Download } from 'lucide-react'
+import { ChevronDown, ChevronRight, Download, X } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import type { FormField } from '../../../convex/lib/formFields'
@@ -24,12 +24,14 @@ interface SurveyResultsTableProps {
   formFields: Array<FormField>
   respondents: Array<Respondent>
   surveyTitle: string
+  onRemoveRespondent?: (id: Id<'surveyRespondents'>, name: string) => void
 }
 
 export function SurveyResultsTable({
   formFields,
   respondents,
   surveyTitle,
+  onRemoveRespondent,
 }: SurveyResultsTableProps) {
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
 
@@ -114,10 +116,22 @@ export function SurveyResultsTable({
                     key={r._id}
                     className="flex items-center gap-2 px-2 py-1.5 text-sm text-muted-foreground"
                   >
-                    <span>{r.respondentName}</span>
+                    <span className="flex-1">{r.respondentName}</span>
                     <Badge variant="outline" className="text-xs">
                       Pending
                     </Badge>
+                    {onRemoveRespondent && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onRemoveRespondent(r._id, r.respondentName)
+                        }
+                        className="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors"
+                        title={`Remove ${r.respondentName}`}
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>

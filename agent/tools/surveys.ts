@@ -15,7 +15,7 @@ export function createSurveyTools(
   return [
     tool(
       'create_survey',
-      'Create a feedback survey for an opportunity. Build formFields from the conversation — each field needs: key (camelCase), kind (text/textarea/select/multi_select/checkbox/radio/rating/nps/section_header), label, and optionally description, required, options (for select/multi_select/radio/rating). Call list_opportunities first to get the opportunityId.',
+      'Create a feedback survey as a DRAFT for an opportunity. The admin can review and edit in the UI before publishing. Build formFields from the conversation — each field needs: key (camelCase), kind (text/textarea/select/multi_select/checkbox/radio/rating/nps/section_header), label, and optionally description, required, options (for select/multi_select/radio/rating). Call list_opportunities first to get the opportunityId.',
       {
         opportunityId: z
           .string()
@@ -25,6 +25,12 @@ export function createSurveyTools(
           .string()
           .optional()
           .describe('Intro text shown before the form'),
+        applicantStatuses: z
+          .array(z.string())
+          .optional()
+          .describe(
+            'Filter: only include applicants with these statuses. Options: submitted, under_review, accepted, rejected, waitlisted. Defaults to accepted only.',
+          ),
         formFields: z
           .array(
             z.object({
@@ -46,9 +52,10 @@ export function createSurveyTools(
         try {
           const approved = await confirmAction(confirmCtx, {
             action: 'Create Feedback Survey',
-            description: `Create survey "${args.title}" with ${args.formFields.length} question${args.formFields.length !== 1 ? 's' : ''}. Respondent tokens will be generated for all current applicants.`,
+            description: `Create draft survey "${args.title}" with ${args.formFields.length} question${args.formFields.length !== 1 ? 's' : ''}. Respondent tokens will be generated for ${args.applicantStatuses?.length ? args.applicantStatuses.join(', ') : 'accepted'} applicants.`,
             details: {
               title: args.title,
+              applicantStatuses: args.applicantStatuses ?? ['accepted'],
               questions: args.formFields.map((f) => `${f.label} (${f.kind})`),
             },
           })
@@ -68,6 +75,7 @@ export function createSurveyTools(
               title: args.title,
               description: args.description,
               formFields: args.formFields,
+              applicantStatuses: args.applicantStatuses ?? ['accepted'],
             },
           )
 
@@ -75,7 +83,7 @@ export function createSurveyTools(
             content: [
               {
                 type: 'text' as const,
-                text: `Survey "${args.title}" created successfully (ID: ${surveyId}). Respondent tokens have been generated for all current applicants. Use the email page with {{survey_link}} to notify them.`,
+                text: `Survey "${args.title}" created as a DRAFT (ID: ${surveyId}). Respondent tokens have been generated. The admin should review the survey in the Feedback tab and click "Publish" when ready. Once published, use the email page with {{survey_link}} to notify respondents.`,
               },
             ],
           }
