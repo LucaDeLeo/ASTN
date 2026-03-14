@@ -303,8 +303,9 @@ export function createSurveyTools(
             }
           }
 
-          await convex.mutation(api.feedbackSurveys.closeSurvey, {
+          await convex.mutation(api.feedbackSurveys.updateSurvey, {
             surveyId: args.surveyId as Id<'feedbackSurveys'>,
+            status: 'closed',
           })
 
           return {

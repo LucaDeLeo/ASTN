@@ -3,6 +3,7 @@ import { internalQuery, mutation, query } from './_generated/server'
 import { getUserId, requireOrgAdmin } from './lib/auth'
 import { resolveApplicantDisplayNameFromApplication } from './lib/applicantName'
 import { validateResponses } from './lib/formFields'
+import type { Id } from './_generated/dataModel'
 import type { FormField } from './lib/formFields'
 
 // ─── Validators ───
@@ -148,23 +149,6 @@ export const updateSurvey = mutation({
   },
 })
 
-export const closeSurvey = mutation({
-  args: { surveyId: v.id('feedbackSurveys') },
-  returns: v.null(),
-  handler: async (ctx, { surveyId }) => {
-    const survey = await ctx.db.get('feedbackSurveys', surveyId)
-    if (!survey) throw new ConvexError('Survey not found')
-
-    await requireOrgAdmin(ctx, survey.orgId)
-
-    await ctx.db.patch('feedbackSurveys', surveyId, {
-      status: 'closed',
-      updatedAt: Date.now(),
-    })
-    return null
-  },
-})
-
 export const deleteSurvey = mutation({
   args: { surveyId: v.id('feedbackSurveys') },
   returns: v.null(),
@@ -216,13 +200,19 @@ export const backfillRespondents = mutation({
       existingRespondents.map((r) => r.applicationId),
     )
 
-    // Get all applications for this opportunity
-    const applications = await ctx.db
+    // Get applications, respecting the status filter used at creation
+    const allApplications = await ctx.db
       .query('opportunityApplications')
       .withIndex('by_opportunity_and_status', (q) =>
         q.eq('opportunityId', survey.opportunityId),
       )
       .collect()
+
+    const statusFilter = survey.applicantStatuses ?? []
+    const applications =
+      statusFilter.length > 0
+        ? allApplications.filter((a) => statusFilter.includes(a.status))
+        : allApplications
 
     let added = 0
     for (const app of applications) {
@@ -625,7 +615,7 @@ export const getSurveyResponsesForUser = query({
     // Deduplicate survey/opportunity fetches across responses
     const surveyCache = new Map<
       string,
-      { title: string; opportunityId: string }
+      { title: string; opportunityId: Id<'orgOpportunities'> | null }
     >()
     const oppCache = new Map<string, string>()
 
@@ -636,19 +626,20 @@ export const getSurveyResponsesForUser = query({
           const survey = await ctx.db.get('feedbackSurveys', r.surveyId)
           surveyInfo = {
             title: survey?.title ?? 'Unknown Survey',
-            opportunityId: survey?.opportunityId ?? '',
+            opportunityId: survey?.opportunityId ?? null,
           }
           surveyCache.set(r.surveyId, surveyInfo)
         }
 
-        let oppTitle = oppCache.get(surveyInfo.opportunityId)
+        const oppKey = surveyInfo.opportunityId ?? ''
+        let oppTitle = oppCache.get(oppKey)
         if (oppTitle === undefined && surveyInfo.opportunityId) {
           const opp = await ctx.db.get(
             'orgOpportunities',
-            surveyInfo.opportunityId as any,
+            surveyInfo.opportunityId,
           )
           oppTitle = opp?.title ?? 'Unknown Opportunity'
-          oppCache.set(surveyInfo.opportunityId, oppTitle)
+          oppCache.set(oppKey, oppTitle)
         }
 
         return {

@@ -13,7 +13,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
@@ -247,7 +247,7 @@ function SurveyManagement({
   const [isDeleting, setIsDeleting] = useState(false)
   const [isBackfilling, setIsBackfilling] = useState(false)
 
-  // Draft editing state
+  // Draft editing state — initialized lazily on edit-click, not synced from query
   const [isEditingMeta, setIsEditingMeta] = useState(false)
   const [editTitle, setEditTitle] = useState('')
   const [editDescription, setEditDescription] = useState('')
@@ -256,17 +256,6 @@ function SurveyManagement({
   const [isEditingFields, setIsEditingFields] = useState(false)
   const [editFormFields, setEditFormFields] = useState<Array<FormField>>([])
   const [isSavingFields, setIsSavingFields] = useState(false)
-
-  // Sync edit state when survey loads
-  useEffect(() => {
-    if (results?.survey) {
-      setEditTitle(results.survey.title)
-      setEditDescription(results.survey.description ?? '')
-      setEditFormFields(
-        (results.survey.formFields as Array<FormField> | undefined) ?? [],
-      )
-    }
-  }, [results?.survey])
 
   if (!results) {
     return (
@@ -478,7 +467,11 @@ function SurveyManagement({
                     variant="ghost"
                     size="sm"
                     className="shrink-0 h-7 w-7 p-0"
-                    onClick={() => setIsEditingMeta(true)}
+                    onClick={() => {
+                      setEditTitle(survey.title)
+                      setEditDescription(survey.description ?? '')
+                      setIsEditingMeta(true)
+                    }}
                   >
                     <Pencil className="size-3.5" />
                   </Button>
@@ -585,7 +578,10 @@ function SurveyManagement({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setIsEditingFields(true)}
+                  onClick={() => {
+                    setEditFormFields(survey.formFields as Array<FormField>)
+                    setIsEditingFields(true)
+                  }}
                 >
                   <Edit3 className="size-4 mr-1" />
                   Edit Questions
@@ -649,9 +645,7 @@ function SurveyManagement({
         respondents={respondents}
         surveyTitle={survey.title}
         onRemoveRespondent={
-          isDraft || isOpen
-            ? (id, name) => handleRemoveRespondent(id, name)
-            : undefined
+          isDraft || isOpen ? handleRemoveRespondent : undefined
         }
       />
     </div>
