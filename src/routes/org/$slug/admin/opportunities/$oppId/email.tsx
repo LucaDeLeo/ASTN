@@ -72,6 +72,11 @@ function EmailComposePage() {
     api.availabilityPolls.getPollByOpportunity,
     opportunity ? { opportunityId: opportunity._id } : 'skip',
   )
+  // Check for active survey (for {{survey_link}} support)
+  const activeSurvey = useQuery(
+    api.feedbackSurveys.getSurveyByOpportunity,
+    opportunity ? { opportunityId: opportunity._id } : 'skip',
+  )
 
   const [selectedStatuses, setSelectedStatuses] = useState<
     Set<ApplicationStatus>
@@ -127,6 +132,10 @@ function EmailComposePage() {
         pollId: activePoll?._id,
         pollLinkBase: activePoll
           ? `${window.location.origin}/org/${slug}/poll/${activePoll.accessToken}`
+          : undefined,
+        surveyId: activeSurvey?._id,
+        surveyLinkBase: activeSurvey
+          ? `${window.location.origin}/org/${slug}/survey/${activeSurvey.accessToken}`
           : undefined,
       })
       if (result.failed === 0) {
@@ -330,6 +339,16 @@ function EmailComposePage() {
                         {'{{poll_link}}'}
                       </code>{' '}
                       to include each applicant&apos;s unique availability poll
+                      link.
+                    </p>
+                  )}
+                  {activeSurvey && activeSurvey.status === 'open' && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Use{' '}
+                      <code className="bg-slate-100 px-1 rounded text-[11px]">
+                        {'{{survey_link}}'}
+                      </code>{' '}
+                      to include each applicant&apos;s unique feedback survey
                       link.
                     </p>
                   )}

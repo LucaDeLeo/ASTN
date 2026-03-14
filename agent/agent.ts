@@ -17,6 +17,7 @@ import { createMemberTools } from './tools/members'
 import { createOpportunityTools } from './tools/opportunities'
 import { createProgramTools } from './tools/programs'
 import { createStatsTools } from './tools/stats'
+import { createSurveyTools } from './tools/surveys'
 
 // Max conversation history entries to pass as context
 const MAX_HISTORY = 20
@@ -38,6 +39,7 @@ export function createAdminAgent(
     ...createStatsTools(convex, orgId),
     ...createAvailabilityTools(convex, orgId),
     ...createGuestTools(convex, orgId, userId),
+    ...createSurveyTools(convex, orgId, userId, confirmCtx),
   ]
 
   const mcpServer = createSdkMcpServer({
@@ -82,6 +84,10 @@ export function createAdminAgent(
     '- get_poll_results(pollId): Get all availability responses — who is available when, slot popularity',
     '- get_respondent_application_map(pollId): Map poll respondents to their application IDs (for cross-referencing quality)',
     '- analyze_fixed_schedule(pollId, blockDurationMinutes): Find the best fixed daily time block — ranks all possible start times by attendance across all days, shows per-day breakdown with who can/cannot make it',
+    '- create_survey(opportunityId, title, description?, formFields): Create a feedback survey with custom questions. formFields: array of {key, kind, label, description?, required?, options?}. Kinds: text, textarea, select, multi_select, checkbox, radio, rating (1-5), nps (0-10), section_header.',
+    '- get_survey(opportunityId): Get the feedback survey for an opportunity (title, status, questions)',
+    '- get_survey_results(surveyId): Get all survey responses per respondent',
+    '- get_survey_respondent_links(surveyId): Get respondent token mapping for a survey',
     '',
     'CONFIRMABLE TOOLS (require user approval before executing):',
     '- update_application_status(applicationId, newStatus, reviewNotes?): Change an application status (submitted, under_review, accepted, rejected, waitlisted). Call list_applications first.',
@@ -92,6 +98,7 @@ export function createAdminAgent(
     '- update_opportunity(opportunityId, title?, description?, type?, ...): Update an existing opportunity. Call get_opportunity first.',
     '- close_opportunity(opportunityId): Close an opportunity to stop accepting applications.',
     '- reopen_opportunity(opportunityId): Reopen a closed opportunity.',
+    '- close_survey(surveyId): Close a feedback survey to stop accepting responses.',
     '',
     'Guidelines:',
     '- WRITE TOOLS: override_engagement, clear_engagement_override, set_quality_score, enroll_participant, remove_participant, approve_guest_visit, reject_guest_visit all modify data. Always read first (get_member_engagement, list_applications, list_programs, list_guest_visits) before writing.',

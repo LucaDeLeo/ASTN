@@ -12,6 +12,8 @@ export type FormFieldKind =
   | 'checkbox'
   | 'radio'
   | 'section_header'
+  | 'rating'
+  | 'nps'
 
 export interface FormField {
   key: string
@@ -39,6 +41,8 @@ export const formFieldValidator = v.object({
     v.literal('checkbox'),
     v.literal('radio'),
     v.literal('section_header'),
+    v.literal('rating'),
+    v.literal('nps'),
   ),
   label: v.string(),
   description: v.optional(v.string()),

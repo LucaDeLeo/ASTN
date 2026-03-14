@@ -1720,6 +1720,51 @@ export default defineSchema({
     endedAt: v.number(),
   }).index('by_sessionId', ['sessionId']),
 
+  // Feedback surveys (post-course/opportunity feedback with magic links)
+  feedbackSurveys: defineTable({
+    opportunityId: v.id('orgOpportunities'),
+    orgId: v.id('organizations'),
+    programId: v.optional(v.id('programs')),
+    createdBy: v.string(),
+    title: v.string(),
+    description: v.optional(v.string()),
+    formFields: v.any(), // Array<FormField> — see convex/lib/formFields.ts
+    accessToken: v.string(), // UUID for generic shareable link
+    status: v.union(v.literal('open'), v.literal('closed')),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_opportunity', ['opportunityId'])
+    .index('by_accessToken', ['accessToken'])
+    .index('by_org', ['orgId']),
+
+  // Survey respondents (junction between surveys and applicants, with unique tokens)
+  surveyRespondents: defineTable({
+    surveyId: v.id('feedbackSurveys'),
+    applicationId: v.id('opportunityApplications'),
+    respondentToken: v.string(), // UUID for personalized link
+    respondentName: v.string(),
+    userId: v.optional(v.string()), // Clerk userId for cross-referencing
+  })
+    .index('by_survey', ['surveyId'])
+    .index('by_respondentToken', ['respondentToken'])
+    .index('by_survey_and_application', ['surveyId', 'applicationId'])
+    .index('by_userId', ['userId']),
+
+  // Survey responses (submitted answers)
+  surveyResponses: defineTable({
+    surveyId: v.id('feedbackSurveys'),
+    respondentId: v.id('surveyRespondents'),
+    respondentName: v.string(),
+    responses: v.any(), // Record<string, unknown> keyed by formField.key
+    userId: v.optional(v.string()), // Denormalized from surveyRespondents for queries
+    submittedAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_survey', ['surveyId'])
+    .index('by_survey_and_respondent', ['surveyId', 'respondentId'])
+    .index('by_userId', ['userId']),
+
   // Push notification tokens for mobile (Tauri) clients
   pushTokens: defineTable({
     userId: v.string(),

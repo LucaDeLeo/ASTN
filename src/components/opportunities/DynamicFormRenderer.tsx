@@ -237,6 +237,84 @@ function FieldRenderer({
         </div>
       )
 
+    case 'rating': {
+      const labels =
+        field.options?.length === 5 ? field.options : ['1', '2', '3', '4', '5']
+      const current = typeof value === 'number' ? value : null
+      return (
+        <div className="space-y-2">
+          <Label>
+            {field.label}
+            {field.required && <span className="text-red-500"> *</span>}
+          </Label>
+          {field.description && (
+            <p className="text-xs text-muted-foreground">{field.description}</p>
+          )}
+          <div className="flex gap-2">
+            {labels.map((label, i) => {
+              const score = i + 1
+              const isSelected = current === score
+              return (
+                <button
+                  key={score}
+                  type="button"
+                  onClick={() => onChange(score)}
+                  className={`flex-1 py-2 px-3 rounded-md border text-sm font-medium transition-colors ${
+                    isSelected
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'border-slate-200 text-slate-600 hover:border-primary hover:text-primary'
+                  }`}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )
+    }
+
+    case 'nps': {
+      const current = typeof value === 'number' ? value : null
+      return (
+        <div className="space-y-2">
+          <Label>
+            {field.label}
+            {field.required && <span className="text-red-500"> *</span>}
+          </Label>
+          {field.description && (
+            <p className="text-xs text-muted-foreground">{field.description}</p>
+          )}
+          <div className="flex gap-1">
+            {Array.from({ length: 11 }, (_, i) => {
+              const isSelected = current === i
+              const bg = isSelected
+                ? i <= 6
+                  ? 'bg-red-500 text-white border-red-500'
+                  : i <= 8
+                    ? 'bg-yellow-500 text-white border-yellow-500'
+                    : 'bg-green-500 text-white border-green-500'
+                : 'border-slate-200 text-slate-600 hover:border-slate-400'
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => onChange(i)}
+                  className={`flex-1 py-2 rounded-md border text-sm font-medium transition-colors ${bg}`}
+                >
+                  {i}
+                </button>
+              )
+            })}
+          </div>
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>Not at all likely</span>
+            <span>Extremely likely</span>
+          </div>
+        </div>
+      )
+    }
+
     default:
       return null
   }

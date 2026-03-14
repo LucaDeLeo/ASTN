@@ -22,6 +22,8 @@ export const sendBroadcastToApplicants = action({
     markdownBody: v.string(),
     pollId: v.optional(v.id('availabilityPolls')),
     pollLinkBase: v.optional(v.string()),
+    surveyId: v.optional(v.id('feedbackSurveys')),
+    surveyLinkBase: v.optional(v.string()),
   },
   returns: v.object({
     sent: v.number(),
@@ -29,7 +31,16 @@ export const sendBroadcastToApplicants = action({
   }),
   handler: async (
     ctx,
-    { opportunityId, statuses, subject, markdownBody, pollId, pollLinkBase },
+    {
+      opportunityId,
+      statuses,
+      subject,
+      markdownBody,
+      pollId,
+      pollLinkBase,
+      surveyId,
+      surveyLinkBase,
+    },
   ) => {
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) throw new Error('Not authenticated')
@@ -59,8 +70,13 @@ export const sendBroadcastToApplicants = action({
       return { sent: 0, failed: 0 }
     }
 
-    // Build applicationId → respondentToken map if poll link substitution is needed
-    let tokenMap: Map<string, string> | null = null
+    // Build applicationId → token maps for link substitution
+    type LinkSub = {
+      tokenMap: Map<string, string>
+      linkBase: string
+      placeholder: string
+    }
+    const linkSubs: Array<LinkSub> = []
 
     if (pollId && pollLinkBase && markdownBody.includes('{{poll_link}}')) {
       const respondents: Array<{
@@ -69,11 +85,33 @@ export const sendBroadcastToApplicants = action({
       }> = await ctx.runQuery(api.availabilityPolls.getRespondentLinks, {
         pollId,
       })
+      linkSubs.push({
+        tokenMap: new Map(
+          respondents.map((r) => [r.applicationId, r.respondentToken]),
+        ),
+        linkBase: pollLinkBase,
+        placeholder: '{{poll_link}}',
+      })
+    }
 
-      tokenMap = new Map<string, string>()
-      for (const r of respondents) {
-        tokenMap.set(r.applicationId, r.respondentToken)
-      }
+    if (
+      surveyId &&
+      surveyLinkBase &&
+      markdownBody.includes('{{survey_link}}')
+    ) {
+      const respondents: Array<{
+        respondentToken: string
+        applicationId: string
+      }> = await ctx.runQuery(api.feedbackSurveys.getRespondentLinks, {
+        surveyId,
+      })
+      linkSubs.push({
+        tokenMap: new Map(
+          respondents.map((r) => [r.applicationId, r.respondentToken]),
+        ),
+        linkBase: surveyLinkBase,
+        placeholder: '{{survey_link}}',
+      })
     }
 
     let sent = 0
@@ -81,13 +119,13 @@ export const sendBroadcastToApplicants = action({
 
     for (const recipient of recipients) {
       try {
-        // Substitute {{poll_link}} per recipient
+        // Substitute personalized links per recipient
         let recipientMarkdown = markdownBody
-        if (tokenMap && pollLinkBase) {
-          const token = tokenMap.get(recipient.applicationId)
-          const link = token ? `${pollLinkBase}/${token}` : pollLinkBase
+        for (const sub of linkSubs) {
+          const token = sub.tokenMap.get(recipient.applicationId)
+          const link = token ? `${sub.linkBase}/${token}` : sub.linkBase
           recipientMarkdown = recipientMarkdown.replaceAll(
-            '{{poll_link}}',
+            sub.placeholder,
             link,
           )
         }

@@ -38,6 +38,8 @@ const KIND_LABELS: Record<FormFieldKind, string> = {
   checkbox: 'Checkbox',
   radio: 'Yes/No Radio',
   section_header: 'Section Header',
+  rating: 'Rating (1-5)',
+  nps: 'NPS (0-10)',
 }
 
 const KIND_COLORS: Record<FormFieldKind, string> = {
@@ -50,6 +52,8 @@ const KIND_COLORS: Record<FormFieldKind, string> = {
   checkbox: 'bg-green-50 text-green-700',
   radio: 'bg-green-50 text-green-700',
   section_header: 'bg-slate-100 text-slate-700',
+  rating: 'bg-purple-50 text-purple-700',
+  nps: 'bg-orange-50 text-orange-700',
 }
 
 export function FormFieldsEditor({ fields, onChange }: FormFieldsEditorProps) {
@@ -202,6 +206,7 @@ function FieldEditor({
   const isTextarea = field.kind === 'textarea'
   const isMultiSelect = field.kind === 'multi_select'
   const isSectionHeader = field.kind === 'section_header'
+  const isRating = field.kind === 'rating'
 
   const autoKey = labelToKey(field.label)
 
@@ -282,6 +287,27 @@ function FieldEditor({
             onChange={(e) =>
               onChange({ placeholder: e.target.value || undefined })
             }
+          />
+        </div>
+      )}
+
+      {isRating && (
+        <div className="space-y-1">
+          <Label className="text-xs">
+            Custom labels (optional, 5 lines for 1-5)
+          </Label>
+          <Textarea
+            value={field.options?.join('\n') ?? ''}
+            onChange={(e) => {
+              const lines = e.target.value.split('\n')
+              onChange({
+                options: lines.some((l) => l.trim())
+                  ? lines.map((l) => l.trimStart())
+                  : undefined,
+              })
+            }}
+            rows={5}
+            placeholder={'Poor\nFair\nGood\nVery Good\nExcellent'}
           />
         </div>
       )}

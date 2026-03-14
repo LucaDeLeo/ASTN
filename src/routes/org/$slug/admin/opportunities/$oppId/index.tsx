@@ -7,6 +7,7 @@ import {
   ChevronDown,
   ChevronRight,
   ClipboardCopy,
+  ClipboardList,
   Download,
   FileText,
   Loader2,
@@ -25,6 +26,7 @@ import { AvailabilityHeatmap } from '~/components/availability/AvailabilityHeatm
 import { PollCreationForm } from '~/components/availability/PollCreationForm'
 import { ScheduleAnalysis } from '~/components/availability/ScheduleAnalysis'
 import { FormFieldsEditor } from '~/components/opportunities/FormFieldsEditor'
+import { SurveyTab } from '~/components/surveys/SurveyTab'
 import { AuthHeader } from '~/components/layout/auth-header'
 import {
   AlertDialog,
@@ -339,6 +341,10 @@ function OpportunityEditPage() {
                 <Calendar className="size-4" />
                 Availability
               </TabsTrigger>
+              <TabsTrigger value="feedback" className="gap-2">
+                <ClipboardList className="size-4" />
+                Feedback
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="details" className="mt-6">
@@ -544,6 +550,10 @@ function OpportunityEditPage() {
 
             <TabsContent value="availability" className="mt-6">
               <AvailabilityTab opportunityId={opportunity._id} slug={slug} />
+            </TabsContent>
+
+            <TabsContent value="feedback" className="mt-6">
+              <SurveyTab opportunityId={opportunity._id} slug={slug} />
             </TabsContent>
           </Tabs>
         </div>

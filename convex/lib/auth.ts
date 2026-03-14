@@ -45,6 +45,31 @@ export async function requireAuth(
 }
 
 /**
+ * Require the current user to be an admin of a specific organization.
+ * Uses the by_user_and_org index for efficient single-row lookup.
+ */
+export async function requireOrgAdmin(
+  ctx: QueryCtx | MutationCtx,
+  orgId: Id<'organizations'>,
+): Promise<string> {
+  const userId = await getUserId(ctx)
+  if (!userId) throw new Error('Not authenticated')
+
+  const membership = await ctx.db
+    .query('orgMemberships')
+    .withIndex('by_user_and_org', (q) =>
+      q.eq('userId', userId).eq('orgId', orgId),
+    )
+    .first()
+
+  if (!membership || membership.role !== 'admin') {
+    throw new Error('Admin access required')
+  }
+
+  return userId
+}
+
+/**
  * Require the current user to be an admin of at least one organization.
  * Throws "Not authenticated" if no valid session exists.
  * Throws "Admin access required" if user is not an admin of any org.
