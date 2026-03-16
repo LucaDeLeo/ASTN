@@ -59,60 +59,13 @@ function ProgramPage() {
     data?.program ? { programId: data.program._id } : 'skip',
   )
 
-  if (org === undefined || data === undefined) {
-    return (
-      <GradientBg>
-        <AuthHeader />
-        <main className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="animate-pulse space-y-6">
-              <div className="h-24 bg-slate-100 rounded-xl" />
-              <div className="h-64 bg-slate-100 rounded-xl" />
-            </div>
-          </div>
-        </main>
-      </GradientBg>
-    )
-  }
-
-  if (org === null || data === null) {
-    return (
-      <GradientBg>
-        <AuthHeader />
-        <main className="container mx-auto px-4 py-8">
-          <div className="max-w-lg mx-auto text-center py-12">
-            <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-              <Building2 className="size-8 text-slate-400" />
-            </div>
-            <h1 className="text-2xl font-display text-foreground mb-4">
-              {org === null ? 'Organization Not Found' : 'Program Not Found'}
-            </h1>
-            <p className="text-slate-600 mb-6">
-              {org === null
-                ? "This organization doesn't exist."
-                : "This program doesn't exist or you don't have access."}
-            </p>
-            <Button asChild>
-              <Link to="/org/$slug" params={{ slug }}>
-                Back to {org?.name ?? 'Organization'}
-              </Link>
-            </Button>
-          </div>
-        </main>
-      </GradientBg>
-    )
-  }
-
-  const {
-    program,
-    participation,
-    modules,
-    sessions,
-    myRsvps,
-    myAttendance,
-    myMaterialProgress,
-    promptCompletionByModule,
-  } = data
+  // Extract arrays with safe defaults so all hooks run unconditionally
+  const modules = data?.modules ?? []
+  const sessions = data?.sessions ?? []
+  const myRsvps = data?.myRsvps ?? []
+  const myAttendance = data?.myAttendance ?? []
+  const myMaterialProgress = data?.myMaterialProgress ?? []
+  const promptCompletionByModule = data?.promptCompletionByModule ?? []
 
   // Compute progressMap once and pass to children
   const progressMap = useMemo(() => {
@@ -189,6 +142,54 @@ function ProgramPage() {
     }
     return map
   }, [allRsvps])
+
+  // --- Early returns (all hooks are above) ---
+
+  if (org === undefined || data === undefined) {
+    return (
+      <GradientBg>
+        <AuthHeader />
+        <main className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="animate-pulse space-y-6">
+              <div className="h-24 bg-slate-100 rounded-xl" />
+              <div className="h-64 bg-slate-100 rounded-xl" />
+            </div>
+          </div>
+        </main>
+      </GradientBg>
+    )
+  }
+
+  if (org === null || data === null) {
+    return (
+      <GradientBg>
+        <AuthHeader />
+        <main className="container mx-auto px-4 py-8">
+          <div className="max-w-lg mx-auto text-center py-12">
+            <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
+              <Building2 className="size-8 text-slate-400" />
+            </div>
+            <h1 className="text-2xl font-display text-foreground mb-4">
+              {org === null ? 'Organization Not Found' : 'Program Not Found'}
+            </h1>
+            <p className="text-slate-600 mb-6">
+              {org === null
+                ? "This organization doesn't exist."
+                : "This program doesn't exist or you don't have access."}
+            </p>
+            <Button asChild>
+              <Link to="/org/$slug" params={{ slug }}>
+                Back to {org?.name ?? 'Organization'}
+              </Link>
+            </Button>
+          </div>
+        </main>
+      </GradientBg>
+    )
+  }
+
+  const { program, participation } = data
 
   return (
     <AISidebarProvider moduleId={participation ? effectiveModuleId : null}>
