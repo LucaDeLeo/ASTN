@@ -16,7 +16,7 @@ export function UnauthenticatedRedirect({
 }) {
   const navigate = useNavigate()
   useEffect(() => {
-    navigate({ to: '/login' })
+    navigate({ to: '/login', viewTransition: false })
   }, [navigate])
 
   const heightClass = fullScreen ? 'min-h-screen' : 'min-h-[calc(100vh-65px)]'

@@ -153,6 +153,7 @@ export function getRouter() {
         // Benign: browser aborts ViewTransition when a new navigation starts during an ongoing transition
         'Skipped ViewTransition due to another transition starting',
         'Transition was skipped',
+        'Transition was aborted because of invalid state',
         // Unactionable browser-embedded/extension rejection seen after email-link opens on Windows Chrome.
         /^Non-Error promise rejection captured with value: Object Not Found Matching Id:\d+, MethodName:update, ParamCount:\d+$/,
       ],
