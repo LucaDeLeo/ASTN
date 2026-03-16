@@ -1,6 +1,20 @@
 import { v } from 'convex/values'
 import { internalMutation } from '../_generated/server'
 import { log } from '../lib/logging'
+import type { Id } from '../_generated/dataModel'
+import type { MutationCtx } from '../_generated/server'
+
+// Returns true if a newer computation has started since `startedAt`
+async function isStaleRun(
+  ctx: { db: MutationCtx['db'] },
+  profileId: Id<'profiles'>,
+  startedAt: number,
+): Promise<boolean> {
+  const profile = await ctx.db.get('profiles', profileId)
+  return Boolean(
+    profile?.matchProgress && profile.matchProgress.startedAt > startedAt,
+  )
+}
 
 // Match result type from LLM
 const matchResultValidator = v.object({
@@ -66,6 +80,7 @@ export const updateMatchProgress = internalMutation({
       startedAt,
     },
   ) => {
+    if (await isStaleRun(ctx, profileId, startedAt)) return null
     await ctx.db.patch('profiles', profileId, {
       matchProgress: {
         totalBatches,
@@ -80,9 +95,13 @@ export const updateMatchProgress = internalMutation({
 
 // Clear match progress from profile (called on completion or error)
 export const clearMatchProgress = internalMutation({
-  args: { profileId: v.id('profiles') },
+  args: {
+    profileId: v.id('profiles'),
+    startedAt: v.number(),
+  },
   returns: v.null(),
-  handler: async (ctx, { profileId }) => {
+  handler: async (ctx, { profileId, startedAt }) => {
+    if (await isStaleRun(ctx, profileId, startedAt)) return null
     await ctx.db.patch('profiles', profileId, {
       matchProgress: undefined,
     })
@@ -214,21 +233,23 @@ export const saveBatchResults = internalMutation({
       }
     }
 
-    // Update progress on profile (Fix 6: use passed args instead of re-reading)
-    const effectiveCompleted = (progressBatchOffset ?? 0) + batchIndex + 1
-    if (isLastBatch) {
-      await ctx.db.patch('profiles', profileId, {
-        matchProgress: undefined,
-      })
-    } else {
-      await ctx.db.patch('profiles', profileId, {
-        matchProgress: {
-          totalBatches,
-          completedBatches: effectiveCompleted,
-          totalOpportunities,
-          startedAt,
-        },
-      })
+    // Update progress on profile — guard against stale batch chains
+    if (!(await isStaleRun(ctx, profileId, startedAt))) {
+      const effectiveCompleted = (progressBatchOffset ?? 0) + batchIndex + 1
+      if (isLastBatch) {
+        await ctx.db.patch('profiles', profileId, {
+          matchProgress: undefined,
+        })
+      } else {
+        await ctx.db.patch('profiles', profileId, {
+          matchProgress: {
+            totalBatches,
+            completedBatches: effectiveCompleted,
+            totalOpportunities,
+            startedAt,
+          },
+        })
+      }
     }
 
     // Last-batch cleanup: reuse already-loaded existingMatches (Fix 2: no second .collect())

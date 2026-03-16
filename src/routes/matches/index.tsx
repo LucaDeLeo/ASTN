@@ -52,6 +52,9 @@ import {
 import { SORT_OPTIONS, sortMatches } from '~/lib/matchScoring'
 import { cn } from '~/lib/utils'
 
+// If match progress hasn't advanced in 10 minutes, the batch chain likely broke
+const STALE_PROGRESS_MS = 10 * 60 * 1000
+
 // Parse rate limit retryAfter (ms) from ConvexError
 function parseRateLimitRetryAfter(err: unknown): number | null {
   try {
@@ -308,6 +311,15 @@ function ProgressBar({
   )
 }
 
+function WarningBanner({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mb-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900 dark:bg-amber-950">
+      <AlertTriangle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+      {children}
+    </div>
+  )
+}
+
 function ComputingBanner({
   progress,
 }: {
@@ -359,7 +371,19 @@ function MatchesContent() {
     return () => clearTimeout(timer)
   }, [retryAfter])
 
-  const isComputing = isTriggering || matchProgress != null
+  // Re-evaluate staleness periodically so the banner appears without re-navigation
+  const [now, setNow] = useState(Date.now())
+  useEffect(() => {
+    if (matchProgress == null) return
+    const id = setInterval(() => setNow(Date.now()), 60_000)
+    return () => clearInterval(id)
+  }, [matchProgress != null])
+
+  // Detect stuck computations — batch chain broke, progress never cleared
+  const isProgressStale =
+    matchProgress != null && now - matchProgress.startedAt > STALE_PROGRESS_MS
+  const isComputing =
+    isTriggering || (matchProgress != null && !isProgressStale)
 
   // Clear isTriggering once backend progress appears
   useEffect(() => {
@@ -658,10 +682,19 @@ function MatchesContent() {
         {/* Computing progress banner (inline, with existing matches visible below) */}
         {isComputing && <ComputingBanner progress={matchProgress ?? null} />}
 
+        {/* Stale progress banner — previous refresh got stuck */}
+        {isProgressStale && !isComputing && (
+          <WarningBanner>
+            <p className="flex-1 text-sm text-amber-800 dark:text-amber-200">
+              Your last match refresh didn&apos;t complete. Click Refresh to try
+              again.
+            </p>
+          </WarningBanner>
+        )}
+
         {/* Staleness banner (hidden while computing) */}
-        {!isComputing && matchesStaleAt && (
-          <div className="mb-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900 dark:bg-amber-950">
-            <AlertTriangle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+        {!isComputing && !isProgressStale && matchesStaleAt && (
+          <WarningBanner>
             <p className="flex-1 text-sm text-amber-800 dark:text-amber-200">
               Your profile has changed since these matches were computed.
             </p>
@@ -675,7 +708,7 @@ function MatchesContent() {
               <RefreshCw className="size-3 mr-1.5" />
               Refresh
             </Button>
-          </div>
+          </WarningBanner>
         )}
 
         <PullToRefresh

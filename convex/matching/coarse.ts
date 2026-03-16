@@ -98,10 +98,9 @@ export const processCoarseBatch = internalAction({
 
     const batch =
       batchIds.length > 0
-        ? await ctx.runQuery(
-            internal.matching.queries.getOpportunitiesByIds,
-            { ids: batchIds },
-          )
+        ? await ctx.runQuery(internal.matching.queries.getOpportunitiesByIds, {
+            ids: batchIds,
+          })
         : []
 
     // Args forwarded when scheduling next coarse batch or Tier 3
@@ -145,8 +144,7 @@ export const processCoarseBatch = internalAction({
             'matching_coarse',
             MODEL_GEMINI_FAST,
             {
-              promptTokenCount:
-                response.usageMetadata?.promptTokenCount ?? 0,
+              promptTokenCount: response.usageMetadata?.promptTokenCount ?? 0,
               candidatesTokenCount:
                 response.usageMetadata?.candidatesTokenCount ?? 0,
             },
@@ -323,14 +321,14 @@ export const processCoarseBatch = internalAction({
           progressBatchOffset: totalCoarseBatches,
         })
       } else {
-        await ctx.runMutation(
-          internal.matching.mutations.cleanupOnlyMatches,
-          { profileId, validOpportunityIds },
-        )
-        await ctx.runMutation(
-          internal.matching.mutations.clearMatchProgress,
-          { profileId },
-        )
+        await ctx.runMutation(internal.matching.mutations.cleanupOnlyMatches, {
+          profileId,
+          validOpportunityIds,
+        })
+        await ctx.runMutation(internal.matching.mutations.clearMatchProgress, {
+          profileId,
+          startedAt,
+        })
       }
       return
     }
