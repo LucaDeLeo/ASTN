@@ -120,15 +120,15 @@ export const listByOrg = query({
   },
 })
 
-// Get featured opportunity for an org
+// Get featured opportunity for an org (only active ones)
 export const getFeatured = query({
   args: { orgId: v.id('organizations') },
   returns: v.union(opportunityReturnValidator, v.null()),
   handler: async (ctx, { orgId }) => {
     return await ctx.db
       .query('orgOpportunities')
-      .withIndex('by_org_and_featured', (q) =>
-        q.eq('orgId', orgId).eq('featured', true),
+      .withIndex('by_org_and_featured_and_status', (q) =>
+        q.eq('orgId', orgId).eq('featured', true).eq('status', 'active'),
       )
       .first()
   },

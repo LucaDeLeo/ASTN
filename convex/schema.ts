@@ -1385,7 +1385,8 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index('by_org_and_status', ['orgId', 'status'])
-    .index('by_org_and_featured', ['orgId', 'featured']),
+    .index('by_org_and_featured', ['orgId', 'featured'])
+    .index('by_org_and_featured_and_status', ['orgId', 'featured', 'status']),
 
   // Opportunity applications (submitted by org members or guests)
   opportunityApplications: defineTable({
