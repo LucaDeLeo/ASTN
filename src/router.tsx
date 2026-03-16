@@ -151,6 +151,7 @@ export function getRouter() {
       enableLogs: true,
       ignoreErrors: [
         // Benign: browser aborts ViewTransition when a new navigation starts during an ongoing transition
+        'Old view transition aborted by new view transition',
         'Skipped ViewTransition due to another transition starting',
         'Transition was skipped',
         'Transition was aborted because of invalid state',
