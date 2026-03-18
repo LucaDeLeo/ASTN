@@ -1,7 +1,14 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useAction, useQuery } from 'convex/react'
 import DOMPurify from 'dompurify'
-import { Building2, Loader2, Mail, Shield } from 'lucide-react'
+import {
+  Building2,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  Mail,
+  Shield,
+} from 'lucide-react'
 import { marked } from 'marked'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
@@ -51,6 +58,85 @@ const ALL_STATUSES: Array<{
   { value: 'waitlisted', label: 'Waitlisted' },
 ]
 
+/** Extract applicant name from form responses (mirrors backend logic in convex/lib/applicantName.ts) */
+function extractNameFromResponses(responses: unknown): string | null {
+  if (!responses || typeof responses !== 'object' || Array.isArray(responses))
+    return null
+  const normalize = (k: string) => k.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const byKey = new Map(
+    Object.entries(responses as Record<string, unknown>).map(([k, v]) => [
+      normalize(k),
+      v,
+    ]),
+  )
+  const toName = (v: unknown): string | null => {
+    if (typeof v !== 'string') return null
+    const t = v.replace(/\s+/g, ' ').trim()
+    if (!t || t.length > 120 || t.split(' ').length > 8) return null
+    return t
+  }
+  const find = (keys: Array<string>) => {
+    for (const k of keys) {
+      const v = toName(byKey.get(k))
+      if (v) return v
+    }
+    return null
+  }
+  const first = find([
+    'firstname',
+    'givenname',
+    'forename',
+    'nombre',
+    'nombres',
+  ])
+  const last = find([
+    'lastname',
+    'familyname',
+    'surname',
+    'apellido',
+    'apellidos',
+  ])
+  if (first || last) return [first, last].filter(Boolean).join(' ')
+  return find([
+    'fullname',
+    'name',
+    'applicantname',
+    'candidatename',
+    'displayname',
+    'respondentname',
+    'nombre',
+  ])
+}
+
+function RecipientList({
+  recipients,
+  maxHeight = 'max-h-48',
+}: {
+  recipients: Array<{ id: string; name: string; email: string }>
+  maxHeight?: string
+}) {
+  if (recipients.length === 0) return null
+  return (
+    <div
+      className={`${maxHeight} overflow-y-auto rounded-md border divide-y text-sm`}
+    >
+      {recipients.map((r) => (
+        <div
+          key={r.id}
+          className="px-3 py-1.5 flex items-center justify-between gap-2"
+        >
+          <span className="font-medium truncate">{r.name}</span>
+          {r.email && (
+            <span className="text-muted-foreground text-xs shrink-0">
+              {r.email}
+            </span>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function EmailComposePage() {
   const { slug, oppId } = Route.useParams()
 
@@ -85,21 +171,39 @@ function EmailComposePage() {
   const [body, setBody] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [hasSent, setHasSent] = useState(false)
+  const [showRecipientList, setShowRecipientList] = useState(true)
 
   const sendBroadcast = useAction(
     api.emails.adminBroadcastAction.sendBroadcastToApplicants,
   )
 
-  const recipientCount = useMemo(() => {
-    if (!allApplications) return 0
+  const filteredRecipients = useMemo(() => {
+    if (!allApplications) return []
     const seen = new Set<string>()
+    const recipients: Array<{
+      id: string
+      name: string
+      email: string
+    }> = []
     for (const app of allApplications) {
       if (!selectedStatuses.has(app.status as ApplicationStatus)) continue
       const key = app.guestEmail ?? app.userId ?? app._id
+      if (seen.has(key)) continue
       seen.add(key)
+      const name =
+        extractNameFromResponses(app.responses) ??
+        app.guestEmail ??
+        'Unknown applicant'
+      recipients.push({
+        id: app._id,
+        name,
+        email: app.guestEmail ?? '',
+      })
     }
-    return seen.size
+    return recipients
   }, [allApplications, selectedStatuses])
+
+  const recipientCount = filteredRecipients.length
 
   const previewHtml = useMemo(() => {
     if (!body.trim()) return ''
@@ -296,11 +400,33 @@ function EmailComposePage() {
                   </label>
                 ))}
               </div>
-              <p className="text-sm text-muted-foreground mt-3">
-                {allApplications === undefined
-                  ? 'Loading recipients...'
-                  : `${recipientCount} recipient${recipientCount !== 1 ? 's' : ''} selected`}
-              </p>
+              {allApplications === undefined ? (
+                <p className="text-sm text-muted-foreground mt-3">
+                  Loading recipients...
+                </p>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setShowRecipientList((v) => !v)}
+                    className="flex items-center gap-1 text-sm text-muted-foreground mt-3 hover:text-foreground transition-colors"
+                  >
+                    {recipientCount} recipient
+                    {recipientCount !== 1 ? 's' : ''} selected
+                    {recipientCount > 0 &&
+                      (showRecipientList ? (
+                        <ChevronUp className="size-3.5" />
+                      ) : (
+                        <ChevronDown className="size-3.5" />
+                      ))}
+                  </button>
+                  {showRecipientList && (
+                    <div className="mt-2">
+                      <RecipientList recipients={filteredRecipients} />
+                    </div>
+                  )}
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -428,11 +554,19 @@ function EmailComposePage() {
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>Send email?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will send &quot;{subject}&quot; to {recipientCount}{' '}
-                      applicant
-                      {recipientCount !== 1 ? 's' : ''}. This action cannot be
-                      undone.
+                    <AlertDialogDescription asChild>
+                      <div className="space-y-3">
+                        <p>
+                          This will send &quot;{subject}&quot; to{' '}
+                          {recipientCount} applicant
+                          {recipientCount !== 1 ? 's' : ''}. This action cannot
+                          be undone.
+                        </p>
+                        <RecipientList
+                          recipients={filteredRecipients}
+                          maxHeight="max-h-40"
+                        />
+                      </div>
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
