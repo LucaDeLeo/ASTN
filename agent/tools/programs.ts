@@ -75,9 +75,7 @@ export function createProgramTools(
         programId: z
           .string()
           .describe('The Convex document ID of the program from list_programs'),
-        userId: z
-          .string()
-          .describe('The Clerk user ID from list_members'),
+        userId: z.string().describe('The Clerk user ID from list_members'),
         adminNotes: z
           .string()
           .optional()
@@ -184,7 +182,9 @@ export function createProgramTools(
       {
         participationId: z
           .string()
-          .describe('The Convex document ID of the program participation record'),
+          .describe(
+            'The Convex document ID of the program participation record',
+          ),
         reason: z
           .string()
           .optional()

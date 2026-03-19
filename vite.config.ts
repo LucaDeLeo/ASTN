@@ -1,14 +1,55 @@
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import { sentryTanstackStart } from '@sentry/tanstackstart-react/vite'
-import { defineConfig } from 'vite'
-import tsConfigPaths from 'vite-tsconfig-paths'
+import { createLogger, defineConfig } from 'vite-plus'
 import tailwindcss from '@tailwindcss/vite'
 import viteReact from '@vitejs/plugin-react'
 import { nitro } from 'nitro/vite'
 
+const logger = createLogger()
+const originalWarn = logger.warn.bind(logger)
+logger.warn = (msg, options) => {
+  if (msg.includes('Failed to load source map')) return
+  originalWarn(msg, options)
+}
+
 export default defineConfig({
+  customLogger: logger,
+  lint: {
+    options: { typeAware: true, typeCheck: true },
+    ignorePatterns: [
+      'convex/_generated/**',
+      'agent/**',
+      '.vercel/**',
+      '.claude/**',
+      'dist/**',
+      '.planning/**',
+      'app.config.timestamp*.js',
+    ],
+  },
+  staged: {
+    '*.{ts,tsx}': ['vp check --fix'],
+    '*.{json,md,css}': ['vp fmt'],
+  },
+  fmt: {
+    semi: false,
+    singleQuote: true,
+    trailingComma: 'all',
+    printWidth: 80,
+    sortPackageJson: false,
+    ignorePatterns: [
+      '.nitro/',
+      '.output/',
+      '.tanstack/',
+      '**/api',
+      '**/build',
+      '**/public',
+      'convex/_generated/',
+      'convex/README.md',
+      'bun.lock',
+      'routeTree.gen.ts',
+    ],
+  },
   server: {
-    port: 3000,
     proxy: {
       '/ingest': {
         target: 'https://us.i.posthog.com',
@@ -25,11 +66,11 @@ export default defineConfig({
       },
     },
   },
+  resolve: {
+    tsconfigPaths: true,
+  },
   plugins: [
     tailwindcss(),
-    tsConfigPaths({
-      projects: ['./tsconfig.json'],
-    }),
     tanstackStart(),
     nitro({
       preset: 'vercel',

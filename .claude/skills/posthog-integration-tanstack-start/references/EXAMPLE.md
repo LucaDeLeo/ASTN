@@ -75,7 +75,7 @@ vite.config.ts               # Vite config with PostHog proxy
 
 ## Key integration points
 
-### Client-side initialization (routes/__root.tsx)
+### Client-side initialization (routes/\_\_root.tsx)
 
 PostHog is initialized using `PostHogProvider` from `@posthog/react`. The provider wraps the entire app in the root shell component and handles calling `posthog.init()` automatically:
 
@@ -106,12 +106,15 @@ import { PostHog } from 'posthog-node'
 export function getPostHogClient() {
   if (!posthogClient) {
     posthogClient = new PostHog(
-      process.env.VITE_PUBLIC_POSTHOG_KEY || import.meta.env.VITE_PUBLIC_POSTHOG_KEY!,
+      process.env.VITE_PUBLIC_POSTHOG_KEY ||
+        import.meta.env.VITE_PUBLIC_POSTHOG_KEY!,
       {
-        host: process.env.VITE_PUBLIC_POSTHOG_HOST || import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
+        host:
+          process.env.VITE_PUBLIC_POSTHOG_HOST ||
+          import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
         flushAt: 1,
         flushInterval: 0,
-      }
+      },
     )
   }
   return posthogClient
@@ -120,7 +123,7 @@ export function getPostHogClient() {
 
 This client is used in API routes to track server-side events.
 
-### Server-side capture (routes/api/*)
+### Server-side capture (routes/api/\*)
 
 Server-side events include the client's `$session_id` so they appear in the same session in PostHog. The frontend sends it via a header:
 
@@ -241,11 +244,10 @@ yarn.lock
 const config = {
   semi: false,
   singleQuote: true,
-  trailingComma: "all",
-};
+  trailingComma: 'all',
+}
 
-export default config;
-
+export default config
 ```
 
 ---
@@ -298,7 +300,6 @@ export default function Header() {
     </header>
   )
 }
-
 ```
 
 ---
@@ -306,12 +307,7 @@ export default function Header() {
 ## src/contexts/AuthContext.tsx
 
 ```tsx
-import {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-} from 'react'
+import { createContext, useContext, useState, ReactNode } from 'react'
 import { usePostHog } from '@posthog/react'
 
 interface User {
@@ -430,7 +426,6 @@ export function useAuth() {
   }
   return context
 }
-
 ```
 
 ---
@@ -451,12 +446,11 @@ export const getRouter = () => {
     defaultPreloadStaleTime: 0,
   })
 }
-
 ```
 
 ---
 
-## src/routes/__root.tsx
+## src/routes/\_\_root.tsx
 
 ```tsx
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
@@ -505,7 +499,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_KEY!}
           options={{
             api_host: '/ingest',
-            ui_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST || 'https://us.posthog.com',
+            ui_host:
+              import.meta.env.VITE_PUBLIC_POSTHOG_HOST ||
+              'https://us.posthog.com',
             defaults: '2025-05-24',
             capture_exceptions: true,
             debug: import.meta.env.DEV,
@@ -514,17 +510,17 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <AuthProvider>
             <Header />
             {children}
-          <TanStackDevtools
-            config={{
-              position: 'bottom-right',
-            }}
-            plugins={[
-              {
-                name: 'Tanstack Router',
-                render: <TanStackRouterDevtoolsPanel />,
-              },
-            ]}
-          />
+            <TanStackDevtools
+              config={{
+                position: 'bottom-right',
+              }}
+              plugins={[
+                {
+                  name: 'Tanstack Router',
+                  render: <TanStackRouterDevtoolsPanel />,
+                },
+              ]}
+            />
           </AuthProvider>
         </PostHogProvider>
         <Scripts />
@@ -532,7 +528,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     </html>
   )
 }
-
 ```
 
 ---
@@ -597,7 +592,6 @@ export const Route = createFileRoute('/api/auth/login')({
     },
   },
 })
-
 ```
 
 ---
@@ -617,10 +611,7 @@ export const Route = createFileRoute('/api/burrito/consider')({
         const { username, totalConsiderations } = body
 
         if (!username) {
-          return json(
-            { error: 'Username is required' },
-            { status: 400 },
-          )
+          return json({ error: 'Username is required' }, { status: 400 })
         }
 
         const sessionId = request.headers.get('X-PostHog-Session-Id')
@@ -642,7 +633,6 @@ export const Route = createFileRoute('/api/burrito/consider')({
     },
   },
 })
-
 ```
 
 ---
@@ -717,7 +707,14 @@ function BurritoPage() {
         <h1>Burrito consideration zone</h1>
         <p>Take a moment to truly consider the potential of burritos.</p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.125rem' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '0.125rem',
+          }}
+        >
           <button
             onClick={handleClientConsideration}
             className="btn-burrito"
@@ -749,7 +746,6 @@ function BurritoPage() {
     </main>
   )
 }
-
 ```
 
 ---
@@ -854,7 +850,6 @@ function Home() {
     </main>
   )
 }
-
 ```
 
 ---
@@ -949,7 +944,6 @@ function ProfilePage() {
     </main>
   )
 }
-
 ```
 
 ---
@@ -1113,7 +1107,6 @@ declare module '@tanstack/react-start' {
     router: Awaited<ReturnType<typeof getRouter>>
   }
 }
-
 ```
 
 ---
@@ -1128,9 +1121,12 @@ let posthogClient: PostHog | null = null
 export function getPostHogClient() {
   if (!posthogClient) {
     posthogClient = new PostHog(
-      process.env.VITE_PUBLIC_POSTHOG_KEY || import.meta.env.VITE_PUBLIC_POSTHOG_KEY!,
+      process.env.VITE_PUBLIC_POSTHOG_KEY ||
+        import.meta.env.VITE_PUBLIC_POSTHOG_KEY!,
       {
-        host: process.env.VITE_PUBLIC_POSTHOG_HOST || import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
+        host:
+          process.env.VITE_PUBLIC_POSTHOG_HOST ||
+          import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
         flushAt: 1,
         flushInterval: 0,
       },
@@ -1138,8 +1134,6 @@ export function getPostHogClient() {
   }
   return posthogClient
 }
-
-
 ```
 
 ---
@@ -1174,8 +1168,6 @@ const config = defineConfig({
 })
 
 export default config
-
 ```
 
 ---
-

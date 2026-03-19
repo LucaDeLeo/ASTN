@@ -52,19 +52,25 @@ function readByKeys(
   keys: Array<string>,
 ): string | null {
   for (const key of keys) {
-    const candidate = toNameCandidate(valuesByNormalizedKey.get(normalizeKey(key)))
+    const candidate = toNameCandidate(
+      valuesByNormalizedKey.get(normalizeKey(key)),
+    )
     if (candidate) return candidate
   }
   return null
 }
 
-export function extractApplicantNameFromResponses(responses: unknown): string | null {
+export function extractApplicantNameFromResponses(
+  responses: unknown,
+): string | null {
   if (!responses || typeof responses !== 'object' || Array.isArray(responses)) {
     return null
   }
 
   const valuesByNormalizedKey = new Map<string, unknown>()
-  for (const [key, value] of Object.entries(responses as Record<string, unknown>)) {
+  for (const [key, value] of Object.entries(
+    responses as Record<string, unknown>,
+  )) {
     valuesByNormalizedKey.set(normalizeKey(key), value)
   }
 

@@ -1,9 +1,5 @@
 import { useMemo, useState } from 'react'
-import {
-  eachDayOfInterval,
-  format,
-  parseISO,
-} from 'date-fns'
+import { eachDayOfInterval, format, parseISO } from 'date-fns'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -25,8 +21,16 @@ export interface AvailabilityHeatmapProps {
   responses: Array<AvailabilityResponse>
   totalRespondents: number
   onCellClick?: (date: string, startMinutes: number) => void
-  selectedSlot?: { date: string; startMinutes: number; endMinutes: number } | null
-  finalizedSlot?: { date: string; startMinutes: number; endMinutes: number } | null
+  selectedSlot?: {
+    date: string
+    startMinutes: number
+    endMinutes: number
+  } | null
+  finalizedSlot?: {
+    date: string
+    startMinutes: number
+    endMinutes: number
+  } | null
 }
 
 // ---------------------------------------------------------------------------
@@ -125,7 +129,10 @@ export function AvailabilityHeatmap({
   selectedSlot,
   finalizedSlot,
 }: AvailabilityHeatmapProps) {
-  const dates = useMemo(() => buildDates(startDate, endDate), [startDate, endDate])
+  const dates = useMemo(
+    () => buildDates(startDate, endDate),
+    [startDate, endDate],
+  )
   const timeSlots = useMemo(
     () => buildTimeSlots(startMinutes, endMinutes, slotDurationMinutes),
     [startMinutes, endMinutes, slotDurationMinutes],
@@ -142,7 +149,10 @@ export function AvailabilityHeatmap({
     for (const date of dates) {
       for (const slot of timeSlots) {
         const key = slotKey(date, slot)
-        map.set(key, aggregateCell(key, responses, totalRespondents, allRespondentNames))
+        map.set(
+          key,
+          aggregateCell(key, responses, totalRespondents, allRespondentNames),
+        )
       }
     }
     return map
@@ -164,7 +174,9 @@ export function AvailabilityHeatmap({
 
   function isFinalized(date: string, slotStart: number): boolean {
     if (!finalizedSlot) return false
-    return finalizedSlot.date === date && finalizedSlot.startMinutes === slotStart
+    return (
+      finalizedSlot.date === date && finalizedSlot.startMinutes === slotStart
+    )
   }
 
   return (
@@ -226,7 +238,9 @@ export function AvailabilityHeatmap({
                     titleParts.push(`Maybe: ${cell.maybe.join(', ')}`)
                   }
                   if (cell.unavailable.length > 0) {
-                    titleParts.push(`Unavailable: ${cell.unavailable.join(', ')}`)
+                    titleParts.push(
+                      `Unavailable: ${cell.unavailable.join(', ')}`,
+                    )
                   }
 
                   return (
@@ -298,7 +312,9 @@ export function AvailabilityHeatmap({
           )}
           {hoveredData.unavailable.length > 0 && (
             <div>
-              <span className="font-semibold text-slate-500">Unavailable: </span>
+              <span className="font-semibold text-slate-500">
+                Unavailable:{' '}
+              </span>
               {hoveredData.unavailable.join(', ')}
             </div>
           )}

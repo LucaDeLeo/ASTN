@@ -17,16 +17,16 @@ ASTN connects three groups: **individuals** pursuing AI safety careers, **local 
 
 ## Tech stack
 
-| Layer | Technology |
-|---|---|
-| Frontend | React 19, TanStack Start/Router/Query, Tailwind v4, shadcn/ui |
-| Backend | Convex (database, real-time sync, serverless functions) |
-| Auth | Clerk (GitHub, Google, Email+Password) |
-| AI | Claude (career advisor, extraction), Gemini Flash (matching), Kimi K2.5 (conversation) |
-| Email | Resend with React Email templates |
-| Analytics | PostHog |
-| Deployment | Vercel |
-| Runtime | Bun |
+| Layer      | Technology                                                                             |
+| ---------- | -------------------------------------------------------------------------------------- |
+| Frontend   | React 19, TanStack Start/Router/Query, Tailwind v4, shadcn/ui                          |
+| Backend    | Convex (database, real-time sync, serverless functions)                                |
+| Auth       | Clerk (GitHub, Google, Email+Password)                                                 |
+| AI         | Claude (career advisor, extraction), Gemini Flash (matching), Kimi K2.5 (conversation) |
+| Email      | Resend with React Email templates                                                      |
+| Analytics  | PostHog                                                                                |
+| Deployment | Vercel                                                                                 |
+| Runtime    | Bun                                                                                    |
 
 ## Getting started
 
@@ -55,15 +55,15 @@ VITE_CLERK_PUBLISHABLE_KEY=<your clerk publishable key>
 
 3. Set server-side environment variables in the [Convex dashboard](https://dashboard.convex.dev):
 
-| Variable | Required | Description |
-|---|---|---|
-| `ANTHROPIC_API_KEY` | Yes | Claude API key for matching, career advisor, and extraction |
-| `RESEND_API_KEY` | Yes | Resend key for transactional email |
-| `EIGHTY_K_ALGOLIA_APP_ID` | No | 80K Hours job scraping |
-| `EIGHTY_K_ALGOLIA_API_KEY` | No | 80K Hours job scraping |
-| `AIRTABLE_TOKEN` | No | aisafety.com job board + CRM import |
-| `AIRTABLE_BASE_ID` | No | Airtable base for imports |
-| `AIRTABLE_TABLE_NAME` | No | Airtable table for imports |
+| Variable                   | Required | Description                                                 |
+| -------------------------- | -------- | ----------------------------------------------------------- |
+| `ANTHROPIC_API_KEY`        | Yes      | Claude API key for matching, career advisor, and extraction |
+| `RESEND_API_KEY`           | Yes      | Resend key for transactional email                          |
+| `EIGHTY_K_ALGOLIA_APP_ID`  | No       | 80K Hours job scraping                                      |
+| `EIGHTY_K_ALGOLIA_API_KEY` | No       | 80K Hours job scraping                                      |
+| `AIRTABLE_TOKEN`           | No       | aisafety.com job board + CRM import                         |
+| `AIRTABLE_BASE_ID`         | No       | Airtable base for imports                                   |
+| `AIRTABLE_TABLE_NAME`      | No       | Airtable table for imports                                  |
 
 4. Start development:
 
@@ -111,15 +111,15 @@ convex/
 
 ## Key routes
 
-| Path | Description |
-|---|---|
-| `/` | Dashboard with matches, career actions, events |
-| `/profile/edit` | Profile editor |
-| `/matches` | Opportunity matches by fit tier |
-| `/opportunities` | Browse all opportunities |
-| `/orgs` | Organization directory with map |
-| `/org/:slug/admin` | Org admin dashboard |
-| `/admin` | Platform admin |
+| Path               | Description                                    |
+| ------------------ | ---------------------------------------------- |
+| `/`                | Dashboard with matches, career actions, events |
+| `/profile/edit`    | Profile editor                                 |
+| `/matches`         | Opportunity matches by fit tier                |
+| `/opportunities`   | Browse all opportunities                       |
+| `/orgs`            | Organization directory with map                |
+| `/org/:slug/admin` | Org admin dashboard                            |
+| `/admin`           | Platform admin                                 |
 
 ## License
 

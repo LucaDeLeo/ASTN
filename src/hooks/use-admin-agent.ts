@@ -231,10 +231,7 @@ export function useAdminAgent(orgSlug: string) {
 
           case 'action_result': {
             partsRef.current = partsRef.current.map((p) => {
-              if (
-                p.type === 'confirmation' &&
-                p.confirmId === data.confirmId
-              ) {
+              if (p.type === 'confirmation' && p.confirmId === data.confirmId) {
                 return {
                   ...p,
                   status: data.success
