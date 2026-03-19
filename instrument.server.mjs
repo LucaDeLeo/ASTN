@@ -10,4 +10,12 @@ Sentry.init({
       ignoreIncomingRequestUrls: [/^\/ingest/, /^\/tunnel/],
     }),
   ],
+  ignoreErrors: [
+    // Vite+ upstream CJS/ESM cycle bug — not actionable
+    'Cannot require() ES Module',
+    // SSR hook dispatch null — React CJS/ESM duplicate instance during server rendering
+    "Cannot read properties of null (reading 'useEffect')",
+    "Cannot read properties of null (reading 'useState')",
+    "Cannot read properties of null (reading 'useRef')",
+  ],
 })

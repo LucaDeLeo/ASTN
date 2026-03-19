@@ -71,6 +71,14 @@ export default defineConfig({
   },
   resolve: {
     tsconfigPaths: true,
+    // Force a single React instance across CJS/ESM boundaries during SSR
+    // Prevents "Cannot read properties of null (reading 'useEffect')" in server rendering
+    dedupe: [
+      'react',
+      'react-dom',
+      'react/jsx-runtime',
+      'react/jsx-dev-runtime',
+    ],
   },
   plugins: [
     tailwindcss(),
