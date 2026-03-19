@@ -20,7 +20,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup Vite+
-        run: curl -fsSL https://vite.plus | bash
+        run: |
+          curl -fsSL https://vite.plus | bash
+          echo "$HOME/.vite-plus/bin" >> $GITHUB_PATH
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
