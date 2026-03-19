@@ -66,6 +66,9 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    sourcemap: 'hidden',
+  },
   resolve: {
     tsconfigPaths: true,
   },
@@ -79,6 +82,10 @@ export default defineConfig({
       org: 'baish',
       project: 'javascript-tanstackstart-react',
       authToken: process.env.SENTRY_AUTH_TOKEN,
+      telemetry: false,
+      sourcemaps: {
+        filesToDeleteAfterUpload: ['**/*.map'],
+      },
     }),
     viteReact({
       babel: {

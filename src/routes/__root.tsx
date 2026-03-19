@@ -1,5 +1,4 @@
 import { useUser } from '@clerk/clerk-react'
-import { PostHogProvider, usePostHog } from '@posthog/react'
 import {
   HeadContent,
   Outlet,
@@ -25,26 +24,30 @@ import { SidebarAwareWrapper } from '~/components/agent-sidebar/SidebarAwareWrap
 import { MobileShell } from '~/components/layout/mobile-shell'
 import { ErrorDisplay } from '~/components/ErrorDisplay'
 import { isTauri } from '~/lib/platform'
+import { LazyPostHogProvider } from '~/components/analytics/LazyPostHogProvider'
 
-// Identifies the Clerk user in PostHog once they are loaded
-function PostHogUserIdentifier() {
-  const { user, isSignedIn } = useUser()
-  const posthog = usePostHog()
+// Lazy-loaded: identifies the Clerk user in PostHog once they are loaded
+const PostHogUserIdentifier = React.lazy(() =>
+  import('@posthog/react').then((mod) => ({
+    default: function PostHogUserIdentifierInner() {
+      const { user, isSignedIn } = useUser()
+      const posthog = mod.usePostHog()
 
-  React.useEffect(() => {
-    if (isSignedIn) {
-      posthog.identify(user.id, {
-        email: user.primaryEmailAddress?.emailAddress ?? undefined,
-        name: user.fullName ?? undefined,
-      })
-    } else if (isSignedIn === false) {
-      // Reset on sign-out so the next user starts fresh
-      posthog.reset()
-    }
-  }, [isSignedIn, user, posthog])
+      React.useEffect(() => {
+        if (isSignedIn) {
+          posthog.identify(user.id, {
+            email: user.primaryEmailAddress?.emailAddress ?? undefined,
+            name: user.fullName ?? undefined,
+          })
+        } else if (isSignedIn === false) {
+          posthog.reset()
+        }
+      }, [isSignedIn, user, posthog])
 
-  return null
-}
+      return null
+    },
+  })),
+)
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
@@ -214,7 +217,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <PostHogProvider
+        <LazyPostHogProvider
           apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_KEY as string}
           options={{
             api_host: '/ingest',
@@ -226,13 +229,15 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             debug: import.meta.env.DEV,
           }}
         >
-          <PostHogUserIdentifier />
+          <React.Suspense>
+            <PostHogUserIdentifier />
+          </React.Suspense>
           <ThemeProvider>
             {children}
             <Toaster position="top-right" richColors />
             <FeedbackDialog />
           </ThemeProvider>
-        </PostHogProvider>
+        </LazyPostHogProvider>
         <Scripts />
       </body>
     </html>
