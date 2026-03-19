@@ -69,7 +69,7 @@ export function UnifiedProfile({ initialSection }: UnifiedProfileProps) {
   // Create profile if it doesn't exist
   useEffect(() => {
     if (profile === null) {
-      createProfile({
+      void createProfile({
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       })
     }

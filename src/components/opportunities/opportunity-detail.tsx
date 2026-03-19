@@ -157,89 +157,91 @@ export function OpportunityDetail({
         </div>
       </div>
 
-      {/* Description */}
-      <Card className="mb-6 rounded-sm">
-        <CardHeader>
-          <CardTitle>About This Role</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="prose prose-neutral dark:prose-invert max-w-none">
-            {opportunity.description.split('\n').map((paragraph, i) => (
-              <p key={i}>{paragraph}</p>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Requirements */}
-      {opportunity.requirements && opportunity.requirements.length > 0 && (
+      <div className="detail-content-reveal">
+        {/* Description */}
         <Card className="mb-6 rounded-sm">
           <CardHeader>
-            <CardTitle>Requirements</CardTitle>
+            <CardTitle>About This Role</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="list-disc list-inside space-y-2 text-foreground">
-              {opportunity.requirements.map((req, i) => (
-                <li key={i}>{req}</li>
+            <div className="prose prose-neutral dark:prose-invert max-w-none">
+              {opportunity.description.split('\n').map((paragraph, i) => (
+                <p key={i}>{paragraph}</p>
               ))}
-            </ul>
+            </div>
           </CardContent>
         </Card>
-      )}
 
-      {/* Source attribution (OPPS-06 freshness + source) */}
-      <div className="text-sm text-muted-foreground border-t border-border pt-4 mt-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-          <div className="flex items-center gap-1 font-mono">
-            <Calendar className="w-4 h-4 shrink-0" />
-            <span>
-              Last verified:{' '}
-              {formatDistanceToNow(opportunity.lastVerified, {
-                addSuffix: true,
-              })}
-            </span>
-          </div>
+        {/* Requirements */}
+        {opportunity.requirements && opportunity.requirements.length > 0 && (
+          <Card className="mb-6 rounded-sm">
+            <CardHeader>
+              <CardTitle>Requirements</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="list-disc list-inside space-y-2 text-foreground">
+                {opportunity.requirements.map((req, i) => (
+                  <li key={i}>{req}</li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
 
-          <div className="flex flex-wrap items-center gap-2">
-            <span>Source:</span>
-            <a
-              href={opportunity.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              {SOURCE_NAMES[opportunity.source] || opportunity.source}
-            </a>
+        {/* Source attribution (OPPS-06 freshness + source) */}
+        <div className="text-sm text-muted-foreground border-t border-border pt-4 mt-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+            <div className="flex items-center gap-1 font-mono">
+              <Calendar className="w-4 h-4 shrink-0" />
+              <span>
+                Last verified:{' '}
+                {formatDistanceToNow(opportunity.lastVerified, {
+                  addSuffix: true,
+                })}
+              </span>
+            </div>
 
-            {opportunity.alternateSources &&
-              opportunity.alternateSources.length > 0 && (
-                <>
-                  <span className="text-muted-foreground/50">|</span>
-                  <span>Also on:</span>
-                  {opportunity.alternateSources.map((alt, i) => (
-                    <a
-                      key={i}
-                      href={alt.sourceUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      {SOURCE_NAMES[alt.source] || alt.source}
-                    </a>
-                  ))}
-                </>
-              )}
+            <div className="flex flex-wrap items-center gap-2">
+              <span>Source:</span>
+              <a
+                href={opportunity.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                {SOURCE_NAMES[opportunity.source] || opportunity.source}
+              </a>
+
+              {opportunity.alternateSources &&
+                opportunity.alternateSources.length > 0 && (
+                  <>
+                    <span className="text-muted-foreground/50">|</span>
+                    <span>Also on:</span>
+                    {opportunity.alternateSources.map((alt, i) => (
+                      <a
+                        key={i}
+                        href={alt.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        {SOURCE_NAMES[alt.source] || alt.source}
+                      </a>
+                    ))}
+                  </>
+                )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Back link */}
-      <div className="mt-8">
-        <Button variant="outline" asChild className="rounded-sm">
-          <Link to="/opportunities" viewTransition>
-            Back to all opportunities
-          </Link>
-        </Button>
+        {/* Back link */}
+        <div className="mt-8">
+          <Button variant="outline" asChild className="rounded-sm">
+            <Link to="/opportunities" viewTransition>
+              Back to all opportunities
+            </Link>
+          </Button>
+        </div>
       </div>
     </div>
   )

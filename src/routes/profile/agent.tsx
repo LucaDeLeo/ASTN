@@ -31,7 +31,7 @@ function RedirectAndOpenSidebar() {
 
   useEffect(() => {
     open()
-    navigate({ to: '/profile' })
+    void navigate({ to: '/profile' })
   }, [open, navigate])
 
   return null

@@ -123,12 +123,12 @@ export function AISidebarChat({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      handleSubmit(e)
+      void handleSubmit(e)
     }
   }
 
   const handleStop = () => {
-    abortGeneration({ threadId })
+    void abortGeneration({ threadId })
   }
 
   return (
@@ -245,7 +245,11 @@ export function AISidebarChat({
 function MessageBubble({ message }: { message: UIMessage }) {
   const rawText = message.text as unknown
   const messageText =
-    typeof rawText === 'string' ? rawText : String(rawText ?? '')
+    typeof rawText === 'string'
+      ? rawText
+      : typeof rawText === 'object'
+        ? JSON.stringify(rawText)
+        : String(rawText as string | number)
   const [smoothText] = useSmoothText(messageText, {
     startStreaming: message.status === 'streaming',
   })

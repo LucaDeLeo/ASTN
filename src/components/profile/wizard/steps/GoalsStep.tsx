@@ -66,7 +66,7 @@ export function GoalsStep({
       ? selectedInterests.filter((i) => i !== interest)
       : [...selectedInterests, interest]
     setSelectedInterests(newInterests)
-    saveFieldImmediate('aiSafetyInterests', newInterests)
+    void saveFieldImmediate('aiSafetyInterests', newInterests)
   }
 
   return (

@@ -28,7 +28,7 @@ export function OrgCard({ org, variant = 'carousel' }: OrgCardProps) {
   const navigate = useNavigate()
 
   const handleNavigate = () => {
-    navigate({ to: '/org/$slug', params: { slug } })
+    void navigate({ to: '/org/$slug', params: { slug } })
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

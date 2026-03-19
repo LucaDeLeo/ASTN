@@ -58,7 +58,7 @@ export function EnrichmentChat({
       const href = target.getAttribute('href')
       if (href && href.startsWith('/')) {
         e.preventDefault()
-        navigate({ to: href })
+        void navigate({ to: href })
       }
     },
     [navigate],

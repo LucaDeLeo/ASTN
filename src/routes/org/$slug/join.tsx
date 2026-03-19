@@ -176,7 +176,7 @@ function SignInPrompt({
 
   const handleSignIn = () => {
     savePendingInvite({ slug, token: token || undefined })
-    navigate({ to: '/login' })
+    void navigate({ to: '/login' })
   }
 
   return (
@@ -253,7 +253,7 @@ function JoinForm({ token, orgId, orgName, orgSlug }: JoinFormProps) {
       })
       toast.success(`Welcome to ${orgName}!`)
 
-      navigate({
+      void navigate({
         to: '/org/$slug',
         params: { slug: orgSlug || 'unknown' },
       })

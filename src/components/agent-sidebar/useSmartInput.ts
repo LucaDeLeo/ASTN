@@ -89,7 +89,7 @@ export function useSmartInput({
   // Auto-upload when file is selected
   useEffect(() => {
     if (fileUpload.state.status === 'selected') {
-      fileUpload.upload()
+      void fileUpload.upload()
     }
   }, [fileUpload.state.status, fileUpload])
 
@@ -100,7 +100,7 @@ export function useSmartInput({
     if (fileUpload.state.status === 'success') {
       sourceRef.current = 'cv'
       hasApplied.current = false
-      extractFromDocumentRef.current(fileUpload.state.documentId)
+      void extractFromDocumentRef.current(fileUpload.state.documentId)
     }
   }, [fileUpload.state.status])
 
@@ -245,7 +245,7 @@ export function useSmartInput({
       if (match) {
         sourceRef.current = 'linkedin'
         hasApplied.current = false
-        extraction.extractFromLinkedIn(match[0])
+        void extraction.extractFromLinkedIn(match[0])
         return true
       }
 
@@ -265,7 +265,7 @@ export function useSmartInput({
     if (!pendingCVText) return
     sourceRef.current = 'cv'
     hasApplied.current = false
-    extraction.extractFromText(pendingCVText)
+    void extraction.extractFromText(pendingCVText)
     setPendingCVText(null)
     setShowCVConfirm(false)
   }, [pendingCVText, extraction])

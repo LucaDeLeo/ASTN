@@ -74,7 +74,7 @@ export function SessionSetup({ sessionId, onStartSession }: SessionSetupProps) {
     ;[newIds[index], newIds[swapIndex]] = [newIds[swapIndex], newIds[index]]
     try {
       await reorderPhases({ sessionId, phaseIds: newIds })
-    } catch (e) {
+    } catch {
       toast.error('Failed to reorder')
     }
   }

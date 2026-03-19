@@ -199,9 +199,9 @@ function enrichWorkDescriptions(
 
       // Skip metadata lines
       if (/^\w{3}\s+\d{4}\s*[-–]/.test(trimmed)) continue // "Oct 2025 - Present • 3 months"
-      if (/^Company:/.test(trimmed)) continue // "Company: 1-10 employees..."
-      if (/^Department:/.test(trimmed)) continue // "Department: C-Suite • Level: Founder"
-      if (/^Level:/.test(trimmed)) continue
+      if (trimmed.startsWith('Company:')) continue // "Company: 1-10 employees..."
+      if (trimmed.startsWith('Department:')) continue // "Department: C-Suite • Level: Founder"
+      if (trimmed.startsWith('Level:')) continue
       // Skip location-only lines (short, no punctuation except comma)
       if (
         trimmed.length < 50 &&

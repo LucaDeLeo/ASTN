@@ -113,7 +113,13 @@ function FieldRenderer({
           <Input
             id={field.key}
             type={field.kind}
-            value={String(value ?? '')}
+            value={
+              typeof value === 'string'
+                ? value
+                : typeof value === 'number'
+                  ? String(value)
+                  : ''
+            }
             onChange={(e) => onChange(e.target.value)}
             placeholder={field.placeholder}
           />
@@ -132,7 +138,13 @@ function FieldRenderer({
           )}
           <Textarea
             id={field.key}
-            value={String(value ?? '')}
+            value={
+              typeof value === 'string'
+                ? value
+                : typeof value === 'number'
+                  ? String(value)
+                  : ''
+            }
             onChange={(e) => onChange(e.target.value)}
             placeholder={field.placeholder}
             rows={field.rows ?? 4}
@@ -151,7 +163,13 @@ function FieldRenderer({
             <p className="text-xs text-muted-foreground">{field.description}</p>
           )}
           <Select
-            value={String(value ?? '')}
+            value={
+              typeof value === 'string'
+                ? value
+                : typeof value === 'number'
+                  ? String(value)
+                  : ''
+            }
             onValueChange={(val) => onChange(val)}
           >
             <SelectTrigger>

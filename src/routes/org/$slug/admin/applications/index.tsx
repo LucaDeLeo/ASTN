@@ -409,7 +409,8 @@ function formatCellValue(val: unknown): string {
   if (val === undefined || val === null) return ''
   if (Array.isArray(val)) return val.join(', ')
   if (typeof val === 'boolean') return val ? 'Yes' : 'No'
-  return String(val)
+  if (typeof val === 'object') return JSON.stringify(val)
+  return String(val as string | number)
 }
 
 function ApplicationDetail({
@@ -446,7 +447,7 @@ function ApplicationDetail({
   function handleScoreBlur() {
     const parsed = parseFloat(scoreInput)
     if (!isNaN(parsed) && parsed >= 0 && parsed <= 100) {
-      setQualityScore({ applicationId, qualityScore: parsed })
+      void setQualityScore({ applicationId, qualityScore: parsed })
     }
   }
 

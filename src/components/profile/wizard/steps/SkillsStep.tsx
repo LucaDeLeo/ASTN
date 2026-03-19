@@ -29,7 +29,7 @@ export function SkillsStep({
 
   const handleSkillsChange = (skills: Array<string>) => {
     setSelectedSkills(skills)
-    saveFieldImmediate('skills', skills)
+    void saveFieldImmediate('skills', skills)
   }
 
   return (

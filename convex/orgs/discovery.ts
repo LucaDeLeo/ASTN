@@ -185,6 +185,8 @@ export const getOrgCountries = query({
   handler: async (ctx) => {
     const orgs = await ctx.db.query('organizations').collect()
     const countries = [...new Set(orgs.map((o) => o.country).filter(Boolean))]
-    return countries.sort() as Array<string>
+    return countries.sort((a, b) =>
+      (a as string).localeCompare(b as string),
+    ) as Array<string>
   },
 })

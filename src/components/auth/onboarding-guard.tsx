@@ -20,7 +20,7 @@ export function OnboardingGuard({ children }: { children: React.ReactNode }) {
     if (profile === null && !creating.current) {
       creating.current = true
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-      createProfile({ timezone })
+      void createProfile({ timezone })
         .then(() => {
           posthog.capture('profile_created', { timezone })
         })

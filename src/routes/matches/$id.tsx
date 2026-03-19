@@ -76,7 +76,7 @@ function LoadingState() {
 function UnauthenticatedRedirect() {
   const navigate = useNavigate()
   useEffect(() => {
-    navigate({ to: '/login' })
+    void navigate({ to: '/login' })
   }, [navigate])
   return <LoadingState />
 }
@@ -350,154 +350,150 @@ function MatchDetailContent() {
           </div>
         </Card>
 
-        {/* AI discussion prompt */}
-        <div className="mb-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 rounded-lg border border-border bg-card px-4 py-3">
-          <p className="text-sm text-muted-foreground mr-auto">
-            <Sparkles className="size-4 inline-block mr-1.5 -mt-0.5 text-primary" />
-            Want to talk about this match?
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                openWithMessage(
-                  `I'd like to discuss this match with ${match.opportunity.organization} for the "${match.opportunity.title}" role. What do you think about my fit?`,
-                )
-                posthog.capture('match_ai_discuss_clicked', {
-                  match_id: match._id,
-                  opportunity_title: match.opportunity.title,
-                  organization: match.opportunity.organization,
-                  tier: match.tier,
-                })
-              }}
-            >
-              <MessageSquare className="size-4 mr-1.5" />
-              Discuss match
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground"
-              onClick={() =>
-                openWithMessage(
-                  `This match with ${match.opportunity.organization} for the "${match.opportunity.title}" role doesn't seem right for me.`,
-                )
-              }
-            >
-              <ThumbsDown className="size-4 mr-1.5" />
-              Not for me
-            </Button>
-          </div>
-        </div>
-
-        {/* Deadline / Posted date banner */}
-        <DeadlineBanner
-          deadline={match.opportunity.deadline}
-          postedAt={match.opportunity.postedAt}
-          opportunityType={match.opportunity.opportunityType}
-        />
-
-        {/* Opportunity description */}
-        <Card className="p-6 mb-6">
-          <h2 className="text-lg font-display font-semibold text-foreground mb-4">
-            About This Opportunity
-          </h2>
-
-          <div className="prose prose-slate max-w-none">
-            <p className="whitespace-pre-wrap">
-              {match.opportunity.description}
+        <div className="detail-content-reveal">
+          {/* AI discussion prompt */}
+          <div className="mb-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 rounded-lg border border-border bg-card px-4 py-3">
+            <p className="text-sm text-muted-foreground mr-auto">
+              <Sparkles className="size-4 inline-block mr-1.5 -mt-0.5 text-primary" />
+              Want to talk about this match?
             </p>
-          </div>
-
-          {match.opportunity.requirements &&
-            match.opportunity.requirements.length > 0 && (
-              <div className="mt-6 pt-4 border-t">
-                <h3 className="font-medium text-foreground mb-3">
-                  Requirements
-                </h3>
-                <ul className="space-y-2">
-                  {match.opportunity.requirements.map((req, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-2 text-slate-600"
-                    >
-                      <span className="text-slate-400">-</span>
-                      {req}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-        </Card>
-
-        {/* Why this matches */}
-        <Card className="p-6 mb-6">
-          <h2 className="text-lg font-display font-semibold text-foreground mb-4 flex items-center gap-2">
-            <CheckCircle className="size-5 text-emerald-500" />
-            Why This Fits You
-          </h2>
-
-          <ul className="space-y-3">
-            {match.explanation.strengths.map((strength, i) => (
-              <li
-                key={i}
-                className="flex items-start gap-3"
-                style={
-                  i === 0 ? { viewTransitionName: 'match-strength' } : undefined
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  openWithMessage(
+                    `I'd like to discuss this match with ${match.opportunity.organization} for the "${match.opportunity.title}" role. What do you think about my fit?`,
+                  )
+                  posthog.capture('match_ai_discuss_clicked', {
+                    match_id: match._id,
+                    opportunity_title: match.opportunity.title,
+                    organization: match.opportunity.organization,
+                    tier: match.tier,
+                  })
+                }}
+              >
+                <MessageSquare className="size-4 mr-1.5" />
+                Discuss match
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground"
+                onClick={() =>
+                  openWithMessage(
+                    `This match with ${match.opportunity.organization} for the "${match.opportunity.title}" role doesn't seem right for me.`,
+                  )
                 }
               >
-                <span className="size-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm flex-shrink-0 mt-0.5">
-                  +
-                </span>
-                <span className="text-slate-700">{strength}</span>
-              </li>
-            ))}
-          </ul>
-
-          {match.explanation.gap && (
-            <div className="mt-6 pt-4 border-t">
-              <h3 className="text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
-                <AlertTriangle className="size-4 text-amber-500" />
-                To strengthen your application
-              </h3>
-              <p className="text-slate-600 pl-6">{match.explanation.gap}</p>
+                <ThumbsDown className="size-4 mr-1.5" />
+                Not for me
+              </Button>
             </div>
-          )}
-        </Card>
-
-        {/* Recommendations */}
-        <Card className="p-6 mb-6">
-          <h2 className="text-lg font-display font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Lightbulb className="size-5 text-primary" />
-            Recommendations
-          </h2>
-
-          <div className="space-y-4">
-            {match.recommendations.map((rec, i) => (
-              <div
-                key={i}
-                className={`flex items-start gap-3 p-3 rounded-lg ${
-                  rec.type === 'specific' ? 'bg-primary/5' : 'bg-slate-50'
-                }`}
-              >
-                <Badge
-                  variant="outline"
-                  className={
-                    rec.priority === 'high'
-                      ? 'border-primary text-primary'
-                      : rec.priority === 'medium'
-                        ? 'border-blue-500 text-blue-500'
-                        : 'border-slate-400 text-slate-400'
-                  }
-                >
-                  {rec.type === 'specific' ? 'For this role' : rec.type}
-                </Badge>
-                <span className="text-slate-700">{rec.action}</span>
-              </div>
-            ))}
           </div>
-        </Card>
+
+          {/* Deadline / Posted date banner */}
+          <DeadlineBanner
+            deadline={match.opportunity.deadline}
+            postedAt={match.opportunity.postedAt}
+            opportunityType={match.opportunity.opportunityType}
+          />
+
+          {/* Opportunity description */}
+          <Card className="p-6 mb-6">
+            <h2 className="text-lg font-display font-semibold text-foreground mb-4">
+              About This Opportunity
+            </h2>
+
+            <div className="prose prose-slate max-w-none">
+              <p className="whitespace-pre-wrap">
+                {match.opportunity.description}
+              </p>
+            </div>
+
+            {match.opportunity.requirements &&
+              match.opportunity.requirements.length > 0 && (
+                <div className="mt-6 pt-4 border-t">
+                  <h3 className="font-medium text-foreground mb-3">
+                    Requirements
+                  </h3>
+                  <ul className="space-y-2">
+                    {match.opportunity.requirements.map((req, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-2 text-slate-600"
+                      >
+                        <span className="text-slate-400">-</span>
+                        {req}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+          </Card>
+
+          {/* Why this matches */}
+          <Card className="p-6 mb-6">
+            <h2 className="text-lg font-display font-semibold text-foreground mb-4 flex items-center gap-2">
+              <CheckCircle className="size-5 text-emerald-500" />
+              Why This Fits You
+            </h2>
+
+            <ul className="space-y-3">
+              {match.explanation.strengths.map((strength, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <span className="size-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm flex-shrink-0 mt-0.5">
+                    +
+                  </span>
+                  <span className="text-slate-700">{strength}</span>
+                </li>
+              ))}
+            </ul>
+
+            {match.explanation.gap && (
+              <div className="mt-6 pt-4 border-t">
+                <h3 className="text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+                  <AlertTriangle className="size-4 text-amber-500" />
+                  To strengthen your application
+                </h3>
+                <p className="text-slate-600 pl-6">{match.explanation.gap}</p>
+              </div>
+            )}
+          </Card>
+
+          {/* Recommendations */}
+          <Card className="p-6 mb-6">
+            <h2 className="text-lg font-display font-semibold text-foreground mb-4 flex items-center gap-2">
+              <Lightbulb className="size-5 text-primary" />
+              Recommendations
+            </h2>
+
+            <div className="space-y-4">
+              {match.recommendations.map((rec, i) => (
+                <div
+                  key={i}
+                  className={`flex items-start gap-3 p-3 rounded-lg ${
+                    rec.type === 'specific' ? 'bg-primary/5' : 'bg-slate-50'
+                  }`}
+                >
+                  <Badge
+                    variant="outline"
+                    className={
+                      rec.priority === 'high'
+                        ? 'border-primary text-primary'
+                        : rec.priority === 'medium'
+                          ? 'border-blue-500 text-blue-500'
+                          : 'border-slate-400 text-slate-400'
+                    }
+                  >
+                    {rec.type === 'specific' ? 'For this role' : rec.type}
+                  </Badge>
+                  <span className="text-slate-700">{rec.action}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
       </div>
     </main>
   )

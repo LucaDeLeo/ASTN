@@ -59,7 +59,7 @@ export function HamburgerMenu({ user }: HamburgerMenuProps) {
 
   const handleLogout = () => {
     setOpen(false)
-    signOut()
+    void signOut()
   }
 
   const handleFeedbackSubmit = async (e: React.FormEvent) => {

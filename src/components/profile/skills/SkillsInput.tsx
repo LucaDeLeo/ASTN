@@ -27,7 +27,7 @@ export function SkillsInput({
   // Seed taxonomy on mount if empty
   useEffect(() => {
     if (taxonomy && taxonomy.length === 0) {
-      ensureTaxonomySeeded()
+      void ensureTaxonomySeeded()
     }
   }, [taxonomy, ensureTaxonomySeeded])
 

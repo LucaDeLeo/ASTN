@@ -396,7 +396,7 @@ function InviteLinkButton({
     const inviteUrl = `${window.location.origin}/org/${slug}/join?token=${activeLink.token}`
 
     const copyToClipboard = () => {
-      navigator.clipboard.writeText(inviteUrl)
+      void navigator.clipboard.writeText(inviteUrl)
     }
 
     return (

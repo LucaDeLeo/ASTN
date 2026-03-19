@@ -173,7 +173,7 @@ function ApplicationForm() {
         has_website: !!website.trim(),
       })
       toast.success('Application submitted!')
-      navigate({ to: '/apply/status' })
+      void navigate({ to: '/apply/status' })
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : 'Failed to submit application',

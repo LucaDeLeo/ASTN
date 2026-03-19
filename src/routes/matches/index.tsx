@@ -177,7 +177,7 @@ function LoadingState() {
 function UnauthenticatedRedirect() {
   const navigate = useNavigate()
   useEffect(() => {
-    navigate({ to: '/login' })
+    void navigate({ to: '/login' })
   }, [navigate])
   return <LoadingState />
 }
@@ -447,7 +447,7 @@ function MatchesContent() {
       retryAfter == null
     ) {
       hasAutoTriggered.current = true
-      handleCompute()
+      void handleCompute()
     }
     if (!matchesData?.needsComputation) {
       hasAutoTriggered.current = false
@@ -566,7 +566,18 @@ function MatchesContent() {
   ])
 
   const PAGE_SIZE = 12
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+
+  // Ensure the card the user navigated from is visible for back-navigation view transitions
+  const activeMatchId =
+    typeof window !== 'undefined'
+      ? sessionStorage.getItem('view-transition-match-id')
+      : null
+  const activeIndex = activeMatchId
+    ? sortedMatches.findIndex((m) => m._id === activeMatchId)
+    : -1
+  const initialCount = activeIndex >= PAGE_SIZE ? activeIndex + 1 : PAGE_SIZE
+
+  const [visibleCount, setVisibleCount] = useState(initialCount)
 
   // Reset pagination when match list or sort order changes
   useEffect(() => {
@@ -780,7 +791,7 @@ function MatchesContent() {
                       <SwipeableCard
                         key={match._id}
                         onSwipeLeft={() => {
-                          dismissMatch({ matchId: match._id })
+                          void dismissMatch({ matchId: match._id })
                           posthog.capture('match_dismissed', {
                             match_id: match._id,
                             opportunity_title: match.opportunity.title,
@@ -790,7 +801,7 @@ function MatchesContent() {
                           })
                         }}
                         onSwipeRight={() => {
-                          saveMatch({ matchId: match._id })
+                          void saveMatch({ matchId: match._id })
                           posthog.capture('match_saved', {
                             match_id: match._id,
                             opportunity_title: match.opportunity.title,
@@ -816,7 +827,7 @@ function MatchesContent() {
                         match={match}
                         isSaved={match.status === 'saved'}
                         onSave={() => {
-                          saveMatch({ matchId: match._id })
+                          void saveMatch({ matchId: match._id })
                           posthog.capture('match_saved', {
                             match_id: match._id,
                             opportunity_title: match.opportunity.title,
@@ -826,7 +837,7 @@ function MatchesContent() {
                           })
                         }}
                         onDismiss={() => {
-                          dismissMatch({ matchId: match._id })
+                          void dismissMatch({ matchId: match._id })
                           posthog.capture('match_dismissed', {
                             match_id: match._id,
                             opportunity_title: match.opportunity.title,

@@ -217,7 +217,8 @@ function ApplyPage() {
 
   // Guest success page: submitted as guest, prompt to create account
   if (submittedAsGuest) {
-    const guestEmail = String(responses.email ?? '')
+    const guestEmail =
+      typeof responses.email === 'string' ? responses.email : ''
     return (
       <GradientBg>
         <AuthHeader />
@@ -246,7 +247,7 @@ function ApplyPage() {
                 <Button
                   onClick={() => {
                     saveGuestApplicationEmail(guestEmail)
-                    navigate({ to: '/login' })
+                    void navigate({ to: '/login' })
                   }}
                 >
                   <UserPlus className="size-4 mr-2" />
@@ -309,7 +310,9 @@ function ApplyPage() {
         })
         setSubmitted(true)
       } else {
-        const email = String(responses.email ?? '')
+        const email = (
+          typeof responses.email === 'string' ? responses.email : ''
+        )
           .trim()
           .toLowerCase()
         if (!email) return

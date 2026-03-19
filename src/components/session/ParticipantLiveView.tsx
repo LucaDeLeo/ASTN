@@ -70,7 +70,7 @@ function LiveSessionBanner({
 
   useEffect(() => {
     if (!phaseId) return
-    sendHeartbeat()
+    void sendHeartbeat()
     const interval = setInterval(sendHeartbeat, 10000)
     return () => clearInterval(interval)
   }, [phaseId, sendHeartbeat])

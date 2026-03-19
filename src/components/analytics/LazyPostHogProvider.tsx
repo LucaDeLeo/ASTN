@@ -17,7 +17,7 @@ export function LazyPostHogProvider({
   )
 
   React.useEffect(() => {
-    import('@posthog/react').then((mod) => {
+    void import('@posthog/react').then((mod) => {
       setProvider(() => mod.PostHogProvider)
     })
   }, [])

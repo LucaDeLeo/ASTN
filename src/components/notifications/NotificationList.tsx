@@ -136,7 +136,7 @@ export function NotificationList({
             )}
             onClick={() => {
               if (!notification.read) {
-                markAsRead({ notificationId: notification._id })
+                void markAsRead({ notificationId: notification._id })
               }
               if (notification.actionUrl) {
                 window.location.href = notification.actionUrl

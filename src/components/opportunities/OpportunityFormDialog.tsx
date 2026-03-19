@@ -71,7 +71,7 @@ export function OpportunityFormDialog({
         featured,
       })
       onOpenChange(false)
-      navigate({
+      void navigate({
         to: '/org/$slug/admin/opportunities/$oppId',
         params: { slug, oppId: newId },
       })

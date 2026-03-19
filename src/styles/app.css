@@ -646,22 +646,9 @@
 
 /* Reduce motion: instant transition */
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(match-title),
-  ::view-transition-group(match-strength) {
+  ::view-transition-group(match-title) {
     animation-duration: 0ms;
   }
-}
-
-/* Match strength morph transition */
-::view-transition-group(match-strength) {
-  animation-duration: 250ms;
-  animation-timing-function: ease-out;
-}
-
-::view-transition-old(match-strength),
-::view-transition-new(match-strength) {
-  width: 100%;
-  height: 100%;
 }
 
 /* Match detail title - view-transition-name is set via JS, not CSS */
@@ -684,6 +671,51 @@
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(opportunity-title) {
     animation-duration: 0ms;
+  }
+}
+
+/* ==========================================================================
+   DETAIL PAGE CONTENT REVEAL - Cascades in after title morph settles
+   ========================================================================== */
+@keyframes detail-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.detail-content-reveal > * {
+  opacity: 0;
+  animation: detail-reveal var(--duration-slow) var(--ease-gentle) forwards;
+}
+
+.detail-content-reveal > :nth-child(1) {
+  animation-delay: 150ms;
+}
+.detail-content-reveal > :nth-child(2) {
+  animation-delay: 220ms;
+}
+.detail-content-reveal > :nth-child(3) {
+  animation-delay: 290ms;
+}
+.detail-content-reveal > :nth-child(4) {
+  animation-delay: 360ms;
+}
+.detail-content-reveal > :nth-child(5) {
+  animation-delay: 430ms;
+}
+.detail-content-reveal > :nth-child(6) {
+  animation-delay: 500ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .detail-content-reveal > * {
+    opacity: 1;
+    animation: none !important;
   }
 }
 

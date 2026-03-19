@@ -105,7 +105,7 @@ function OpportunitiesPage() {
 
   // Clear all filters and navigate to base route
   const handleClearFilters = useCallback(() => {
-    navigate({ to: '/opportunities', search: {} })
+    void navigate({ to: '/opportunities', search: {} })
   }, [navigate])
 
   // For list mode: use preloaded data (enables view transitions)

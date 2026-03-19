@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { useEffect, useRef } from 'react'
 import { Bookmark, BookmarkX, Check, Clock, X } from 'lucide-react'
 import { Card } from '~/components/ui/card'
 import { Badge } from '~/components/ui/badge'
@@ -72,15 +73,26 @@ export function MatchCard({
 
   // Check if this card should have view-transition-name (for back navigation)
   // Must be synchronous so the name is set during first render for view transition capture
-  const isActiveTransition =
+  const isActiveTransitionRef = useRef(
     typeof window !== 'undefined' &&
-    sessionStorage.getItem(ACTIVE_MATCH_KEY) === match._id
+      sessionStorage.getItem(ACTIVE_MATCH_KEY) === match._id,
+  )
+  const isActiveTransition = isActiveTransitionRef.current
+
+  // Clear sessionStorage after mount — the viewTransitionName was already captured
+  useEffect(() => {
+    if (isActiveTransitionRef.current) {
+      sessionStorage.removeItem(ACTIVE_MATCH_KEY)
+      isActiveTransitionRef.current = false
+    }
+  }, [])
 
   return (
     <Link
       to="/matches/$id"
       params={{ id: match._id }}
       viewTransition
+      preload="render"
       className="block"
       onClick={(e) => {
         // Clear existing view-transition-names to prevent duplicates, then set on clicked card
@@ -94,11 +106,7 @@ export function MatchCard({
 
         const card = e.currentTarget
         const h3 = card.querySelector('h3')
-        const strength = card.querySelector<HTMLElement>(
-          "[data-morph='strength']",
-        )
         if (h3) h3.style.viewTransitionName = 'match-title'
-        if (strength) strength.style.viewTransitionName = 'match-strength'
       }}
     >
       <Card
@@ -263,16 +271,7 @@ export function MatchCard({
 
         {/* Row 6: One key strength (truncated to 1 line) */}
         {match.explanation.strengths[0] && (
-          <p
-            suppressHydrationWarning
-            data-morph="strength"
-            style={
-              isActiveTransition
-                ? { viewTransitionName: 'match-strength' }
-                : undefined
-            }
-            className="mt-2 text-sm text-muted-foreground line-clamp-1"
-          >
+          <p className="mt-2 text-sm text-muted-foreground line-clamp-1">
             <span className="text-emerald-500">+</span>{' '}
             {match.explanation.strengths[0]}
           </p>

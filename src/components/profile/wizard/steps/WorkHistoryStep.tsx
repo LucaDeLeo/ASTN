@@ -72,7 +72,7 @@ export function WorkHistoryStep({
     const newEntries = entries.filter((_, i) => i !== index)
     setEntries(newEntries)
     // Save immediately when removing
-    saveFieldImmediate(
+    void saveFieldImmediate(
       'workHistory',
       newEntries.filter(
         (e) => e.organization.trim() !== '' || e.title.trim() !== '',
@@ -95,7 +95,7 @@ export function WorkHistoryStep({
     const validEntries = entries.filter(
       (e) => e.organization.trim() !== '' || e.title.trim() !== '',
     )
-    saveFieldImmediate('workHistory', validEntries)
+    void saveFieldImmediate('workHistory', validEntries)
   }
 
   return (
@@ -205,7 +205,7 @@ export function WorkHistoryStep({
                         ...newEntries[index],
                         current: !!checked,
                       }
-                      saveFieldImmediate(
+                      void saveFieldImmediate(
                         'workHistory',
                         newEntries.filter(
                           (e) =>

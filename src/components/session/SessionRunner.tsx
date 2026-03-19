@@ -194,7 +194,7 @@ export function SessionRunner({ sessionId }: SessionRunnerProps) {
                 className="gap-1 ml-auto"
                 onClick={() => {
                   if (confirm('End this session?')) {
-                    runMutation(() => endSession({ sessionId }))
+                    void runMutation(() => endSession({ sessionId }))
                   }
                 }}
                 disabled={mutating}

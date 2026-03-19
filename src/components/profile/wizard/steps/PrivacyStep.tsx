@@ -97,7 +97,7 @@ export function PrivacyStep({
 
   // Handle default visibility change
   const handleDefaultVisibilityChange = (value: VisibilityLevel) => {
-    updateSettings({ defaultVisibility: value })
+    void updateSettings({ defaultVisibility: value })
   }
 
   // Handle section visibility change
@@ -115,12 +115,12 @@ export function PrivacyStep({
       delete newSectionVisibility[section as keyof SectionVisibilitySettings]
     }
 
-    updateSettings({ sectionVisibility: newSectionVisibility })
+    void updateSettings({ sectionVisibility: newSectionVisibility })
   }
 
   // Handle hidden orgs change
   const handleHiddenOrgsChange = (orgs: Array<string>) => {
-    updateSettings({ hiddenFromOrgs: orgs })
+    void updateSettings({ hiddenFromOrgs: orgs })
   }
 
   return (

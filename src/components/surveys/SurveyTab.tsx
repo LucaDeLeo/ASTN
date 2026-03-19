@@ -275,7 +275,7 @@ function SurveyManagement({
     try {
       await updateSurvey({ surveyId, status: 'open' })
       toast.success('Survey published! Respondents can now fill it in.')
-    } catch (err) {
+    } catch {
       toast.error('Failed to publish survey')
     } finally {
       setIsPublishing(false)
@@ -290,7 +290,7 @@ function SurveyManagement({
         status: isOpen ? 'closed' : 'open',
       })
       toast.success(isOpen ? 'Survey closed' : 'Survey reopened')
-    } catch (err) {
+    } catch {
       toast.error('Failed to update survey status')
     } finally {
       setIsToggling(false)
@@ -307,7 +307,7 @@ function SurveyManagement({
       })
       toast.success('Survey details updated')
       setIsEditingMeta(false)
-    } catch (err) {
+    } catch {
       toast.error('Failed to save')
     } finally {
       setIsSavingMeta(false)
@@ -325,7 +325,7 @@ function SurveyManagement({
       await updateSurvey({ surveyId, formFields: validFields })
       toast.success('Questions updated')
       setIsEditingFields(false)
-    } catch (err) {
+    } catch {
       toast.error('Failed to save questions')
     } finally {
       setIsSavingFields(false)
@@ -337,7 +337,7 @@ function SurveyManagement({
     try {
       await deleteSurvey({ surveyId })
       toast.success('Survey deleted')
-    } catch (err) {
+    } catch {
       toast.error('Failed to delete survey')
     } finally {
       setIsDeleting(false)
@@ -353,7 +353,7 @@ function SurveyManagement({
       } else {
         toast.info('No new applicants to add')
       }
-    } catch (err) {
+    } catch {
       toast.error('Failed to backfill respondents')
     } finally {
       setIsBackfilling(false)
@@ -367,13 +367,13 @@ function SurveyManagement({
     try {
       await removeRespondent({ surveyId, respondentId })
       toast.success(`Removed ${name}`)
-    } catch (err) {
+    } catch {
       toast.error('Failed to remove respondent')
     }
   }
 
   const copyLink = () => {
-    navigator.clipboard.writeText(genericLink)
+    void navigator.clipboard.writeText(genericLink)
     toast.success('Link copied')
   }
 

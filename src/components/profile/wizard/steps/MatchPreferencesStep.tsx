@@ -51,7 +51,7 @@ export function MatchPreferencesStep({
 
   const save = (updated: MatchPreferences) => {
     setPrefs(updated)
-    saveFieldImmediate('matchPreferences', updated)
+    void saveFieldImmediate('matchPreferences', updated)
   }
 
   const toggleBadge = (

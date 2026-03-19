@@ -70,6 +70,9 @@ function formatValue(_field: FormField, value: unknown): string | null {
     return value ? 'Yes' : 'No'
   }
 
-  const str = String(value)
+  const str =
+    typeof value === 'object'
+      ? JSON.stringify(value)
+      : String(value as string | number)
   return str || null
 }

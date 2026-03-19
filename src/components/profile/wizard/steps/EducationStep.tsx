@@ -57,7 +57,7 @@ export function EducationStep({
     const newEntries = entries.filter((_, i) => i !== index)
     setEntries(newEntries)
     // Save immediately when removing
-    saveFieldImmediate(
+    void saveFieldImmediate(
       'education',
       newEntries.filter((e) => e.institution.trim() !== ''),
     )
@@ -76,7 +76,7 @@ export function EducationStep({
   const handleBlur = () => {
     // Only save entries that have at least an institution
     const validEntries = entries.filter((e) => e.institution.trim() !== '')
-    saveFieldImmediate('education', validEntries)
+    void saveFieldImmediate('education', validEntries)
   }
 
   return (
@@ -204,7 +204,7 @@ export function EducationStep({
                         ...newEntries[index],
                         current: !!checked,
                       }
-                      saveFieldImmediate(
+                      void saveFieldImmediate(
                         'education',
                         newEntries.filter((e) => e.institution.trim() !== ''),
                       )

@@ -96,7 +96,7 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
 
   function handleCopyToClipboard() {
     const text = proposal.editedContent ?? proposal.content
-    navigator.clipboard.writeText(text)
+    void navigator.clipboard.writeText(text)
     toast.success('Copied to clipboard')
   }
 

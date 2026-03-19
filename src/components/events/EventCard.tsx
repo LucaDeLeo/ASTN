@@ -40,7 +40,7 @@ export function EventCard({ event }: EventCardProps) {
         const entry = entries[0]
         if (entry.isIntersecting && !hasRecorded.current) {
           hasRecorded.current = true
-          recordView({ eventId: event._id })
+          void recordView({ eventId: event._id })
         }
       },
       { threshold: 0.5 },

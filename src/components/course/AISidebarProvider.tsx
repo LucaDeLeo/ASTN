@@ -107,7 +107,7 @@ export function AISidebarProvider({
       }
     }
 
-    setup()
+    void setup()
   }, [isOpen, moduleId, threadId, getOrCreateThread])
 
   const toggle = useCallback(() => setIsOpen((v) => !v), [])

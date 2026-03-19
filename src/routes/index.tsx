@@ -256,7 +256,7 @@ function PostAuthSetup() {
       })
         .then((result) => {
           if (result.success) {
-            navigate({
+            void navigate({
               to: '/org/$slug',
               params: { slug: result.orgSlug },
             })

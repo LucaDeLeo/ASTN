@@ -680,7 +680,8 @@ export const exportApplications = action({
       if (val === undefined || val === null) return ''
       if (Array.isArray(val)) return val.join('; ')
       if (typeof val === 'boolean') return val ? 'Yes' : 'No'
-      return String(val)
+      if (typeof val === 'object') return JSON.stringify(val)
+      return String(val as string | number)
     }
 
     const formFields = (opportunity?.formFields ?? []) as Array<{

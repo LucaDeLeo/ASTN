@@ -81,7 +81,7 @@ export function OpportunityFilters() {
 
   const updateFilter = useCallback(
     (key: keyof OpportunitySearchParams, value: string) => {
-      navigate({
+      void navigate({
         to: '/opportunities',
         search: (prev: OpportunitySearchParams) => {
           const newSearch = { ...prev }
@@ -102,7 +102,7 @@ export function OpportunityFilters() {
   )
 
   const clearFilters = () => {
-    navigate({
+    void navigate({
       to: '/opportunities',
       search: {},
     })

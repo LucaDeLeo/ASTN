@@ -5,7 +5,12 @@ import type { ReactNode } from 'react'
  * Handles **bold**, *italic*, and [link](url) formatting.
  */
 export function renderMarkdown(text: string): ReactNode {
-  if (typeof text !== 'string') return String((text as unknown) ?? '')
+  if (typeof text !== 'string') {
+    const val = (text as unknown) ?? ''
+    return typeof val === 'object'
+      ? JSON.stringify(val)
+      : String(val as string | number)
+  }
 
   // Split on bold, italic, and markdown links
   const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|\[[^\]]+\]\([^)]+\))/g)

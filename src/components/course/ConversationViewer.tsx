@@ -47,7 +47,11 @@ export function ConversationViewer({ threadId }: ConversationViewerProps) {
         }) => {
           const rawText = message.text
           const text =
-            typeof rawText === 'string' ? rawText : String(rawText ?? '')
+            typeof rawText === 'string'
+              ? rawText
+              : typeof rawText === 'object'
+                ? JSON.stringify(rawText)
+                : String(rawText as string | number)
           const isUser = message.role === 'user'
 
           return (

@@ -379,7 +379,7 @@ export function ModuleFormDialog({
                             }}
                             onChange={(e) => {
                               const file = e.target.files?.[0]
-                              if (file) handleAudioUpload(i, file)
+                              if (file) void handleAudioUpload(i, file)
                             }}
                           />
                           <Button

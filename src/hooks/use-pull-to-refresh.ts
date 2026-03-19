@@ -66,7 +66,7 @@ export function usePullToRefresh({
 
       if (last) {
         if (my >= THRESHOLD) {
-          handleRefresh()
+          void handleRefresh()
         } else {
           setPullDistance(0)
         }

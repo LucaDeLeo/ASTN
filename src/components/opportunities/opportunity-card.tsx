@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { useEffect, useRef } from 'react'
 import { Banknote, CalendarDays } from 'lucide-react'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { Badge } from '~/components/ui/badge'
@@ -46,15 +47,26 @@ export function OpportunityCard({
     : undefined
 
   // Check if this card should have view-transition-name (for back navigation)
-  const isActiveTransition =
+  const isActiveTransitionRef = useRef(
     typeof window !== 'undefined' &&
-    sessionStorage.getItem(ACTIVE_OPPORTUNITY_KEY) === opportunity._id
+      sessionStorage.getItem(ACTIVE_OPPORTUNITY_KEY) === opportunity._id,
+  )
+  const isActiveTransition = isActiveTransitionRef.current
+
+  // Clear sessionStorage after mount — the viewTransitionName was already captured
+  useEffect(() => {
+    if (isActiveTransitionRef.current) {
+      sessionStorage.removeItem(ACTIVE_OPPORTUNITY_KEY)
+      isActiveTransitionRef.current = false
+    }
+  }, [])
 
   return (
     <Link
       to="/opportunities/$id"
       params={{ id: opportunity._id }}
       viewTransition
+      preload="render"
       onClick={(e) => {
         // Clear existing view-transition-names to prevent duplicates, then set on clicked card
         document

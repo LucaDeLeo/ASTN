@@ -23,7 +23,7 @@ function RedirectToHome() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    navigate({ to: '/' })
+    void navigate({ to: '/' })
   }, [navigate])
 
   return null

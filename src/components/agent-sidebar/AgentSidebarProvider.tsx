@@ -128,7 +128,7 @@ export function AgentSidebarProvider({
       }
     }
 
-    setup()
+    void setup()
   }, [profile, isOpen, createThread, sendMessage])
 
   // Auto-open for new users: profile exists but no thread yet

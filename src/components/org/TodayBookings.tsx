@@ -50,7 +50,7 @@ export function TodayBookings({ spaceId, capacity }: TodayBookingsProps) {
     try {
       const result = await toggleNoShow({ bookingId })
       toast.success(result.noShow ? 'Marked as no-show' : 'No-show removed')
-    } catch (e) {
+    } catch {
       toast.error('Failed to update no-show status')
     } finally {
       setTogglingId(null)

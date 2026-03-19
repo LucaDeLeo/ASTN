@@ -107,7 +107,7 @@ function RespondentPollPage() {
     if (!slotsInitialized || !userHasEditedRef.current) return
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
-      saveSlots(slotsRef.current)
+      void saveSlots(slotsRef.current)
     }, 800)
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)

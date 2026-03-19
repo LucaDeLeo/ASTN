@@ -144,14 +144,15 @@ export function AgentChat({
       if (processingIdsRef.current.has(tc._id)) continue
       if (tc.status === 'proposed') {
         processingIdsRef.current.add(tc._id)
-        approveProposal({ toolCallId: tc._id }).finally(() =>
+        void approveProposal({ toolCallId: tc._id }).finally(() =>
           processingIdsRef.current.delete(tc._id),
         )
       } else if (tc.status === 'pending') {
         processingIdsRef.current.add(tc._id)
-        resolveToolChange({ toolCallId: tc._id, action: 'approve' }).finally(
-          () => processingIdsRef.current.delete(tc._id),
-        )
+        void resolveToolChange({
+          toolCallId: tc._id,
+          action: 'approve',
+        }).finally(() => processingIdsRef.current.delete(tc._id))
       }
     }
   }, [autoApprove, toolCalls, resolveToolChange, approveProposal])
@@ -232,7 +233,7 @@ export function AgentChat({
       })
     }
 
-    sendPending()
+    void sendPending()
   }, [pendingMessage, threadId, profileId, isLoading])
 
   // Find the last user message key for edit button
@@ -264,7 +265,7 @@ export function AgentChat({
 
     // Batch-approve pending tool calls on send (skip when auto-approve handles it)
     if (!autoApprove) {
-      batchApprove({ threadId })
+      void batchApprove({ threadId })
     }
 
     await sendMessageMut({
@@ -281,20 +282,20 @@ export function AgentChat({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      handleSubmit(e)
+      void handleSubmit(e)
     }
   }
 
   const handleStop = () => {
-    abortGeneration({ threadId })
+    void abortGeneration({ threadId })
   }
 
   const handleNewConversation = () => {
-    createThread({ profileId })
+    void createThread({ profileId })
   }
 
   const handleEditMessage = (text: string, order: number) => {
-    deleteMessagesFrom({ threadId, startOrder: order })
+    void deleteMessagesFrom({ threadId, startOrder: order })
     setInput(text)
     textareaRef.current?.focus()
   }
@@ -322,7 +323,7 @@ export function AgentChat({
       const href = target.getAttribute('href')
       if (href && href.startsWith('/')) {
         e.preventDefault()
-        navigate({ to: href })
+        void navigate({ to: href })
       }
     },
     [navigate],
@@ -743,7 +744,11 @@ function MessageBubble({
   // Guard: ensure text is always a string (defensive — runtime type may differ)
   const rawText = message.text as unknown
   const messageText =
-    typeof rawText === 'string' ? rawText : String(rawText ?? '')
+    typeof rawText === 'string'
+      ? rawText
+      : typeof rawText === 'object'
+        ? JSON.stringify(rawText)
+        : String(rawText as string | number)
   const [smoothText] = useSmoothText(messageText, {
     startStreaming: message.status === 'streaming',
   })
@@ -812,7 +817,9 @@ function MessageBubble({
       rawPartText != null
         ? typeof rawPartText === 'string'
           ? rawPartText
-          : String(rawPartText)
+          : typeof rawPartText === 'object'
+            ? JSON.stringify(rawPartText)
+            : String(rawPartText as string | number)
         : null
     if (partText) {
       elements.push(
@@ -945,8 +952,18 @@ function renderDiffLines(
     } else {
       lines.push({
         field: key,
-        old: oldVal != null ? String(oldVal) : '',
-        new: newVal != null ? String(newVal) : '',
+        old:
+          oldVal != null
+            ? typeof oldVal === 'object'
+              ? JSON.stringify(oldVal)
+              : String(oldVal as string | number)
+            : '',
+        new:
+          newVal != null
+            ? typeof newVal === 'object'
+              ? JSON.stringify(newVal)
+              : String(newVal as string | number)
+            : '',
         type: 'scalar',
       })
     }
@@ -983,18 +1000,22 @@ function formatEntries(json: string, field: string): string {
       return arr
         .map(
           (e) =>
-            `${e.degree ? `${e.degree} ` : ''}${e.field ? `in ${e.field} ` : ''}at ${e.institution}`,
+            `${e.degree ? `${String(e.degree as string)} ` : ''}${e.field ? `in ${String(e.field as string)} ` : ''}at ${String(e.institution as string)}`,
         )
         .join('; ')
     }
     if (field === 'workHistory') {
-      return arr.map((w) => `${w.title} at ${w.organization}`).join('; ')
+      return arr
+        .map((w) => `${String(w.title)} at ${String(w.organization)}`)
+        .join('; ')
     }
     if (field === 'matchPreferences') {
       const parts: Array<string> = []
       for (const [k, v] of Object.entries(arr.length ? arr[0] : {})) {
         if (v != null)
-          parts.push(`${k}: ${Array.isArray(v) ? v.join(', ') : v}`)
+          parts.push(
+            `${k}: ${Array.isArray(v) ? v.join(', ') : String(v as string | number)}`,
+          )
       }
       return parts.join('; ')
     }
@@ -1025,7 +1046,9 @@ function ToolCallCard({
   const safeDisplayText =
     typeof rawDisplayText === 'string'
       ? rawDisplayText
-      : String(rawDisplayText ?? '')
+      : typeof rawDisplayText === 'object'
+        ? JSON.stringify(rawDisplayText)
+        : String(rawDisplayText as string | number)
 
   // Proposed: show diff view with approve/deny
   if (status === 'proposed') {

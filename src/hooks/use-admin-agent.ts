@@ -333,7 +333,7 @@ export function useAdminAgent(orgSlug: string) {
       }
     }
 
-    connect()
+    void connect()
 
     return () => {
       unmounted = true

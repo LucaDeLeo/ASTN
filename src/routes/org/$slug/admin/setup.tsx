@@ -330,7 +330,7 @@ ${inviteUrl}`
   }
 
   const copyInviteMessage = () => {
-    navigator.clipboard.writeText(generatedMessage)
+    void navigator.clipboard.writeText(generatedMessage)
     toast.success('Message copied to clipboard')
   }
 
@@ -615,7 +615,7 @@ ${inviteUrl}`
                           type="button"
                           variant="outline"
                           onClick={() => {
-                            navigator.clipboard.writeText(inviteUrl)
+                            void navigator.clipboard.writeText(inviteUrl)
                             toast.success('Link copied!')
                           }}
                         >
@@ -635,7 +635,7 @@ ${inviteUrl}`
                             try {
                               await getOrCreateInviteLink({ orgId: org._id })
                               toast.success('Invite link created!')
-                            } catch (error) {
+                            } catch {
                               toast.error('Failed to create invite link')
                             }
                           }}

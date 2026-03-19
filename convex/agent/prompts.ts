@@ -88,16 +88,16 @@ The user is currently: ${description}
       priority: string
     }>
     dataBlock = `
-Match tier: ${match.tier} (score: ${match.score}/100)
+Match tier: ${String(match.tier)} (score: ${String(match.score)}/100)
 
-Opportunity: ${opp.title}
-Organization: ${opp.organization}
-Location: ${opp.location}${opp.isRemote ? ' (remote)' : ''}
-Role type: ${opp.roleType}
+Opportunity: ${String(opp.title)}
+Organization: ${String(opp.organization)}
+Location: ${String(opp.location)}${opp.isRemote ? ' (remote)' : ''}
+Role type: ${String(opp.roleType)}
 ${opp.description ? `Description: ${(opp.description as string).slice(0, 500)}` : ''}
 ${opp.requirements ? `Requirements: ${(opp.requirements as Array<string>).join('; ')}` : ''}
 ${opp.deadline ? `Deadline: ${new Date(opp.deadline as number).toLocaleDateString()}` : ''}
-${opp.sourceUrl ? `Source: ${opp.sourceUrl}` : ''}
+${opp.sourceUrl ? `Source: ${opp.sourceUrl as string}` : ''}
 
 Strengths: ${explanation.strengths.join(' | ')}
 ${explanation.gap ? `Gap: ${explanation.gap}` : ''}
@@ -106,16 +106,16 @@ ${recommendations.length > 0 ? `Recommendations: ${recommendations.map((r: { pri
     const opp = data.opportunity as Record<string, unknown>
     const existingMatch = data.existingMatch as Record<string, unknown> | null
     dataBlock = `
-Opportunity: ${opp.title}
-Organization: ${opp.organization}
-Location: ${opp.location}${opp.isRemote ? ' (remote)' : ''}
-Role type: ${opp.roleType}
+Opportunity: ${String(opp.title)}
+Organization: ${String(opp.organization)}
+Location: ${String(opp.location)}${opp.isRemote ? ' (remote)' : ''}
+Role type: ${String(opp.roleType)}
 ${opp.description ? `Description: ${(opp.description as string).slice(0, 500)}` : ''}
 ${opp.requirements ? `Requirements: ${(opp.requirements as Array<string>).join('; ')}` : ''}
-${opp.salaryRange ? `Salary: ${opp.salaryRange}` : ''}
+${opp.salaryRange ? `Salary: ${opp.salaryRange as string}` : ''}
 ${opp.deadline ? `Deadline: ${new Date(opp.deadline as number).toLocaleDateString()}` : ''}
-${opp.sourceUrl ? `Source: ${opp.sourceUrl}` : ''}
-${existingMatch ? `\nUser already has a match for this opportunity (tier: ${existingMatch.tier})` : '\nNo existing match for this opportunity yet'}`
+${opp.sourceUrl ? `Source: ${opp.sourceUrl as string}` : ''}
+${existingMatch ? `\nUser already has a match for this opportunity (tier: ${existingMatch.tier as string})` : '\nNo existing match for this opportunity yet'}`
   } else if (pageContext === 'browsing_matches' && data.counts) {
     const counts = data.counts as Record<string, number>
     const topByTier = data.topByTier as Record<

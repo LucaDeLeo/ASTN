@@ -314,7 +314,7 @@ export function useFacilitatorAgent(programId: string, orgSlug: string) {
       }
     }
 
-    connect()
+    void connect()
 
     return () => {
       unmounted = true

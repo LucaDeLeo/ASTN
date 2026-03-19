@@ -46,7 +46,9 @@ export function SurveyResultsTable({
         const val = r.response.responses[f.key]
         if (val === undefined || val === null) return ''
         if (Array.isArray(val)) return val.join('; ')
-        return String(val)
+        return typeof val === 'object'
+          ? JSON.stringify(val)
+          : String(val as string | number)
       })
       return [r.respondentName, status, ...fieldValues]
     })
@@ -199,10 +201,12 @@ function formatValue(val: unknown, field: FormField): string {
     const labels = field.options?.length === 5 ? field.options : null
     return labels ? `${num} — ${labels[num - 1]}` : `${num}/5`
   }
-  if (field.kind === 'nps') return `${val}/10`
+  if (field.kind === 'nps') return `${String(val as string | number)}/10`
   if (field.kind === 'checkbox') return val === true ? 'Yes' : 'No'
   if (Array.isArray(val)) return val.join(', ')
-  return String(val)
+  return typeof val === 'object'
+    ? JSON.stringify(val)
+    : String(val as string | number)
 }
 
 function escapeCSV(value: string): string {

@@ -124,7 +124,7 @@ export function OpportunityForm({
         await updateOpportunity({ id: initialData._id, ...data })
       }
 
-      navigate({ to: '/admin/opportunities' })
+      void navigate({ to: '/admin/opportunities' })
     } catch (error) {
       console.error('Error saving opportunity:', error)
       toast.error('Failed to save opportunity', { duration: Infinity })
