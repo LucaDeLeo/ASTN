@@ -78,9 +78,11 @@ function LoadingSpinner() {
 }
 
 export function getRouter() {
-  const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!
+  const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL as string
   if (!CONVEX_URL) {
-    console.error('missing envar CONVEX_URL')
+    throw new Error(
+      'VITE_CONVEX_URL is not set. Check your environment variables.',
+    )
   }
 
   const convexQueryClient = new ConvexQueryClient(CONVEX_URL)
@@ -157,6 +159,8 @@ export function getRouter() {
         'Transition was aborted because of invalid state',
         // Unactionable browser-embedded/extension rejection seen after email-link opens on Windows Chrome.
         /^Non-Error promise rejection captured with value: Object Not Found Matching Id:\d+, MethodName:update, ParamCount:\d+$/,
+        // Unactionable: bots/crawlers with corrupted JS bundles failing to construct Convex WebSocket
+        "Failed to construct 'WebSocket'",
       ],
     })
   }
