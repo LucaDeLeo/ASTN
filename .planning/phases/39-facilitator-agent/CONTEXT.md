@@ -134,7 +134,7 @@ AdminClientMessage,
 } from '../shared/admin-agent/types'
 import type { Id } from '../convex/\_generated/dataModel'
 
-const CONFIRMATION_TIMEOUT_MS = 2 _ 60 _ 1000 // 2 minutes
+const CONFIRMATION*TIMEOUT_MS = 2 * 60 \_ 1000 // 2 minutes
 
 const token = process.env.AGENT_TOKEN!
 // Fallback Convex URL from env — browser can override per-connection
@@ -282,6 +282,7 @@ succeeded in 0ms:
 <Badge className={programStatusColors[program.status]}>
 {program.status}
 </Badge>
+
 </div>
 <p className="text-slate-600 mt-1">
 {programTypeLabels[program.type]} &middot;{' '}

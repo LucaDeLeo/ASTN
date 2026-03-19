@@ -47,7 +47,7 @@ export const getRecipientsForEmail = internalQuery({
     const recipients: Array<{
       email: string
       name: string
-      applicationId: typeof allApps[number]['_id']
+      applicationId: (typeof allApps)[number]['_id']
     }> = []
 
     for (const app of allApps) {

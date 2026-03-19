@@ -14,5 +14,11 @@
   "statusLine": {
     "type": "command",
     "command": "node .claude/hooks/gsd-statusline.js"
+  },
+  "mcpServers": {
+    "vite-plus": {
+      "command": "npx",
+      "args": ["vp", "mcp"]
+    }
   }
 }

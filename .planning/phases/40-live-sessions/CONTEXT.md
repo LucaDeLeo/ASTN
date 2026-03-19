@@ -340,6 +340,7 @@ const prompts = useQuery(api.course.prompts.getByModule, { moduleId })
 if (!prompts || prompts.length === 0) return null
 
 return (
+
 <div className="mt-3 space-y-3">
 <p className="text-xs font-medium text-slate-500">Exercises:</p>
 {prompts.map((prompt) => (

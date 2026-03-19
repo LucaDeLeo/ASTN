@@ -23,7 +23,9 @@ const formatTime = (minutes: number) => {
   const m = minutes % 60
   const period = h >= 12 ? 'PM' : 'AM'
   const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h
-  return m === 0 ? `${h12} ${period}` : `${h12}:${String(m).padStart(2, '0')} ${period}`
+  return m === 0
+    ? `${h12} ${period}`
+    : `${h12}:${String(m).padStart(2, '0')} ${period}`
 }
 
 function generateDates(startDate: string, endDate: string): Array<string> {
@@ -72,7 +74,10 @@ const SHORT_MONTHS = [
   'Dec',
 ] as const
 
-function formatDateHeader(dateStr: string): { dayName: string; dayLabel: string } {
+function formatDateHeader(dateStr: string): {
+  dayName: string
+  dayLabel: string
+} {
   const [year, month, day] = dateStr.split('-').map(Number)
   const date = new Date(year, month - 1, day)
   return {
@@ -90,7 +95,10 @@ function isFinalized(
   if (!finalizedSlot) return false
   if (dateStr !== finalizedSlot.date) return false
   const slotEnd = slotMinutes + slotDuration
-  return slotMinutes >= finalizedSlot.startMinutes && slotEnd <= finalizedSlot.endMinutes
+  return (
+    slotMinutes >= finalizedSlot.startMinutes &&
+    slotEnd <= finalizedSlot.endMinutes
+  )
 }
 
 export function AvailabilityGrid({
@@ -111,7 +119,11 @@ export function AvailabilityGrid({
   const lastPointerTypeRef = useRef<string>('')
 
   const dates = generateDates(startDate, endDate)
-  const timeSlots = generateTimeSlots(startMinutes, endMinutes, slotDurationMinutes)
+  const timeSlots = generateTimeSlots(
+    startMinutes,
+    endMinutes,
+    slotDurationMinutes,
+  )
 
   const paintCell = useCallback(
     (key: string) => {
@@ -263,7 +275,10 @@ export function AvailabilityGrid({
                   if (finalized) {
                     cellBg = 'bg-blue-400 ring-2 ring-blue-600'
                   } else if (hasSlot) {
-                    cellBg = slots[key] === 'available' ? 'bg-green-400' : 'bg-amber-300'
+                    cellBg =
+                      slots[key] === 'available'
+                        ? 'bg-green-400'
+                        : 'bg-amber-300'
                   }
 
                   return (

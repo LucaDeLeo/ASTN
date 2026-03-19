@@ -1,4 +1,4 @@
-"use node";
+'use node'
 
 import { v } from 'convex/values'
 import { internalAction } from './_generated/server'
@@ -36,24 +36,21 @@ export const sendPushNotification = internalAction({
 
     for (const { token } of tokens) {
       try {
-        const response = await fetch(
-          'https://fcm.googleapis.com/fcm/send',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `key=${serverKey}`,
-            },
-            body: JSON.stringify({
-              to: token,
-              notification: {
-                title: args.title,
-                body: args.body,
-              },
-              data: args.data ?? {},
-            }),
+        const response = await fetch('https://fcm.googleapis.com/fcm/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `key=${serverKey}`,
           },
-        )
+          body: JSON.stringify({
+            to: token,
+            notification: {
+              title: args.title,
+              body: args.body,
+            },
+            data: args.data ?? {},
+          }),
+        })
 
         if (!response.ok) {
           console.error(

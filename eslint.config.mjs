@@ -1,18 +1,9 @@
 import { defineConfig, globalIgnores } from 'eslint/config'
-import { tanstackConfig } from '@tanstack/eslint-config'
 import convexPlugin from '@convex-dev/eslint-plugin'
+import tseslint from 'typescript-eslint'
 
 export default defineConfig([
-  ...tanstackConfig,
+  tseslint.configs.base,
   ...convexPlugin.configs.recommended,
-  globalIgnores([
-    'convex/_generated',
-    'agent/**',
-    '.vercel/**',
-    '.claude/**',
-    'node_modules/**',
-    'dist/**',
-    '.planning/**',
-    'app.config.timestamp*.js',
-  ]),
+  globalIgnores(['convex/_generated']),
 ])

@@ -3,9 +3,8 @@
 # Version: 6.0.4
 # Date: 2026-03-10T20:09:46.275Z
 
-
 # Core Configuration Values
 user_name: Luca
 communication_language: English
 document_output_language: English
-output_folder: "{project-root}/_bmad-output"
+output_folder: '{project-root}/_bmad-output'

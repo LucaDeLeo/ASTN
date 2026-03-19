@@ -300,9 +300,7 @@ export function createMemberTools(
       'override_engagement',
       "Override a member's engagement level. Requires notes explaining why. Call get_member_engagement first to see current level. Levels: 'highly_engaged', 'moderate', 'at_risk', 'new', 'inactive'.",
       {
-        userId: z
-          .string()
-          .describe('The Clerk user ID from list_members'),
+        userId: z.string().describe('The Clerk user ID from list_members'),
         level: z
           .enum(['highly_engaged', 'moderate', 'at_risk', 'new', 'inactive'])
           .describe('The new engagement level to set'),
@@ -382,9 +380,7 @@ export function createMemberTools(
       'clear_engagement_override',
       "Clear an engagement override for a member, returning them to their computed level. Call get_member_engagement first to verify there's an active override.",
       {
-        userId: z
-          .string()
-          .describe('The Clerk user ID from list_members'),
+        userId: z.string().describe('The Clerk user ID from list_members'),
       },
       async (args) => {
         console.log('[tool] clear_engagement_override', args.userId)
@@ -444,9 +440,7 @@ export function createMemberTools(
       'promote_to_admin',
       'Promote a member to admin role (requires user confirmation). Call list_members first to get the userId.',
       {
-        userId: z
-          .string()
-          .describe('The Clerk user ID from list_members'),
+        userId: z.string().describe('The Clerk user ID from list_members'),
       },
       async (args) => {
         console.log('[tool] promote_to_admin', args.userId)
@@ -540,9 +534,7 @@ export function createMemberTools(
       'demote_to_member',
       'Demote an admin to regular member role (requires user confirmation). Call list_members first to get the userId.',
       {
-        userId: z
-          .string()
-          .describe('The Clerk user ID from list_members'),
+        userId: z.string().describe('The Clerk user ID from list_members'),
       },
       async (args) => {
         console.log('[tool] demote_to_member', args.userId)

@@ -392,7 +392,7 @@ export function createOpportunityTools(
 
     tool(
       'update_application_status',
-      'Update an application\'s status (requires user confirmation). Statuses: submitted, under_review, accepted, rejected, waitlisted. Call list_applications first to get the applicationId.',
+      "Update an application's status (requires user confirmation). Statuses: submitted, under_review, accepted, rejected, waitlisted. Call list_applications first to get the applicationId.",
       {
         applicationId: z
           .string()
@@ -406,10 +406,7 @@ export function createOpportunityTools(
             'waitlisted',
           ])
           .describe('The new status to set'),
-        reviewNotes: z
-          .string()
-          .optional()
-          .describe('Optional review notes'),
+        reviewNotes: z.string().optional().describe('Optional review notes'),
       },
       async (args) => {
         console.log(
@@ -820,10 +817,7 @@ export function createOpportunityTools(
             id: args.opportunityId as Id<'orgOpportunities'>,
             ...changes,
           }
-          await convex.mutation(
-            api.orgOpportunities.update,
-            updateArgs as any,
-          )
+          await convex.mutation(api.orgOpportunities.update, updateArgs as any)
 
           return {
             content: [
