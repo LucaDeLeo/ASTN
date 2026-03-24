@@ -277,14 +277,15 @@ export const getMatchingStats = query({
       (r) => r.operation === 'matching' || r.operation === 'matching_coarse',
     )
 
-    const userIds = new Set<string>()
+    const profileIds = new Set<string>()
     let coarseCalls = 0
     let coarseCostUsd = 0
     let detailedCalls = 0
     let detailedCostUsd = 0
 
     for (const row of matchingRows) {
-      if (row.userId) userIds.add(row.userId)
+      if (row.profileId) profileIds.add(row.profileId)
+      else if (row.userId) profileIds.add(row.userId)
       const cost = estimateCost(row.model, row.inputTokens, row.outputTokens)
       if (row.operation === 'matching_coarse') {
         coarseCalls++
@@ -296,7 +297,7 @@ export const getMatchingStats = query({
     }
 
     const totalCost = coarseCostUsd + detailedCostUsd
-    const uniqueUsers = userIds.size
+    const uniqueUsers = profileIds.size
 
     return {
       uniqueUsersMatched: uniqueUsers,
