@@ -401,18 +401,32 @@ export const streamChat = httpAction(async (ctx, request) => {
       ...(actionId ? { actionId: actionId as any } : {}),
     })
 
-    // Log LLM usage
-    if (streamInputTokens > 0 || streamOutputTokens > 0) {
-      await ctx.runMutation(internal.lib.llmUsage.logUsage, {
-        operation: 'enrichment_chat',
-        model: modelConfig.model,
-        inputTokens: streamInputTokens,
-        outputTokens: streamOutputTokens,
-        userId,
-        profileId: profileId as any,
-        durationMs: streamDuration,
-      })
-    }
+    // Log LLM usage — estimate tokens from text if provider didn't report them
+    const inputTokens =
+      streamInputTokens > 0
+        ? streamInputTokens
+        : Math.ceil(
+            (systemPrompt.length +
+              messages.reduce(
+                (sum: number, m: { content: string }) => sum + m.content.length,
+                0,
+              )) /
+              4,
+          )
+    const outputTokens =
+      streamOutputTokens > 0
+        ? streamOutputTokens
+        : Math.ceil(fullText.length / 4)
+
+    await ctx.runMutation(internal.lib.llmUsage.logUsage, {
+      operation: 'enrichment_chat',
+      model: modelConfig.model,
+      inputTokens,
+      outputTokens,
+      userId,
+      profileId: profileId as any,
+      durationMs: streamDuration,
+    })
   }
 
   const response = await persistentTextStreaming.stream(

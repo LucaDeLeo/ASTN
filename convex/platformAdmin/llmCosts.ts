@@ -12,6 +12,7 @@ const OPERATION_LABELS: Record<string, string> = {
   engagement: 'Engagement Scoring',
   career_actions: 'Career Actions',
   enrichment_chat: 'Chat',
+  pdf_extraction: 'PDF Extraction',
 }
 
 function formatOperationLabel(op: string): string {
