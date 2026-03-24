@@ -123,17 +123,16 @@ function AdminCostsPage() {
   return <CostsDashboard />
 }
 
+function getTimeRange(range: TimeRange) {
+  const now = Date.now()
+  return { startTime: now - RANGE_DAYS[range] * 86_400_000, endTime: now }
+}
+
 function CostsDashboard() {
   const [range, setRange] = useState<TimeRange>('30d')
+  const [timeRange, setTimeRange] = useState(() => getTimeRange('30d'))
 
-  const { startTime, endTime } = useMemo(() => {
-    const now = Date.now()
-    return {
-      startTime: now - RANGE_DAYS[range] * 86_400_000,
-      endTime: now,
-    }
-  }, [range])
-
+  const { startTime, endTime } = timeRange
   const granularity = GRANULARITY_MAP[range]
 
   const timeSeries = useQuery(api.platformAdmin.llmCosts.getCostTimeSeries, {
@@ -183,7 +182,10 @@ function CostsDashboard() {
           {(Object.keys(RANGE_LABELS) as TimeRange[]).map((r) => (
             <button
               key={r}
-              onClick={() => setRange(r)}
+              onClick={() => {
+                setRange(r)
+                setTimeRange(getTimeRange(r))
+              }}
               className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
                 range === r
                   ? 'bg-background text-foreground shadow-sm font-medium'
