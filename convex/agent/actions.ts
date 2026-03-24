@@ -5,6 +5,7 @@ import { internal } from '../_generated/api'
 import { internalAction } from '../_generated/server'
 import { buildProfileContext } from '../enrichment/conversation'
 import { computeProfileCompleteness, isProfileMatchReady } from '../profiles'
+import { MODEL_QUALITY } from '../lib/models'
 import {
   buildAgentSystemPrompt,
   buildBaishContextBlock,
@@ -166,6 +167,20 @@ export const streamResponse = internalAction({
     )
 
     await result.consumeStream()
+
+    // Log LLM usage for cost tracking
+    try {
+      const usage = await result.usage
+      await ctx.runMutation(internal.lib.llmUsage.logUsage, {
+        operation: 'agent_chat',
+        model: MODEL_QUALITY,
+        inputTokens: usage.inputTokens ?? 0,
+        outputTokens: usage.outputTokens ?? 0,
+        profileId,
+      })
+    } catch (e) {
+      console.error('Failed to log agent_chat usage:', e)
+    }
 
     // Mark enrichment as done after first successful response
     await ctx.runMutation(internal.agent.mutations.markEnrichmentDone, {
