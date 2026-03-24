@@ -401,32 +401,39 @@ export const streamChat = httpAction(async (ctx, request) => {
       ...(actionId ? { actionId: actionId as any } : {}),
     })
 
-    // Log LLM usage — estimate tokens from text if provider didn't report them
-    const inputTokens =
-      streamInputTokens > 0
-        ? streamInputTokens
-        : Math.ceil(
-            (systemPrompt.length +
-              messages.reduce(
-                (sum: number, m: { content: string }) => sum + m.content.length,
-                0,
-              )) /
-              4,
-          )
-    const outputTokens =
-      streamOutputTokens > 0
-        ? streamOutputTokens
-        : Math.ceil(fullText.length / 4)
+    // Log LLM usage — estimate tokens from text if provider didn't report them.
+    // Wrapped in try-catch because this runs inside void doStream() and errors
+    // would be silently swallowed, potentially masking the real issue.
+    try {
+      const inputTokens =
+        streamInputTokens > 0
+          ? streamInputTokens
+          : Math.ceil(
+              ((systemPrompt?.length ?? 0) +
+                messages.reduce(
+                  (sum: number, m: { content?: string }) =>
+                    sum + (m.content?.length ?? 0),
+                  0,
+                )) /
+                4,
+            )
+      const outputTokens =
+        streamOutputTokens > 0
+          ? streamOutputTokens
+          : Math.ceil(fullText.length / 4)
 
-    await ctx.runMutation(internal.lib.llmUsage.logUsage, {
-      operation: 'enrichment_chat',
-      model: modelConfig.model,
-      inputTokens,
-      outputTokens,
-      userId,
-      profileId: profileId as any,
-      durationMs: streamDuration,
-    })
+      await ctx.runMutation(internal.lib.llmUsage.logUsage, {
+        operation: 'enrichment_chat',
+        model: modelConfig.model,
+        inputTokens,
+        outputTokens,
+        userId,
+        profileId: profileId as any,
+        durationMs: streamDuration,
+      })
+    } catch (e) {
+      console.error('Failed to log enrichment_chat usage:', e)
+    }
   }
 
   const response = await persistentTextStreaming.stream(
