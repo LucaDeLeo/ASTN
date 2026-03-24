@@ -1,5 +1,4 @@
 import * as React from 'react'
-import type { PostHogConfig } from 'posthog-js'
 
 type PostHogProviderType = typeof import('@posthog/react').PostHogProvider
 
@@ -9,7 +8,7 @@ export function LazyPostHogProvider({
   children,
 }: {
   apiKey: string
-  options: Partial<PostHogConfig>
+  options: Record<string, unknown>
   children: React.ReactNode
 }) {
   const [Provider, setProvider] = React.useState<PostHogProviderType | null>(
@@ -25,7 +24,7 @@ export function LazyPostHogProvider({
   if (!Provider) return <>{children}</>
 
   return (
-    <Provider apiKey={apiKey} options={options}>
+    <Provider apiKey={apiKey} options={options as never}>
       {children}
     </Provider>
   )

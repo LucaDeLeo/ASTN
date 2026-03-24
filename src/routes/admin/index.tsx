@@ -48,6 +48,19 @@ function AdminDashboard() {
             </CardContent>
           </Card>
         </Link>
+        <Link to="/admin/costs">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader>
+              <CardTitle className="text-lg">LLM Costs</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-slate-600">
+                Monitor AI model usage, costs, and token consumption across all
+                operations.
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
     </div>
   )

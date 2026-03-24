@@ -5,14 +5,11 @@ import { routerWithQueryClient } from '@tanstack/react-router-with-query'
 import { ConvexQueryClient } from '@convex-dev/react-query'
 import { ClerkProvider, useAuth } from '@clerk/clerk-react'
 import { ConvexProviderWithClerk } from 'convex/react-clerk'
-import { Suspense, use, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Authenticated, useMutation } from 'convex/react'
 import { api } from '../convex/_generated/api'
 import { routeTree } from './routeTree.gen'
-import type { Clerk } from '@clerk/clerk-js'
 import type { ErrorComponentProps } from '@tanstack/react-router'
-import { isTauri } from '~/lib/platform'
-import { Spinner } from '~/components/ui/spinner'
 import { ErrorDisplay } from '~/components/ErrorDisplay'
 
 function UserMigration() {
@@ -34,47 +31,8 @@ function UserMigration() {
   return null
 }
 
-// Lazy singleton — only loaded in Tauri, tree-shaken from web builds
-let clerkPromise: Promise<Clerk> | null = null
-function getTauriClerk() {
-  if (!clerkPromise) {
-    clerkPromise = import('tauri-plugin-clerk').then((m) => m.initClerk())
-  }
-  return clerkPromise
-}
-
-function TauriClerkProvider({
-  children,
-  convexClient,
-}: {
-  children: React.ReactNode
-  convexClient: any
-}) {
-  const clerk = use(getTauriClerk())
-  return (
-    <ClerkProvider publishableKey={clerk.publishableKey} Clerk={clerk}>
-      <ConvexProviderWithClerk client={convexClient} useAuth={useAuth}>
-        <Authenticated>
-          <UserMigration />
-        </Authenticated>
-        {children}
-      </ConvexProviderWithClerk>
-    </ClerkProvider>
-  )
-}
-
 function DefaultErrorComponent({ error, reset }: ErrorComponentProps) {
   return <ErrorDisplay error={error} reset={reset} />
-}
-
-function LoadingSpinner() {
-  return (
-    <main className="container mx-auto px-4 py-16">
-      <div className="flex items-center justify-center">
-        <Spinner size="lg" />
-      </div>
-    </main>
-  )
 }
 
 export function getRouter() {
@@ -108,32 +66,21 @@ export function getRouter() {
       defaultViewTransition: true, // Enable View Transitions API for smooth page navigation
       defaultErrorComponent: DefaultErrorComponent,
       defaultNotFoundComponent: () => <p>not found</p>,
-      Wrap: ({ children }) => {
-        if (isTauri()) {
-          return (
-            <Suspense fallback={<LoadingSpinner />}>
-              <TauriClerkProvider convexClient={convexQueryClient.convexClient}>
-                {children}
-              </TauriClerkProvider>
-            </Suspense>
-          )
-        }
-        return (
-          <ClerkProvider
-            publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
+      Wrap: ({ children }) => (
+        <ClerkProvider
+          publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
+        >
+          <ConvexProviderWithClerk
+            client={convexQueryClient.convexClient}
+            useAuth={useAuth}
           >
-            <ConvexProviderWithClerk
-              client={convexQueryClient.convexClient}
-              useAuth={useAuth}
-            >
-              <Authenticated>
-                <UserMigration />
-              </Authenticated>
-              {children}
-            </ConvexProviderWithClerk>
-          </ClerkProvider>
-        )
-      },
+            <Authenticated>
+              <UserMigration />
+            </Authenticated>
+            {children}
+          </ConvexProviderWithClerk>
+        </ClerkProvider>
+      ),
     }),
     queryClient,
   )

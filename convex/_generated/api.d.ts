@@ -137,6 +137,7 @@ import type * as orgs_members from "../orgs/members.js";
 import type * as orgs_membership from "../orgs/membership.js";
 import type * as orgs_queries from "../orgs/queries.js";
 import type * as orgs_stats from "../orgs/stats.js";
+import type * as platformAdmin_llmCosts from "../platformAdmin/llmCosts.js";
 import type * as platformAdmin_users from "../platformAdmin/users.js";
 import type * as profiles from "../profiles.js";
 import type * as programs from "../programs.js";
@@ -284,6 +285,7 @@ declare const fullApi: ApiFromModules<{
   "orgs/membership": typeof orgs_membership;
   "orgs/queries": typeof orgs_queries;
   "orgs/stats": typeof orgs_stats;
+  "platformAdmin/llmCosts": typeof platformAdmin_llmCosts;
   "platformAdmin/users": typeof platformAdmin_users;
   profiles: typeof profiles;
   programs: typeof programs;
@@ -5492,6 +5494,7 @@ export declare const components: {
         {
           delay: number;
           functionArgs: any;
+          functionHandle: string;
           functionPath: string;
           key: string;
           mode: "eager" | "fixed" | "sliding";

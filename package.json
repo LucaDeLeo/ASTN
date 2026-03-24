@@ -79,6 +79,7 @@
     "react-dropzone": "^14.3.8",
     "react-markdown": "^10.1.0",
     "react-resizable-panels": "^4",
+    "recharts": "^3.8.0",
     "remark-gfm": "^4.0.1",
     "resend": "^6.7.0",
     "sonner": "^2.0.7",
@@ -107,5 +108,6 @@
   "overrides": {
     "vite": "npm:@voidzero-dev/vite-plus-core@^0.1.12",
     "vitest": "npm:@voidzero-dev/vite-plus-test@^0.1.12"
-  }
+  },
+  "packageManager": "pnpm@10.32.1"
 }

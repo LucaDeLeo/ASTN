@@ -34,6 +34,7 @@ import { Route as AdminApplicationsRouteRouteImport } from './routes/admin/appli
 import { Route as OrgSlugIndexRouteImport } from './routes/org/$slug/index'
 import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
 import { Route as AdminOpportunitiesIndexRouteImport } from './routes/admin/opportunities/index'
+import { Route as AdminCostsIndexRouteImport } from './routes/admin/costs/index'
 import { Route as AdminApplicationsIndexRouteImport } from './routes/admin/applications/index'
 import { Route as OrgSlugVisitRouteImport } from './routes/org/$slug/visit'
 import { Route as OrgSlugProgramsRouteImport } from './routes/org/$slug/programs'
@@ -190,6 +191,11 @@ const AdminUsersIndexRoute = AdminUsersIndexRouteImport.update({
 const AdminOpportunitiesIndexRoute = AdminOpportunitiesIndexRouteImport.update({
   id: '/opportunities/',
   path: '/opportunities/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminCostsIndexRoute = AdminCostsIndexRouteImport.update({
+  id: '/costs/',
+  path: '/costs/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminApplicationsIndexRoute = AdminApplicationsIndexRouteImport.update({
@@ -400,6 +406,7 @@ export interface FileRoutesByFullPath {
   '/org/$slug/programs': typeof OrgSlugProgramsRoute
   '/org/$slug/visit': typeof OrgSlugVisitRoute
   '/admin/applications/': typeof AdminApplicationsIndexRoute
+  '/admin/costs/': typeof AdminCostsIndexRoute
   '/admin/opportunities/': typeof AdminOpportunitiesIndexRoute
   '/admin/users/': typeof AdminUsersIndexRoute
   '/org/$slug/': typeof OrgSlugIndexRoute
@@ -453,6 +460,7 @@ export interface FileRoutesByTo {
   '/org/$slug/programs': typeof OrgSlugProgramsRoute
   '/org/$slug/visit': typeof OrgSlugVisitRoute
   '/admin/applications': typeof AdminApplicationsIndexRoute
+  '/admin/costs': typeof AdminCostsIndexRoute
   '/admin/opportunities': typeof AdminOpportunitiesIndexRoute
   '/admin/users': typeof AdminUsersIndexRoute
   '/org/$slug': typeof OrgSlugIndexRoute
@@ -513,6 +521,7 @@ export interface FileRoutesById {
   '/org/$slug/programs': typeof OrgSlugProgramsRoute
   '/org/$slug/visit': typeof OrgSlugVisitRoute
   '/admin/applications/': typeof AdminApplicationsIndexRoute
+  '/admin/costs/': typeof AdminCostsIndexRoute
   '/admin/opportunities/': typeof AdminOpportunitiesIndexRoute
   '/admin/users/': typeof AdminUsersIndexRoute
   '/org/$slug/': typeof OrgSlugIndexRoute
@@ -574,6 +583,7 @@ export interface FileRouteTypes {
     | '/org/$slug/programs'
     | '/org/$slug/visit'
     | '/admin/applications/'
+    | '/admin/costs/'
     | '/admin/opportunities/'
     | '/admin/users/'
     | '/org/$slug/'
@@ -627,6 +637,7 @@ export interface FileRouteTypes {
     | '/org/$slug/programs'
     | '/org/$slug/visit'
     | '/admin/applications'
+    | '/admin/costs'
     | '/admin/opportunities'
     | '/admin/users'
     | '/org/$slug'
@@ -686,6 +697,7 @@ export interface FileRouteTypes {
     | '/org/$slug/programs'
     | '/org/$slug/visit'
     | '/admin/applications/'
+    | '/admin/costs/'
     | '/admin/opportunities/'
     | '/admin/users/'
     | '/org/$slug/'
@@ -923,6 +935,13 @@ declare module '@tanstack/react-router' {
       path: '/opportunities'
       fullPath: '/admin/opportunities/'
       preLoaderRoute: typeof AdminOpportunitiesIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/costs/': {
+      id: '/admin/costs/'
+      path: '/costs'
+      fullPath: '/admin/costs/'
+      preLoaderRoute: typeof AdminCostsIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/applications/': {
@@ -1185,6 +1204,7 @@ interface AdminRouteRouteChildren {
   AdminUsersRouteRoute: typeof AdminUsersRouteRouteWithChildren
   AdminIndexRoute: typeof AdminIndexRoute
   AdminOpportunitiesNewRoute: typeof AdminOpportunitiesNewRoute
+  AdminCostsIndexRoute: typeof AdminCostsIndexRoute
   AdminOpportunitiesIndexRoute: typeof AdminOpportunitiesIndexRoute
   AdminOpportunitiesIdEditRoute: typeof AdminOpportunitiesIdEditRoute
 }
@@ -1194,6 +1214,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminUsersRouteRoute: AdminUsersRouteRouteWithChildren,
   AdminIndexRoute: AdminIndexRoute,
   AdminOpportunitiesNewRoute: AdminOpportunitiesNewRoute,
+  AdminCostsIndexRoute: AdminCostsIndexRoute,
   AdminOpportunitiesIndexRoute: AdminOpportunitiesIndexRoute,
   AdminOpportunitiesIdEditRoute: AdminOpportunitiesIdEditRoute,
 }

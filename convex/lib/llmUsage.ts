@@ -3,14 +3,16 @@ import { internalMutation, internalQuery } from '../_generated/server'
 import type { Id } from '../_generated/dataModel'
 
 // LLM pricing (per million tokens)
-const PRICING: Partial<Record<string, { input: number; output: number }>> = {
+export const PRICING: Partial<
+  Record<string, { input: number; output: number }>
+> = {
   'claude-sonnet-4-6': { input: 3, output: 15 },
   'claude-haiku-4-5': { input: 0.8, output: 4 },
   'gemini-3-flash-preview': { input: 0.5, output: 3 },
   'kimi-k2.5': { input: 0.6, output: 3 },
 }
 
-function estimateCost(
+export function estimateCost(
   model: string,
   inputTokens: number,
   outputTokens: number,
