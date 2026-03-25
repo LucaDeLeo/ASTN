@@ -1,0 +1,8 @@
+.git
+.svelte-kit
+.vercel
+dist
+node_modules
+convex/_generated
+routeTree.gen.ts
+*.bun-build

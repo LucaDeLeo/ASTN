@@ -11,6 +11,7 @@ airtable_bases.json
 .output
 .nitro
 .tanstack
+.svelte-kit
 
 /build/
 /api/
@@ -47,6 +48,9 @@ agent/astn-agent
 
 # Claude Code
 .claude/worktrees/
+.claude/skills/
+.agents/
+skills/
 
 # ── GSD baseline (auto-generated) ──
 .gsd/activity/
@@ -77,3 +81,6 @@ vendor/
 coverage/
 .cache/
 tmp/
+
+# Convex generated AI metadata
+convex/_generated/ai/
