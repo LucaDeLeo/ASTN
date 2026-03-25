@@ -1,69 +1,59 @@
-import { v } from 'convex/values'
-import { internalMutation } from '../_generated/server'
-import { log } from '../lib/logging'
-import type { Id } from '../_generated/dataModel'
-import type { MutationCtx } from '../_generated/server'
+import { v } from "convex/values";
+import { internalMutation } from "../_generated/server";
+import { log } from "../lib/logging";
+import type { Id } from "../_generated/dataModel";
+import type { MutationCtx } from "../_generated/server";
 
 // Returns true if a newer computation has started since `startedAt`
 async function isStaleRun(
-  ctx: { db: MutationCtx['db'] },
-  profileId: Id<'profiles'>,
+  ctx: { db: MutationCtx["db"] },
+  profileId: Id<"profiles">,
   startedAt: number,
 ): Promise<boolean> {
-  const profile = await ctx.db.get('profiles', profileId)
-  return Boolean(
-    profile?.matchProgress && profile.matchProgress.startedAt > startedAt,
-  )
+  const profile = await ctx.db.get("profiles", profileId);
+  return Boolean(profile?.matchProgress && profile.matchProgress.startedAt > startedAt);
 }
 
 // Match result type from LLM
 const matchResultValidator = v.object({
-  opportunityId: v.id('opportunities'),
-  tier: v.union(v.literal('great'), v.literal('good'), v.literal('exploring')),
+  opportunityId: v.id("opportunities"),
+  tier: v.union(v.literal("great"), v.literal("good"), v.literal("exploring")),
   score: v.number(),
   strengths: v.array(v.string()),
   gap: v.optional(v.string()),
   recommendations: v.array(
     v.object({
-      type: v.union(
-        v.literal('specific'),
-        v.literal('skill'),
-        v.literal('experience'),
-      ),
+      type: v.union(v.literal("specific"), v.literal("skill"), v.literal("experience")),
       action: v.string(),
-      priority: v.union(
-        v.literal('high'),
-        v.literal('medium'),
-        v.literal('low'),
-      ),
+      priority: v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
     }),
   ),
-})
+});
 
 // Set initial match progress on profile (called before first batch)
 export const setMatchProgress = internalMutation({
   args: {
-    profileId: v.id('profiles'),
+    profileId: v.id("profiles"),
     totalBatches: v.number(),
     totalOpportunities: v.number(),
   },
   returns: v.null(),
   handler: async (ctx, { profileId, totalBatches, totalOpportunities }) => {
-    await ctx.db.patch('profiles', profileId, {
+    await ctx.db.patch("profiles", profileId, {
       matchProgress: {
         totalBatches,
         completedBatches: 0,
         totalOpportunities,
         startedAt: Date.now(),
       },
-    })
+    });
   },
-})
+});
 
 // Update match progress (called during coarse scoring batches)
 export const updateMatchProgress = internalMutation({
   args: {
-    profileId: v.id('profiles'),
+    profileId: v.id("profiles"),
     completedBatches: v.number(),
     totalBatches: v.number(),
     totalOpportunities: v.number(),
@@ -72,41 +62,35 @@ export const updateMatchProgress = internalMutation({
   returns: v.null(),
   handler: async (
     ctx,
-    {
-      profileId,
-      completedBatches,
-      totalBatches,
-      totalOpportunities,
-      startedAt,
-    },
+    { profileId, completedBatches, totalBatches, totalOpportunities, startedAt },
   ) => {
-    if (await isStaleRun(ctx, profileId, startedAt)) return null
-    await ctx.db.patch('profiles', profileId, {
+    if (await isStaleRun(ctx, profileId, startedAt)) return null;
+    await ctx.db.patch("profiles", profileId, {
       matchProgress: {
         totalBatches,
         completedBatches,
         totalOpportunities,
         startedAt,
       },
-    })
-    return null
+    });
+    return null;
   },
-})
+});
 
 // Clear match progress from profile (called on completion or error)
 export const clearMatchProgress = internalMutation({
   args: {
-    profileId: v.id('profiles'),
+    profileId: v.id("profiles"),
     startedAt: v.number(),
   },
   returns: v.null(),
   handler: async (ctx, { profileId, startedAt }) => {
-    if (await isStaleRun(ctx, profileId, startedAt)) return null
-    await ctx.db.patch('profiles', profileId, {
+    if (await isStaleRun(ctx, profileId, startedAt)) return null;
+    await ctx.db.patch("profiles", profileId, {
       matchProgress: undefined,
-    })
+    });
   },
-})
+});
 
 // Opportunity snapshot validator (denormalized into match documents)
 const opportunitySnapshotValidator = v.object({
@@ -122,12 +106,12 @@ const opportunitySnapshotValidator = v.object({
   deadline: v.optional(v.number()),
   postedAt: v.optional(v.number()),
   opportunityType: v.optional(v.string()),
-})
+});
 
 // Save a single batch of match results incrementally (chained action architecture)
 export const saveBatchResults = internalMutation({
   args: {
-    profileId: v.id('profiles'),
+    profileId: v.id("profiles"),
     batchIndex: v.number(),
     totalBatches: v.number(),
     matches: v.array(matchResultValidator),
@@ -135,7 +119,7 @@ export const saveBatchResults = internalMutation({
     isLastBatch: v.boolean(),
     previousOppIds: v.array(v.string()),
     runTimestamp: v.number(),
-    validOpportunityIds: v.array(v.id('opportunities')),
+    validOpportunityIds: v.array(v.id("opportunities")),
     isFullRecompute: v.boolean(),
     opportunitySnapshots: v.record(v.string(), opportunitySnapshotValidator),
     totalOpportunities: v.number(),
@@ -155,7 +139,6 @@ export const saveBatchResults = internalMutation({
       previousOppIds,
       runTimestamp,
       validOpportunityIds,
-      isFullRecompute: _isFullRecompute,
       opportunitySnapshots,
       totalOpportunities,
       startedAt,
@@ -163,42 +146,40 @@ export const saveBatchResults = internalMutation({
     },
   ) => {
     const existingMatches = await ctx.db
-      .query('matches')
-      .withIndex('by_profile', (q) => q.eq('profileId', profileId))
-      .collect()
+      .query("matches")
+      .withIndex("by_profile", (q) => q.eq("profileId", profileId))
+      .collect();
 
     // Build lookup of existing matches by opportunityId for status preservation
-    const existingByOppId = new Map(
-      existingMatches.map((m) => [m.opportunityId, m]),
-    )
+    const existingByOppId = new Map(existingMatches.map((m) => [m.opportunityId, m]));
 
-    const previousOppSet = new Set(previousOppIds)
+    const previousOppSet = new Set(previousOppIds);
 
     // Track which opportunity IDs were touched this batch (for cleanup in Fix 2)
-    const touchedOppIds = new Set<string>()
+    const touchedOppIds = new Set<string>();
 
     // Per-match: PATCH existing or INSERT new (Fix 1: avoids delete+insert)
     for (const match of matches) {
-      const existing = existingByOppId.get(match.opportunityId)
-      const isNew = !previousOppSet.has(match.opportunityId)
-      const snapshot = opportunitySnapshots[String(match.opportunityId)]
+      const existing = existingByOppId.get(match.opportunityId);
+      const isNew = !previousOppSet.has(match.opportunityId);
+      const snapshot = opportunitySnapshots[String(match.opportunityId)];
 
       // Preserve saved/dismissed status from old match
       const preservedStatus =
         existing &&
         existing.computedAt !== runTimestamp &&
-        (existing.status === 'saved' || existing.status === 'dismissed')
+        (existing.status === "saved" || existing.status === "dismissed")
           ? existing.status
-          : ('active' as const)
+          : ("active" as const);
 
-      touchedOppIds.add(String(match.opportunityId))
+      touchedOppIds.add(String(match.opportunityId));
 
       if (existing && existing.computedAt === runTimestamp) {
         // Retry safety: already processed in this run, skip
-        continue
+        continue;
       } else if (existing) {
         // Existing match from previous run: PATCH in place
-        await ctx.db.patch('matches', existing._id, {
+        await ctx.db.patch("matches", existing._id, {
           tier: match.tier,
           score: match.score,
           status: preservedStatus,
@@ -211,10 +192,10 @@ export const saveBatchResults = internalMutation({
           computedAt: runTimestamp,
           modelVersion,
           opportunitySnapshot: snapshot,
-        })
+        });
       } else {
         // Truly new match: INSERT
-        await ctx.db.insert('matches', {
+        await ctx.db.insert("matches", {
           profileId,
           opportunityId: match.opportunityId,
           tier: match.tier,
@@ -229,126 +210,124 @@ export const saveBatchResults = internalMutation({
           computedAt: runTimestamp,
           modelVersion,
           opportunitySnapshot: snapshot,
-        })
+        });
       }
     }
 
     // Update progress on profile — guard against stale batch chains
     if (!(await isStaleRun(ctx, profileId, startedAt))) {
-      const effectiveCompleted = (progressBatchOffset ?? 0) + batchIndex + 1
+      const effectiveCompleted = (progressBatchOffset ?? 0) + batchIndex + 1;
       if (isLastBatch) {
-        await ctx.db.patch('profiles', profileId, {
+        await ctx.db.patch("profiles", profileId, {
           matchProgress: undefined,
-        })
+        });
       } else {
-        await ctx.db.patch('profiles', profileId, {
+        await ctx.db.patch("profiles", profileId, {
           matchProgress: {
             totalBatches,
             completedBatches: effectiveCompleted,
             totalOpportunities,
             startedAt,
           },
-        })
+        });
       }
     }
 
     // Last-batch cleanup: reuse already-loaded existingMatches (Fix 2: no second .collect())
     if (isLastBatch) {
-      const validOppSet = new Set(validOpportunityIds.map(String))
+      const validOppSet = new Set(validOpportunityIds.map(String));
 
       for (const match of existingMatches) {
         // Skip matches we just touched in this batch
-        if (touchedOppIds.has(String(match.opportunityId))) continue
+        if (touchedOppIds.has(String(match.opportunityId))) continue;
 
         // Both full recompute and incremental: only delete matches for
         // opportunities no longer in the valid set (expired/archived/filtered).
         // Matches for skipped or failed-batch opportunities are preserved.
         if (!validOppSet.has(String(match.opportunityId))) {
-          await ctx.db.delete('matches', match._id)
+          await ctx.db.delete("matches", match._id);
         }
       }
 
       // Clear staleness flag
-      await ctx.db.patch('profiles', profileId, { matchesStaleAt: undefined })
+      await ctx.db.patch("profiles", profileId, { matchesStaleAt: undefined });
     }
 
-    log('info', 'saveBatchResults', {
+    log("info", "saveBatchResults", {
       profileId,
       batchIndex,
       savedCount: matches.length,
       isLastBatch,
-    })
+    });
 
-    return null
+    return null;
   },
-})
+});
 
 // Cleanup-only mutation for incremental runs with no new evaluations
 export const cleanupOnlyMatches = internalMutation({
   args: {
-    profileId: v.id('profiles'),
-    validOpportunityIds: v.array(v.id('opportunities')),
+    profileId: v.id("profiles"),
+    validOpportunityIds: v.array(v.id("opportunities")),
   },
   returns: v.null(),
   handler: async (ctx, { profileId, validOpportunityIds }) => {
     const existingMatches = await ctx.db
-      .query('matches')
-      .withIndex('by_profile', (q) => q.eq('profileId', profileId))
-      .collect()
+      .query("matches")
+      .withIndex("by_profile", (q) => q.eq("profileId", profileId))
+      .collect();
 
-    const validOppSet = new Set(validOpportunityIds.map(String))
-    let deletedCount = 0
+    const validOppSet = new Set(validOpportunityIds.map(String));
+    let deletedCount = 0;
 
     for (const match of existingMatches) {
       if (!validOppSet.has(String(match.opportunityId))) {
-        await ctx.db.delete('matches', match._id)
-        deletedCount++
+        await ctx.db.delete("matches", match._id);
+        deletedCount++;
       }
     }
 
     // Clear staleness flag
-    await ctx.db.patch('profiles', profileId, { matchesStaleAt: undefined })
+    await ctx.db.patch("profiles", profileId, { matchesStaleAt: undefined });
 
-    log('info', 'cleanupOnlyMatches', { profileId, deletedCount })
-    return null
+    log("info", "cleanupOnlyMatches", { profileId, deletedCount });
+    return null;
   },
-})
+});
 
 // Clear all matches for a profile (used when there are 0 opportunities)
 export const clearMatchesForProfile = internalMutation({
-  args: { profileId: v.id('profiles') },
+  args: { profileId: v.id("profiles") },
   handler: async (ctx, { profileId }) => {
     const matches = await ctx.db
-      .query('matches')
-      .withIndex('by_profile', (q) => q.eq('profileId', profileId))
-      .collect()
+      .query("matches")
+      .withIndex("by_profile", (q) => q.eq("profileId", profileId))
+      .collect();
 
     for (const match of matches) {
-      await ctx.db.delete('matches', match._id)
+      await ctx.db.delete("matches", match._id);
     }
 
     // Clear staleness flag since there's nothing to refresh against
-    await ctx.db.patch('profiles', profileId, { matchesStaleAt: undefined })
+    await ctx.db.patch("profiles", profileId, { matchesStaleAt: undefined });
 
-    return { deletedCount: matches.length }
+    return { deletedCount: matches.length };
   },
-})
+});
 
 // Mark matches as not new (after user has viewed them)
 export const markMatchesViewed = internalMutation({
-  args: { profileId: v.id('profiles') },
+  args: { profileId: v.id("profiles") },
   handler: async (ctx, { profileId }) => {
     const newMatches = await ctx.db
-      .query('matches')
-      .withIndex('by_profile_new', (q) =>
-        q.eq('profileId', profileId).eq('isNew', true),
-      )
-      .collect()
+      .query("matches")
+      .withIndex("by_profile_new", (q) => q.eq("profileId", profileId).eq("isNew", true))
+      .collect();
 
     for (const match of newMatches) {
-      await ctx.db.patch('matches', match._id, { isNew: false })
+      await ctx.db.patch("matches", match._id, { isNew: false });
     }
 
-    return { markedCount: newMatches.length }
+    return { markedCount: newMatches.length };
   },
-})
+});
