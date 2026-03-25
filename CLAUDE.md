@@ -13,42 +13,53 @@ AI Safety Talent Network (ASTN) - A career command center for AI safety talent. 
 bun run dev
 
 # Run only the web frontend
-bun run dev:web
+vp dev
 
 # Run only Convex backend
-bun run dev:convex
+vp dlx convex dev
 
-# Type check and lint
-bun run lint
+# Type check
+bun run check
+
+# Lint
+vp lint
 
 # Format code
-bun run format
+vp fmt
 
 # Build for production
-bun run build
+vp build
 ```
 
 ## Architecture
 
 ### Frontend Stack
 
-- **TanStack Start** with file-based routing in `src/routes/`
-- **TanStack Router + Query** integrated with Convex for data fetching
-- **React 19** with React Compiler enabled (via babel-plugin-react-compiler)
-- **shadcn/ui** (new-york style) with Tailwind v4
-- Path alias: `~/` maps to `src/`
+- **SvelteKit 2** with file-based routing in `src/routes/`
+- **Svelte 5** with runes (`$state`, `$derived`, `$effect`, `$props()`)
+- **convex-svelte** (`useQuery`, `useMutation`, `useConvexClient`) for real-time data
+- **bits-ui** (shadcn-svelte) + **lucide-svelte** for UI components
+- **Tailwind CSS v4** with `@tailwindcss/vite` plugin
+- Path aliases: `~/` maps to `src/`, `$convex/` maps to `convex/`
 
 ### Backend Stack
 
 - **Convex** for database, real-time sync, and serverless functions
-- **Clerk** for authentication (GitHub, Google, Email+Password) via `@clerk/clerk-react` + `convex/react-clerk`
+- **Clerk** for authentication (GitHub, Google, Email+Password) via `@clerk/clerk-js` + custom Svelte store
 - **Claude API** + Gemini + Kimi for LLM features
+- **Effect** for server-side typed error handling
 
 ### Key Patterns
 
 **Convex Actions with Node.js**: Files using external APIs (like Claude) require `"use node"` at the top.
 
 **Internal vs Public Functions**: Use `internal` from `_generated/api` for functions that should only be called by other Convex functions, not the client.
+
+**Svelte Stores**: Reactive state lives in `.svelte.ts` files under `src/lib/stores/` using `createContext()` from Svelte for global state (Clerk, PostHog, agent sidebars, etc.).
+
+**Wrapper Components**: `ClerkWrapper.svelte` and `ConvexWrapper.svelte` in `src/lib/wrappers/` handle auth + data layer initialization. Nested in the `(app)` layout group.
+
+**SSR Strategy**: `export const ssr = false` on routes that use Clerk/Convex client-side (`(app)/*`, `/login`, `/apply`). Public static pages (`/privacy`, `/terms`) SSR normally for SEO.
 
 <!--VITE PLUS START-->
 

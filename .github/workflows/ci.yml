@@ -37,19 +37,19 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: vp install --frozen-lockfile
 
       - name: Lint
-        run: bun run lint && bun run lint:convex
+        run: vp lint && bun run lint:convex
 
       - name: Build
-        run: bun run build
+        run: vp build
 
       - name: Test
         run: |
           TEST_FILES=$(find src convex -name "*.test.ts" -o -name "*.spec.ts" 2>/dev/null || true)
           if [ -n "$TEST_FILES" ]; then
-            bun test
+            vp test
           else
             echo "No test files found in src/ or convex/, skipping tests"
           fi

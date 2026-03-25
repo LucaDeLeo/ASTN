@@ -14,22 +14,12 @@
     "svelte.config.js",
     "vite.config.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "src-tauri",
-    "agent",
-    "convex",
-    "shared",
-    "public",
-    "src/**/*.tsx",
-    "src/**/*.jsx"
-  ],
+  "exclude": ["node_modules", "src-tauri", "agent", "convex", "shared", "public"],
   "compilerOptions": {
     "allowJs": true,
     "checkJs": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "jsx": "react-jsx",
     "moduleResolution": "bundler",
     "noEmit": true,
     "resolveJsonModule": true,
