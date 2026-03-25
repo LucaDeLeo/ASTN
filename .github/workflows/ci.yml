@@ -16,6 +16,14 @@ jobs:
   ci:
     name: Lint, Build & Test
     runs-on: ubuntu-latest
+    env:
+      # SvelteKit $env/static/public requires these at build time.
+      # CI only validates the build compiles — values don't need to be real.
+      PUBLIC_CONVEX_URL: https://placeholder.convex.cloud
+      PUBLIC_CONVEX_SITE_URL: https://placeholder.convex.site
+      PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_placeholder
+      PUBLIC_POSTHOG_KEY: phc_placeholder
+      PUBLIC_POSTHOG_HOST: https://us.i.posthog.com
     steps:
       - uses: actions/checkout@v4
 
