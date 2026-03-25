@@ -24,6 +24,7 @@ jobs:
       PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_placeholder
       PUBLIC_POSTHOG_KEY: phc_placeholder
       PUBLIC_POSTHOG_HOST: https://us.i.posthog.com
+      PUBLIC_SENTRY_DSN: https://placeholder@placeholder.ingest.sentry.io/0
     steps:
       - uses: actions/checkout@v4
 
