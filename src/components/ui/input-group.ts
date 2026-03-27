@@ -1,0 +1,6 @@
+export { default as InputGroup } from './input-group/InputGroup.svelte'
+export { default as InputGroupAddon } from './input-group/InputGroupAddon.svelte'
+export { default as InputGroupButton } from './input-group/InputGroupButton.svelte'
+export { default as InputGroupInput } from './input-group/InputGroupInput.svelte'
+export { default as InputGroupText } from './input-group/InputGroupText.svelte'
+export { default as InputGroupTextarea } from './input-group/InputGroupTextarea.svelte'

@@ -1,104 +1,71 @@
-import { tanstackStart } from '@tanstack/react-start/plugin/vite'
-import { sentryTanstackStart } from '@sentry/tanstackstart-react/vite'
-import { createLogger, defineConfig } from 'vite-plus'
-import tailwindcss from '@tailwindcss/vite'
-import viteReact from '@vitejs/plugin-react'
-import { nitro } from 'nitro/vite'
+import path from "node:path";
+import tailwindcss from "@tailwindcss/vite";
+import { sveltekit } from "@sveltejs/kit/vite";
+import { defineConfig, type Plugin } from "vite";
 
-const logger = createLogger()
-const originalWarn = logger.warn.bind(logger)
-logger.warn = (msg, options) => {
-  if (msg.includes('Failed to load source map')) return
-  originalWarn(msg, options)
-}
+const workspaceRoot = path.resolve(process.cwd());
+const useSentryPlugin = Boolean(process.env.SENTRY_AUTH_TOKEN);
+const sentryPlugins = useSentryPlugin
+  ? await import("@sentry/sveltekit").then(({ sentrySvelteKit }) =>
+      sentrySvelteKit({
+        org: "baish",
+        project: "javascript-sveltekit",
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        telemetry: false,
+        sourcemaps: {
+          filesToDeleteAfterUpload: ["**/*.map"],
+        },
+      }),
+    )
+  : [];
+
+const stripClerkUseClientDirective = (): Plugin => ({
+  name: "strip-clerk-use-client-directive",
+  enforce: "pre",
+  transform(code, id) {
+    if (!id.includes("@clerk/ui/dist/ClerkUI.js")) {
+      return null;
+    }
+
+    return {
+      code: code.replace(/^['"]use client['"];?\s*/, ""),
+      map: null,
+    };
+  },
+});
 
 export default defineConfig({
-  customLogger: logger,
-  lint: {
-    options: { typeAware: true, typeCheck: true },
-    ignorePatterns: [
-      'convex/_generated/**',
-      'agent/**',
-      '.vercel/**',
-      '.claude/**',
-      'dist/**',
-      '.planning/**',
-      'app.config.timestamp*.js',
-    ],
-  },
-  staged: {
-    '*.{ts,tsx}': ['vp check --fix'],
-    '*.{json,md,css}': ['vp fmt'],
-  },
-  fmt: {
-    semi: false,
-    singleQuote: true,
-    trailingComma: 'all',
-    printWidth: 80,
-    sortPackageJson: false,
-    ignorePatterns: [
-      '.nitro/',
-      '.output/',
-      '.tanstack/',
-      '**/api',
-      '**/build',
-      '**/public',
-      'convex/_generated/',
-      'convex/README.md',
-      'bun.lock',
-      'routeTree.gen.ts',
-    ],
-  },
+  staged: { "*": "vp check --fix" },
+  envDir: workspaceRoot,
   server: {
+    fs: {
+      allow: [workspaceRoot],
+    },
     proxy: {
-      '/ingest': {
-        target: 'https://us.i.posthog.com',
+      "/ingest": {
+        target: "https://us.i.posthog.com",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/ingest/, ''),
+        rewrite: (routePath: string) => routePath.replace(/^\/ingest/, ""),
         secure: false,
       },
-      '/tunnel': {
-        target: 'https://o4510997439053824.ingest.de.sentry.io',
+      "/tunnel": {
+        target: "https://o4510997439053824.ingest.de.sentry.io",
         changeOrigin: true,
         rewrite: () =>
-          '/api/4510997440692304/envelope/?sentry_key=f7612c740401feef0039be0728f64cc4',
+          "/api/4510997440692304/envelope/?sentry_key=f7612c740401feef0039be0728f64cc4",
         secure: false,
       },
     },
   },
   build: {
-    sourcemap: 'hidden',
+    sourcemap: "hidden",
+    chunkSizeWarningLimit: 3000,
   },
   resolve: {
-    tsconfigPaths: true,
-    // Force a single React instance across CJS/ESM boundaries during SSR
-    // Prevents "Cannot read properties of null (reading 'useEffect')" in server rendering
-    dedupe: [
-      'react',
-      'react-dom',
-      'react/jsx-runtime',
-      'react/jsx-dev-runtime',
-    ],
+    alias: {
+      "~": path.resolve("./src"),
+      $convex: path.resolve("./convex"),
+    },
   },
-  plugins: [
-    tailwindcss(),
-    tanstackStart(),
-    nitro({
-      preset: 'vercel',
-    }),
-    sentryTanstackStart({
-      org: 'baish',
-      project: 'javascript-tanstackstart-react',
-      authToken: process.env.SENTRY_AUTH_TOKEN,
-      telemetry: false,
-      sourcemaps: {
-        filesToDeleteAfterUpload: ['**/*.map'],
-      },
-    }),
-    viteReact({
-      babel: {
-        plugins: ['babel-plugin-react-compiler'],
-      },
-    }),
-  ],
-})
+  plugins: [stripClerkUseClientDirective(), tailwindcss(), sveltekit(), ...sentryPlugins],
+});

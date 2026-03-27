@@ -1,112 +1,111 @@
-'use node'
+"use node";
 
-import { v } from 'convex/values'
-import { GoogleGenAI } from '@google/genai'
-import { internalAction } from '../_generated/server'
-import { internal } from '../_generated/api'
-import { isProfileMatchReady } from '../profiles'
-import { log } from '../lib/logging'
-import { buildUsageArgs } from '../lib/llmUsage'
-import { MODEL_GEMINI_FAST } from '../lib/models'
+import { v } from "convex/values";
+import { GoogleGenAI } from "@google/genai";
+import { internalAction } from "../_generated/server";
+import { internal } from "../_generated/api";
+import { isProfileMatchReady } from "../profiles";
+import { log } from "../lib/logging";
+import { buildUsageArgs } from "../lib/llmUsage";
+import { MODEL_GEMINI_FAST } from "../lib/models";
 import {
   MATCHING_SYSTEM_PROMPT,
   buildOpportunitiesContext,
   buildProfileContext,
   matchResponseSchema,
-} from './prompts'
-import { matchResultSchema } from './validation'
-import type { Doc, Id } from '../_generated/dataModel'
+} from "./prompts";
+import { matchResultSchema } from "./validation";
+import type { Doc, Id } from "../_generated/dataModel";
 
-const BATCH_SIZE = 15 // Detailed scoring (Tier 3) batch size
-const COARSE_BATCH_SIZE = 50 // Coarse scoring (Tier 2) batch size
-const TOP_N = 25 // Top candidates selected for detailed scoring
-const MAX_RETRIES = 10
-const RATE_LIMIT_DELAY_MS = 1000
+const BATCH_SIZE = 15; // Detailed scoring (Tier 3) batch size
+const COARSE_BATCH_SIZE = 50; // Coarse scoring (Tier 2) batch size
+const TOP_N = 25; // Top candidates selected for detailed scoring
+const MAX_RETRIES = 10;
+const RATE_LIMIT_DELAY_MS = 1000;
 
 // Check if an error is a rate limit error (HTTP 429 or message contains "rate")
 function isRateLimitError(error: unknown): boolean {
   if (error instanceof Error) {
-    const message = error.message.toLowerCase()
-    if (message.includes('rate') || message.includes('429')) return true
+    const message = error.message.toLowerCase();
+    if (message.includes("rate") || message.includes("429")) return true;
   }
   if (
-    typeof error === 'object' &&
+    typeof error === "object" &&
     error !== null &&
-    'status' in error &&
+    "status" in error &&
     (error as { status: number }).status === 429
   ) {
-    return true
+    return true;
   }
-  return false
+  return false;
 }
 
 // Extract the maximum USD salary from a free-text salaryRange field.
 // Returns null if unparseable — err on the side of passing through (zero false negatives).
 export function parseMaxSalary(salaryRange: string | undefined): number | null {
-  if (!salaryRange) return null
+  if (!salaryRange) return null;
 
   // Non-USD currencies — can't compare to minimumSalaryUSD
-  if (/[€£¥₹]/.test(salaryRange)) return null
-  if (/\b(EUR|GBP|JPY|INR|CAD|AUD|CHF|CNY)\b/i.test(salaryRange)) return null
+  if (/[€£¥₹]/.test(salaryRange)) return null;
+  if (/\b(EUR|GBP|JPY|INR|CAD|AUD|CHF|CNY)\b/i.test(salaryRange)) return null;
 
   // Non-annual rates — can't reliably convert to annual
-  if (/\b(hour|hr|month|week|day)\b/i.test(salaryRange)) return null
+  if (/\b(hour|hr|month|week|day)\b/i.test(salaryRange)) return null;
 
   // Open-ended ranges like "$50,000+" indicate a floor, not a ceiling —
   // can't determine max salary, so pass through to avoid false negatives
-  if (/\d\s*\+/.test(salaryRange)) return null
+  if (/\d\s*\+/.test(salaryRange)) return null;
 
-  const amounts: Array<number> = []
-  const regex = /\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*([kK])?\b/g
-  let m
+  const amounts: Array<number> = [];
+  const regex = /\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*([kK])?\b/g;
+  let m;
   while ((m = regex.exec(salaryRange)) !== null) {
-    let value = parseFloat(m[1].replace(/,/g, ''))
-    if (m[2]) value *= 1000
+    let value = parseFloat(m[1].replace(/,/g, ""));
+    if (m[2]) value *= 1000;
     // Ignore tiny numbers (likely not salaries, e.g., "2 years experience")
-    if (value >= 1000) amounts.push(value)
+    if (value >= 1000) amounts.push(value);
   }
 
-  if (amounts.length === 0) return null
-  return Math.max(...amounts)
+  if (amounts.length === 0) return null;
+  return Math.max(...amounts);
 }
 
 // Programmatic hard filters — applied before LLM sees any opportunity
 function applyHardFilters<
   T extends {
-    _id: Id<'opportunities'>
-    isRemote: boolean
-    roleType: string
-    experienceLevel?: string
-    salaryRange?: string
+    _id: Id<"opportunities">;
+    isRemote: boolean;
+    roleType: string;
+    experienceLevel?: string;
+    salaryRange?: string;
   },
 >(
   opportunities: Array<T>,
   prefs?: {
-    remotePreference?: string
-    roleTypes?: Array<string>
-    experienceLevels?: Array<string>
-    minimumSalaryUSD?: number
+    remotePreference?: string;
+    roleTypes?: Array<string>;
+    experienceLevels?: Array<string>;
+    minimumSalaryUSD?: number;
   },
 ): Array<T> {
-  if (!prefs) return opportunities
+  if (!prefs) return opportunities;
   return opportunities.filter((opp) => {
-    if (prefs.remotePreference === 'remote_only' && !opp.isRemote) return false
-    if (prefs.roleTypes?.length && !prefs.roleTypes.includes(opp.roleType))
-      return false
+    if (prefs.remotePreference === "remote_only" && !opp.isRemote) return false;
+    if (prefs.roleTypes?.length && !prefs.roleTypes.includes(opp.roleType)) return false;
     // If opportunity has no experienceLevel, don't filter it out — let LLM decide
     if (
       prefs.experienceLevels?.length &&
       opp.experienceLevel &&
       !prefs.experienceLevels.includes(opp.experienceLevel)
     )
-      return false
+      return false;
     // Salary filter: only filter if max salary is parseable AND below user's minimum
     if (prefs.minimumSalaryUSD) {
-      const maxSalary = parseMaxSalary(opp.salaryRange)
-      if (maxSalary !== null && maxSalary < prefs.minimumSalaryUSD) return false
+      const maxSalary = parseMaxSalary(opp.salaryRange);
+      if (maxSalary !== null && maxSalary < prefs.minimumSalaryUSD) return false;
     }
-    return true
-  })
+    return true;
+  });
 }
 
 // Entry point: starts the 3-tier matching pipeline for a profile
@@ -114,144 +113,131 @@ function applyHardFilters<
 // Tier 2: Coarse LLM scoring in large batches (cheap)
 // Tier 3: Detailed LLM scoring on top candidates (expensive, same as before)
 export const computeMatchesForProfile = internalAction({
-  args: { profileId: v.id('profiles') },
+  args: { profileId: v.id("profiles") },
   handler: async (ctx, { profileId }) => {
     // Explicit type annotations break circular inference from internal.matching.coarse ref
     const profile: Record<string, unknown> | null = await ctx.runQuery(
       internal.matching.queries.getFullProfile,
       { profileId },
-    )
+    );
     if (!profile) {
-      throw new Error('Profile not found')
+      throw new Error("Profile not found");
     }
 
     // Defense-in-depth: verify profile completeness before running expensive LLM pipeline
-    const readiness = isProfileMatchReady(profile)
+    const readiness = isProfileMatchReady(profile);
     if (!readiness.ready) {
-      log('warn', 'computeMatchesForProfile: profile incomplete, skipping', {
+      log("warn", "computeMatchesForProfile: profile incomplete, skipping", {
         profileId,
         completedCount: readiness.completedCount,
         missingRequired: readiness.missingRequired,
-      })
-      return { matchCount: 0, message: 'Profile incomplete' }
+      });
+      return { matchCount: 0, message: "Profile incomplete" };
     }
 
     // Tier 1: availability check — skip matching entirely for unavailable users
     const matchPrefs = profile.matchPreferences as
       | {
-          remotePreference?: string
-          roleTypes?: Array<string>
-          experienceLevels?: Array<string>
-          minimumSalaryUSD?: number
-          availability?: string
-          commitmentTypes?: Array<string>
-          willingToRelocate?: boolean
-          workAuthorization?: string
+          remotePreference?: string;
+          roleTypes?: Array<string>;
+          experienceLevels?: Array<string>;
+          minimumSalaryUSD?: number;
+          availability?: string;
+          commitmentTypes?: Array<string>;
+          willingToRelocate?: boolean;
+          workAuthorization?: string;
         }
-      | undefined
-    if (matchPrefs?.availability === 'not_available') {
-      await ctx.runMutation(
-        internal.matching.mutations.clearMatchesForProfile,
-        { profileId },
-      )
-      log('info', 'computeMatchesForProfile: user not available, skipping', {
+      | undefined;
+    if (matchPrefs?.availability === "not_available") {
+      await ctx.runMutation(internal.matching.mutations.clearMatchesForProfile, { profileId });
+      log("info", "computeMatchesForProfile: user not available, skipping", {
         profileId,
-      })
-      return { matchCount: 0, message: 'User not available for matching' }
+      });
+      return { matchCount: 0, message: "User not available for matching" };
     }
 
     const privacySettings = profile.privacySettings as
       | { hiddenFromOrgs?: Array<string> }
-      | undefined
-    const hiddenOrgs: Array<string> = privacySettings?.hiddenFromOrgs || []
-    const allOpportunities: Array<Doc<'opportunities'>> = await ctx.runQuery(
+      | undefined;
+    const hiddenOrgs: Array<string> = privacySettings?.hiddenFromOrgs || [];
+    const allOpportunities: Array<Doc<"opportunities">> = await ctx.runQuery(
       internal.matching.queries.getCandidateOpportunities,
       { hiddenOrgs },
-    )
+    );
 
     // Tier 1: Apply programmatic hard filters
-    const filteredOpportunities: Array<Doc<'opportunities'>> = applyHardFilters(
+    const filteredOpportunities: Array<Doc<"opportunities">> = applyHardFilters(
       allOpportunities,
       matchPrefs,
-    )
+    );
 
     // Get existing matches for incremental logic
     const existingMatches: Array<{
-      opportunityId: string
-      computedAt: number
+      opportunityId: string;
+      computedAt: number;
     }> = await ctx.runQuery(internal.matching.queries.getExistingMatches, {
       profileId,
-    })
+    });
 
-    const existingByOppId = new Map(
-      existingMatches.map((m) => [m.opportunityId, m]),
-    )
+    const existingByOppId = new Map(existingMatches.map((m) => [m.opportunityId, m]));
 
     // Determine mode: full recompute if profile fields changed (matchesStaleAt set)
-    const isFullRecompute = Boolean(profile.matchesStaleAt)
+    const isFullRecompute = Boolean(profile.matchesStaleAt);
 
     // Build evaluation set
-    let evaluationSet: Array<Doc<'opportunities'>>
+    let evaluationSet: Array<Doc<"opportunities">>;
     if (isFullRecompute) {
-      evaluationSet = filteredOpportunities
+      evaluationSet = filteredOpportunities;
     } else {
       // Incremental: only new or updated opportunities
       evaluationSet = filteredOpportunities.filter((opp) => {
-        const existing = existingByOppId.get(opp._id)
-        if (!existing) return true // New opportunity, no match exists
-        return opp.updatedAt > existing.computedAt
-      })
+        const existing = existingByOppId.get(opp._id);
+        if (!existing) return true; // New opportunity, no match exists
+        return opp.updatedAt > existing.computedAt;
+      });
     }
 
     // Valid opportunity IDs = all filtered opportunities (for cleanup)
-    const validOpportunityIds: Array<Id<'opportunities'>> =
-      filteredOpportunities.map((o) => o._id)
+    const validOpportunityIds: Array<Id<"opportunities">> = filteredOpportunities.map((o) => o._id);
 
     if (evaluationSet.length === 0 && !isFullRecompute) {
       // Nothing to evaluate — just clean up stale matches
       await ctx.runMutation(internal.matching.mutations.cleanupOnlyMatches, {
         profileId,
         validOpportunityIds,
-      })
-      return { matchCount: 0, message: 'No new opportunities to evaluate' }
+      });
+      return { matchCount: 0, message: "No new opportunities to evaluate" };
     }
 
     if (evaluationSet.length === 0 && isFullRecompute) {
       // Full recompute but no opportunities after filtering
-      await ctx.runMutation(
-        internal.matching.mutations.clearMatchesForProfile,
-        { profileId },
-      )
-      return { matchCount: 0, message: 'No active opportunities to match' }
+      await ctx.runMutation(internal.matching.mutations.clearMatchesForProfile, { profileId });
+      return { matchCount: 0, message: "No active opportunities to match" };
     }
 
     // Detect first computation: no existing matches means this is a brand new user
-    const isFirstComputation = existingMatches.length === 0
+    const isFirstComputation = existingMatches.length === 0;
 
-    const previousOppIds = existingMatches.map(
-      (m: { opportunityId: string }) => m.opportunityId,
-    )
+    const previousOppIds = existingMatches.map((m: { opportunityId: string }) => m.opportunityId);
 
     // Snapshot opportunity IDs so batches work against a consistent set
-    const snapshotOpportunityIds = evaluationSet.map(
-      (o: { _id: Id<'opportunities'> }) => o._id,
-    )
+    const snapshotOpportunityIds = evaluationSet.map((o: { _id: Id<"opportunities"> }) => o._id);
 
-    const runTimestamp = Date.now()
+    const runTimestamp = Date.now();
 
     // Build profile context once, pass as string to all batches
-    const profileContext = buildProfileContext(profile as any)
+    const profileContext = buildProfileContext(
+      profile as Parameters<typeof buildProfileContext>[0],
+    );
 
     // Calculate batch counts for 3-tier pipeline
-    const totalCoarseBatches = Math.ceil(
-      evaluationSet.length / COARSE_BATCH_SIZE,
-    )
+    const totalCoarseBatches = Math.ceil(evaluationSet.length / COARSE_BATCH_SIZE);
     const estimatedDetailedBatches: number = isFullRecompute
       ? Math.ceil(TOP_N / BATCH_SIZE)
-      : Math.ceil(Math.min(evaluationSet.length, TOP_N) / BATCH_SIZE)
-    const totalBatches: number = totalCoarseBatches + estimatedDetailedBatches
+      : Math.ceil(Math.min(evaluationSet.length, TOP_N) / BATCH_SIZE);
+    const totalBatches: number = totalCoarseBatches + estimatedDetailedBatches;
 
-    log('info', 'computeMatchesForProfile: starting 3-tier matching', {
+    log("info", "computeMatchesForProfile: starting 3-tier matching", {
       profileId,
       totalOpportunities: allOpportunities.length,
       filteredCount: filteredOpportunities.length,
@@ -261,56 +247,52 @@ export const computeMatchesForProfile = internalAction({
       estimatedDetailedBatches,
       totalBatches,
       runTimestamp,
-    })
+    });
 
     // Set initial progress so the frontend can show a progress bar
     await ctx.runMutation(internal.matching.mutations.setMatchProgress, {
       profileId,
       totalBatches,
       totalOpportunities: evaluationSet.length,
-    })
+    });
 
     // Schedule Tier 2: coarse scoring
-    await ctx.scheduler.runAfter(
-      0,
-      internal.matching.coarse.processCoarseBatch,
-      {
-        profileId,
-        profileContext,
-        batchIndex: 0,
-        totalCoarseBatches,
-        retryCount: 0,
-        snapshotOpportunityIds,
-        coarseScores: [],
-        previousOppIds,
-        validOpportunityIds,
-        isFullRecompute,
-        runTimestamp,
-        totalBatches,
-        totalOpportunities: evaluationSet.length,
-        startedAt: runTimestamp,
-        isFirstComputation,
-      },
-    )
+    await ctx.scheduler.runAfter(0, internal.matching.coarse.processCoarseBatch, {
+      profileId,
+      profileContext,
+      batchIndex: 0,
+      totalCoarseBatches,
+      retryCount: 0,
+      snapshotOpportunityIds,
+      coarseScores: [],
+      previousOppIds,
+      validOpportunityIds,
+      isFullRecompute,
+      runTimestamp,
+      totalBatches,
+      totalOpportunities: evaluationSet.length,
+      startedAt: runTimestamp,
+      isFirstComputation,
+    });
 
-    return { message: 'Matching started', totalBatches }
+    return { message: "Matching started", totalBatches };
   },
-})
+});
 
 // Build opportunity snapshot for denormalization into match documents
 function buildOpportunitySnapshot(opp: {
-  title: string
-  organization: string
-  location: string
-  isRemote: boolean
-  roleType: string
-  experienceLevel?: string
-  salaryRange?: string
-  extractedSkills?: Array<string>
-  sourceUrl: string
-  deadline?: number
-  postedAt?: number
-  opportunityType?: string
+  title: string;
+  organization: string;
+  location: string;
+  isRemote: boolean;
+  roleType: string;
+  experienceLevel?: string;
+  salaryRange?: string;
+  extractedSkills?: Array<string>;
+  sourceUrl: string;
+  deadline?: number;
+  postedAt?: number;
+  opportunityType?: string;
 }) {
   return {
     title: opp.title,
@@ -325,22 +307,22 @@ function buildOpportunitySnapshot(opp: {
     deadline: opp.deadline,
     postedAt: opp.postedAt,
     opportunityType: opp.opportunityType,
-  }
+  };
 }
 
 // Process a single batch of opportunities (Tier 3: detailed scoring)
 // Called as a chained scheduled action, typically after Tier 2 coarse scoring
 export const processMatchBatch = internalAction({
   args: {
-    profileId: v.id('profiles'),
+    profileId: v.id("profiles"),
     profileContext: v.string(),
     batchIndex: v.number(),
     totalBatches: v.number(),
     retryCount: v.number(),
     previousOppIds: v.array(v.string()),
-    snapshotOpportunityIds: v.array(v.id('opportunities')),
+    snapshotOpportunityIds: v.array(v.id("opportunities")),
     runTimestamp: v.number(),
-    validOpportunityIds: v.array(v.id('opportunities')),
+    validOpportunityIds: v.array(v.id("opportunities")),
     isFullRecompute: v.boolean(),
     totalOpportunities: v.number(),
     startedAt: v.number(),
@@ -370,7 +352,7 @@ export const processMatchBatch = internalAction({
       totalBatchesForProgress,
     },
   ) => {
-    const startTime = Date.now()
+    const startTime = Date.now();
 
     // Common args forwarded to all scheduler calls
     const chainArgs = {
@@ -387,49 +369,48 @@ export const processMatchBatch = internalAction({
       isFirstComputation,
       progressBatchOffset,
       totalBatchesForProgress,
-    }
+    };
 
     // Slice batch from snapshot IDs, then fetch current data
     const batchIds = snapshotOpportunityIds.slice(
       batchIndex * BATCH_SIZE,
       (batchIndex + 1) * BATCH_SIZE,
-    )
+    );
 
     if (batchIds.length === 0) {
-      log('warn', 'processMatchBatch: empty batch, skipping', {
+      log("warn", "processMatchBatch: empty batch, skipping", {
         batchIndex,
         totalBatches,
-      })
-      return
+      });
+      return;
     }
 
-    const batch = await ctx.runQuery(
-      internal.matching.queries.getOpportunitiesByIds,
-      { ids: batchIds },
-    )
+    const batch = await ctx.runQuery(internal.matching.queries.getOpportunitiesByIds, {
+      ids: batchIds,
+    });
 
-    const isLastBatch = batchIndex + 1 >= totalBatches
+    const isLastBatch = batchIndex + 1 >= totalBatches;
 
     // Build opportunity snapshots map from this batch (Fix 3b)
     const opportunitySnapshots: Record<
       string,
       {
-        title: string
-        organization: string
-        location: string
-        isRemote: boolean
-        roleType: string
-        experienceLevel?: string
-        salaryRange?: string
-        extractedSkills?: Array<string>
-        sourceUrl: string
-        deadline?: number
-        postedAt?: number
-        opportunityType?: string
+        title: string;
+        organization: string;
+        location: string;
+        isRemote: boolean;
+        roleType: string;
+        experienceLevel?: string;
+        salaryRange?: string;
+        extractedSkills?: Array<string>;
+        sourceUrl: string;
+        deadline?: number;
+        postedAt?: number;
+        opportunityType?: string;
       }
-    > = {}
+    > = {};
     for (const opp of batch) {
-      opportunitySnapshots[String(opp._id)] = buildOpportunitySnapshot(opp)
+      opportunitySnapshots[String(opp._id)] = buildOpportunitySnapshot(opp);
     }
 
     // Common args for saveBatchResults calls
@@ -445,13 +426,13 @@ export const processMatchBatch = internalAction({
       totalOpportunities,
       startedAt,
       progressBatchOffset,
-    }
+    };
 
     if (batch.length === 0) {
-      log('warn', 'processMatchBatch: all opportunities in batch inactive', {
+      log("warn", "processMatchBatch: all opportunities in batch inactive", {
         batchIndex,
         totalBatches,
-      })
+      });
       // If this is the last batch, still run saveBatchResults to trigger cleanup
       if (isLastBatch) {
         await ctx.runMutation(internal.matching.mutations.saveBatchResults, {
@@ -459,7 +440,7 @@ export const processMatchBatch = internalAction({
           matches: [],
           modelVersion: MODEL_GEMINI_FAST,
           isLastBatch: true,
-        })
+        });
       } else {
         await ctx.scheduler.runAfter(
           RATE_LIMIT_DELAY_MS,
@@ -469,113 +450,103 @@ export const processMatchBatch = internalAction({
             batchIndex: batchIndex + 1,
             retryCount: 0,
           },
-        )
+        );
       }
-      return
+      return;
     }
     const batchMatches: Array<{
-      opportunityId: Id<'opportunities'>
-      tier: 'great' | 'good' | 'exploring'
-      score: number
-      strengths: Array<string>
-      gap?: string
+      opportunityId: Id<"opportunities">;
+      tier: "great" | "good" | "exploring";
+      score: number;
+      strengths: Array<string>;
+      gap?: string;
       recommendations: Array<{
-        type: 'specific' | 'skill' | 'experience'
-        action: string
-        priority: 'high' | 'medium' | 'low'
-      }>
-    }> = []
+        type: "specific" | "skill" | "experience";
+        action: string;
+        priority: "high" | "medium" | "low";
+      }>;
+    }> = [];
 
     try {
       // Fix 4: Use pre-built profileContext instead of re-reading profile
-      const opportunitiesContext = buildOpportunitiesContext(batch)
+      const opportunitiesContext = buildOpportunitiesContext(batch);
 
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! })
-      const apiStart = Date.now()
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+      const apiStart = Date.now();
       const response = await ai.models.generateContent({
         model: MODEL_GEMINI_FAST,
         contents: `${profileContext}\n\n${opportunitiesContext}\n\nScore ALL opportunities for this candidate. You MUST return a result for every opportunity — assign tier "exploring" with a low score to any that are a poor fit. Do not skip any.`,
         config: {
           systemInstruction: MATCHING_SYSTEM_PROMPT,
-          responseMimeType: 'application/json',
+          responseMimeType: "application/json",
           responseSchema: matchResponseSchema,
         },
-      })
-      const apiDuration = Date.now() - apiStart
+      });
+      const apiDuration = Date.now() - apiStart;
 
       await ctx.runMutation(
         internal.lib.llmUsage.logUsage,
         buildUsageArgs(
-          'matching',
+          "matching",
           MODEL_GEMINI_FAST,
           {
             promptTokenCount: response.usageMetadata?.promptTokenCount ?? 0,
-            candidatesTokenCount:
-              response.usageMetadata?.candidatesTokenCount ?? 0,
+            candidatesTokenCount: response.usageMetadata?.candidatesTokenCount ?? 0,
           },
           {
             profileId,
             durationMs: apiDuration,
           },
         ),
-      )
+      );
 
-      const parsed = JSON.parse(response.text!)
-      const parseResult = matchResultSchema.safeParse(parsed)
+      const parsed = JSON.parse(response.text!);
+      const parseResult = matchResultSchema.safeParse(parsed);
       if (!parseResult.success) {
         const issues = parseResult.error.issues
-          .map((i) => `${i.path.join('.')}: ${i.message}`)
-          .join('; ')
-        throw new Error(
-          `LLM validation failed for batch ${batchIndex}: ${issues}`,
-        )
+          .map((i) => `${i.path.join(".")}: ${i.message}`)
+          .join("; ");
+        throw new Error(`LLM validation failed for batch ${batchIndex}: ${issues}`);
       }
-      const batchResult = parseResult.data
+      const batchResult = parseResult.data;
 
       if (!Array.isArray(batchResult.matches)) {
-        log('error', 'processMatchBatch: invalid matches array', {
+        log("error", "processMatchBatch: invalid matches array", {
           batchIndex,
-        })
+        });
       } else {
         for (const match of batchResult.matches) {
-          const oppId = match.opportunityId as Id<'opportunities'>
-          const validOpp = batch.some((o: { _id: string }) => o._id === oppId)
+          const oppId = match.opportunityId as Id<"opportunities">;
+          const validOpp = batch.some((o: { _id: string }) => o._id === oppId);
           if (validOpp) {
             batchMatches.push({
               ...match,
               opportunityId: oppId,
-            })
+            });
           }
         }
       }
     } catch (error: unknown) {
       if (isRateLimitError(error) && retryCount < MAX_RETRIES) {
-        const delay = Math.min(
-          RATE_LIMIT_DELAY_MS * Math.pow(2, retryCount),
-          60000,
-        )
-        log('warn', 'processMatchBatch: rate limited, retrying', {
+        const delay = Math.min(RATE_LIMIT_DELAY_MS * Math.pow(2, retryCount), 60000);
+        log("warn", "processMatchBatch: rate limited, retrying", {
           batchIndex,
           retryCount: retryCount + 1,
           delayMs: delay,
-        })
-        await ctx.scheduler.runAfter(
-          delay,
-          internal.matching.compute.processMatchBatch,
-          {
-            ...chainArgs,
-            batchIndex,
-            retryCount: retryCount + 1,
-          },
-        )
-        return
+        });
+        await ctx.scheduler.runAfter(delay, internal.matching.compute.processMatchBatch, {
+          ...chainArgs,
+          batchIndex,
+          retryCount: retryCount + 1,
+        });
+        return;
       }
 
       if (retryCount === 0) {
-        log('warn', 'processMatchBatch: error, retrying once', {
+        log("warn", "processMatchBatch: error, retrying once", {
           batchIndex,
           error: error instanceof Error ? error.message : String(error),
-        })
+        });
         await ctx.scheduler.runAfter(
           RATE_LIMIT_DELAY_MS,
           internal.matching.compute.processMatchBatch,
@@ -584,14 +555,14 @@ export const processMatchBatch = internalAction({
             batchIndex,
             retryCount: 1,
           },
-        )
-        return
+        );
+        return;
       }
 
-      log('error', 'processMatchBatch: skipping batch after retry failure', {
+      log("error", "processMatchBatch: skipping batch after retry failure", {
         batchIndex,
         error: error instanceof Error ? error.message : String(error),
-      })
+      });
     }
 
     // Always save batch results — even if empty (failed batch), so progress
@@ -608,25 +579,23 @@ export const processMatchBatch = internalAction({
       })),
       modelVersion: MODEL_GEMINI_FAST,
       isLastBatch,
-    })
+    });
 
     // On last batch of first-ever computation, send immediate email with great matches
     if (isLastBatch && isFirstComputation) {
-      await ctx.scheduler.runAfter(
-        0,
-        internal.emails.batchActions.sendFirstMatchEmail,
-        { profileId },
-      )
+      await ctx.scheduler.runAfter(0, internal.emails.batchActions.sendFirstMatchEmail, {
+        profileId,
+      });
     }
 
-    const durationMs = Date.now() - startTime
-    log('info', 'processMatchBatch', {
+    const durationMs = Date.now() - startTime;
+    log("info", "processMatchBatch", {
       batchIndex,
       totalBatches,
       durationMs,
       matchCount: batchMatches.length,
       isLastBatch,
-    })
+    });
 
     // Schedule the next batch unless this was the last one
     if (!isLastBatch) {
@@ -638,7 +607,7 @@ export const processMatchBatch = internalAction({
           batchIndex: batchIndex + 1,
           retryCount: 0,
         },
-      )
+      );
     }
   },
-})
+});
