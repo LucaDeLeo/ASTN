@@ -8,6 +8,7 @@ import {
   ChevronRight,
   ClipboardCopy,
   ClipboardList,
+  Link2,
   Download,
   FileText,
   Loader2,
@@ -306,6 +307,21 @@ function OpportunityEditPage() {
                 Edit Opportunity
               </h1>
               <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    const url = `${window.location.origin}/org/${slug}/apply/${oppId}`
+                    try {
+                      await navigator.clipboard.writeText(url)
+                      toast.success('Application link copied')
+                    } catch {
+                      toast.error('Failed to copy link')
+                    }
+                  }}
+                >
+                  <Link2 className="size-4 mr-2" />
+                  Copy Link
+                </Button>
                 <Button
                   variant="outline"
                   onClick={handleExport}

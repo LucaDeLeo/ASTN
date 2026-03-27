@@ -1,7 +1,16 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useQuery } from 'convex/react'
 import { useState } from 'react'
-import { Building2, FileText, Pencil, Plus, Shield, Star } from 'lucide-react'
+import { toast } from 'sonner'
+import {
+  Building2,
+  FileText,
+  Link2,
+  Pencil,
+  Plus,
+  Shield,
+  Star,
+} from 'lucide-react'
 import { api } from '../../../../../../convex/_generated/api'
 import { OpportunityFormDialog } from '~/components/opportunities/OpportunityFormDialog'
 import { AuthHeader } from '~/components/layout/auth-header'
@@ -189,6 +198,23 @@ function AdminOpportunitiesPage() {
                       >
                         {opp.status}
                       </Badge>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        title="Copy application link"
+                        onClick={async () => {
+                          const url = `${window.location.origin}/org/${slug}/apply/${opp._id}`
+                          try {
+                            await navigator.clipboard.writeText(url)
+                            toast.success('Application link copied')
+                          } catch {
+                            toast.error('Failed to copy link')
+                          }
+                        }}
+                      >
+                        <Link2 className="size-4" />
+                      </Button>
 
                       <Button variant="ghost" size="sm" asChild>
                         <Link
