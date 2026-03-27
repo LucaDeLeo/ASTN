@@ -24,7 +24,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.vite-plus
-          key: viteplus-0.1.12
+          key: viteplus-0.1.14
 
       - name: Setup Vite+
         if: steps.cache-viteplus.outputs.cache-hit != 'true'
