@@ -45,6 +45,9 @@ agent/astn-agent
 # Bun build artifacts
 *.bun-build
 
+# SvelteKit
+.svelte-kit/
+
 # Claude Code
 .claude/worktrees/
 
