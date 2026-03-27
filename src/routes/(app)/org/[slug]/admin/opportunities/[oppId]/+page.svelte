@@ -2,6 +2,7 @@
   import { page } from '$app/state'
   import { toast } from 'svelte-sonner'
   import { useConvexClient, useQuery } from 'convex-svelte'
+  import { Link2 } from 'lucide-svelte'
   import { api } from '$convex/_generated/api'
 
   const convex = useConvexClient()
@@ -62,6 +63,25 @@
           <h1 class="font-display text-3xl text-slate-950">{opportunity.data.title}</h1>
           <p class="mt-2 text-sm text-slate-600">{applicationCount.data ?? 0} applications</p>
         </div>
+        <button
+          type="button"
+          class="flex items-center gap-1.5 rounded-full border border-border px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+          title="Copy application link"
+          onclick={async () => {
+            const opp = opportunity.data
+            if (!opp) return
+            const url = `${window.location.origin}/org/${slug}/apply/${opp._id}`
+            try {
+              await navigator.clipboard.writeText(url)
+              toast.success('Application link copied')
+            } catch {
+              toast.error('Failed to copy link')
+            }
+          }}
+        >
+          <Link2 class="size-4" />
+          Copy link
+        </button>
         <a href={`/org/${slug}/admin/opportunities/${opportunity.data._id}/email`} class="rounded-full border border-border px-4 py-2 text-sm font-medium text-slate-700">Email applicants</a>
       </div>
     </section>
