@@ -49,6 +49,8 @@ export default defineConfig(
       "dist/**",
       "static/**",
       "public/**",
+      ".claude/**",
+      "agent/**",
     ],
   },
 );

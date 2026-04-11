@@ -173,7 +173,7 @@
 
     <div class="mt-3 flex items-center justify-between gap-3">
       <p class="text-xs text-slate-500">
-        <span class="font-medium text-slate-700">Shortcut:</span> {`Cmd/Ctrl + .`}
+        <span class="font-medium text-slate-700">Shortcut:</span> Cmd/Ctrl + .
       </p>
       <button
         type="submit"
