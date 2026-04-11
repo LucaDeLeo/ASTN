@@ -95,7 +95,7 @@ function Home() {
 
 const clerkAppearance = {
   variables: {
-    colorPrimary: 'oklch(0.7 0.16 30)',
+    colorPrimary: '#dc6f3c',
     borderRadius: '0.75rem',
     fontFamily: "'Plus Jakarta Sans Variable', system-ui, sans-serif",
   },
