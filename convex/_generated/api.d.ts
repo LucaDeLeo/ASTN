@@ -58,6 +58,7 @@ import type * as course_sidebar from "../course/sidebar.js";
 import type * as course_sidebarAgent from "../course/sidebarAgent.js";
 import type * as course_sidebarQueries from "../course/sidebarQueries.js";
 import type * as coworkingSpaces from "../coworkingSpaces.js";
+import type * as crm from "../crm.js";
 import type * as crons from "../crons.js";
 import type * as emails_adminBroadcast from "../emails/adminBroadcast.js";
 import type * as emails_adminBroadcastAction from "../emails/adminBroadcastAction.js";
@@ -139,6 +140,7 @@ import type * as orgs_queries from "../orgs/queries.js";
 import type * as orgs_stats from "../orgs/stats.js";
 import type * as platformAdmin_llmCosts from "../platformAdmin/llmCosts.js";
 import type * as platformAdmin_users from "../platformAdmin/users.js";
+import type * as playground from "../playground.js";
 import type * as profiles from "../profiles.js";
 import type * as programs from "../programs.js";
 import type * as push from "../push.js";
@@ -206,6 +208,7 @@ declare const fullApi: ApiFromModules<{
   "course/sidebarAgent": typeof course_sidebarAgent;
   "course/sidebarQueries": typeof course_sidebarQueries;
   coworkingSpaces: typeof coworkingSpaces;
+  crm: typeof crm;
   crons: typeof crons;
   "emails/adminBroadcast": typeof emails_adminBroadcast;
   "emails/adminBroadcastAction": typeof emails_adminBroadcastAction;
@@ -287,6 +290,7 @@ declare const fullApi: ApiFromModules<{
   "orgs/stats": typeof orgs_stats;
   "platformAdmin/llmCosts": typeof platformAdmin_llmCosts;
   "platformAdmin/users": typeof platformAdmin_users;
+  playground: typeof playground;
   profiles: typeof profiles;
   programs: typeof programs;
   push: typeof push;
@@ -5494,7 +5498,6 @@ export declare const components: {
         {
           delay: number;
           functionArgs: any;
-          functionHandle: string;
           functionPath: string;
           key: string;
           mode: "eager" | "fixed" | "sliding";
