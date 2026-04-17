@@ -1,27 +1,8 @@
 import { v } from 'convex/values'
 import { mutation, query } from './_generated/server'
-
-// ── Helpers ──
-
-/** Assert the caller is an admin of the given org. Returns the org doc. */
-async function assertOrgAdmin(
-  ctx: { db: any },
-  args: { orgId: any; userId: string },
-) {
-  const membership = await ctx.db
-    .query('orgMemberships')
-    .withIndex('by_user_and_org', (q: any) =>
-      q.eq('userId', args.userId).eq('orgId', args.orgId),
-    )
-    .unique()
-  if (!membership || membership.role !== 'admin') {
-    throw new Error('Not an admin of this organization')
-  }
-  return membership
-}
+import { requireOrgAdmin } from './lib/auth'
 
 // ── Queries ──
-// TODO: Re-enable auth checks after testing (currently bypassed for demo)
 
 export const listPersonas = query({
   args: {
@@ -30,6 +11,8 @@ export const listPersonas = query({
   },
   returns: v.any(),
   handler: async (ctx, args) => {
+    await requireOrgAdmin(ctx, args.orgId)
+
     if (args.searchQuery && args.searchQuery.trim().length > 0) {
       return await ctx.db
         .query('crmPersonas')
@@ -53,7 +36,7 @@ export const listOrganizaciones = query({
   },
   returns: v.any(),
   handler: async (ctx, args) => {
-    // TODO: Re-enable auth checks after testing
+    await requireOrgAdmin(ctx, args.orgId)
 
     if (args.searchQuery && args.searchQuery.trim().length > 0) {
       return await ctx.db
@@ -78,7 +61,7 @@ export const listOportunidades = query({
   },
   returns: v.any(),
   handler: async (ctx, args) => {
-    // TODO: Re-enable auth checks after testing
+    await requireOrgAdmin(ctx, args.orgId)
 
     if (args.searchQuery && args.searchQuery.trim().length > 0) {
       return await ctx.db
@@ -102,7 +85,7 @@ export const listFormularios = query({
   },
   returns: v.any(),
   handler: async (ctx, args) => {
-    // TODO: Re-enable auth checks after testing
+    await requireOrgAdmin(ctx, args.orgId)
 
     return await ctx.db
       .query('crmFormularios')
@@ -120,7 +103,7 @@ export const insertPersonas = mutation({
   },
   returns: v.number(),
   handler: async (ctx, args) => {
-    // TODO: Re-enable auth checks after testing
+    await requireOrgAdmin(ctx, args.orgId)
 
     const now = Date.now()
     let count = 0
@@ -149,14 +132,13 @@ export const insertPersonas = mutation({
           record.disponibilidad ?? record.Disponibilidad ?? undefined,
         ubicacion: record.ubicacion ?? record['Ubicación'] ?? undefined,
         enBuenosAires:
-          record.enBuenosAires ??
-          (record['En Buenos Aires'] === 'Sí' ||
-          record['En Buenos Aires'] === 'sí'
-            ? true
-            : record['En Buenos Aires'] === 'No' ||
-                record['En Buenos Aires'] === 'no'
-              ? false
-              : undefined),
+          typeof record.enBuenosAires === 'boolean'
+            ? record.enBuenosAires
+            : record.enBuenosAires === 'Sí' || record.enBuenosAires === 'sí'
+              ? true
+              : record.enBuenosAires === 'No' || record.enBuenosAires === 'no'
+                ? false
+                : undefined,
         fuenteContacto:
           record.fuenteContacto ?? record['Fuente de contacto'] ?? undefined,
         personaContacto:
@@ -185,7 +167,7 @@ export const insertOrganizaciones = mutation({
   },
   returns: v.number(),
   handler: async (ctx, args) => {
-    // TODO: Re-enable auth checks after testing
+    await requireOrgAdmin(ctx, args.orgId)
 
     const now = Date.now()
     let count = 0
@@ -220,7 +202,7 @@ export const insertOportunidades = mutation({
   },
   returns: v.number(),
   handler: async (ctx, args) => {
-    // TODO: Re-enable auth checks after testing
+    await requireOrgAdmin(ctx, args.orgId)
 
     const now = Date.now()
     let count = 0
@@ -252,7 +234,7 @@ export const insertFormularios = mutation({
   },
   returns: v.number(),
   handler: async (ctx, args) => {
-    // TODO: Re-enable auth checks after testing
+    await requireOrgAdmin(ctx, args.orgId)
 
     const now = Date.now()
     let count = 0
@@ -281,6 +263,162 @@ export const insertFormularios = mutation({
   },
 })
 
+// ── Mutations: Create single (manual row) ──
+
+export const createEmptyPersona = mutation({
+  args: { orgId: v.id('organizations') },
+  returns: v.id('crmPersonas'),
+  handler: async (ctx, args) => {
+    await requireOrgAdmin(ctx, args.orgId)
+    const now = Date.now()
+    return await ctx.db.insert('crmPersonas', {
+      orgId: args.orgId,
+      nombre: 'Nueva persona',
+      createdAt: now,
+      updatedAt: now,
+    })
+  },
+})
+
+export const createEmptyOrganizacion = mutation({
+  args: { orgId: v.id('organizations') },
+  returns: v.id('crmOrganizaciones'),
+  handler: async (ctx, args) => {
+    await requireOrgAdmin(ctx, args.orgId)
+    const now = Date.now()
+    return await ctx.db.insert('crmOrganizaciones', {
+      orgId: args.orgId,
+      nombre: 'Nueva organización',
+      createdAt: now,
+      updatedAt: now,
+    })
+  },
+})
+
+export const createEmptyOportunidad = mutation({
+  args: { orgId: v.id('organizations') },
+  returns: v.id('crmOportunidades'),
+  handler: async (ctx, args) => {
+    await requireOrgAdmin(ctx, args.orgId)
+    const now = Date.now()
+    return await ctx.db.insert('crmOportunidades', {
+      orgId: args.orgId,
+      titulo: 'Nueva oportunidad',
+      createdAt: now,
+      updatedAt: now,
+    })
+  },
+})
+
+export const createEmptyFormulario = mutation({
+  args: { orgId: v.id('organizations') },
+  returns: v.id('crmFormularios'),
+  handler: async (ctx, args) => {
+    await requireOrgAdmin(ctx, args.orgId)
+    const now = Date.now()
+    return await ctx.db.insert('crmFormularios', {
+      orgId: args.orgId,
+      datos: {},
+      createdAt: now,
+      updatedAt: now,
+    })
+  },
+})
+
+// Create with fields — used by the admin agent
+export const createPersonaWithFields = mutation({
+  args: {
+    orgId: v.id('organizations'),
+    fields: v.any(),
+  },
+  returns: v.id('crmPersonas'),
+  handler: async (ctx, args) => {
+    await requireOrgAdmin(ctx, args.orgId)
+    const now = Date.now()
+    const f = args.fields || {}
+    return await ctx.db.insert('crmPersonas', {
+      orgId: args.orgId,
+      nombre: f.nombre ?? 'Sin nombre',
+      email: f.email,
+      telefono: f.telefono,
+      linkedin: f.linkedin,
+      paginaWeb: f.paginaWeb,
+      vinculo: f.vinculo,
+      rol: f.rol,
+      cargo: f.cargo,
+      campoProfesional: f.campoProfesional,
+      etapaProfesional: f.etapaProfesional,
+      experienciaAiSafety: f.experienciaAiSafety,
+      habilidades: f.habilidades,
+      intereses: f.intereses,
+      disponibilidad: f.disponibilidad,
+      ubicacion: f.ubicacion,
+      enBuenosAires:
+        typeof f.enBuenosAires === 'boolean' ? f.enBuenosAires : undefined,
+      fuenteContacto: f.fuenteContacto,
+      personaContacto: f.personaContacto,
+      primerContacto: f.primerContacto,
+      organizacionesAsociadas: f.organizacionesAsociadas,
+      participoEn: f.participoEn,
+      notas: f.notas,
+      createdAt: now,
+      updatedAt: now,
+    })
+  },
+})
+
+export const createOrganizacionWithFields = mutation({
+  args: {
+    orgId: v.id('organizations'),
+    fields: v.any(),
+  },
+  returns: v.id('crmOrganizaciones'),
+  handler: async (ctx, args) => {
+    await requireOrgAdmin(ctx, args.orgId)
+    const now = Date.now()
+    const f = args.fields || {}
+    return await ctx.db.insert('crmOrganizaciones', {
+      orgId: args.orgId,
+      nombre: f.nombre ?? 'Sin nombre',
+      descripcion: f.descripcion,
+      personasClave: f.personasClave,
+      tipo: f.tipo,
+      posturaIA: f.posturaIA,
+      tematicaPrincipal: f.tematicaPrincipal,
+      notas: f.notas,
+      resumenAuto: f.resumenAuto,
+      createdAt: now,
+      updatedAt: now,
+    })
+  },
+})
+
+export const createOportunidadWithFields = mutation({
+  args: {
+    orgId: v.id('organizations'),
+    fields: v.any(),
+  },
+  returns: v.id('crmOportunidades'),
+  handler: async (ctx, args) => {
+    await requireOrgAdmin(ctx, args.orgId)
+    const now = Date.now()
+    const f = args.fields || {}
+    return await ctx.db.insert('crmOportunidades', {
+      orgId: args.orgId,
+      titulo: f.titulo ?? 'Sin título',
+      organizacion: f.organizacion,
+      ubicacion: f.ubicacion,
+      tipo: f.tipo,
+      categoria: f.categoria,
+      fecha: f.fecha,
+      estado: f.estado,
+      fuente: f.fuente,
+      createdAt: now,
+      updatedAt: now,
+    })
+  },
+})
+
 // ── Mutations: Update (inline edit) ──
 
 export const updatePersona = mutation({
@@ -291,7 +429,9 @@ export const updatePersona = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    // TODO: Re-enable auth checks after testing
+    const record = await ctx.db.get(args.id)
+    if (!record) throw new Error('Persona not found')
+    await requireOrgAdmin(ctx, record.orgId)
 
     await ctx.db.patch(args.id, {
       [args.field]: args.value,
@@ -309,7 +449,9 @@ export const updateOrganizacion = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    // TODO: Re-enable auth checks after testing
+    const record = await ctx.db.get(args.id)
+    if (!record) throw new Error('Organización not found')
+    await requireOrgAdmin(ctx, record.orgId)
 
     await ctx.db.patch(args.id, {
       [args.field]: args.value,
@@ -327,12 +469,64 @@ export const updateOportunidad = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    // TODO: Re-enable auth checks after testing
+    const record = await ctx.db.get(args.id)
+    if (!record) throw new Error('Oportunidad not found')
+    await requireOrgAdmin(ctx, record.orgId)
 
     await ctx.db.patch(args.id, {
       [args.field]: args.value,
       updatedAt: Date.now(),
     })
+    return null
+  },
+})
+
+// ── Mutations: Delete single ──
+
+export const deletePersona = mutation({
+  args: { id: v.id('crmPersonas') },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const record = await ctx.db.get(args.id)
+    if (!record) throw new Error('Persona not found')
+    await requireOrgAdmin(ctx, record.orgId)
+    await ctx.db.delete(args.id)
+    return null
+  },
+})
+
+export const deleteOrganizacion = mutation({
+  args: { id: v.id('crmOrganizaciones') },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const record = await ctx.db.get(args.id)
+    if (!record) throw new Error('Organización not found')
+    await requireOrgAdmin(ctx, record.orgId)
+    await ctx.db.delete(args.id)
+    return null
+  },
+})
+
+export const deleteOportunidad = mutation({
+  args: { id: v.id('crmOportunidades') },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const record = await ctx.db.get(args.id)
+    if (!record) throw new Error('Oportunidad not found')
+    await requireOrgAdmin(ctx, record.orgId)
+    await ctx.db.delete(args.id)
+    return null
+  },
+})
+
+export const deleteFormulario = mutation({
+  args: { id: v.id('crmFormularios') },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const record = await ctx.db.get(args.id)
+    if (!record) throw new Error('Formulario not found')
+    await requireOrgAdmin(ctx, record.orgId)
+    await ctx.db.delete(args.id)
     return null
   },
 })
@@ -351,7 +545,7 @@ export const clearCollection = mutation({
   },
   returns: v.number(),
   handler: async (ctx, args) => {
-    // TODO: Re-enable auth checks after testing
+    await requireOrgAdmin(ctx, args.orgId)
 
     const records = await ctx.db
       .query(args.collection)
@@ -378,7 +572,7 @@ export const getStats = query({
     formularios: v.number(),
   }),
   handler: async (ctx, args) => {
-    // TODO: Re-enable auth checks after testing
+    await requireOrgAdmin(ctx, args.orgId)
 
     const [personas, organizaciones, oportunidades, formularios] =
       await Promise.all([

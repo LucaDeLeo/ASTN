@@ -3,16 +3,39 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
+  Columns3,
+  EyeOff,
+  Filter,
   Pencil,
+  Plus,
+  Save,
   Search,
+  Trash2,
+  View,
   X,
 } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { Button } from '~/components/ui/button'
+import { Checkbox } from '~/components/ui/checkbox'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '~/components/ui/dropdown-menu'
 import { Input } from '~/components/ui/input'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '~/components/ui/popover'
 import { Spinner } from '~/components/ui/spinner'
+import { Textarea } from '~/components/ui/textarea'
 
 type Collection =
   | 'personas'
@@ -75,6 +98,18 @@ interface CrmTableProps {
 
 type SortDir = 'asc' | 'desc' | null
 
+interface SavedView {
+  id: string
+  name: string
+  hiddenColumns: string[]
+  filters: Record<string, string>
+  sortKey: string | null
+  sortDir: SortDir
+}
+
+const viewsStorageKey = (orgId: string, collection: Collection) =>
+  `crm-views:${orgId}:${collection}`
+
 export function CrmTable({ orgId, collection }: CrmTableProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [sortKey, setSortKey] = useState<string | null>(null)
@@ -84,6 +119,85 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
     field: string
   } | null>(null)
   const [editValue, setEditValue] = useState('')
+  const [hiddenColumns, setHiddenColumns] = useState<string[]>([])
+  const [filters, setFilters] = useState<Record<string, string>>({})
+  const [showFilters, setShowFilters] = useState(false)
+  const [savedViews, setSavedViews] = useState<SavedView[]>([])
+  const [activeViewId, setActiveViewId] = useState<string | null>(null)
+
+  // Load saved views from localStorage on mount / collection change
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const raw = localStorage.getItem(viewsStorageKey(orgId, collection))
+    if (raw) {
+      try {
+        setSavedViews(JSON.parse(raw))
+      } catch {
+        setSavedViews([])
+      }
+    } else {
+      setSavedViews([])
+    }
+    setActiveViewId(null)
+    setHiddenColumns([])
+    setFilters({})
+  }, [orgId, collection])
+
+  const persistViews = useCallback(
+    (views: SavedView[]) => {
+      localStorage.setItem(
+        viewsStorageKey(orgId, collection),
+        JSON.stringify(views),
+      )
+      setSavedViews(views)
+    },
+    [orgId, collection],
+  )
+
+  const applyView = useCallback((view: SavedView) => {
+    setHiddenColumns(view.hiddenColumns)
+    setFilters(view.filters)
+    setSortKey(view.sortKey)
+    setSortDir(view.sortDir)
+    setActiveViewId(view.id)
+  }, [])
+
+  const resetView = useCallback(() => {
+    setHiddenColumns([])
+    setFilters({})
+    setSortKey(null)
+    setSortDir(null)
+    setActiveViewId(null)
+  }, [])
+
+  const saveCurrentAsView = useCallback(() => {
+    const name = window.prompt('Nombre de la vista:')
+    if (!name) return
+    const newView: SavedView = {
+      id: Math.random().toString(36).slice(2, 10),
+      name,
+      hiddenColumns,
+      filters,
+      sortKey,
+      sortDir,
+    }
+    persistViews([...savedViews, newView])
+    setActiveViewId(newView.id)
+  }, [hiddenColumns, filters, sortKey, sortDir, savedViews, persistViews])
+
+  const deleteView = useCallback(
+    (id: string) => {
+      persistViews(savedViews.filter((v) => v.id !== id))
+      if (activeViewId === id) setActiveViewId(null)
+    },
+    [savedViews, activeViewId, persistViews],
+  )
+
+  const toggleColumn = useCallback((key: string) => {
+    setHiddenColumns((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
+    )
+  }, [])
 
   // Queries — pick the right one based on collection
   const personas = useQuery(
@@ -113,6 +227,12 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
   const updatePersona = useMutation(api.crm.updatePersona)
   const updateOrganizacion = useMutation(api.crm.updateOrganizacion)
   const updateOportunidad = useMutation(api.crm.updateOportunidad)
+  const createEmptyPersona = useMutation(api.crm.createEmptyPersona)
+  const createEmptyOrganizacion = useMutation(api.crm.createEmptyOrganizacion)
+  const createEmptyOportunidad = useMutation(api.crm.createEmptyOportunidad)
+  const deletePersona = useMutation(api.crm.deletePersona)
+  const deleteOrganizacion = useMutation(api.crm.deleteOrganizacion)
+  const deleteOportunidad = useMutation(api.crm.deleteOportunidad)
 
   const rawData = useMemo(() => {
     switch (collection) {
@@ -129,20 +249,38 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
     }
   }, [collection, personas, organizaciones, oportunidades, formularios])
 
-  // Apply client-side sort
+  // Apply client-side filters + sort
   const data = useMemo(() => {
-    if (!rawData || !sortKey || !sortDir) return rawData
-    return [...rawData].sort((a: any, b: any) => {
-      const aVal = (a[sortKey] ?? '').toString().toLowerCase()
-      const bVal = (b[sortKey] ?? '').toString().toLowerCase()
-      if (aVal < bVal) return sortDir === 'asc' ? -1 : 1
-      if (aVal > bVal) return sortDir === 'asc' ? 1 : -1
-      return 0
-    })
-  }, [rawData, sortKey, sortDir])
+    if (!rawData) return rawData
+    let result = rawData as any[]
+
+    const activeFilters = Object.entries(filters).filter(([, v]) => v.trim())
+    if (activeFilters.length > 0) {
+      result = result.filter((record) =>
+        activeFilters.every(([field, needle]) => {
+          const value = field.startsWith('datos.')
+            ? record.datos?.[field.slice(6)]
+            : record[field]
+          if (value == null) return false
+          return String(value).toLowerCase().includes(needle.toLowerCase())
+        }),
+      )
+    }
+
+    if (sortKey && sortDir) {
+      result = [...result].sort((a: any, b: any) => {
+        const aVal = (a[sortKey] ?? '').toString().toLowerCase()
+        const bVal = (b[sortKey] ?? '').toString().toLowerCase()
+        if (aVal < bVal) return sortDir === 'asc' ? -1 : 1
+        if (aVal > bVal) return sortDir === 'asc' ? 1 : -1
+        return 0
+      })
+    }
+    return result
+  }, [rawData, sortKey, sortDir, filters])
 
   // For formularios, dynamically extract column keys from datos
-  const columns = useMemo(() => {
+  const allColumns = useMemo(() => {
     if (collection !== 'formularios') return COLUMN_CONFIG[collection]
     const base = COLUMN_CONFIG.formularios
     if (!data || data.length === 0) return base
@@ -162,6 +300,114 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
 
     return [...base, ...extraCols]
   }, [collection, data])
+
+  const columns = useMemo(
+    () => allColumns.filter((col) => !hiddenColumns.includes(col.key)),
+    [allColumns, hiddenColumns],
+  )
+
+  // Auto-generated views for Formularios, one per distinct `fuente`.
+  // Ordered by "recency": parses the most-recent `periodo` of each fuente
+  // (format "1c2025", "2c2024", etc.) → year*10+semester. Falls back to
+  // parsing the fuente name itself, then to timestamp.
+  const distinctFuentes = useMemo(() => {
+    if (collection !== 'formularios' || !rawData) return []
+    const parsePeriodo = (s: string | undefined): number => {
+      if (!s) return 0
+      const m = s.match(/(\d)\s*c\s*(\d{4})/i)
+      if (m) return parseInt(m[2], 10) * 10 + parseInt(m[1], 10)
+      const year = s.match(/(\d{4})/)
+      return year ? parseInt(year[1], 10) * 10 : 0
+    }
+    const rankByFuente = new Map<string, number>()
+    const tsByFuente = new Map<string, number>()
+    for (const r of rawData as any[]) {
+      if (!r.fuente || typeof r.fuente !== 'string') continue
+      const rank = Math.max(parsePeriodo(r.periodo), parsePeriodo(r.fuente))
+      const prev = rankByFuente.get(r.fuente) ?? 0
+      if (rank > prev) rankByFuente.set(r.fuente, rank)
+      const ts = r.createdAt ?? r._creationTime ?? 0
+      const prevTs = tsByFuente.get(r.fuente) ?? 0
+      if (ts > prevTs) tsByFuente.set(r.fuente, ts)
+    }
+    const fuentes = Array.from(rankByFuente.keys())
+    fuentes.sort((a, b) => {
+      const ra = rankByFuente.get(a) ?? 0
+      const rb = rankByFuente.get(b) ?? 0
+      if (rb !== ra) return rb - ra
+      const ta = tsByFuente.get(a) ?? 0
+      const tb = tsByFuente.get(b) ?? 0
+      if (tb !== ta) return tb - ta
+      return a.localeCompare(b)
+    })
+    return fuentes
+  }, [collection, rawData])
+
+  const applyFuenteView = useCallback(
+    (fuenteValue: string) => {
+      if (!rawData) return
+      const filtered = (rawData as any[]).filter(
+        (r) => r.fuente === fuenteValue,
+      )
+      const emptyKeys = allColumns
+        .filter((col) => {
+          return !filtered.some((record) => {
+            const val = col.key.startsWith('datos.')
+              ? record.datos?.[col.key.slice(6)]
+              : record[col.key]
+            return val != null && val !== ''
+          })
+        })
+        .map((c) => c.key)
+      setFilters({ fuente: fuenteValue })
+      setHiddenColumns(emptyKeys)
+      setSortKey(null)
+      setSortDir(null)
+      setActiveViewId(`auto-fuente-${fuenteValue}`)
+    },
+    [rawData, allColumns],
+  )
+
+  const hideEmptyColumns = useCallback(() => {
+    if (!data || (data as any[]).length === 0) return
+    const emptyKeys = allColumns
+      .filter((col) => {
+        return !(data as any[]).some((record) => {
+          const val = col.key.startsWith('datos.')
+            ? record.datos?.[col.key.slice(6)]
+            : record[col.key]
+          return val != null && val !== ''
+        })
+      })
+      .map((c) => c.key)
+    setHiddenColumns((prev) => Array.from(new Set([...prev, ...emptyKeys])))
+  }, [allColumns, data])
+
+  // Distinct values per visible column — for chip-based filter shortcuts.
+  // Only show chips if column has a small-to-medium number of distinct values.
+  const MAX_DISTINCT_FOR_CHIPS = 20
+  const MAX_CHIPS_SHOWN = 12
+  const distinctByColumn = useMemo(() => {
+    const out: Record<string, { value: string; count: number }[]> = {}
+    if (!rawData) return out
+    for (const col of columns) {
+      const counts = new Map<string, number>()
+      for (const record of rawData as any[]) {
+        const raw = col.key.startsWith('datos.')
+          ? record.datos?.[col.key.slice(6)]
+          : record[col.key]
+        if (raw == null || raw === '') continue
+        const str = String(raw)
+        counts.set(str, (counts.get(str) ?? 0) + 1)
+      }
+      if (counts.size === 0 || counts.size > MAX_DISTINCT_FOR_CHIPS) continue
+      out[col.key] = Array.from(counts.entries())
+        .map(([value, count]) => ({ value, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, MAX_CHIPS_SHOWN)
+    }
+    return out
+  }, [rawData, columns])
 
   const handleSort = useCallback(
     (key: string) => {
@@ -190,34 +436,61 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
   const handleSaveEdit = useCallback(async () => {
     if (!editingCell) return
     const { id, field } = editingCell
-    try {
+    // Capture previous value for undo
+    const record = (rawData as any[] | null | undefined)?.find(
+      (r) => r._id === id,
+    )
+    const previousValue = record ? record[field] : undefined
+    const newValue = editValue
+    const unchanged = String(previousValue ?? '') === String(newValue ?? '')
+
+    const runUpdate = async (value: any) => {
       if (collection === 'personas') {
         await updatePersona({
           id: id as Id<'crmPersonas'>,
           field,
-          value: editValue,
+          value,
         })
       } else if (collection === 'organizaciones') {
         await updateOrganizacion({
           id: id as Id<'crmOrganizaciones'>,
           field,
-          value: editValue,
+          value,
         })
       } else if (collection === 'oportunidades') {
         await updateOportunidad({
           id: id as Id<'crmOportunidades'>,
           field,
-          value: editValue,
+          value,
+        })
+      }
+    }
+
+    try {
+      await runUpdate(newValue)
+      if (!unchanged) {
+        toast.success('Guardado', {
+          duration: 6000,
+          action: {
+            label: 'Deshacer',
+            onClick: () => {
+              runUpdate(previousValue).catch((e) =>
+                console.error('Undo failed:', e),
+              )
+            },
+          },
         })
       }
     } catch (err) {
       console.error('Failed to save:', err)
+      toast.error('Error al guardar')
     }
     setEditingCell(null)
   }, [
     editingCell,
     editValue,
     collection,
+    rawData,
     updatePersona,
     updateOrganizacion,
     updateOportunidad,
@@ -226,6 +499,57 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
   const handleCancelEdit = useCallback(() => {
     setEditingCell(null)
   }, [])
+
+  const handleDeleteRow = useCallback(
+    async (id: string) => {
+      try {
+        if (collection === 'personas') {
+          await deletePersona({ id: id as Id<'crmPersonas'> })
+        } else if (collection === 'organizaciones') {
+          await deleteOrganizacion({ id: id as Id<'crmOrganizaciones'> })
+        } else if (collection === 'oportunidades') {
+          await deleteOportunidad({ id: id as Id<'crmOportunidades'> })
+        }
+        toast.success('Eliminado')
+      } catch (err) {
+        console.error('Failed to delete:', err)
+        toast.error('Error al eliminar')
+      }
+    },
+    [collection, deletePersona, deleteOrganizacion, deleteOportunidad],
+  )
+
+  const handleAddRow = useCallback(async () => {
+    try {
+      let newId: string | null = null
+      if (collection === 'personas') {
+        newId = await createEmptyPersona({ orgId })
+      } else if (collection === 'organizaciones') {
+        newId = await createEmptyOrganizacion({ orgId })
+      } else if (collection === 'oportunidades') {
+        newId = await createEmptyOportunidad({ orgId })
+      }
+      if (newId) {
+        const firstField = collection === 'oportunidades' ? 'titulo' : 'nombre'
+        const defaultValue =
+          collection === 'personas'
+            ? 'Nueva persona'
+            : collection === 'organizaciones'
+              ? 'Nueva organización'
+              : 'Nueva oportunidad'
+        setEditingCell({ id: newId, field: firstField })
+        setEditValue(defaultValue)
+      }
+    } catch (err) {
+      console.error('Failed to add row:', err)
+    }
+  }, [
+    collection,
+    orgId,
+    createEmptyPersona,
+    createEmptyOrganizacion,
+    createEmptyOportunidad,
+  ])
 
   const getCellValue = (record: any, key: string): string => {
     if (key.startsWith('datos.')) {
@@ -252,23 +576,336 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
 
   return (
     <div className="space-y-4">
-      {/* Search bar */}
-      {collection !== 'formularios' && (
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input
-            placeholder={`Search ${collection}...`}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+      {/* Toolbar: search + views + columns + filter + new row */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {collection !== 'formularios' && (
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              placeholder={`Search ${collection}...`}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="size-4" />
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Views dropdown */}
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              <View className="size-4 mr-1.5" />
+              {activeViewId
+                ? (savedViews.find((v) => v.id === activeViewId)?.name ??
+                  'Vista')
+                : 'Vistas'}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-64 p-0">
+            <div
+              className="p-1 max-h-96 overflow-y-auto"
+              onWheel={(e) => e.stopPropagation()}
             >
-              <X className="size-4" />
-            </button>
+              <DropdownMenuLabel>Vistas guardadas</DropdownMenuLabel>
+              {savedViews.length === 0 ? (
+                <DropdownMenuItem disabled>
+                  Sin vistas guardadas
+                </DropdownMenuItem>
+              ) : (
+                savedViews.map((view) => (
+                  <div
+                    key={view.id}
+                    className="flex items-center justify-between"
+                  >
+                    <DropdownMenuItem
+                      className="flex-1"
+                      onClick={() => applyView(view)}
+                    >
+                      {view.name}
+                      {activeViewId === view.id && (
+                        <span className="ml-auto text-xs text-muted-foreground">
+                          ●
+                        </span>
+                      )}
+                    </DropdownMenuItem>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        deleteView(view.id)
+                      }}
+                      className="px-2 text-muted-foreground hover:text-destructive"
+                      title="Eliminar vista"
+                    >
+                      <Trash2 className="size-3" />
+                    </button>
+                  </div>
+                ))
+              )}
+              {distinctFuentes.length > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>
+                    Por fuente (automáticas)
+                  </DropdownMenuLabel>
+                  {distinctFuentes.map((fuente) => {
+                    const viewId = `auto-fuente-${fuente}`
+                    return (
+                      <DropdownMenuItem
+                        key={fuente}
+                        onClick={() => applyFuenteView(fuente)}
+                      >
+                        <span className="truncate">{fuente}</span>
+                        {activeViewId === viewId && (
+                          <span className="ml-auto text-xs text-muted-foreground">
+                            ●
+                          </span>
+                        )}
+                      </DropdownMenuItem>
+                    )
+                  })}
+                </>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={saveCurrentAsView}>
+                <Save className="size-4 mr-2" />
+                Guardar vista actual
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={resetView}>
+                <X className="size-4 mr-2" />
+                Restablecer
+              </DropdownMenuItem>
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Columns visibility */}
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Columns3 className="size-4 mr-1.5" />
+              Columnas
+              {hiddenColumns.length > 0 && (
+                <span className="ml-1 text-xs text-muted-foreground">
+                  ({allColumns.length - hiddenColumns.length}/
+                  {allColumns.length})
+                </span>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56 p-0">
+            <div className="p-1">
+              <DropdownMenuLabel>Mostrar columnas</DropdownMenuLabel>
+              <div className="flex gap-1 px-2 pb-1">
+                <button
+                  onClick={() =>
+                    hiddenColumns.length > 0
+                      ? setHiddenColumns([])
+                      : setHiddenColumns(allColumns.map((c) => c.key))
+                  }
+                  className="flex-1 text-xs text-muted-foreground hover:text-foreground border rounded px-2 py-1"
+                >
+                  {hiddenColumns.length > 0 ? 'Mostrar todas' : 'Ocultar todas'}
+                </button>
+                <button
+                  onClick={hideEmptyColumns}
+                  className="flex-1 text-xs text-muted-foreground hover:text-foreground border rounded px-2 py-1 flex items-center justify-center gap-1"
+                  title="Oculta columnas que no tienen datos en las filas visibles"
+                >
+                  <EyeOff className="size-3" />
+                  Ocultar vacías
+                </button>
+              </div>
+              <DropdownMenuSeparator />
+            </div>
+            <div
+              className="max-h-72 overflow-y-auto px-1 pb-1"
+              onWheel={(e) => e.stopPropagation()}
+            >
+              {allColumns.map((col) => (
+                <DropdownMenuItem
+                  key={col.key}
+                  onSelect={(e) => {
+                    e.preventDefault()
+                    toggleColumn(col.key)
+                  }}
+                  className="gap-2"
+                >
+                  <Checkbox
+                    checked={!hiddenColumns.includes(col.key)}
+                    onCheckedChange={() => toggleColumn(col.key)}
+                  />
+                  <span className="truncate">{col.label}</span>
+                </DropdownMenuItem>
+              ))}
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Filters toggle */}
+        <Button
+          variant={showFilters ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setShowFilters((v) => !v)}
+        >
+          <Filter className="size-4 mr-1.5" />
+          Filtros
+          {Object.values(filters).filter((v) => v.trim()).length > 0 && (
+            <span className="ml-1 text-xs">
+              ({Object.values(filters).filter((v) => v.trim()).length})
+            </span>
+          )}
+        </Button>
+
+        {collection !== 'formularios' && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void handleAddRow()}
+          >
+            <Plus className="size-4 mr-1.5" />
+            Nueva fila
+          </Button>
+        )}
+      </div>
+
+      {/* Filters panel (compact: only active filters) */}
+      {showFilters && (
+        <div className="border rounded-lg p-3 bg-muted/30 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Plus className="size-3.5 mr-1" />
+                  Agregar filtro
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56 p-0">
+                <DropdownMenuLabel>Elegir columna</DropdownMenuLabel>
+                <div
+                  className="max-h-72 overflow-y-auto p-1"
+                  onWheel={(e) => e.stopPropagation()}
+                >
+                  {columns
+                    .filter((c) => !(c.key in filters))
+                    .map((col) => (
+                      <DropdownMenuItem
+                        key={col.key}
+                        onSelect={() =>
+                          setFilters((prev) => ({ ...prev, [col.key]: '' }))
+                        }
+                      >
+                        <span className="truncate">{col.label}</span>
+                      </DropdownMenuItem>
+                    ))}
+                  {columns.filter((c) => !(c.key in filters)).length === 0 && (
+                    <DropdownMenuItem disabled>
+                      Todas las columnas ya tienen filtro
+                    </DropdownMenuItem>
+                  )}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {Object.keys(filters).length > 0 && (
+              <button
+                onClick={() => setFilters({})}
+                className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+              >
+                <X className="size-3" />
+                Limpiar todos
+              </button>
+            )}
+          </div>
+
+          {Object.keys(filters).length === 0 ? (
+            <p className="text-xs text-muted-foreground italic">
+              Sin filtros activos. Usá "Agregar filtro" para arrancar.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {Object.keys(filters).map((key) => {
+                const col = allColumns.find((c) => c.key === key)
+                if (!col) return null
+                const chips = distinctByColumn[key] ?? []
+                const currentFilter = filters[key] ?? ''
+                return (
+                  <div
+                    key={key}
+                    className="bg-background border rounded-md p-2 space-y-1.5"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium w-32 truncate">
+                        {col.label}
+                      </span>
+                      <Input
+                        placeholder="contiene..."
+                        value={currentFilter}
+                        onChange={(e) =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            [key]: e.target.value,
+                          }))
+                        }
+                        className="h-7 text-sm flex-1"
+                        autoFocus
+                      />
+                      <button
+                        onClick={() =>
+                          setFilters((prev) => {
+                            const next = { ...prev }
+                            delete next[key]
+                            return next
+                          })
+                        }
+                        className="text-muted-foreground hover:text-destructive"
+                        title="Quitar filtro"
+                      >
+                        <X className="size-4" />
+                      </button>
+                    </div>
+                    {chips.length > 0 && (
+                      <div className="flex flex-wrap gap-1 pl-[8.5rem]">
+                        {chips.map((chip) => {
+                          const isActive = currentFilter === chip.value
+                          return (
+                            <button
+                              key={chip.value}
+                              onClick={() =>
+                                setFilters((prev) => ({
+                                  ...prev,
+                                  [key]: isActive ? '' : chip.value,
+                                }))
+                              }
+                              className={`text-xs rounded-full px-2 py-0.5 border transition-colors truncate max-w-[14rem] ${
+                                isActive
+                                  ? 'bg-primary text-primary-foreground border-primary'
+                                  : 'bg-background hover:bg-accent text-muted-foreground'
+                              }`}
+                              title={chip.value}
+                            >
+                              {chip.value}
+                              <span
+                                className={`ml-1 ${isActive ? 'opacity-70' : 'opacity-50'}`}
+                              >
+                                {chip.count}
+                              </span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
           )}
         </div>
       )}
@@ -303,13 +940,14 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
                   </div>
                 </th>
               ))}
+              {isEditable && <th className="w-8" />}
             </tr>
           </thead>
           <tbody className="divide-y">
             {records.length === 0 ? (
               <tr>
                 <td
-                  colSpan={columns.length}
+                  colSpan={columns.length + (isEditable ? 1 : 0)}
                   className="text-center py-12 text-muted-foreground"
                 >
                   No records yet. Import data to get started.
@@ -317,30 +955,52 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
               </tr>
             ) : (
               records.map((record: any) => (
-                <tr key={record._id} className="hover:bg-muted/30">
+                <tr key={record._id} className="group/row hover:bg-muted/30">
                   {columns.map((col) => {
                     const isEditing =
                       editingCell?.id === record._id &&
                       editingCell?.field === col.key
                     const cellValue = getCellValue(record, col.key)
 
+                    const isLongValue =
+                      cellValue.length > 60 || cellValue.includes('\n')
+
                     return (
                       <td
                         key={col.key}
-                        className="px-3 py-2 max-w-[250px] group relative"
+                        className="px-3 py-2 max-w-[250px] group relative align-top"
                       >
                         {isEditing ? (
-                          <div className="flex items-center gap-1">
-                            <Input
-                              value={editValue}
-                              onChange={(e) => setEditValue(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') void handleSaveEdit()
-                                if (e.key === 'Escape') handleCancelEdit()
-                              }}
-                              className="h-7 text-sm"
-                              autoFocus
-                            />
+                          <div className="flex items-start gap-1">
+                            {isLongValue ? (
+                              <Textarea
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (
+                                    e.key === 'Enter' &&
+                                    (e.metaKey || e.ctrlKey)
+                                  ) {
+                                    e.preventDefault()
+                                    void handleSaveEdit()
+                                  }
+                                  if (e.key === 'Escape') handleCancelEdit()
+                                }}
+                                className="text-sm min-h-[80px] w-full"
+                                autoFocus
+                              />
+                            ) : (
+                              <Input
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') void handleSaveEdit()
+                                  if (e.key === 'Escape') handleCancelEdit()
+                                }}
+                                className="h-7 text-sm"
+                                autoFocus
+                              />
+                            )}
                             <Button
                               size="sm"
                               variant="ghost"
@@ -352,13 +1012,31 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
                           </div>
                         ) : (
                           <div className="flex items-center gap-1">
-                            <span className="truncate" title={cellValue}>
-                              {cellValue || (
-                                <span className="text-muted-foreground/50">
-                                  —
+                            {cellValue ? (
+                              isLongValue ? (
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <button className="truncate text-left hover:text-foreground transition-colors cursor-pointer">
+                                      {cellValue}
+                                    </button>
+                                  </PopoverTrigger>
+                                  <PopoverContent
+                                    align="start"
+                                    className="w-96 max-h-96 overflow-auto whitespace-pre-wrap text-sm"
+                                  >
+                                    {cellValue}
+                                  </PopoverContent>
+                                </Popover>
+                              ) : (
+                                <span className="truncate" title={cellValue}>
+                                  {cellValue}
                                 </span>
-                              )}
-                            </span>
+                              )
+                            ) : (
+                              <span className="truncate text-muted-foreground/50">
+                                —
+                              </span>
+                            )}
                             {isEditable && !col.key.startsWith('datos.') && (
                               <button
                                 onClick={() =>
@@ -378,6 +1056,37 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
                       </td>
                     )
                   })}
+                  {isEditable && (
+                    <td className="px-2 text-center align-middle">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            className="opacity-0 group-hover/row:opacity-100 focus:opacity-100 transition-opacity text-muted-foreground hover:text-destructive p-1 inline-flex"
+                            title="Eliminar fila"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          side="left"
+                          align="start"
+                          className="w-auto p-2"
+                        >
+                          <div className="flex items-center gap-2 text-sm">
+                            <span>¿Eliminar esta fila?</span>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="h-7"
+                              onClick={() => void handleDeleteRow(record._id)}
+                            >
+                              Sí
+                            </Button>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </td>
+                  )}
                 </tr>
               ))
             )}

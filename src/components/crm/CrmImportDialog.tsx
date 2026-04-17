@@ -25,6 +25,33 @@ type TargetCollection =
   | 'oportunidades'
   | 'formularios'
 
+// Convex rejects field names with accents, spaces, or control chars.
+// Normalize Excel headers to safe camelCase keys.
+function normalizeKey(key: string): string {
+  const stripped = key
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\w\s]/g, '')
+    .trim()
+  if (!stripped) return '_empty'
+  const parts = stripped.split(/\s+/)
+  return parts
+    .map((word, i) =>
+      i === 0
+        ? word.toLowerCase()
+        : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+    )
+    .join('')
+}
+
+function normalizeRow(row: Record<string, any>): Record<string, any> {
+  const out: Record<string, any> = {}
+  for (const [key, value] of Object.entries(row)) {
+    out[normalizeKey(key)] = value
+  }
+  return out
+}
+
 interface CrmImportDialogProps {
   orgId: Id<'organizations'>
   open: boolean
@@ -144,7 +171,7 @@ export function CrmImportDialog({
         let totalInserted = 0
 
         for (let i = 0; i < sheet.rows.length; i += BATCH_SIZE) {
-          const batch = sheet.rows.slice(i, i + BATCH_SIZE)
+          const batch = sheet.rows.slice(i, i + BATCH_SIZE).map(normalizeRow)
 
           switch (target) {
             case 'personas':

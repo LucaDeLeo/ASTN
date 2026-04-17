@@ -59,7 +59,6 @@ import type * as course_sidebarAgent from "../course/sidebarAgent.js";
 import type * as course_sidebarQueries from "../course/sidebarQueries.js";
 import type * as coworkingSpaces from "../coworkingSpaces.js";
 import type * as crm from "../crm.js";
-import type * as crmSeed from "../crmSeed.js";
 import type * as crons from "../crons.js";
 import type * as emails_adminBroadcast from "../emails/adminBroadcast.js";
 import type * as emails_adminBroadcastAction from "../emails/adminBroadcastAction.js";
@@ -210,7 +209,6 @@ declare const fullApi: ApiFromModules<{
   "course/sidebarQueries": typeof course_sidebarQueries;
   coworkingSpaces: typeof coworkingSpaces;
   crm: typeof crm;
-  crmSeed: typeof crmSeed;
   crons: typeof crons;
   "emails/adminBroadcast": typeof emails_adminBroadcast;
   "emails/adminBroadcastAction": typeof emails_adminBroadcastAction;
