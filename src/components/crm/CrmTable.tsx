@@ -171,7 +171,7 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
   }, [])
 
   const saveCurrentAsView = useCallback(() => {
-    const name = window.prompt('Nombre de la vista:')
+    const name = window.prompt('View name:')
     if (!name) return
     const newView: SavedView = {
       id: Math.random().toString(36).slice(2, 10),
@@ -469,10 +469,10 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
     try {
       await runUpdate(newValue)
       if (!unchanged) {
-        toast.success('Guardado', {
+        toast.success('Saved', {
           duration: 6000,
           action: {
-            label: 'Deshacer',
+            label: 'Undo',
             onClick: () => {
               runUpdate(previousValue).catch((e) =>
                 console.error('Undo failed:', e),
@@ -483,7 +483,7 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
       }
     } catch (err) {
       console.error('Failed to save:', err)
-      toast.error('Error al guardar')
+      toast.error('Failed to save')
     }
     setEditingCell(null)
   }, [
@@ -510,10 +510,10 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
         } else if (collection === 'oportunidades') {
           await deleteOportunidad({ id: id as Id<'crmOportunidades'> })
         }
-        toast.success('Eliminado')
+        toast.success('Deleted')
       } catch (err) {
         console.error('Failed to delete:', err)
-        toast.error('Error al eliminar')
+        toast.error('Failed to delete')
       }
     },
     [collection, deletePersona, deleteOrganizacion, deleteOportunidad],
@@ -533,10 +533,10 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
         const firstField = collection === 'oportunidades' ? 'titulo' : 'nombre'
         const defaultValue =
           collection === 'personas'
-            ? 'Nueva persona'
+            ? 'New person'
             : collection === 'organizaciones'
-              ? 'Nueva organización'
-              : 'Nueva oportunidad'
+              ? 'New organization'
+              : 'New opportunity'
         setEditingCell({ id: newId, field: firstField })
         setEditValue(defaultValue)
       }
@@ -558,7 +558,7 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
       return val != null ? String(val) : ''
     }
     const val = record[key]
-    if (val === true) return 'Sí'
+    if (val === true) return 'Yes'
     if (val === false) return 'No'
     return val != null ? String(val) : ''
   }
@@ -605,8 +605,8 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
               <View className="size-4 mr-1.5" />
               {activeViewId
                 ? (savedViews.find((v) => v.id === activeViewId)?.name ??
-                  'Vista')
-                : 'Vistas'}
+                  'View')
+                : 'Views'}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64 p-0">
@@ -614,11 +614,9 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
               className="p-1 max-h-96 overflow-y-auto"
               onWheel={(e) => e.stopPropagation()}
             >
-              <DropdownMenuLabel>Vistas guardadas</DropdownMenuLabel>
+              <DropdownMenuLabel>Saved views</DropdownMenuLabel>
               {savedViews.length === 0 ? (
-                <DropdownMenuItem disabled>
-                  Sin vistas guardadas
-                </DropdownMenuItem>
+                <DropdownMenuItem disabled>No saved views</DropdownMenuItem>
               ) : (
                 savedViews.map((view) => (
                   <div
@@ -642,7 +640,7 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
                         deleteView(view.id)
                       }}
                       className="px-2 text-muted-foreground hover:text-destructive"
-                      title="Eliminar vista"
+                      title="Delete view"
                     >
                       <Trash2 className="size-3" />
                     </button>
@@ -652,9 +650,7 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
               {distinctFuentes.length > 0 && (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuLabel>
-                    Por fuente (automáticas)
-                  </DropdownMenuLabel>
+                  <DropdownMenuLabel>By source (auto)</DropdownMenuLabel>
                   {distinctFuentes.map((fuente) => {
                     const viewId = `auto-fuente-${fuente}`
                     return (
@@ -676,11 +672,11 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={saveCurrentAsView}>
                 <Save className="size-4 mr-2" />
-                Guardar vista actual
+                Save current view
               </DropdownMenuItem>
               <DropdownMenuItem onClick={resetView}>
                 <X className="size-4 mr-2" />
-                Restablecer
+                Reset
               </DropdownMenuItem>
             </div>
           </DropdownMenuContent>
@@ -691,7 +687,7 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
               <Columns3 className="size-4 mr-1.5" />
-              Columnas
+              Columns
               {hiddenColumns.length > 0 && (
                 <span className="ml-1 text-xs text-muted-foreground">
                   ({allColumns.length - hiddenColumns.length}/
@@ -702,7 +698,7 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56 p-0">
             <div className="p-1">
-              <DropdownMenuLabel>Mostrar columnas</DropdownMenuLabel>
+              <DropdownMenuLabel>Show columns</DropdownMenuLabel>
               <div className="flex gap-1 px-2 pb-1">
                 <button
                   onClick={() =>
@@ -712,15 +708,15 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
                   }
                   className="flex-1 text-xs text-muted-foreground hover:text-foreground border rounded px-2 py-1"
                 >
-                  {hiddenColumns.length > 0 ? 'Mostrar todas' : 'Ocultar todas'}
+                  {hiddenColumns.length > 0 ? 'Show all' : 'Hide all'}
                 </button>
                 <button
                   onClick={hideEmptyColumns}
                   className="flex-1 text-xs text-muted-foreground hover:text-foreground border rounded px-2 py-1 flex items-center justify-center gap-1"
-                  title="Oculta columnas que no tienen datos en las filas visibles"
+                  title="Hide columns with no data in visible rows"
                 >
                   <EyeOff className="size-3" />
-                  Ocultar vacías
+                  Hide empty
                 </button>
               </div>
               <DropdownMenuSeparator />
@@ -756,7 +752,7 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
           onClick={() => setShowFilters((v) => !v)}
         >
           <Filter className="size-4 mr-1.5" />
-          Filtros
+          Filters
           {Object.values(filters).filter((v) => v.trim()).length > 0 && (
             <span className="ml-1 text-xs">
               ({Object.values(filters).filter((v) => v.trim()).length})
@@ -771,7 +767,7 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
             onClick={() => void handleAddRow()}
           >
             <Plus className="size-4 mr-1.5" />
-            Nueva fila
+            New row
           </Button>
         )}
       </div>
@@ -784,11 +780,11 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm">
                   <Plus className="size-3.5 mr-1" />
-                  Agregar filtro
+                  Add filter
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56 p-0">
-                <DropdownMenuLabel>Elegir columna</DropdownMenuLabel>
+                <DropdownMenuLabel>Pick column</DropdownMenuLabel>
                 <div
                   className="max-h-72 overflow-y-auto p-1"
                   onWheel={(e) => e.stopPropagation()}
@@ -807,7 +803,7 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
                     ))}
                   {columns.filter((c) => !(c.key in filters)).length === 0 && (
                     <DropdownMenuItem disabled>
-                      Todas las columnas ya tienen filtro
+                      All columns already filtered
                     </DropdownMenuItem>
                   )}
                 </div>
@@ -820,14 +816,14 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
                 className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
               >
                 <X className="size-3" />
-                Limpiar todos
+                Clear all
               </button>
             )}
           </div>
 
           {Object.keys(filters).length === 0 ? (
             <p className="text-xs text-muted-foreground italic">
-              Sin filtros activos. Usá "Agregar filtro" para arrancar.
+              No active filters. Click "Add filter" to get started.
             </p>
           ) : (
             <div className="space-y-2">
@@ -846,7 +842,7 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
                         {col.label}
                       </span>
                       <Input
-                        placeholder="contiene..."
+                        placeholder="contains..."
                         value={currentFilter}
                         onChange={(e) =>
                           setFilters((prev) => ({
@@ -866,7 +862,7 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
                           })
                         }
                         className="text-muted-foreground hover:text-destructive"
-                        title="Quitar filtro"
+                        title="Remove filter"
                       >
                         <X className="size-4" />
                       </button>
@@ -1062,7 +1058,7 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
                         <PopoverTrigger asChild>
                           <button
                             className="opacity-0 group-hover/row:opacity-100 focus:opacity-100 transition-opacity text-muted-foreground hover:text-destructive p-1 inline-flex"
-                            title="Eliminar fila"
+                            title="Delete row"
                           >
                             <Trash2 className="size-3.5" />
                           </button>
@@ -1073,14 +1069,14 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
                           className="w-auto p-2"
                         >
                           <div className="flex items-center gap-2 text-sm">
-                            <span>¿Eliminar esta fila?</span>
+                            <span>Delete this row?</span>
                             <Button
                               size="sm"
                               variant="destructive"
                               className="h-7"
                               onClick={() => void handleDeleteRow(record._id)}
                             >
-                              Sí
+                              Yes
                             </Button>
                           </div>
                         </PopoverContent>

@@ -19,15 +19,15 @@ const collectionSchema = z
 function formatRecord(col: CrmCollection, r: any): string {
   const id = r._id
   if (col === 'personas') {
-    return `- **${r.nombre ?? 'Sin nombre'}** | ${r.email ?? '—'} | ${r.rol ?? '—'} | ID: ${id}`
+    return `- **${r.nombre ?? 'No name'}** | ${r.email ?? '—'} | ${r.rol ?? '—'} | ID: ${id}`
   }
   if (col === 'organizaciones') {
-    return `- **${r.nombre ?? 'Sin nombre'}** | ${r.tipo ?? '—'} | ${r.tematicaPrincipal ?? '—'} | ID: ${id}`
+    return `- **${r.nombre ?? 'No name'}** | ${r.tipo ?? '—'} | ${r.tematicaPrincipal ?? '—'} | ID: ${id}`
   }
   if (col === 'oportunidades') {
-    return `- **${r.titulo ?? 'Sin título'}** | ${r.organizacion ?? '—'} | ${r.estado ?? '—'} | ${r.categoria ?? '—'} | ID: ${id}`
+    return `- **${r.titulo ?? 'No title'}** | ${r.organizacion ?? '—'} | ${r.estado ?? '—'} | ${r.categoria ?? '—'} | ID: ${id}`
   }
-  return `- **${r.participante ?? '(sin participante)'}** | ${r.periodo ?? '—'} | ${r.fuente ?? '—'} | ID: ${id}`
+  return `- **${r.participante ?? '(no participant)'}** | ${r.periodo ?? '—'} | ${r.fuente ?? '—'} | ID: ${id}`
 }
 
 async function listCollection(
@@ -216,7 +216,7 @@ export function createCrmTools(
               : args.fields.nombre
           const approved = await confirmAction(confirmCtx, {
             action: 'Create CRM Record',
-            description: `Create new ${args.collection.slice(0, -1)}: "${primary ?? '(sin nombre)'}"`,
+            description: `Create new ${args.collection.slice(0, -1)}: "${primary ?? '(no name)'}"`,
             details: {
               collection: args.collection,
               fields: args.fields,

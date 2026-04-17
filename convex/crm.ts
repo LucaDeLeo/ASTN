@@ -110,7 +110,7 @@ export const insertPersonas = mutation({
     for (const record of args.records) {
       await ctx.db.insert('crmPersonas', {
         orgId: args.orgId,
-        nombre: record.nombre ?? record.Nombre ?? 'Sin nombre',
+        nombre: record.nombre ?? record.Nombre ?? 'No name',
         email: record.email ?? record.Email ?? undefined,
         telefono: record.telefono ?? record['Teléfono'] ?? undefined,
         linkedin: record.linkedin ?? record.LinkedIn ?? undefined,
@@ -174,7 +174,7 @@ export const insertOrganizaciones = mutation({
     for (const record of args.records) {
       await ctx.db.insert('crmOrganizaciones', {
         orgId: args.orgId,
-        nombre: record.nombre ?? record.Nombre ?? 'Sin nombre',
+        nombre: record.nombre ?? record.Nombre ?? 'No name',
         descripcion: record.descripcion ?? record['Descripción'] ?? undefined,
         personasClave:
           record.personasClave ?? record['Personas clave'] ?? undefined,
@@ -209,7 +209,7 @@ export const insertOportunidades = mutation({
     for (const record of args.records) {
       await ctx.db.insert('crmOportunidades', {
         orgId: args.orgId,
-        titulo: record.titulo ?? record['Título'] ?? 'Sin título',
+        titulo: record.titulo ?? record['Título'] ?? 'No title',
         organizacion:
           record.organizacion ?? record['Organización'] ?? undefined,
         ubicacion: record.ubicacion ?? record['Ubicación'] ?? undefined,
@@ -273,7 +273,7 @@ export const createEmptyPersona = mutation({
     const now = Date.now()
     return await ctx.db.insert('crmPersonas', {
       orgId: args.orgId,
-      nombre: 'Nueva persona',
+      nombre: 'New person',
       createdAt: now,
       updatedAt: now,
     })
@@ -288,7 +288,7 @@ export const createEmptyOrganizacion = mutation({
     const now = Date.now()
     return await ctx.db.insert('crmOrganizaciones', {
       orgId: args.orgId,
-      nombre: 'Nueva organización',
+      nombre: 'New organization',
       createdAt: now,
       updatedAt: now,
     })
@@ -303,7 +303,7 @@ export const createEmptyOportunidad = mutation({
     const now = Date.now()
     return await ctx.db.insert('crmOportunidades', {
       orgId: args.orgId,
-      titulo: 'Nueva oportunidad',
+      titulo: 'New opportunity',
       createdAt: now,
       updatedAt: now,
     })
@@ -338,7 +338,7 @@ export const createPersonaWithFields = mutation({
     const f = args.fields || {}
     return await ctx.db.insert('crmPersonas', {
       orgId: args.orgId,
-      nombre: f.nombre ?? 'Sin nombre',
+      nombre: f.nombre ?? 'No name',
       email: f.email,
       telefono: f.telefono,
       linkedin: f.linkedin,
@@ -379,7 +379,7 @@ export const createOrganizacionWithFields = mutation({
     const f = args.fields || {}
     return await ctx.db.insert('crmOrganizaciones', {
       orgId: args.orgId,
-      nombre: f.nombre ?? 'Sin nombre',
+      nombre: f.nombre ?? 'No name',
       descripcion: f.descripcion,
       personasClave: f.personasClave,
       tipo: f.tipo,
@@ -405,7 +405,7 @@ export const createOportunidadWithFields = mutation({
     const f = args.fields || {}
     return await ctx.db.insert('crmOportunidades', {
       orgId: args.orgId,
-      titulo: f.titulo ?? 'Sin título',
+      titulo: f.titulo ?? 'No title',
       organizacion: f.organizacion,
       ubicacion: f.ubicacion,
       tipo: f.tipo,
