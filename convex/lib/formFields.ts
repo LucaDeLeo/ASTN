@@ -55,6 +55,16 @@ export const formFieldValidator = v.object({
 
 export const formFieldsValidator = v.array(formFieldValidator)
 
+// Identity fields pre-filled from the live ASTN profile. Stripped from any
+// other pre-fill source so the profile stays the canonical identity record.
+export const PROFILE_PREFILL_KEYS = [
+  'firstName',
+  'lastName',
+  'email',
+  'location',
+  'profileUrl',
+] as const
+
 // --- Helpers ---
 
 /** Return only fields that collect input (excludes section_header) */
@@ -85,6 +95,108 @@ export function validateResponses(
     }
   }
   return errors
+}
+
+/**
+ * Filter a prior-application `responses` map down to values that can be
+ * safely re-used as pre-fill for a new form. Drops keys not present in
+ * `fields`, values whose shape doesn't match the current field's kind, and
+ * enum values that are no longer in the current `options` list.
+ */
+export function sanitizeResponsesForForm(
+  fields: Array<FormField>,
+  responses: Record<string, unknown>,
+  stripKeys: ReadonlyArray<string> = [],
+): Record<string, unknown> {
+  const stripped = new Set(stripKeys)
+  const out: Record<string, unknown> = {}
+  const byKey = new Map(fields.map((f) => [f.key, f] as const))
+
+  for (const [key, value] of Object.entries(responses ?? {})) {
+    if (stripped.has(key)) continue
+    const field = byKey.get(key)
+    if (!field || field.kind === 'section_header') continue
+    // Defensive: never carry storage-id-shaped blobs (no file kind exists today).
+    if (
+      value &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      '_storage' in (value as Record<string, unknown>)
+    ) {
+      continue
+    }
+
+    switch (field.kind) {
+      case 'text':
+      case 'textarea':
+      case 'email':
+      case 'url': {
+        if (typeof value === 'string') out[key] = value
+        break
+      }
+      case 'rating': {
+        // DynamicFormRenderer emits 1..5 regardless of custom labels.
+        if (
+          typeof value === 'number' &&
+          Number.isInteger(value) &&
+          value >= 1 &&
+          value <= 5
+        ) {
+          out[key] = value
+        }
+        break
+      }
+      case 'nps': {
+        if (
+          typeof value === 'number' &&
+          Number.isInteger(value) &&
+          value >= 0 &&
+          value <= 10
+        ) {
+          out[key] = value
+        }
+        break
+      }
+      case 'checkbox': {
+        if (typeof value === 'boolean') out[key] = value
+        break
+      }
+      case 'select': {
+        const options = field.options ?? []
+        if (typeof value === 'string' && options.includes(value)) {
+          out[key] = value
+        }
+        break
+      }
+      case 'radio': {
+        // DynamicFormRenderer stores Yes/No radios as booleans; custom
+        // options store the selected string.
+        const options = field.options ?? ['Yes', 'No']
+        if (typeof value === 'boolean') {
+          if (options.includes('Yes') && options.includes('No')) {
+            out[key] = value
+          }
+        } else if (typeof value === 'string' && options.includes(value)) {
+          out[key] = value
+        }
+        break
+      }
+      case 'multi_select': {
+        const options = new Set(field.options ?? [])
+        if (Array.isArray(value)) {
+          const kept = value.filter(
+            (v): v is string => typeof v === 'string' && options.has(v),
+          )
+          const max = field.maxSelections ?? Infinity
+          const truncated = kept.slice(0, max)
+          if (truncated.length > 0) out[key] = truncated
+        }
+        break
+      }
+    }
+  }
+
+  return out
 }
 
 /**

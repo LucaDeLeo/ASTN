@@ -6,6 +6,11 @@ import { rateLimiter } from './lib/rateLimiter'
 import { internal } from './_generated/api'
 import type { MutationCtx } from './_generated/server'
 import type { Id } from './_generated/dataModel'
+import {
+  PROFILE_PREFILL_KEYS,
+  sanitizeResponsesForForm,
+  type FormField,
+} from './lib/formFields'
 
 /**
  * Auto-add a poll respondent for a new application if an open poll exists.
@@ -335,6 +340,71 @@ export const getMyApplication = query({
         q.eq('userId', userId).eq('opportunityId', opportunityId),
       )
       .first()
+  },
+})
+
+// Pre-fill the apply form from the user's previous application to this
+// opportunity's configured source opportunity. Returns null when there is
+// no source configured, no prior application, or nothing to carry over.
+export const getPreviousResponsesForOpportunity = query({
+  args: { opportunityId: v.id('orgOpportunities') },
+  returns: v.union(
+    v.null(),
+    v.object({
+      sourceOpportunityTitle: v.string(),
+      responses: v.any(),
+    }),
+  ),
+  handler: async (ctx, { opportunityId }) => {
+    const userId = await getUserId(ctx)
+    if (!userId) return null
+
+    const opportunity = await ctx.db.get('orgOpportunities', opportunityId)
+    if (!opportunity) return null
+
+    // Mirror the visibility rules from `orgOpportunities.get`: active opps
+    // are public to authed users, draft/closed require org-admin membership.
+    if (opportunity.status !== 'active') {
+      const membership = await ctx.db
+        .query('orgMemberships')
+        .withIndex('by_user', (q) => q.eq('userId', userId))
+        .filter((q) => q.eq(q.field('orgId'), opportunity.orgId))
+        .first()
+      if (!membership || membership.role !== 'admin') return null
+    }
+
+    const sourceId = opportunity.sourceOpportunityId
+    if (!sourceId) return null
+
+    // Use the most-recent prior application: `by_user_and_opportunity` is
+    // non-unique because `claimGuestApplications` can attach a userId to an
+    // older guest row alongside a later authenticated submission.
+    const [source, prior] = await Promise.all([
+      ctx.db.get('orgOpportunities', sourceId),
+      ctx.db
+        .query('opportunityApplications')
+        .withIndex('by_user_and_opportunity', (q) =>
+          q.eq('userId', userId).eq('opportunityId', sourceId),
+        )
+        .order('desc')
+        .first(),
+    ])
+    if (!source || source.orgId !== opportunity.orgId) return null
+    if (!prior) return null
+
+    const formFields =
+      (opportunity.formFields as Array<FormField> | undefined) ?? []
+    const cleaned = sanitizeResponsesForForm(
+      formFields,
+      (prior.responses as Record<string, unknown>) ?? {},
+      PROFILE_PREFILL_KEYS,
+    )
+    if (Object.keys(cleaned).length === 0) return null
+
+    return {
+      sourceOpportunityTitle: source.title,
+      responses: cleaned,
+    }
   },
 })
 

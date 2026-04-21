@@ -1,6 +1,37 @@
 import { ConvexError, v } from 'convex/values'
 import { internalQuery, mutation, query } from './_generated/server'
+import type { QueryCtx } from './_generated/server'
+import type { Id } from './_generated/dataModel'
 import { getUserId } from './lib/auth'
+
+// Validate an opportunity cross-reference (redirect target / pre-fill source).
+// Discriminates "caller didn't pass this field" (`set: false` — skip the
+// patch) from "caller passed null to clear" (`set: true, value: undefined`)
+// and "caller passed a valid id" (`set: true, value: id`). Throws on any
+// invalid id (self-reference, missing target, cross-org).
+async function resolveOpportunityRef(
+  ctx: QueryCtx,
+  opts: {
+    value: Id<'orgOpportunities'> | null | undefined
+    selfId: Id<'orgOpportunities'>
+    selfOrgId: Id<'organizations'>
+    label: string
+  },
+): Promise<
+  { set: true; value: Id<'orgOpportunities'> | undefined } | { set: false }
+> {
+  if (opts.value === undefined) return { set: false }
+  if (opts.value === null) return { set: true, value: undefined }
+  if (opts.value === opts.selfId) {
+    throw new ConvexError(`Cannot set an opportunity as its own ${opts.label}`)
+  }
+  const target = await ctx.db.get('orgOpportunities', opts.value)
+  if (!target) throw new ConvexError(`${opts.label} not found`)
+  if (target.orgId !== opts.selfOrgId) {
+    throw new ConvexError(`${opts.label} must be in the same organization`)
+  }
+  return { set: true, value: opts.value }
+}
 
 const opportunityReturnValidator = v.object({
   _id: v.id('orgOpportunities'),
@@ -20,6 +51,7 @@ const opportunityReturnValidator = v.object({
   featured: v.boolean(),
   formFields: v.optional(v.any()),
   redirectOpportunityId: v.optional(v.id('orgOpportunities')),
+  sourceOpportunityId: v.optional(v.id('orgOpportunities')),
   createdAt: v.number(),
   updatedAt: v.number(),
 })
@@ -256,9 +288,15 @@ export const update = mutation({
     redirectOpportunityId: v.optional(
       v.union(v.id('orgOpportunities'), v.null()),
     ),
+    sourceOpportunityId: v.optional(
+      v.union(v.id('orgOpportunities'), v.null()),
+    ),
   },
   returns: v.null(),
-  handler: async (ctx, { id, redirectOpportunityId, ...updates }) => {
+  handler: async (
+    ctx,
+    { id, redirectOpportunityId, sourceOpportunityId, ...updates },
+  ) => {
     const userId = await getUserId(ctx)
     if (!userId) throw new ConvexError('Not authenticated')
 
@@ -276,31 +314,29 @@ export const update = mutation({
       throw new ConvexError('Admin access required')
     }
 
-    const baseUpdate = { ...updates, updatedAt: Date.now() }
+    const [redirect, source] = await Promise.all([
+      resolveOpportunityRef(ctx, {
+        value: redirectOpportunityId,
+        selfId: id,
+        selfOrgId: opportunity.orgId,
+        label: 'Redirect target',
+      }),
+      resolveOpportunityRef(ctx, {
+        value: sourceOpportunityId,
+        selfId: id,
+        selfOrgId: opportunity.orgId,
+        label: 'Pre-fill source',
+      }),
+    ])
 
-    if (redirectOpportunityId === null) {
-      await ctx.db.patch('orgOpportunities', id, {
-        ...baseUpdate,
-        redirectOpportunityId: undefined,
-      })
-    } else if (redirectOpportunityId !== undefined) {
-      if (redirectOpportunityId === id) {
-        throw new ConvexError('Cannot redirect an opportunity to itself')
-      }
-      const target = await ctx.db.get('orgOpportunities', redirectOpportunityId)
-      if (!target) throw new ConvexError('Redirect target not found')
-      if (target.orgId !== opportunity.orgId) {
-        throw new ConvexError(
-          'Redirect target must be in the same organization',
-        )
-      }
-      await ctx.db.patch('orgOpportunities', id, {
-        ...baseUpdate,
-        redirectOpportunityId,
-      })
-    } else {
-      await ctx.db.patch('orgOpportunities', id, baseUpdate)
+    const patch: Record<string, unknown> = {
+      ...updates,
+      updatedAt: Date.now(),
     }
+    if (redirect.set) patch.redirectOpportunityId = redirect.value
+    if (source.set) patch.sourceOpportunityId = source.value
+
+    await ctx.db.patch('orgOpportunities', id, patch)
     return null
   },
 })

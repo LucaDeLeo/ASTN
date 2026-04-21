@@ -95,6 +95,9 @@ function OpportunityEditPage() {
   const [redirectOpportunityId, setRedirectOpportunityId] = useState<
     string | null
   >(null)
+  const [sourceOpportunityId, setSourceOpportunityId] = useState<string | null>(
+    null,
+  )
 
   // Redirect target options: active opportunities in this org (excluding current)
   const activeOpportunities = useQuery(
@@ -104,6 +107,14 @@ function OpportunityEditPage() {
   const redirectTargets = (activeOpportunities ?? []).filter(
     (o) => o._id !== oppId,
   )
+
+  // Source (pre-fill) options: all opportunities in this org (any status),
+  // excluding the current one. Usually the source is a closed prior edition.
+  const allOpportunities = useQuery(
+    api.orgOpportunities.listAllByOrg,
+    org ? { orgId: org._id } : 'skip',
+  )
+  const sourceOptions = (allOpportunities ?? []).filter((o) => o._id !== oppId)
 
   // Form state — form fields
   const [formFields, setFormFields] = useState<Array<FormField>>([])
@@ -129,6 +140,7 @@ function OpportunityEditPage() {
       setExternalUrl(opportunity.externalUrl ?? '')
       setFeatured(opportunity.featured)
       setRedirectOpportunityId(opportunity.redirectOpportunityId ?? null)
+      setSourceOpportunityId(opportunity.sourceOpportunityId ?? null)
       setFormFields(
         (opportunity.formFields as Array<FormField> | undefined) ?? [],
       )
@@ -249,6 +261,8 @@ function OpportunityEditPage() {
         featured,
         redirectOpportunityId:
           redirectOpportunityId as Id<'orgOpportunities'> | null,
+        sourceOpportunityId:
+          sourceOpportunityId as Id<'orgOpportunities'> | null,
       })
       toast.success('Opportunity details saved')
     } catch (err) {
@@ -506,6 +520,41 @@ function OpportunityEditPage() {
                           </p>
                         </div>
                       )}
+
+                      <div className="space-y-1">
+                        <Label>
+                          Pre-fill applicants from a previous opportunity
+                        </Label>
+                        <Select
+                          value={sourceOpportunityId ?? 'none'}
+                          onValueChange={(v) =>
+                            setSourceOpportunityId(v === 'none' ? null : v)
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="No pre-fill source" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">
+                              No pre-fill source
+                            </SelectItem>
+                            {sourceOptions.map((t) => (
+                              <SelectItem key={t._id} value={t._id}>
+                                {t.title}
+                                {t.status !== 'active' ? ` (${t.status})` : ''}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                          Applicants who previously applied to the source will
+                          have matching answers pre-filled here. They can review
+                          and edit before submitting. Only fields with the same
+                          key carry over; identity fields (name, email,
+                          location, LinkedIn) stay sourced from their ASTN
+                          profile.
+                        </p>
+                      </div>
 
                       <Button
                         type="submit"

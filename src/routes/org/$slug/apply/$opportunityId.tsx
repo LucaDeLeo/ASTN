@@ -14,7 +14,10 @@ import {
   UserPlus,
 } from 'lucide-react'
 import { api } from '../../../../../convex/_generated/api'
-import { validateResponses } from '../../../../../convex/lib/formFields'
+import {
+  PROFILE_PREFILL_KEYS,
+  validateResponses,
+} from '../../../../../convex/lib/formFields'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 import type { FormField } from '../../../../../convex/lib/formFields'
 import { AuthHeader } from '~/components/layout/auth-header'
@@ -71,15 +74,6 @@ export const Route = createFileRoute('/org/$slug/apply/$opportunityId')({
   component: ApplyPage,
 })
 
-// Well-known keys that can be pre-filled from profile data
-const PROFILE_PREFILL_KEYS = [
-  'firstName',
-  'lastName',
-  'email',
-  'location',
-  'profileUrl',
-] as const
-
 function ApplyPage() {
   const { slug, opportunityId } = Route.useParams()
   const navigate = useNavigate()
@@ -104,6 +98,12 @@ function ApplyPage() {
       ? { opportunityId: opportunity._id }
       : 'skip',
   )
+  const previousApplication = useQuery(
+    api.opportunityApplications.getPreviousResponsesForOpportunity,
+    isAuthenticated && opportunity
+      ? { opportunityId: opportunity._id }
+      : 'skip',
+  )
   const profile = useQuery(
     api.profiles.getOrCreateProfile,
     isAuthenticated ? {} : 'skip',
@@ -121,27 +121,40 @@ function ApplyPage() {
 
   const formFields = (opportunity?.formFields ?? []) as Array<FormField>
 
-  // Pre-fill from profile + Clerk user (only when authenticated)
+  // Wait for prior-application query to settle so we only flip `preFilled`
+  // once; the profile query may legitimately resolve to `null` for users who
+  // have signed up but not yet edited their profile — we don't block on it.
+  const previousReady = !isAuthenticated || previousApplication !== undefined
   if (
     isAuthenticated &&
-    profile &&
     user &&
     !preFilled &&
-    formFields.length > 0
+    formFields.length > 0 &&
+    previousReady &&
+    profile !== undefined
   ) {
-    const nameParts = (profile.name || user.fullName || '').split(' ')
-    const profileData: Record<string, string> = {
-      firstName: nameParts[0] || '',
-      lastName: nameParts.slice(1).join(' ') || '',
-      email: user.primaryEmailAddress?.emailAddress || '',
-      location: profile.location || '',
-      profileUrl: profile.linkedinUrl || '',
+    const updates: Record<string, unknown> = {}
+
+    const priorResponses =
+      (previousApplication?.responses as Record<string, unknown> | undefined) ??
+      {}
+    for (const [key, value] of Object.entries(priorResponses)) {
+      if (!(key in responses)) updates[key] = value
     }
 
-    const updates: Record<string, unknown> = {}
-    for (const key of PROFILE_PREFILL_KEYS) {
-      if (profileData[key] && !responses[key]) {
-        updates[key] = profileData[key]
+    if (profile) {
+      const nameParts = (profile.name || user.fullName || '').split(' ')
+      const profileData: Record<string, string> = {
+        firstName: nameParts[0] || '',
+        lastName: nameParts.slice(1).join(' ') || '',
+        email: user.primaryEmailAddress?.emailAddress || '',
+        location: profile.location || '',
+        profileUrl: profile.linkedinUrl || '',
+      }
+      for (const key of PROFILE_PREFILL_KEYS) {
+        if (profileData[key] && !responses[key]) {
+          updates[key] = profileData[key]
+        }
       }
     }
 
@@ -150,6 +163,10 @@ function ApplyPage() {
     }
     setPreFilled(true)
   }
+
+  // Banner appears only after pre-fill actually ran so we never promise
+  // carryover that didn't happen.
+  const hasPreviousAppData = preFilled && previousApplication != null
 
   if (!org || !opportunity) {
     return (
@@ -395,13 +412,25 @@ function ApplyPage() {
             </div>
           )}
 
-          {/* Pre-fill banner */}
-          {hasPreFilledData && (
+          {(hasPreviousAppData || hasPreFilledData) && (
             <div className="flex items-start gap-2 rounded-lg bg-blue-50 border border-blue-200 p-3 mb-6 text-sm text-blue-800">
               <Info className="size-4 mt-0.5 shrink-0" />
               <span>
-                Some fields have been pre-filled from your ASTN profile. Review
-                and edit as needed.
+                {hasPreviousAppData ? (
+                  <>
+                    Some answers have been pre-filled from your previous
+                    application to{' '}
+                    <strong>
+                      {previousApplication?.sourceOpportunityTitle}
+                    </strong>
+                    . Review and update as needed.
+                  </>
+                ) : (
+                  <>
+                    Some fields have been pre-filled from your ASTN profile.
+                    Review and edit as needed.
+                  </>
+                )}
               </span>
             </div>
           )}
