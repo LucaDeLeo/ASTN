@@ -6,6 +6,7 @@ import {
   Building2,
   Calendar,
   CalendarCheck,
+  Database,
   FileText,
   FolderPlus,
   MapPin,
@@ -309,6 +310,13 @@ function OrgAdminDashboard() {
               <Link to="/org/$slug/admin/bookings" params={{ slug }}>
                 <CalendarCheck className="size-5 mr-2" />
                 Bookings
+              </Link>
+            </Button>
+
+            <Button variant="outline" className="h-auto py-4" asChild>
+              <Link to="/org/$slug/admin/crm" params={{ slug }}>
+                <Database className="size-5 mr-2" />
+                CRM Database
               </Link>
             </Button>
 

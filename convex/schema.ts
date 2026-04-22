@@ -1778,4 +1778,93 @@ export default defineSchema({
   })
     .index('by_userId', ['userId'])
     .index('by_token', ['token']),
+
+  // ── CRM Tables (org-scoped, independent from platform tables) ──
+
+  // CRM Personas — contacts in the org's network
+  crmPersonas: defineTable({
+    orgId: v.id('organizations'),
+    nombre: v.string(),
+    email: v.optional(v.string()),
+    telefono: v.optional(v.string()),
+    linkedin: v.optional(v.string()),
+    paginaWeb: v.optional(v.string()),
+    vinculo: v.optional(v.string()), // Relationship to org
+    rol: v.optional(v.string()),
+    cargo: v.optional(v.string()),
+    campoProfesional: v.optional(v.string()),
+    etapaProfesional: v.optional(v.string()),
+    experienciaAiSafety: v.optional(v.string()),
+    habilidades: v.optional(v.string()),
+    intereses: v.optional(v.string()),
+    disponibilidad: v.optional(v.string()),
+    ubicacion: v.optional(v.string()),
+    enBuenosAires: v.optional(v.boolean()),
+    fuenteContacto: v.optional(v.string()),
+    personaContacto: v.optional(v.string()),
+    primerContacto: v.optional(v.string()),
+    organizacionesAsociadas: v.optional(v.string()),
+    participoEn: v.optional(v.string()),
+    notas: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_org', ['orgId'])
+    .searchIndex('search_nombre', {
+      searchField: 'nombre',
+      filterFields: ['orgId'],
+    }),
+
+  // CRM Organizaciones — organizations in the ecosystem
+  crmOrganizaciones: defineTable({
+    orgId: v.id('organizations'),
+    nombre: v.string(),
+    descripcion: v.optional(v.string()),
+    personasClave: v.optional(v.string()),
+    tipo: v.optional(v.string()),
+    posturaIA: v.optional(v.string()), // AI/regulation stance
+    tematicaPrincipal: v.optional(v.string()),
+    notas: v.optional(v.string()),
+    resumenAuto: v.optional(v.string()), // Auto-generated summary
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_org', ['orgId'])
+    .searchIndex('search_nombre', {
+      searchField: 'nombre',
+      filterFields: ['orgId'],
+    }),
+
+  // CRM Oportunidades — job/funding opportunities
+  crmOportunidades: defineTable({
+    orgId: v.id('organizations'),
+    titulo: v.string(),
+    organizacion: v.optional(v.string()),
+    ubicacion: v.optional(v.string()),
+    tipo: v.optional(v.string()), // Full-time, Funding, etc.
+    categoria: v.optional(v.string()), // Policy, Research, Strategy, Operations
+    fecha: v.optional(v.string()),
+    estado: v.optional(v.string()),
+    fuente: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_org', ['orgId'])
+    .searchIndex('search_titulo', {
+      searchField: 'titulo',
+      filterFields: ['orgId'],
+    }),
+
+  // CRM Formularios — program feedback/survey responses
+  crmFormularios: defineTable({
+    orgId: v.id('organizations'),
+    // Store all form fields as a flexible record since forms have 79 columns
+    // that vary by program/period
+    participante: v.optional(v.string()),
+    periodo: v.optional(v.string()),
+    fuente: v.optional(v.string()),
+    datos: v.record(v.string(), v.any()), // All remaining form fields
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index('by_org', ['orgId']),
 })
