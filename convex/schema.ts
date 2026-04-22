@@ -1405,6 +1405,7 @@ export default defineSchema({
     ),
     responses: v.any(),
     submittedAt: v.number(),
+    updatedAt: v.optional(v.number()),
     reviewedAt: v.optional(v.number()),
     reviewedBy: v.optional(v.string()),
     reviewNotes: v.optional(v.string()),
