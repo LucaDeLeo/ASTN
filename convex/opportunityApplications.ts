@@ -12,6 +12,16 @@ import {
   type FormField,
 } from './lib/formFields'
 
+// Applicants can re-open and edit their submission until this long after the
+// opportunity's posted deadline. Keep in sync with the client in
+// src/routes/org/$slug/apply/$opportunityId.tsx.
+const APPLICATION_EDIT_GRACE_MS = 24 * 60 * 60 * 1000
+
+function isWithinEditWindow(deadline: number | undefined): boolean {
+  if (deadline === undefined) return true
+  return Date.now() <= deadline + APPLICATION_EDIT_GRACE_MS
+}
+
 /**
  * Auto-add a poll respondent for a new application if an open poll exists.
  * Fails silently so it never blocks the main operation.
@@ -136,7 +146,8 @@ export const submit = mutation({
       })
     }
 
-    // Idempotent: check if already applied
+    // Side-effects below (poll respondent, auto-email) are intentionally
+    // first-submission only — don't fire them on edits.
     const existing = await ctx.db
       .query('opportunityApplications')
       .withIndex('by_user_and_opportunity', (q) =>
@@ -144,7 +155,16 @@ export const submit = mutation({
       )
       .first()
 
-    if (existing) return existing._id
+    if (existing) {
+      if (!isWithinEditWindow(opportunity.deadline)) {
+        throw new ConvexError('The edit window for this application has closed')
+      }
+      await ctx.db.patch(existing._id, {
+        responses,
+        updatedAt: Date.now(),
+      })
+      return existing._id
+    }
 
     // Get profile if exists
     const profile = await ctx.db
@@ -178,7 +198,9 @@ export const submit = mutation({
   },
 })
 
-// Submit an application as a guest (no auth required, idempotent by email+opportunity)
+// Submit an application as a guest (no auth required, idempotent by email+opportunity).
+// Guest submissions are not editable — returning users must sign up so the row
+// can be claimed and re-opened through the authenticated `submit` path.
 export const submitGuest = mutation({
   args: {
     opportunityId: v.id('orgOpportunities'),
@@ -322,6 +344,7 @@ export const getMyApplication = query({
       ),
       responses: v.any(),
       submittedAt: v.number(),
+      updatedAt: v.optional(v.number()),
       reviewedAt: v.optional(v.number()),
       reviewedBy: v.optional(v.string()),
       reviewNotes: v.optional(v.string()),
@@ -440,6 +463,7 @@ export const listByOpportunity = query({
       ),
       responses: v.any(),
       submittedAt: v.number(),
+      updatedAt: v.optional(v.number()),
       reviewedAt: v.optional(v.number()),
       reviewedBy: v.optional(v.string()),
       reviewNotes: v.optional(v.string()),
@@ -686,6 +710,7 @@ export const listForExport = internalQuery({
       ),
       responses: v.any(),
       submittedAt: v.number(),
+      updatedAt: v.optional(v.number()),
       reviewedAt: v.optional(v.number()),
       reviewedBy: v.optional(v.string()),
       reviewNotes: v.optional(v.string()),

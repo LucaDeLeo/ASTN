@@ -13,9 +13,11 @@ import {
   Loader2,
   UserPlus,
 } from 'lucide-react'
+import { format } from 'date-fns'
 import { api } from '../../../../../convex/_generated/api'
 import {
   PROFILE_PREFILL_KEYS,
+  sanitizeResponsesForForm,
   validateResponses,
 } from '../../../../../convex/lib/formFields'
 import type { Id } from '../../../../../convex/_generated/dataModel'
@@ -25,6 +27,10 @@ import { GradientBg } from '~/components/layout/GradientBg'
 import { DynamicFormRenderer } from '~/components/opportunities/DynamicFormRenderer'
 import { Button } from '~/components/ui/button'
 import { saveGuestApplicationEmail } from '~/lib/pendingGuestApplication'
+
+// Keep in sync with APPLICATION_EDIT_GRACE_MS in
+// convex/opportunityApplications.ts.
+const APPLICATION_EDIT_GRACE_MS = 24 * 60 * 60 * 1000
 
 export const Route = createFileRoute('/org/$slug/apply/$opportunityId')({
   loader: async ({ context, params }) => {
@@ -116,21 +122,32 @@ function ApplyPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [submittedAsGuest, setSubmittedAsGuest] = useState(false)
+  const [wasEditingAtSubmit, setWasEditingAtSubmit] = useState(false)
   const [preFilled, setPreFilled] = useState(false)
   const [responses, setResponses] = useState<Record<string, unknown>>({})
 
   const formFields = (opportunity?.formFields ?? []) as Array<FormField>
+  const deadline = opportunity?.deadline
+  const editWindowEndsAt =
+    deadline !== undefined ? deadline + APPLICATION_EDIT_GRACE_MS : undefined
+  const isWithinEditWindow =
+    editWindowEndsAt === undefined || Date.now() <= editWindowEndsAt
+  const isEditing =
+    isAuthenticated && !!existingApplication && isWithinEditWindow && !submitted
 
-  // Wait for prior-application query to settle so we only flip `preFilled`
-  // once; the profile query may legitimately resolve to `null` for users who
-  // have signed up but not yet edited their profile — we don't block on it.
+  // Wait for prior-application and existing-application queries to settle so
+  // we only flip `preFilled` once; the profile query may legitimately resolve
+  // to `null` for users who have signed up but not yet edited their profile —
+  // we don't block on it.
   const previousReady = !isAuthenticated || previousApplication !== undefined
+  const existingReady = !isAuthenticated || existingApplication !== undefined
   if (
     isAuthenticated &&
     user &&
     !preFilled &&
     formFields.length > 0 &&
     previousReady &&
+    existingReady &&
     profile !== undefined
   ) {
     const updates: Record<string, unknown> = {}
@@ -155,6 +172,18 @@ function ApplyPage() {
         if (profileData[key] && !responses[key]) {
           updates[key] = profileData[key]
         }
+      }
+    }
+
+    // Editing an existing application: the user's own prior submission takes
+    // precedence over everything else (profile, previous-opportunity carry-over).
+    if (existingApplication?.responses) {
+      const sanitized = sanitizeResponsesForForm(
+        formFields,
+        existingApplication.responses as Record<string, unknown>,
+      )
+      for (const [key, value] of Object.entries(sanitized)) {
+        updates[key] = value
       }
     }
 
@@ -191,10 +220,21 @@ function ApplyPage() {
     )
   }
 
-  const successHeading = isRedirect
-    ? 'Expression of Interest Submitted'
-    : 'Application Submitted'
-  const successBody = isRedirect ? (
+  const showSuccessPage =
+    (submitted && !submittedAsGuest) ||
+    (!!existingApplication && !isWithinEditWindow)
+  const justEdited = submitted && wasEditingAtSubmit
+  const successHeading = justEdited
+    ? 'Application Updated'
+    : isRedirect
+      ? 'Expression of Interest Submitted'
+      : 'Application Submitted'
+  const successBody = justEdited ? (
+    <>
+      Your updated application for <strong>{opportunity.title}</strong> has been
+      saved.
+    </>
+  ) : isRedirect ? (
     <>
       You&apos;ve expressed interest in future cohorts of{' '}
       <strong>{originalTitle}</strong>. You&apos;ll be notified when the next
@@ -207,8 +247,7 @@ function ApplyPage() {
     </>
   )
 
-  // Already applied (authenticated user) or just submitted
-  if (existingApplication || (submitted && !submittedAsGuest)) {
+  if (showSuccessPage) {
     return (
       <GradientBg>
         <AuthHeader />
@@ -318,6 +357,8 @@ function ApplyPage() {
   const handleSubmit = async () => {
     if (!isValid || isSubmitting) return
     setIsSubmitting(true)
+    const editingAtSubmit = isEditing
+    setWasEditingAtSubmit(editingAtSubmit)
     try {
       let isGuest = false
       if (isAuthenticated) {
@@ -349,6 +390,7 @@ function ApplyPage() {
         org_name: org.name,
         is_guest: isGuest,
         is_redirect: isRedirect,
+        is_edit: editingAtSubmit,
         ...(isRedirect && { original_opportunity_id: opportunityId }),
       })
     } catch (err) {
@@ -412,7 +454,26 @@ function ApplyPage() {
             </div>
           )}
 
-          {(hasPreviousAppData || hasPreFilledData) && (
+          {isEditing && existingApplication && (
+            <div className="flex items-start gap-2 rounded-lg bg-blue-50 border border-blue-200 p-3 mb-6 text-sm text-blue-800">
+              <Info className="size-4 mt-0.5 shrink-0" />
+              <span>
+                You applied on{' '}
+                <strong>{format(existingApplication.submittedAt, 'PP')}</strong>
+                .{' '}
+                {editWindowEndsAt !== undefined ? (
+                  <>
+                    You can update your responses until{' '}
+                    <strong>{format(editWindowEndsAt, 'PPp')}</strong>.
+                  </>
+                ) : (
+                  <>You can still update your responses.</>
+                )}
+              </span>
+            </div>
+          )}
+
+          {!isEditing && (hasPreviousAppData || hasPreFilledData) && (
             <div className="flex items-start gap-2 rounded-lg bg-blue-50 border border-blue-200 p-3 mb-6 text-sm text-blue-800">
               <Info className="size-4 mt-0.5 shrink-0" />
               <span>
@@ -457,8 +518,10 @@ function ApplyPage() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="size-4 mr-2 animate-spin" />
-                  Submitting...
+                  {isEditing ? 'Updating...' : 'Submitting...'}
                 </>
+              ) : isEditing ? (
+                'Update Application'
               ) : isRedirect ? (
                 'Submit Expression of Interest'
               ) : (
