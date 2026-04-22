@@ -26,6 +26,10 @@ import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Spinner } from '~/components/ui/spinner'
 
+// Keep in sync with APPLICATION_EDIT_GRACE_MS in
+// convex/opportunityApplications.ts and the apply route.
+const APPLICATION_EDIT_GRACE_MS = 24 * 60 * 60 * 1000
+
 export const Route = createFileRoute('/org/$slug/')({
   component: OrgDirectoryPage,
 })
@@ -253,6 +257,9 @@ function FeaturedOpportunity({
   if (featured.status !== 'active') return null
 
   const hasApplied = isAuthenticated && !!myApplication
+  const isWithinEditWindow =
+    featured.deadline === undefined ||
+    Date.now() <= featured.deadline + APPLICATION_EDIT_GRACE_MS
 
   return (
     <Card className="mb-6 overflow-hidden border-primary/20">
@@ -274,12 +281,23 @@ function FeaturedOpportunity({
               {featured.description}
             </p>
             <div className="flex items-center gap-3 flex-wrap">
-              {hasApplied ? (
+              {hasApplied && (
                 <Badge className="bg-green-50 text-green-700 border-green-200">
                   <CheckCircle2 className="size-3 mr-1" />
                   Application Submitted
                 </Badge>
-              ) : orgSlug ? (
+              )}
+              {hasApplied && isWithinEditWindow && orgSlug && (
+                <Button size="sm" variant="outline" asChild>
+                  <Link
+                    to="/org/$slug/apply/$opportunityId"
+                    params={{ slug: orgSlug, opportunityId: featured._id }}
+                  >
+                    Edit application
+                  </Link>
+                </Button>
+              )}
+              {!hasApplied && orgSlug && (
                 <Button size="sm" asChild>
                   <Link
                     to="/org/$slug/apply/$opportunityId"
@@ -288,7 +306,7 @@ function FeaturedOpportunity({
                     Apply Now
                   </Link>
                 </Button>
-              ) : null}
+              )}
               {featured.externalUrl && (
                 <a
                   href={featured.externalUrl}

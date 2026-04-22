@@ -42,6 +42,9 @@ jobs:
       - name: Lint
         run: bun run lint && bun run lint:convex
 
+      - name: Typecheck Convex backend
+        run: bun x tsc -p convex/tsconfig.json --noEmit
+
       - name: Build
         run: bun run build
 
