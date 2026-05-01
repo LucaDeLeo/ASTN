@@ -274,8 +274,9 @@ export function CrmImportDialog({
               a CRM collection (Personas, Organizaciones, Oportunidades, or
               Formularios).
             </p>
-            <div
-              className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
+            <button
+              type="button"
+              className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors w-full"
               onClick={() => fileInputRef.current?.click()}
             >
               <FileUp className="size-10 text-muted-foreground mx-auto mb-3" />
@@ -283,7 +284,7 @@ export function CrmImportDialog({
               <p className="text-sm text-muted-foreground mt-1">
                 .xlsx, .xls, or .csv
               </p>
-            </div>
+            </button>
             <input
               ref={fileInputRef}
               type="file"

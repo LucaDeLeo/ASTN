@@ -1807,7 +1807,7 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   })
-    .index('by_org', ['orgId'])
+    .index('by_orgId', ['orgId'])
     .searchIndex('search_nombre', {
       searchField: 'nombre',
       filterFields: ['orgId'],
@@ -1827,7 +1827,7 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   })
-    .index('by_org', ['orgId'])
+    .index('by_orgId', ['orgId'])
     .searchIndex('search_nombre', {
       searchField: 'nombre',
       filterFields: ['orgId'],
@@ -1847,7 +1847,7 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   })
-    .index('by_org', ['orgId'])
+    .index('by_orgId', ['orgId'])
     .searchIndex('search_titulo', {
       searchField: 'titulo',
       filterFields: ['orgId'],
@@ -1864,7 +1864,7 @@ export default defineSchema({
     datos: v.record(v.string(), v.any()), // All remaining form fields
     createdAt: v.number(),
     updatedAt: v.number(),
-  }).index('by_org', ['orgId']),
+  }).index('by_orgId', ['orgId']),
 
   // CRM counters — one doc per org. Avoids `.collect()` in getStats.
   // Updated by every CRM insert/delete mutation; reads are O(1).
@@ -1874,5 +1874,5 @@ export default defineSchema({
     organizaciones: v.number(),
     oportunidades: v.number(),
     formularios: v.number(),
-  }).index('by_org', ['orgId']),
+  }).index('by_orgId', ['orgId']),
 })

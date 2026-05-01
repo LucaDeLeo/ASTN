@@ -134,17 +134,16 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false)
   const [newViewName, setNewViewName] = useState('')
 
-  // Load saved views from localStorage on mount / collection change
+  // Load saved views from localStorage on mount / collection change.
+  // Wrap the read in try/catch — getItem itself can throw in restricted
+  // browsing modes (private, sandboxed iframes), not just JSON.parse.
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const raw = localStorage.getItem(viewsStorageKey(orgId, collection))
-    if (raw) {
-      try {
-        setSavedViews(JSON.parse(raw))
-      } catch {
-        setSavedViews([])
-      }
-    } else {
+    try {
+      const raw = localStorage.getItem(viewsStorageKey(orgId, collection))
+      setSavedViews(raw ? JSON.parse(raw) : [])
+    } catch (err) {
+      console.error('Failed to load saved views:', err)
       setSavedViews([])
     }
     setActiveViewId(null)
@@ -300,9 +299,15 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
 
     if (sortKey && sortDir) {
       const dir = sortDir === 'asc' ? 1 : -1
+      // Resolve nested `datos.*` keys the same way the filter / cell-render
+      // paths do, otherwise sort on dynamic formulario columns no-ops.
+      const resolve = (record: any) =>
+        sortKey.startsWith('datos.')
+          ? record.datos?.[sortKey.slice(6)]
+          : record[sortKey]
       result = [...result].sort((a: any, b: any) => {
-        const aRaw = a[sortKey]
-        const bRaw = b[sortKey]
+        const aRaw = resolve(a)
+        const bRaw = resolve(b)
         // Push null/empty to the bottom regardless of direction
         const aEmpty = aRaw == null || aRaw === ''
         const bEmpty = bRaw == null || bRaw === ''

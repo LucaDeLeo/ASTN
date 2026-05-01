@@ -281,17 +281,23 @@ const COLLECTION_TO_COUNT_FIELD: Record<
   crmFormularios: 'formularios',
 }
 
+// Convex's OCC normally serializes concurrent first-write inserts so only
+// one counter row per org survives. To stay robust even if a duplicate ever
+// slips through, this is self-healing: it collects all rows for the org,
+// merges their values into the first one, deletes the extras, and then
+// applies the delta. Steady-state cost is one indexed lookup.
 async function bumpCount(
   ctx: MutationCtx,
   orgId: Id<'organizations'>,
   field: CountField,
   delta: number,
 ) {
-  const existing = await ctx.db
+  const rows = await ctx.db
     .query('crmCounts')
-    .withIndex('by_org', (q) => q.eq('orgId', orgId))
-    .unique()
-  if (!existing) {
+    .withIndex('by_orgId', (q) => q.eq('orgId', orgId))
+    .collect()
+
+  if (rows.length === 0) {
     await ctx.db.insert('crmCounts', {
       orgId,
       personas: field === 'personas' ? Math.max(0, delta) : 0,
@@ -301,9 +307,28 @@ async function bumpCount(
     })
     return
   }
-  await ctx.db.patch(existing._id, {
-    [field]: Math.max(0, existing[field] + delta),
-  })
+
+  if (rows.length === 1) {
+    const r = rows[0]
+    await ctx.db.patch(r._id, {
+      [field]: Math.max(0, r[field] + delta),
+    })
+    return
+  }
+
+  // Duplicate rows existed — consolidate.
+  const [primary, ...extras] = rows
+  const merged = {
+    personas: rows.reduce((s, r) => s + r.personas, 0),
+    organizaciones: rows.reduce((s, r) => s + r.organizaciones, 0),
+    oportunidades: rows.reduce((s, r) => s + r.oportunidades, 0),
+    formularios: rows.reduce((s, r) => s + r.formularios, 0),
+  }
+  merged[field] = Math.max(0, merged[field] + delta)
+  await ctx.db.patch(primary._id, merged)
+  for (const extra of extras) {
+    await ctx.db.delete(extra._id)
+  }
 }
 
 // ── Queries: List ──
@@ -328,7 +353,7 @@ export const listPersonas = query({
 
     return await ctx.db
       .query('crmPersonas')
-      .withIndex('by_org', (q) => q.eq('orgId', args.orgId))
+      .withIndex('by_orgId', (q) => q.eq('orgId', args.orgId))
       .collect()
   },
 })
@@ -353,7 +378,7 @@ export const listOrganizaciones = query({
 
     return await ctx.db
       .query('crmOrganizaciones')
-      .withIndex('by_org', (q) => q.eq('orgId', args.orgId))
+      .withIndex('by_orgId', (q) => q.eq('orgId', args.orgId))
       .collect()
   },
 })
@@ -378,7 +403,7 @@ export const listOportunidades = query({
 
     return await ctx.db
       .query('crmOportunidades')
-      .withIndex('by_org', (q) => q.eq('orgId', args.orgId))
+      .withIndex('by_orgId', (q) => q.eq('orgId', args.orgId))
       .collect()
   },
 })
@@ -393,7 +418,7 @@ export const listFormularios = query({
 
     return await ctx.db
       .query('crmFormularios')
-      .withIndex('by_org', (q) => q.eq('orgId', args.orgId))
+      .withIndex('by_orgId', (q) => q.eq('orgId', args.orgId))
       .collect()
   },
 })
@@ -826,7 +851,7 @@ export const clearCollection = mutation({
     // Take BATCH+1 to peek whether more remain after this run.
     const records = await ctx.db
       .query(args.collection)
-      .withIndex('by_org', (q) => q.eq('orgId', args.orgId))
+      .withIndex('by_orgId', (q) => q.eq('orgId', args.orgId))
       .take(CLEAR_BATCH_SIZE + 1)
 
     const more = records.length > CLEAR_BATCH_SIZE
@@ -863,15 +888,18 @@ export const getStats = query({
   }),
   handler: async (ctx, args) => {
     await requireOrgAdmin(ctx, args.orgId)
-    const counts = await ctx.db
+    // `.collect()` instead of `.unique()` — see bumpCount: tolerate the
+    // (theoretical) case of multiple counter rows from a concurrent first
+    // write by summing them. The next bumpCount will consolidate.
+    const rows = await ctx.db
       .query('crmCounts')
-      .withIndex('by_org', (q) => q.eq('orgId', args.orgId))
-      .unique()
+      .withIndex('by_orgId', (q) => q.eq('orgId', args.orgId))
+      .collect()
     return {
-      personas: counts?.personas ?? 0,
-      organizaciones: counts?.organizaciones ?? 0,
-      oportunidades: counts?.oportunidades ?? 0,
-      formularios: counts?.formularios ?? 0,
+      personas: rows.reduce((s, r) => s + r.personas, 0),
+      organizaciones: rows.reduce((s, r) => s + r.organizaciones, 0),
+      oportunidades: rows.reduce((s, r) => s + r.oportunidades, 0),
+      formularios: rows.reduce((s, r) => s + r.formularios, 0),
     }
   },
 })
