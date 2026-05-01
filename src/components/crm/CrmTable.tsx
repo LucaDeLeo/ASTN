@@ -333,15 +333,17 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
     return result
   }, [rawData, sortKey, sortDir, filters])
 
-  // For formularios, dynamically extract column keys from datos
+  // For formularios, dynamically extract column keys from datos.
+  // Derive from `rawData` (not the filtered `data`) so columns stay stable
+  // when filters are applied — otherwise a filter that yields zero rows
+  // would collapse the column list and lose any saved view's selection.
   const allColumns = useMemo(() => {
     if (collection !== 'formularios') return COLUMN_CONFIG[collection]
     const base = COLUMN_CONFIG.formularios
-    if (!data || data.length === 0) return base
+    if (!rawData || (rawData as any[]).length === 0) return base
 
-    // Extract unique keys from datos across all records
     const datosKeys = new Set<string>()
-    for (const record of data as any[]) {
+    for (const record of rawData as any[]) {
       if (record.datos) {
         for (const key of Object.keys(record.datos)) {
           datosKeys.add(key)
@@ -353,7 +355,7 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
       .map((key) => ({ key: `datos.${key}`, label: key }))
 
     return [...base, ...extraCols]
-  }, [collection, data])
+  }, [collection, rawData])
 
   const columns = useMemo(
     () => allColumns.filter((col) => !hiddenColumns.includes(col.key)),
@@ -643,6 +645,8 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
             />
             {searchQuery && (
               <button
+                type="button"
+                aria-label="Clear search"
                 onClick={() => setSearchQuery('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
@@ -689,6 +693,8 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
                       )}
                     </DropdownMenuItem>
                     <button
+                      type="button"
+                      aria-label={`Delete view "${view.name}"`}
                       onClick={(e) => {
                         e.stopPropagation()
                         deleteView(view.id)
@@ -908,6 +914,8 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
                         autoFocus
                       />
                       <button
+                        type="button"
+                        aria-label={`Remove filter for ${key}`}
                         onClick={() =>
                           setFilters((prev) => {
                             const next = { ...prev }
@@ -1089,6 +1097,8 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
                             )}
                             {isEditable && !col.key.startsWith('datos.') && (
                               <button
+                                type="button"
+                                aria-label={`Edit ${col.label}`}
                                 onClick={() =>
                                   handleStartEdit(
                                     record._id,
@@ -1111,6 +1121,8 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
                       <Popover>
                         <PopoverTrigger asChild>
                           <button
+                            type="button"
+                            aria-label="Delete row"
                             className="opacity-0 group-hover/row:opacity-100 focus:opacity-100 transition-opacity text-muted-foreground hover:text-destructive p-1 inline-flex"
                             title="Delete row"
                           >

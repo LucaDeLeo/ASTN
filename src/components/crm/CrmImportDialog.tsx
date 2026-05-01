@@ -1,6 +1,6 @@
 import { useMutation } from 'convex/react'
 import { FileUp, Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import * as XLSX from 'xlsx'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
@@ -44,18 +44,23 @@ function normalizeKey(key: string): string {
     .join('')
 }
 
-// Emit BOTH the normalized camelCase key AND the original header.
-// `normalizeKey` collapses multi-word headers in a way the backend doesn't
-// always expect (e.g. "Experiencia en AI Safety" -> "experienciaEnAiSafety",
-// but the schema field is "experienciaAiSafety"). The backend's insert
-// handlers fall back to the original header (e.g. record['Experiencia en AI
-// Safety']), so preserving both keys lets us match either path.
-function normalizeRow(row: Record<string, any>): Record<string, any> {
+// For typed collections (personas/organizaciones/oportunidades), the backend
+// has bilingual fallbacks (e.g. record['Experiencia en AI Safety']) so we
+// emit BOTH the canonical normalized key AND the original header — that way
+// either path matches.
+//
+// For formularios, every non-promoted key gets stored as-is in the `datos`
+// bag, so emitting both versions would duplicate every field. In that case
+// we only emit the normalized key.
+function normalizeRow(
+  row: Record<string, any>,
+  preserveOriginal: boolean,
+): Record<string, any> {
   const out: Record<string, any> = {}
   for (const [key, value] of Object.entries(row)) {
     const norm = normalizeKey(key)
     out[norm] = value
-    if (norm !== key) out[key] = value
+    if (preserveOriginal && norm !== key) out[key] = value
   }
   return out
 }
@@ -184,8 +189,15 @@ export function CrmImportDialog({
         // Convex mutations have a size limit, so batch in chunks of 50
         const BATCH_SIZE = 50
 
+        // Typed collections rely on the backend's bilingual fallbacks, so
+        // we preserve original headers. Formularios stores every field
+        // verbatim in `datos`, so duplicating keys would bloat the bag.
+        const preserveOriginal = target !== 'formularios'
+
         for (let i = 0; i < sheet.rows.length; i += BATCH_SIZE) {
-          const batch = sheet.rows.slice(i, i + BATCH_SIZE).map(normalizeRow)
+          const batch = sheet.rows
+            .slice(i, i + BATCH_SIZE)
+            .map((row) => normalizeRow(row, preserveOriginal))
 
           switch (target) {
             case 'personas':
@@ -257,6 +269,12 @@ export function CrmImportDialog({
     setErrorMsg('')
     if (fileInputRef.current) fileInputRef.current.value = ''
   }, [])
+
+  // Reset session state when the dialog is dismissed (Esc, backdrop, Done),
+  // so reopening starts fresh instead of showing the previous result/error.
+  useEffect(() => {
+    if (!open) handleReset()
+  }, [open, handleReset])
 
   const mappedSheetCount = Object.values(sheetMappings).filter(Boolean).length
 
