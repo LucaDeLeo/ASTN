@@ -7,6 +7,7 @@ import {
   Building2,
   Briefcase,
   FileText,
+  Shield,
 } from 'lucide-react'
 import { useState } from 'react'
 import { api } from '../../../../../../convex/_generated/api'
@@ -56,9 +57,16 @@ function CrmDashboard() {
   const [importOpen, setImportOpen] = useState(false)
 
   const org = useQuery(api.orgs.directory.getOrgBySlug, { slug })
-  const stats = useQuery(api.crm.getStats, org ? { orgId: org._id } : 'skip')
+  const membership = useQuery(
+    api.orgs.membership.getMembership,
+    org ? { orgId: org._id } : 'skip',
+  )
+  const stats = useQuery(
+    api.crm.getStats,
+    org && membership?.role === 'admin' ? { orgId: org._id } : 'skip',
+  )
 
-  if (org === undefined) {
+  if (org === undefined || (org && membership === undefined)) {
     return (
       <div className="min-h-screen">
         <AuthHeader />
@@ -78,6 +86,27 @@ function CrmDashboard() {
         <main className="container mx-auto px-4 py-8">
           <div className="text-center py-12">
             <p className="text-muted-foreground">Organization not found</p>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  if (!membership || membership.role !== 'admin') {
+    return (
+      <div className="min-h-screen">
+        <AuthHeader />
+        <main className="container mx-auto px-4 py-8">
+          <div className="max-w-lg mx-auto text-center py-12">
+            <Shield className="size-8 text-slate-400 mx-auto mb-4" />
+            <h1 className="text-2xl font-display mb-4">
+              Admin Access Required
+            </h1>
+            <Button asChild>
+              <Link to="/org/$slug" params={{ slug }}>
+                Back to Organization
+              </Link>
+            </Button>
           </div>
         </main>
       </div>

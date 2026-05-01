@@ -44,10 +44,18 @@ function normalizeKey(key: string): string {
     .join('')
 }
 
+// Emit BOTH the normalized camelCase key AND the original header.
+// `normalizeKey` collapses multi-word headers in a way the backend doesn't
+// always expect (e.g. "Experiencia en AI Safety" -> "experienciaEnAiSafety",
+// but the schema field is "experienciaAiSafety"). The backend's insert
+// handlers fall back to the original header (e.g. record['Experiencia en AI
+// Safety']), so preserving both keys lets us match either path.
 function normalizeRow(row: Record<string, any>): Record<string, any> {
   const out: Record<string, any> = {}
   for (const [key, value] of Object.entries(row)) {
-    out[normalizeKey(key)] = value
+    const norm = normalizeKey(key)
+    out[norm] = value
+    if (norm !== key) out[key] = value
   }
   return out
 }
@@ -160,40 +168,46 @@ export function CrmImportDialog({
     setStatus('importing')
     setErrorMsg('')
     const results: { sheet: string; count: number; collection: string }[] = []
+    let currentSheet = ''
+    let currentTarget = ''
+    let currentInserted = 0
 
     try {
       for (const sheet of sheets) {
         const target = sheetMappings[sheet.name]
         if (!target) continue
 
+        currentSheet = sheet.name
+        currentTarget = target
+        currentInserted = 0
+
         // Convex mutations have a size limit, so batch in chunks of 50
         const BATCH_SIZE = 50
-        let totalInserted = 0
 
         for (let i = 0; i < sheet.rows.length; i += BATCH_SIZE) {
           const batch = sheet.rows.slice(i, i + BATCH_SIZE).map(normalizeRow)
 
           switch (target) {
             case 'personas':
-              totalInserted += await insertPersonas({
+              currentInserted += await insertPersonas({
                 orgId,
                 records: batch,
               })
               break
             case 'organizaciones':
-              totalInserted += await insertOrganizaciones({
+              currentInserted += await insertOrganizaciones({
                 orgId,
                 records: batch,
               })
               break
             case 'oportunidades':
-              totalInserted += await insertOportunidades({
+              currentInserted += await insertOportunidades({
                 orgId,
                 records: batch,
               })
               break
             case 'formularios':
-              totalInserted += await insertFormularios({
+              currentInserted += await insertFormularios({
                 orgId,
                 records: batch,
               })
@@ -203,7 +217,7 @@ export function CrmImportDialog({
 
         results.push({
           sheet: sheet.name,
-          count: totalInserted,
+          count: currentInserted,
           collection: target,
         })
       }
@@ -212,6 +226,16 @@ export function CrmImportDialog({
       setStatus('done')
     } catch (err: any) {
       console.error('Import error:', err)
+      // Surface partial progress: completed sheets + however many rows landed
+      // in the sheet that errored mid-flight.
+      if (currentSheet && currentTarget) {
+        results.push({
+          sheet: currentSheet,
+          count: currentInserted,
+          collection: currentTarget,
+        })
+      }
+      setImportResults(results)
       setErrorMsg(err.message || 'Import failed')
       setStatus('error')
     }
@@ -371,6 +395,17 @@ export function CrmImportDialog({
               <span className="font-medium">Error</span>
             </div>
             <p className="text-sm text-muted-foreground">{errorMsg}</p>
+            {importResults.length > 0 && (
+              <div className="border-t pt-3 space-y-1">
+                <p className="text-sm font-medium">Imported before failure:</p>
+                {importResults.map((r) => (
+                  <p key={r.sheet} className="text-sm text-muted-foreground">
+                    <span className="font-medium">{r.sheet}</span>: {r.count}{' '}
+                    records imported to {r.collection}
+                  </p>
+                ))}
+              </div>
+            )}
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={handleReset}>
                 Try again

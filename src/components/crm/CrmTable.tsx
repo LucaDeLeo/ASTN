@@ -28,6 +28,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '~/components/ui/dialog'
 import { Input } from '~/components/ui/input'
 import {
   Popover,
@@ -124,6 +131,8 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
   const [showFilters, setShowFilters] = useState(false)
   const [savedViews, setSavedViews] = useState<SavedView[]>([])
   const [activeViewId, setActiveViewId] = useState<string | null>(null)
+  const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false)
+  const [newViewName, setNewViewName] = useState('')
 
   // Load saved views from localStorage on mount / collection change
   useEffect(() => {
@@ -145,11 +154,18 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
 
   const persistViews = useCallback(
     (views: SavedView[]) => {
-      localStorage.setItem(
-        viewsStorageKey(orgId, collection),
-        JSON.stringify(views),
-      )
+      // Always update in-memory state. localStorage may fail (quota exceeded,
+      // private mode, etc.) but the user's current session shouldn't break.
       setSavedViews(views)
+      try {
+        localStorage.setItem(
+          viewsStorageKey(orgId, collection),
+          JSON.stringify(views),
+        )
+      } catch (err) {
+        console.error('Failed to persist views:', err)
+        toast.error('Could not save view (storage full?)')
+      }
     },
     [orgId, collection],
   )
@@ -170,8 +186,13 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
     setActiveViewId(null)
   }, [])
 
-  const saveCurrentAsView = useCallback(() => {
-    const name = window.prompt('View name:')
+  const openSaveViewDialog = useCallback(() => {
+    setNewViewName('')
+    setSaveViewDialogOpen(true)
+  }, [])
+
+  const confirmSaveView = useCallback(() => {
+    const name = newViewName.trim()
     if (!name) return
     const newView: SavedView = {
       id: Math.random().toString(36).slice(2, 10),
@@ -183,7 +204,17 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
     }
     persistViews([...savedViews, newView])
     setActiveViewId(newView.id)
-  }, [hiddenColumns, filters, sortKey, sortDir, savedViews, persistViews])
+    setSaveViewDialogOpen(false)
+    setNewViewName('')
+  }, [
+    newViewName,
+    hiddenColumns,
+    filters,
+    sortKey,
+    sortDir,
+    savedViews,
+    persistViews,
+  ])
 
   const deleteView = useCallback(
     (id: string) => {
@@ -268,12 +299,30 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
     }
 
     if (sortKey && sortDir) {
+      const dir = sortDir === 'asc' ? 1 : -1
       result = [...result].sort((a: any, b: any) => {
-        const aVal = (a[sortKey] ?? '').toString().toLowerCase()
-        const bVal = (b[sortKey] ?? '').toString().toLowerCase()
-        if (aVal < bVal) return sortDir === 'asc' ? -1 : 1
-        if (aVal > bVal) return sortDir === 'asc' ? 1 : -1
-        return 0
+        const aRaw = a[sortKey]
+        const bRaw = b[sortKey]
+        // Push null/empty to the bottom regardless of direction
+        const aEmpty = aRaw == null || aRaw === ''
+        const bEmpty = bRaw == null || bRaw === ''
+        if (aEmpty && bEmpty) return 0
+        if (aEmpty) return 1
+        if (bEmpty) return -1
+        // Try numeric
+        const aNum = Number(aRaw)
+        const bNum = Number(bRaw)
+        if (Number.isFinite(aNum) && Number.isFinite(bNum)) {
+          return (aNum - bNum) * dir
+        }
+        // Try date
+        const aDate = Date.parse(String(aRaw))
+        const bDate = Date.parse(String(bRaw))
+        if (!isNaN(aDate) && !isNaN(bDate)) {
+          return (aDate - bDate) * dir
+        }
+        // Fallback: locale-aware string compare
+        return String(aRaw).localeCompare(String(bRaw)) * dir
       })
     }
     return result
@@ -670,7 +719,7 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
                 </>
               )}
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={saveCurrentAsView}>
+              <DropdownMenuItem onClick={openSaveViewDialog}>
                 <Save className="size-4 mr-2" />
                 Save current view
               </DropdownMenuItem>
@@ -1089,6 +1138,35 @@ export function CrmTable({ orgId, collection }: CrmTableProps) {
           </tbody>
         </table>
       </div>
+
+      <Dialog open={saveViewDialogOpen} onOpenChange={setSaveViewDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Save view</DialogTitle>
+          </DialogHeader>
+          <Input
+            autoFocus
+            placeholder="View name"
+            value={newViewName}
+            onChange={(e) => setNewViewName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && newViewName.trim()) confirmSaveView()
+              if (e.key === 'Escape') setSaveViewDialogOpen(false)
+            }}
+          />
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setSaveViewDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={confirmSaveView} disabled={!newViewName.trim()}>
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
