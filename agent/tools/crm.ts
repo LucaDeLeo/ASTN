@@ -119,12 +119,25 @@ export function createCrmTools(
       },
       async (args) => {
         try {
-          const records = await listCollection(
-            convex,
-            orgId,
-            args.collection as CrmCollection,
-          )
-          const record = (records as any[]).find((r) => r._id === args.id)
+          const collection = args.collection as CrmCollection
+          let record: any = null
+          if (collection === 'personas') {
+            record = await convex.query(api.crm.getPersona, {
+              id: args.id as Id<'crmPersonas'>,
+            })
+          } else if (collection === 'organizaciones') {
+            record = await convex.query(api.crm.getOrganizacion, {
+              id: args.id as Id<'crmOrganizaciones'>,
+            })
+          } else if (collection === 'oportunidades') {
+            record = await convex.query(api.crm.getOportunidad, {
+              id: args.id as Id<'crmOportunidades'>,
+            })
+          } else {
+            record = await convex.query(api.crm.getFormulario, {
+              id: args.id as Id<'crmFormularios'>,
+            })
+          }
           if (!record) {
             return {
               content: [
